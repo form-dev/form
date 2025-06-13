@@ -72,7 +72,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: formlib
-          key: formlib-${{ matrix.test }}-v1
+          key: formlib-${{ matrix.test }}-v2
 
       - name: Install library if necessary
         if: steps.cache-formlib.outputs.cache-hit != 'true'
@@ -89,6 +89,8 @@ jobs:
               wget https://github.com/form-dev/form-packages/archive/refs/tags/v1.0.0.tar.gz -O - | tar -x --gzip
               mv form-packages-1.0.0/color/color.h formlib
               rm -rf form-packages-1.0.0
+              # series library for test in extra
+              wget https://github.com/a-maier/series/releases/download/1.0.0/series.h -P formlib
               ;;
           esac
 
@@ -150,7 +152,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: formlib
-          key: formlib-${{ matrix.test }}-v1
+          key: formlib-${{ matrix.test }}-v2
 
       - name: Install library if necessary
         if: steps.cache-formlib.outputs.cache-hit != 'true'
@@ -167,6 +169,8 @@ jobs:
               wget https://github.com/form-dev/form-packages/archive/refs/tags/v1.0.0.tar.gz -O - | tar -x --gzip
               mv form-packages-1.0.0/color/color.h formlib
               rm -rf form-packages-1.0.0
+              # series library for test in extra
+              wget https://github.com/a-maier/series/releases/download/1.0.0/series.h -P formlib
               ;;
           esac
 
@@ -251,7 +255,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: formlib
-          key: formlib-${{ matrix.test }}-v1
+          key: formlib-${{ matrix.test }}-v2
 
       - name: Install library if necessary
         if: steps.cache-formlib.outputs.cache-hit != 'true'
@@ -268,6 +272,8 @@ jobs:
               wget https://github.com/form-dev/form-packages/archive/refs/tags/v1.0.0.tar.gz -O - | tar -x --gzip
               mv form-packages-1.0.0/color/color.h formlib
               rm -rf form-packages-1.0.0
+              # series library for test in extra
+              wget https://github.com/a-maier/series/releases/download/1.0.0/series.h -P formlib
               ;;
           esac
 
@@ -336,7 +342,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: formlib
-          key: formlib-${{ matrix.test }}-v1
+          key: formlib-${{ matrix.test }}-v2
 
       - name: Install library if necessary
         if: steps.cache-formlib.outputs.cache-hit != 'true'
@@ -353,6 +359,8 @@ jobs:
               wget https://github.com/form-dev/form-packages/archive/refs/tags/v1.0.0.tar.gz -O - | tar -x --gzip
               mv form-packages-1.0.0/color/color.h formlib
               rm -rf form-packages-1.0.0
+              # series library for test in extra
+              wget https://github.com/a-maier/series/releases/download/1.0.0/series.h -P formlib
               ;;
           esac
 
