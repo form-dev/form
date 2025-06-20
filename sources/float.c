@@ -1069,85 +1069,81 @@ void SetupMZVTables(void)
 	and each deeper sum goes one higher, we make the tablesize a bit bigger.
 	This may not be needed if we fiddle with the sum boundaries.
 */
-	size_t nt = sizeof(mp_limb_t);
-	int prec;
 #ifdef WITHPTHREADS
 	int i, Nw, id, totnum;
-	size_t fullsize, N, sumsize, j;
-	mp_limb_t *d;
+	size_t N;
+	mpf_t *a;
 	Nw = AC.DefaultPrecision+AC.MaxWeight+1;
 	SetFloatPrecision(Nw);
-/*	prec = (AC.DefaultPrecision + 8*nt-1)/(8*nt); */
 	N = (size_t)Nw;
-	for ( i = 0, sumsize = 0; i <= Nw+1; i++ ) sumsize += (Nw-i+8*nt)/(8*nt)+1;
-	fullsize = (N+2)*sizeof(mpf_t)+sumsize*nt;
 	totnum = AM.totalnumberofthreads;
     for ( id = 0; id < totnum; id++ ) {
-	  if ( AB[id]->T.mpf_tab1 ) M_free(AB[id]->T.mpf_tab1,"mpftab1");
-	  AB[id]->T.mpf_tab1 = (void *)Malloc1(fullsize,"mpftab1");
-	  d = (mp_limb_t *)(((mpf_t *)(AB[id]->T.mpf_tab1))+N+2);
-	  for ( j = 0; j < sumsize; j++ ) d[j] = 0;
-	  for ( i = 0; i <= Nw; i++ ) {
-		((mpf_t *)(AB[id]->T.mpf_tab1))[i]->_mp_prec = (Nw-i+8*nt)/(8*nt);
-		((mpf_t *)(AB[id]->T.mpf_tab1))[i]->_mp_size = 0;
-		((mpf_t *)(AB[id]->T.mpf_tab1))[i]->_mp_exp = 0;
-		((mpf_t *)(AB[id]->T.mpf_tab1))[i]->_mp_d = d;
-		d += (Nw-i+8*nt)/(8*nt)+1;
-	  }
-	  if ( AB[id]->T.mpf_tab2 ) M_free(AB[id]->T.mpf_tab2,"mpftab2");
-	  AB[id]->T.mpf_tab2 = (void *)Malloc1(fullsize,"mpftab2");
-	  d = (mp_limb_t *)(((mpf_t *)(AB[id]->T.mpf_tab2))+N+1);
-	  for ( j = 0; j < sumsize; j++ ) d[j] = 0;
-	  for ( i = 0; i <= Nw; i++ ) {
-		((mpf_t *)(AB[id]->T.mpf_tab2))[i]->_mp_prec = (Nw-i+8*nt)/(8*nt);
-		((mpf_t *)(AB[id]->T.mpf_tab2))[i]->_mp_size = 0;
-		((mpf_t *)(AB[id]->T.mpf_tab2))[i]->_mp_exp = 0;
-		((mpf_t *)(AB[id]->T.mpf_tab2))[i]->_mp_d = d;
-		d += (Nw-i+8*nt)/(8*nt)+1;
-	  }
+		if ( AB[id]->T.mpf_tab1 ) {
+			a = (mpf_t *)AB[id]->T.mpf_tab1;
+			for ( i = 0; i <=Nw; i++ ) {
+				mpf_clear(a[i]);
+			}
+			M_free(AB[id]->T.mpf_tab1,"mpftab1");
+		}
+		AB[id]->T.mpf_tab1 = (void *)Malloc1((N+2)*sizeof(mpf_t),"mpftab1");
+		a = (mpf_t *)AB[id]->T.mpf_tab1;
+		for ( i = 0; i <=Nw; i++ ) {
+/*
+	As explained in the comment above, we could make this variable precision
+	using mpf_init2.
+*/
+			mpf_init(a[i]);
+		}
+		if ( AB[id]->T.mpf_tab2 ) {
+			a = (mpf_t *)AB[id]->T.mpf_tab2;
+			for ( i = 0; i <=Nw; i++ ) {
+				mpf_clear(a[i]);
+			}
+			M_free(AB[id]->T.mpf_tab2,"mpftab2");
+		}
+		AB[id]->T.mpf_tab2 = (void *)Malloc1((N+2)*sizeof(mpf_t),"mpftab2");
+		a = (mpf_t *)AB[id]->T.mpf_tab2;
+		for ( i = 0; i <=Nw; i++ ) {
+			mpf_init(a[i]);
+		}
 	}
 #else
 	int i, Nw;
-	size_t fullsize, N, sumsize, j;
-	mp_limb_t *d;
-/*	Nw = AC.DefaultPrecision+AC.MaxWeight+sizeof(mp_limb_t); */
+	size_t N;
 	Nw = AC.DefaultPrecision+AC.MaxWeight+1;
 	SetFloatPrecision(Nw);
-/*	prec = (AC.DefaultPrecision + 8*nt-1)/(8*nt); */
 	N = (size_t)Nw;
-	for ( i = 0, sumsize = 0; i <= Nw+1; i++ ) sumsize += (Nw-i+8*nt)/(8*nt)+1;
-	fullsize = (N+2)*sizeof(mpf_t)+sumsize*nt;
-	if ( mpftab1 ) M_free(mpftab1,"mpftab1");
-	AT.mpf_tab1 = (void *)Malloc1(fullsize,"mpftab1");
-	d = (mp_limb_t *)(((mpf_t *)(AT.mpf_tab1))+N+1);
-	for ( j = 0; j < sumsize; j++ ) d[j] = 0;
-	for ( i = 0; i <= Nw; i++ ) {
-		mpftab1[i]->_mp_prec = (Nw-i+8*nt)/(8*nt);
-		mpftab1[i]->_mp_size = 0;
-		mpftab1[i]->_mp_exp = 0;
-		mpftab1[i]->_mp_d = d;
-		d += (Nw-i+8*nt)/(8*nt)+1;
+	if ( AT.mpf_tab1 ) {
+		for ( i = 0; i <= Nw; i++ ) {
+			mpf_clear(mpftab1[i]);
+		}
+		M_free(AT.mpf_tab1,"mpftab1");
 	}
-	if ( mpftab2 ) M_free(mpftab2,"mpftab2");
-	AT.mpf_tab2 = (void *)Malloc1(fullsize,"mpftab2");
-	d = (mp_limb_t *)(((mpf_t *)(AT.mpf_tab2))+N+1);
-	for ( j = 0; j < sumsize; j++ ) d[j] = 0;
+	AT.mpf_tab1 = (void *)Malloc1((N+2)*sizeof(mpf_t),"mpftab1");
 	for ( i = 0; i <= Nw; i++ ) {
-		mpftab2[i]->_mp_prec = (Nw-i+8*nt)/(8*nt);
-		mpftab2[i]->_mp_size = 0;
-		mpftab2[i]->_mp_exp = 0;
-		mpftab2[i]->_mp_d = d;
-		d += (Nw-i+8*nt)/(8*nt)+1;
+/*
+	As explained in the comment above, we could make this variable precision
+	using mpf_init2.
+*/
+		mpf_init(mpftab1[i]);
+	}
+	if ( AT.mpf_tab2 ) {
+		for ( i = 0; i <= Nw; i++ ) {
+			mpf_clear(mpftab2[i]);
+		}
+		M_free(AT.mpf_tab2,"mpftab2");
+	}
+	AT.mpf_tab2 = (void *)Malloc1((N+2)*sizeof(mpf_t),"mpftab2");
+	for ( i = 0; i <= Nw; i++ ) {
+		mpf_init(mpftab2[i]);
 	}
 #endif
-	if ( AS.delta_1 ) M_free(AS.delta_1,"delta1");
-	prec = (AC.DefaultPrecision + 8*nt-1)/(8*nt);
-	AS.delta_1 = (void *)Malloc1((prec+1)*sizeof(mp_limb_t)+sizeof(mpf_t),"delta1");
-	d = (mp_limb_t *)(((mpf_t *)(AS.delta_1))+1);
-	mpfdelta1->_mp_prec = prec;
-	mpfdelta1->_mp_size = 0;
-	mpfdelta1->_mp_exp = 0;
-	mpfdelta1->_mp_d = d;
+	if ( AS.delta_1 ) {
+		mpf_clear(mpfdelta1);
+		M_free(AS.delta_1,"delta1");
+	}
+	AS.delta_1 = (void *)Malloc1(sizeof(mpf_t),"delta1");
+	mpf_init(mpfdelta1);
 	SimpleDelta(mpfdelta1,1); /* this can speed up things. delta1 = ln(2) */
 /*
 	Finally the character buffer for printing
@@ -1163,16 +1159,11 @@ void SetupMZVTables(void)
 
 void SetupMPFTables(void)
 {
-	size_t nt = sizeof(mp_limb_t);
-	int prec, prec1, i;
 #ifdef WITHPTHREADS
 	int Nw, id, totnum;
-	size_t j;
-	mp_limb_t *d;
+	mpf_t *a;
 	Nw = AC.DefaultPrecision+AC.MaxWeight+1;
 	SetFloatPrecision(Nw);
-	prec = (AC.DefaultPrecision + 8*nt-1)/(8*nt);
-	prec1 = prec+1;
 /*
 	Now the aux variables
 */
@@ -1180,44 +1171,35 @@ void SetupMPFTables(void)
 	totnum = MaX(2*AM.totalnumberofthreads-3,AM.totalnumberofthreads);
 #endif
     for ( id = 0; id < totnum; id++ ) {
-		if ( AB[id]->T.aux_ ) M_free(AB[id]->T.aux_,"aux_");
-		AB[id]->T.aux_ = (void *)Malloc1(8*(prec1*sizeof(mp_limb_t)+sizeof(mpf_t)),"aux-mp");
-		d = (mp_limb_t *)(((mpf_t *)(AB[id]->T.aux_))+8);
-		for ( j = 0; j < (size_t)(8*prec); j++ ) d[j] = 0;
-		for ( i = 0; i < 8; i++ ) {
-			((mpf_t *)(AB[id]->T.aux_))[i]->_mp_prec = prec;
-			((mpf_t *)(AB[id]->T.aux_))[i]->_mp_size = 0;
-			((mpf_t *)(AB[id]->T.aux_))[i]->_mp_exp = 0;
-			((mpf_t *)(AB[id]->T.aux_))[i]->_mp_d = d;
-			d += prec1;
+		if ( AB[id]->T.aux_ ) {
+/*
+			We work here with a[0] etc because the aux1 etc contain B which
+			in the current routine would be AB[0] only
+*/
+			a = (mpf_t *)AB[id]->T.aux_;
+			mpf_clears(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],(mpf_ptr)0);
+			M_free(AB[id]->T.aux_,"AB[id]->T.aux_");
 		}
+		AB[id]->T.aux_ = (void *)Malloc1(sizeof(mpf_t)*8,"AB[id]->T.aux_");
+		a = (mpf_t *)AB[id]->T.aux_;
+		mpf_inits(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],(mpf_ptr)0);
 		if ( AB[id]->T.indi1 ) M_free(AB[id]->T.indi1,"indi1");
 		AB[id]->T.indi1 = (int *)Malloc1(sizeof(int)*AC.MaxWeight*2,"indi1");
 		AB[id]->T.indi2 = AB[id]->T.indi1 + AC.MaxWeight;
 	}
 #else
 	int Nw;
-	size_t j;
-	mp_limb_t *d;
-/*	Nw = AC.DefaultPrecision+AC.MaxWeight+sizeof(mp_limb_t); */
 	Nw = AC.DefaultPrecision+AC.MaxWeight+1;
 	SetFloatPrecision(Nw);
-	prec = (AC.DefaultPrecision + 8*nt-1)/(8*nt);
-	prec1 = prec+1;
 /*
 	Now the aux variables
 */
-	if ( mpfaux_ ) M_free(mpfaux_,"aux_");
-	AT.aux_ = (void *)Malloc1(8*(prec1*sizeof(mp_limb_t)+sizeof(mpf_t)),"aux_");
-	d = (mp_limb_t *)(((mpf_t *)(AT.aux_))+8);
-	for ( j = 0; j < (size_t)(8*prec); j++ ) d[j] = 0;
-	for ( i = 0; i < 8; i++ ) {
-		((mpf_t *)(AT.aux_))[i]->_mp_prec = prec;
-		((mpf_t *)(AT.aux_))[i]->_mp_size = 0;
-		((mpf_t *)(AT.aux_))[i]->_mp_exp = 0;
-		((mpf_t *)(AT.aux_))[i]->_mp_d = d;
-		d += prec1;
+	if ( AT.aux_ ) {
+		mpf_clears(aux1,aux2,aux3,aux4,aux5,auxjm,auxjjm,auxsum,(mpf_ptr)0);
+		M_free(AT.aux_,"AT.aux");
 	}
+	AT.aux_ = (void *)Malloc1(sizeof(mpf_t)*8,"AT.aux_");
+	mpf_inits(aux1,aux2,aux3,aux4,aux5,auxjm,auxjjm,auxsum,(mpf_ptr)0);
 	if ( AT.indi1 ) M_free(AT.indi1,"indi1");
 	AT.indi1 = (int *)Malloc1(sizeof(int)*AC.MaxWeight*2,"indi1");
 	AT.indi2 = AT.indi1 + AC.MaxWeight;
@@ -1237,28 +1219,73 @@ void SetupMPFTables(void)
 void ClearMZVTables(void)
 {
 #ifdef WITHPTHREADS
-	int id, totnum;
+	int i, id, totnum;
+	mpf_t *a;
 	totnum = AM.totalnumberofthreads;
     for ( id = 0; id < totnum; id++ ) {
-		if ( AB[id]->T.mpf_tab1 ) { M_free(AB[id]->T.mpf_tab1,"mpftab1"); AB[id]->T.mpf_tab1 = 0; }
-		if ( AB[id]->T.mpf_tab2 ) { M_free(AB[id]->T.mpf_tab2,"mpftab2"); AB[id]->T.mpf_tab2 = 0; }
+		if ( AB[id]->T.mpf_tab1 ) { 
+/*
+			We work here with a[0] etc because the aux1, mpftab1 etc contain B 
+			which in the current routine would be AB[0] only
+*/
+			a = (mpf_t *)AB[id]->T.mpf_tab1;
+			for ( i = 0; i <=AC.DefaultPrecision; i++ ) {
+				mpf_clear(a[i]);
+			}
+			M_free(AB[id]->T.mpf_tab1,"mpftab1"); 
+			AB[id]->T.mpf_tab1 = 0; 
+		}
+		if ( AB[id]->T.mpf_tab2 ) { 
+			a = (mpf_t *)AB[id]->T.mpf_tab2;
+			for ( i = 0; i <=AC.DefaultPrecision; i++ ) {
+				mpf_clear(a[i]);
+			}
+			M_free(AB[id]->T.mpf_tab2,"mpftab2"); 
+			AB[id]->T.mpf_tab2 = 0; 
+		}
 	}
 #ifdef WITHSORTBOTS
 	totnum = MaX(2*AM.totalnumberofthreads-3,AM.totalnumberofthreads);
 #endif
     for ( id = 0; id < totnum; id++ ) {
-		if ( AB[id]->T.aux_ ) { M_free(AB[id]->T.aux_,"aux-mp"); AB[id]->T.aux_ = 0; }
+		if ( AB[id]->T.aux_ ) { 
+			a = (mpf_t *)AB[id]->T.aux_;
+			mpf_clears(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],(mpf_ptr)0);
+			M_free(AB[id]->T.aux_,"AB[id]->T.aux_");
+			AB[id]->T.aux_ = 0; 
+		}
 		if ( AB[id]->T.indi1 ) { M_free(AB[id]->T.indi1,"indi1"); AB[id]->T.indi1 = 0; }
 	}
 #else
-	if ( AT.mpf_tab1 ) { M_free(AT.mpf_tab1,"mpftab1"); AT.mpf_tab1 = 0; }
-	if ( AT.mpf_tab2 ) { M_free(AT.mpf_tab2,"mpftab2"); AT.mpf_tab2 = 0; }
-	if ( AT.aux_ ) { M_free(AT.aux_,"aux-mp"); AT.aux_ = 0; }
+	int i;
+	if ( AT.mpf_tab1 ) { 
+		for ( i = 0; i <= AC.DefaultPrecision; i++ ) {
+			mpf_clear(mpftab1[i]);
+		}
+		M_free(AT.mpf_tab1,"mpftab1"); 
+		AT.mpf_tab1 = 0; 
+	}
+	if ( AT.mpf_tab2 ) { 
+		for ( i = 0; i <= AC.DefaultPrecision; i++ ) {
+			mpf_clear(mpftab2[i]);
+		}
+		M_free(AT.mpf_tab2,"mpftab2"); 
+		AT.mpf_tab2 = 0; 
+	}
+	if ( AT.aux_ ) { 
+		mpf_clears(aux1,aux2,aux3,aux4,aux5,auxjm,auxjjm,auxsum,(mpf_ptr)0);
+		M_free(AT.aux_,"AT.aux_"); 
+		AT.aux_ = 0; 
+	}
 	if ( AT.indi1 ) { M_free(AT.indi1,"indi1"); AT.indi1 = 0; }
 #endif
 	if ( AO.floatspace ) { M_free(AO.floatspace,"floatspace"); AO.floatspace = 0;
 		AO.floatsize = 0; }
-	if ( AS.delta_1 ) { mpfdelta1->_mp_d = 0; M_free(AS.delta_1,"delta1"); }
+	if ( AS.delta_1 ) { 
+		mpf_clear(mpfdelta1);
+		M_free(AS.delta_1,"delta1"); 
+		AS.delta_1 = 0; 
+	}
 }
 
 /*

@@ -617,15 +617,15 @@ Print;
 .end
 #pend_if wordsize == 2
 assert result("PI0") =~ expr("1.0e+00*a*b")
-assert result("PI1") =~ expr("3.14159265358979323846e+00")
-assert result("PI2") =~ expr("9.42477796076937971538e+00")
+assert result("PI1") =~ expr("3.1415926535897932385e+00")
+assert result("PI2") =~ expr("9.4247779607693797154e+00")
 assert result("PI3") =~ expr("5.4413980927026535518e+00")
-assert result("PI4") =~ expr("3.10062766802998201755e+01")
-assert result("PI5") =~ expr("3.14159265358979323846e+00*a*b")
-assert result("PI6") =~ expr("1.77245385090551602731e+00")
-assert result("EE1") =~ expr("2.71828182845904523537e+00")
-assert result("EE2") =~ expr("8.53973422267356706549e+00")
-assert result("EM1") =~ expr("5.77215664901532860607e-01")
+assert result("PI4") =~ expr("3.1006276680299820175e+01")
+assert result("PI5") =~ expr("3.1415926535897932385e+00*a*b")
+assert result("PI6") =~ expr("1.7724538509055160273e+00")
+assert result("EE1") =~ expr("2.7182818284590452354e+00")
+assert result("EE2") =~ expr("8.5397342226735670654e+00")
+assert result("EM1") =~ expr("5.772156649015328606e-01")
 *--#] evaluate_symbol :
 *--#[ evaluate_symbol_pi :
 #-
@@ -641,7 +641,7 @@ Evaluate pi_;
 Print;
 .end
 #pend_if wordsize == 2
-assert result("PI") =~ expr("3.141592653589793238462643383279502884198e+00")
+assert result("PI") =~ expr("3.1415926535897932384626433832795028842e+00")
 assert result("EE") =~ expr("1.0e+00*ee_")
 assert result("EM") =~ expr("1.0e+00*em_")
 *--#] evaluate_symbol_pi :
@@ -660,7 +660,7 @@ Print;
 .end
 #pend_if wordsize == 2
 assert result("PI") =~ expr("1.0e+00*pi_")
-assert result("EE") =~ expr("2.718281828459045235360287471352662497757247093699959574967e+00")
+assert result("EE") =~ expr("2.7182818284590452353602874713526624977572470937e+00")
 assert result("EM") =~ expr("1.0e+00*em_")
 *--#] evaluate_symbol_ee :
 *--#[ evaluate_symbol_em :
@@ -679,7 +679,7 @@ Print;
 #pend_if wordsize == 2
 assert result("PI") =~ expr("1.0e+00*pi_")
 assert result("EE") =~ expr("1.0e+00*ee_")
-assert result("EM") =~ expr("5.7721566490153286060651209008240243104215933593992359880577e-01")
+assert result("EM") =~ expr("5.772156649015328606065120900824024310421593359399235988058e-01")
 *--#] evaluate_symbol_em :
 *--#[ Issue49 :
 * Add mul_ function for polynomial multiplications
