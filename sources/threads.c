@@ -62,6 +62,12 @@
 */
 
 #include "form3.h"
+
+#ifdef WITH_ALARM
+// This is only required if we are blocking SIG_ALRM in the worker threads.
+#include <signal.h>
+#endif
+
 #ifdef WITHFLOAT
 #include <gmp.h>
 
@@ -289,6 +295,17 @@ int StartAllThreads(int number)
 	numberofworkers = number - 1;
 	threadpointers[identity] = pthread_self();
 	topofavailables = 0;
+
+#ifdef WITH_ALARM
+	/* During thread creation, we block SIGALRM on the main thread. The created
+	   threads will inherit this. This is required for #timeout to work properly
+	   in TFORM: only the main thread should recieve SIGALRM. */
+	sigset_t sig_set;
+	sigemptyset(&sig_set);
+	sigaddset(&sig_set, SIGALRM);
+	pthread_sigmask(SIG_BLOCK, &sig_set, NULL);
+#endif
+
 	for ( j = 1; j < number; j++ ) {
 		if ( pthread_create(&thethread,NULL,RunThread,(void *)(&dummy)) )
 			goto failure;
@@ -330,6 +347,12 @@ int StartAllThreads(int number)
 	IniSortBlocks(number-1);
 	AS.MasterSort = 0;
 	AM.storefilelock = dummylock;
+
+#ifdef WITH_ALARM
+	/* Now we allow the main thread to recieve SIGALRM again. */
+	pthread_sigmask(SIG_UNBLOCK, &sig_set, NULL);
+#endif
+
 /*
 MesPrint("AB = %x %x %x  %d",AB[0],AB[1],AB[2], identityofthreads);
 */
