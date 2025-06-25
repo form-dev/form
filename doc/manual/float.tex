@@ -12,10 +12,12 @@ system are
 point system. Invoking it will allocate a number of arrays. The instruction 
 has either one or two arguments:
 \begin{verbatim}
-    #startfloat numberofbits <,maximumweight>
+    #startfloat <precision> [,MZV=<maximumweight>]
 \end{verbatim}
-The first argument is mandatory. It tells how many bits of accuracy are 
-required. \FORM{} will round to at least this precision. Because the internal 
+The first argument is mandatory and specifies the desired precision. It must 
+be a positive integer followed by either \texttt{b} (for precision in bits) 
+or \texttt{d} (for precision in decimal digits).
+\FORM{} will round to at least this precision. Because the internal 
 routines work with WORDs the precision will be rounded up to the nearest 
 integer number of WORDs. The second argument is optional for when one wants 
 to work with multiple zeta values (MZVs) or Euler sums. It specifies the 
@@ -65,7 +67,7 @@ only the specified constants will be evaluated.
 
 The following example shows some work with Multiple Zeta Values (MZV's):
 \begin{verbatim}
-    #StartFloat 500,15
+    #StartFloat 500b, MZV=15
     L F1 =
     	-mzv_(8,1,1,5)
     	+29056868/39414375*mzv_(2)^6*mzv_(3)
