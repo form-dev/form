@@ -3,7 +3,7 @@
 \label{floatingpoint}
 
 Starting with version 5.0 \FORM\ is equiped with arbitrary floating point 
-capacity. The low level routines are part of the GMP and mpfr libraries 
+capability. The low level routines are part of the GMP and mpfr libraries 
 which should be available on most systems. If not they can be picked up 
 easily from the internet. The main commands involving the floating point 
 system are
@@ -12,11 +12,13 @@ system are
 point system. Invoking it will allocate a number of arrays. The instruction 
 has either one or two arguments:
 \begin{verbatim}
-    #startfloat numberofbits <,maximumweight>
+    #startfloat <precision> [,MZV=<maximumweight>]
 \end{verbatim}
-The first argument is mandatory. It tells how many bits of accuracy are 
-required. \FORM{} will round to at least this precision. Because the internal 
-routines work with WORDs the precision will be rounded up to the nearest 
+The first argument is mandatory and specifies the desired precision. It must 
+be a positive integer followed by either \texttt{b} (for precision in bits) 
+or \texttt{d} (for precision in decimal digits).
+\FORM{} will round to at least this precision. Because the internal 
+routines work with WORDs, the precision (in bits) will internally be rounded up to the nearest 
 integer number of WORDs. The second argument is optional for when one wants 
 to work with multiple zeta values (MZVs) or Euler sums. It specifies the 
 maximum weight that will be used. The evaluation of the sums requires a 
@@ -49,6 +51,27 @@ functions that \FORM{} knows about will be evaluated. The currently allowed
 arguments are the functions mzv\_, euler\_, sqrt\_ and mzvhalf\_. If any 
 (or more than one) of these are specified only those functions will be 
 evaluated.
+\item[Format floatprecision] This instruction controls how many digits are 
+displayed when printing floating point numbers. It only affects output 
+formatting and does not influence the internal precision or accuracy of 
+computations. It can be used in three ways: in case of 
+\begin{verbatim}
+    Format floatprecision;
+\end{verbatim}
+\FORM{} prints floats with the number of digits specified by the current 
+\#startfloat instruction. With
+\begin{verbatim}
+    Format floatprecision <precision>;
+\end{verbatim}
+\FORM{} prints the number of digits specified by \texttt{<precision>}. 
+The syntax is the same as for the precision in \#startfloat: a positive 
+integer followed by either \texttt{b} (for bits) or \texttt{d} (for decimal 
+digits). If the requested precision exceeds the precision specified by 
+\#startfloat, only the available digits are printed. Finally, with 
+\begin{verbatim}
+    Format floatprecision off;
+\end{verbatim}
+the floating point numbers are printed in raw internal format. 
 \end{description}
 In addition to the above commands there are the following functions that 
 can be evaluated sqrt\_, ln\_, li2\_, gamma\_, agm\_, sin\_, cos\_, tan\_,
@@ -65,7 +88,7 @@ only the specified constants will be evaluated.
 
 The following example shows some work with Multiple Zeta Values (MZV's):
 \begin{verbatim}
-    #StartFloat 500,15
+    #StartFloat 500b, MZV=15
     L F1 =
     	-mzv_(8,1,1,5)
     	+29056868/39414375*mzv_(2)^6*mzv_(3)

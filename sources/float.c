@@ -934,12 +934,13 @@ int SetFloatPrecision(WORD prec)
 	regular Form function and it should never come here because the
 	print routines in sch.c should intercept it.
 	The buffer AO.floatspace is allocated when the precision of the
-	floats is set in the routine SetupMZVTables.
+	floats is set in the routine SetFloatPrecision.
 */
 
 int PrintFloat(WORD *fun,int numdigits)
 {
 	GETIDENTITY
+	UBYTE *s1, *s2;
 	int n = 0;
 	int prec = (AC.DefaultPrecision-AC.MaxWeight-1)*log10(2.0);
 	if ( numdigits > prec || numdigits == 0 ) {
@@ -951,8 +952,7 @@ int PrintFloat(WORD *fun,int numdigits)
 */
 	if ( UnpackFloat(aux4,fun) == 0 )
 		n = gmp_snprintf((char *)(AO.floatspace),AO.floatsize,"%.*Fe",numdigits-1,aux4);
-	if ( numdigits == prec ) {
-		UBYTE *s1, *s2;
+	if ( n > 0 ) {
 		int n1, n2 = n;
 		s1 = AO.floatspace+n;
 		while ( s1 > AO.floatspace && s1[-1] != 'e'
@@ -962,9 +962,27 @@ int PrintFloat(WORD *fun,int numdigits)
 			s2 = s1; n1 = n2;
 			while ( s1[-1] == '0' ) { s1--; n1--; }
 			if ( s1[-1] == '.' ) { s1++; n1++; }
-			while ( n2 < n ) { *s1++ = *s2++; n2++; }
 			n -= (n2-n1);
+			while ( n1 < n ) { *s1++ = *s2++; n1++; }
 			*s1 = 0;
+		}
+		if ( AC.OutputMode == FORTRANMODE ) {
+			s1 = AO.floatspace+n;
+			while ( s1 > AO.floatspace && *s1 != 'e' && *s1 != 'E' ) { 
+				s1--; 
+			}
+			if ( ( AO.DoubleFlag & 2 ) == 2 ) { *s1 = 'Q'; } /* Quadruple precision fortran */
+			else if ( ( AO.DoubleFlag & 1 ) == 1 ) { *s1 = 'D'; } /* Double precision fortran */
+			else { *s1 = 'E'; } /* Single precision fortran */
+		}
+		if ( AC.OutputMode == MATHEMATICAMODE ) {
+			s1 = AO.floatspace+n;
+			s2 = s1+2; *s2-- = 0;
+			while ( s1 > AO.floatspace && *s1 != 'e' && *s1 != 'E' ) { 
+				*s2-- = *s1--; 
+			}
+			*s2-- = '^'; *s2 = '*'; /* Replace 'e' by '^*' */
+			n++;
 		}
 	}
 	return(n);
