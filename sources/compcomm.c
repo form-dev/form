@@ -139,6 +139,8 @@ static KEYWORDV onoffoptions[] = {
 	,{"sortreallocate",	&(AC.SortReallocateFlag), 1, 0}
 	,{"backtrace",		&(AC.PrintBacktraceFlag), 1, 0}
 	,{"flint",			&(AC.FlintPolyFlag), 1, 0}
+	,{"humanstats",	&(AC.HumanStatsFlag), 1, 0}
+	,{"humanstatistics",	&(AC.HumanStatsFlag), 1, 0}
 };
 
 static WORD one = 1;

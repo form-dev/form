@@ -1405,6 +1405,8 @@ WORD IniVars(void)
 #else
 	AC.PrintBacktraceFlag = 0;
 #endif
+	/* Human-readable statistics are off by default */
+	AC.HumanStatsFlag = 0;
 	AC.extrasymbols = AM.gextrasymbols = AM.ggextrasymbols = 0;
 	AC.extrasym = (UBYTE *)Malloc1(2*sizeof(UBYTE),"extrasym");
 	AM.gextrasym = (UBYTE *)Malloc1(2*sizeof(UBYTE),"extrasym");
