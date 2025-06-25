@@ -41,6 +41,7 @@
 #include "comtool.h"
 #ifdef WITHFLOAT
 #include <gmp.h>
+#include <math.h>
 #endif
 
 static KEYWORD formatoptions[] = {
@@ -394,6 +395,13 @@ int CoFormat(UBYTE *s)
 					while ( *s <= '9' && *s >= '0' )
 						AO.FloatPrec = 10*AO.FloatPrec + (*s++ - '0');
 					while ( *s == ' ' || *s == '\t' || *s == ',' ) s++;
+/*
+					The precision can either be in digits or bits. 
+					AO.FloatPrec is in digits. 
+*/
+					if ( tolower(*s) == 'd' ) { s++; }
+					else if ( tolower(*s) == 'b' ) { AO.FloatPrec = AO.FloatPrec*log10(2.0); s++; }
+					else { s = ss; goto WrongOption; }
 					if ( *s ) { s = ss; goto WrongOption; }
 				}
 				else {

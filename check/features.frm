@@ -599,7 +599,7 @@ assert result("F", 3) =~ expr("
 #-
 * Example from the FORM Workshop (Madrid 2023) slides, also in the manual.
 
-#StartFloat 500,15
+#StartFloat 500b,MZV=15
 
 Local F1 =
 	-mzv_(8,1,1,5)
@@ -673,7 +673,7 @@ EOF
 *--#] Float_1 :
 *--#[ evaluate_symbol :
 #-
-#StartFloat 64
+#StartFloat 64b
 
 Symbol a,b;
 Local PI0 = a*b;
@@ -708,7 +708,7 @@ assert result("EM1") =~ expr("5.772156649015328606e-01")
 *--#] evaluate_symbol :
 *--#[ evaluate_symbol_pi :
 #-
-#StartFloat 128
+#StartFloat 128b
 
 Local PI = pi_;
 Local EE = ee_;
@@ -726,7 +726,7 @@ assert result("EM") =~ expr("1.0e+00*em_")
 *--#] evaluate_symbol_pi :
 *--#[ evaluate_symbol_ee :
 #-
-#StartFloat 160
+#StartFloat 160b
 
 Local PI = pi_;
 Local EE = ee_;
@@ -744,7 +744,7 @@ assert result("EM") =~ expr("1.0e+00*em_")
 *--#] evaluate_symbol_ee :
 *--#[ evaluate_symbol_em :
 #-
-#StartFloat 192
+#StartFloat 192b
 
 Local PI = pi_;
 Local EE = ee_;
@@ -766,9 +766,9 @@ L F = mzv_(2);
 .sort
 
 Hide;
-#do bits=5,65,3
-	#StartFloat `bits',2
-	Local F`bits' = F;
+#do digits=1,20
+	#StartFloat `digits'd,MZV=2
+	Local F`digits' = F;
 	Evaluate mzv_;
 	Print;
 	.sort
@@ -777,27 +777,26 @@ Hide;
 #enddo
 .end
 #pend_if wordsize == 2
-assert result("F5") =~ expr("2e+00")
-assert result("F8") =~ expr("1.6e+00")
-assert result("F11") =~ expr("1.64e+00")
-assert result("F14") =~ expr("1.645e+00")
-assert result("F17") =~ expr("1.6449e+00")
-assert result("F20") =~ expr("1.64493e+00")
-assert result("F23") =~ expr("1.64493e+00")
-assert result("F26") =~ expr("1.644934e+00")
-assert result("F29") =~ expr("1.6449341e+00")
-assert result("F32") =~ expr("1.64493407e+00")
-assert result("F35") =~ expr("1.644934067e+00")
-assert result("F38") =~ expr("1.6449340668e+00")
-assert result("F41") =~ expr("1.64493406685e+00")
-assert result("F44") =~ expr("1.644934066848e+00")
-assert result("F47") =~ expr("1.6449340668482e+00")
-assert result("F50") =~ expr("1.64493406684823e+00")
-assert result("F53") =~ expr("1.64493406684823e+00")
-assert result("F56") =~ expr("1.644934066848226e+00")
-assert result("F59") =~ expr("1.6449340668482264e+00")
-assert result("F62") =~ expr("1.64493406684822644e+00")
-assert result("F65") =~ expr("1.644934066848226436e+00")
+assert result("F1") =~ expr("2e+00")
+assert result("F2") =~ expr("1.6e+00")
+assert result("F3") =~ expr("1.64e+00")
+assert result("F4") =~ expr("1.645e+00")
+assert result("F5") =~ expr("1.6449e+00")
+assert result("F6") =~ expr("1.64493e+00")
+assert result("F7") =~ expr("1.644934e+00")
+assert result("F8") =~ expr("1.6449341e+00")
+assert result("F9") =~ expr("1.64493407e+00")
+assert result("F10") =~ expr("1.644934067e+00")
+assert result("F11") =~ expr("1.6449340668e+00")
+assert result("F12") =~ expr("1.64493406685e+00")
+assert result("F13") =~ expr("1.644934066848e+00")
+assert result("F14") =~ expr("1.6449340668482e+00")
+assert result("F15") =~ expr("1.64493406684823e+00")
+assert result("F16") =~ expr("1.644934066848226e+00")
+assert result("F17") =~ expr("1.6449340668482264e+00")
+assert result("F18") =~ expr("1.64493406684822644e+00")
+assert result("F19") =~ expr("1.644934066848226436e+00")
+assert result("F20") =~ expr("1.6449340668482264365e+00")
 *--#] evaluate_mzv_2 : 
 *--#[ evaluate_all_mzv_2-6 : 
 #-
@@ -814,7 +813,7 @@ id mzv(1,?a) = 0;
 
 Hide;
 #do weight=2,6
-	#StartFloat 74,`weight'
+	#StartFloat 74b,MZV=`weight'
 	Local MZV`weight' = F`weight';
 	id mzv(?a) = mzv(?a)*mzv_(?a);
 	Evaluate mzv_;
@@ -882,7 +881,7 @@ id euler(1,?a) = 0;
 
 Hide;
 #do weight=1,4
-	#StartFloat 74,`weight'
+	#StartFloat 74b,MZV=`weight'
 	Local EULER`weight' = F`weight';
 	id euler(?a) = euler(?a)*euler_(?a);
 	Evaluate euler_;
@@ -968,7 +967,7 @@ repeat id x^n?{>0}*mzvhalf(?a) = sum_(jj,1,n, x^(n-jj)*mzvhalf(?a,jj));
 
 Hide;
 #do weight=1,6
-	#StartFloat 74,`weight'
+	#StartFloat 74b, MZV = `weight'
 	Local MZVHALF`weight' = F`weight';
 	id mzvhalf(?a) = mzvhalf(?a)*mzvhalf_(?a);
 	Evaluate mzvhalf_;
@@ -1057,7 +1056,7 @@ assert result("MZVHALF6") =~ expr("
 ")
 *--#] evaluate_all_mzvhalf_1-6 : 
 *--#[ evaluate_sin :
-#StartFloat 82
+#StartFloat 24d
 Symbol n;
 CFunction sin;
 Local SIN = sum_(n,4,27,sin(2*pi_*n/24)*sin_(2*pi_*n/24))+sin(4*pi_/13)*sin_(4*pi_/13)+sin(-1.2*pi_/13)*sin_(-1.2*pi_/13);
@@ -1095,7 +1094,7 @@ assert result("SIN") =~ expr("
 ")
 *--#] evaluate_sin : 
 *--#[ evaluate_cos :
-#StartFloat 82
+#StartFloat 24d
 Symbol n;
 CFunction cos;
 Local COS = sum_(n,4,27,cos(2*pi_*n/24)*cos_(2*pi_*n/24))+cos(-2^32*pi_/3)*cos_(-2^32*pi_/3)+cos(4*pi_/13)*cos_(4*pi_/13)+cos(-1.2*pi_/13)*cos_(-1.2*pi_/13)+cos(2^32*pi_/(2^32+1))*cos_(2^32*pi_/(2^32+1));
@@ -1135,7 +1134,7 @@ assert result("COS") =~ expr("
 ")
 *--#] evaluate_cos : 
 *--#[ evaluate_tan :
-#StartFloat 82
+#StartFloat 24d
 Symbol n;
 CFunction tan;
 Local TAN = sum_(n,4,27,tan(2*pi_*n/24)*tan_(2*pi_*n/24))+tan(4*pi_/13)*tan_(4*pi_/13)+tan(-1.2*pi_/13)*tan_(-1.2*pi_/13);
@@ -1173,7 +1172,7 @@ assert result("TAN") =~ expr("
 ")
 *--#] evaluate_tan : 
 *--#[ evaluate_asin :
-#StartFloat 82
+#StartFloat 82b
 CFunction asin;
 Local ASIN = asin(0)*asin_(0)+2*asin(-1.0)*asin_(-1.0)/pi_+2*asin(1)*asin_(1)/pi_+asin(-0.7356)*asin_(-0.7356)+asin(4/13)*asin_(4/13)+asin(-3/2)*asin_(-3/2)+asin(5)*asin_(5);
 Evaluate asin_, pi_;
@@ -1191,7 +1190,7 @@ assert result("ASIN") =~ expr("
 ")
 *--#] evaluate_asin : 
 *--#[ evaluate_acos :
-#StartFloat 82
+#StartFloat 82b
 CFunction acos;
 Local ACOS = 2*acos(0)*acos_(0)/pi_+acos(-1.0)*acos_(-1.0)/pi_+acos(1)*acos_(1)+acos(-0.7356)*acos_(-0.7356)+acos(4/13)*acos_(4/13)+acos(-3/2)*acos_(-3/2)+acos(5)*acos_(5);
 Evaluate acos_, pi_;
@@ -1209,7 +1208,7 @@ assert result("ACOS") =~ expr("
 ")
 *--#] evaluate_acos : 
 *--#[ evaluate_atan :
-#StartFloat 82
+#StartFloat 82b
 CFunction atan;
 Local ATAN = atan(0)*atan_(0)+atan(-1.0)*atan_(-1.0)+atan(1)*atan_(1)+atan(-0.7356)*atan_(-0.7356)+atan(4/13)*atan_(4/13)+2*atan(-10^20)*atan_(-10^20)/pi_+2*atan(10^20)*atan_(10^20)/pi_;
 Evaluate atan_, pi_;
@@ -1227,7 +1226,7 @@ assert result("ATAN") =~ expr("
 ")
 *--#] evaluate_atan : 
 *--#[ evaluate_sqrt :
-#Startfloat 73
+#Startfloat 21d
 CFunction sqrt;
 Local SQRT = sqrt(0)*sqrt_(0)+sqrt(1)*sqrt_(1)+sqrt(1.456789)*sqrt_(1.456789)+sqrt(25/7)*sqrt_(25/7)+sqrt(-1)*sqrt_(-1)+sqrt(5932)*sqrt_(5932);
 Evaluate sqrt_;
@@ -1244,7 +1243,7 @@ assert result("SQRT") =~ expr("
 ")
 *--#] evaluate_sqrt : 
 *--#[ evaluate_ln :
-#Startfloat 60
+#Startfloat 60b
 CFunction ln;
 Local LN = ln(1)*ln_(1)+ln(0)*ln_(0)+ln(ee_)*ln_(ee_)+ln(2.71828)*ln_(2.71828)+ln(2/3)*ln_(2/3)+ln(-5)*ln_(-5);
 Evaluate ln_;
@@ -1261,15 +1260,15 @@ assert result("LN") =~ expr("
 ")
 *--#] evaluate_ln : 
 *--#[ evaluate_li2 :
-#Startfloat 60
+#Startfloat 18d
 CFunction li2;
-Local LN = li2(0)*li2_(0)+li2(1)*li2_(1)+li2(-1)*li2_(-1)+li2(1/2)*li2_(1/2)+li2(1.4)*li2_(1.4)+li2(-10)*li2_(-10);
+Local LI2 = li2(0)*li2_(0)+li2(1)*li2_(1)+li2(-1)*li2_(-1)+li2(1/2)*li2_(1/2)+li2(1.4)*li2_(1.4)+li2(-10)*li2_(-10);
 Evaluate li2_;
 Print +s;
 .end
 #pend_if wordsize == 2
 assert succeeded?
-assert result("LN") =~ expr("
+assert result("LI2") =~ expr("
          + li2_(1.4e+00)*li2(1.4e+00)
        + li2_(-10)*li2(-10)
        + 5.82240526465012506e-01*li2(1/2)
@@ -1278,7 +1277,7 @@ assert result("LN") =~ expr("
 ")
 *--#] evaluate_li2 : 
 *--#[ evaluate_gamma :
-#Startfloat 131
+#Startfloat 131b
 CFunction gamma;
 Local GAMMA = gamma(-754)*gamma_(-754)+gamma(-1)*gamma_(-1)+gamma(0)*gamma_(0)+gamma(1)*gamma_(1)+gamma(563)*gamma_(563)*invfac_(562)+gamma(-3/2)*gamma_(-3/2)+gamma(3.456)*gamma_(3.456);
 Evaluate gamma_;
@@ -1298,7 +1297,7 @@ assert result("GAMMA") =~ expr("
 
 *--#] evaluate_gamma : 
 *--#[ evaluate_agm :
-#Startfloat 33
+#Startfloat 33b
 CFunction agm,f;
 Local AGM = agm(24,6)*agm_(24,6)+agm(24,0)*agm_(24,0)+agm(0,6)*agm_(0,6)+agm(24,-1)*agm_(24,-1)+agm(-1,6)*agm_(-1,6)+agm(0,-1)*agm_(0,-1)+agm(-1,0)*agm_(-1,0);
 Evaluate agm_;
@@ -1314,7 +1313,7 @@ assert result("AGM") =~ expr("
 
 *--#] evaluate_agm : 
 *--#[ evaluate_sinh :
-#Startfloat 96
+#Startfloat 96b
 CFunction sinh;
 Local SINH = sinh(0)*sinh_(0)+sinh(1.0)*sinh_(1.0)+sinh(ln_(2))*sinh_(ln_(2))+sinh(-ln_(2))*sinh_(-ln_(2));
 Argument sinh_;
@@ -1332,7 +1331,7 @@ assert result("SINH") =~ expr("
 ")
 *--#] evaluate_sinh : 
 *--#[ evaluate_cosh :
-#Startfloat 96
+#Startfloat 96b
 CFunction cosh;
 Local COSH = cosh(0)*cosh_(0)+cosh(1.0)*cosh_(1.0)+cosh(-1.0)*cosh_(-1.0)+cosh(ln_(2))*cosh_(ln_(2))+cosh(-ln_(2))*cosh_(-ln_(2));
 Argument cosh_;
@@ -1352,7 +1351,7 @@ assert result("COSH") =~ expr("
 ")
 *--#] evaluate_cosh : 
 *--#[ evaluate_tanh :
-#Startfloat 96
+#Startfloat 96b
 CFunction tanh;
 Local TANH = tanh(0)*tanh_(0)+tanh(1.0)*tanh_(1.0)+tanh(-1.0)*tanh_(-1.0)+tanh(ln_(2))*tanh_(ln_(2))+tanh(-ln_(2))*tanh_(-ln_(2));
 Argument tanh_;
@@ -1371,7 +1370,7 @@ assert result("TANH") =~ expr("
 ")
 *--#] evaluate_tanh : 
 *--#[ evaluate_asinh :
-#Startfloat 70
+#Startfloat 21d
 CFunction asinh;
 Local ASINH = asinh(0)*asinh_(0)+asinh(1.0)*asinh_(1.0)+asinh(-1)*asinh_(-1);
 Evaluate asinh_;
@@ -1385,7 +1384,7 @@ assert result("ASINH") =~ expr("
 ")
 *--#] evaluate_asinh : 
 *--#[ evaluate_acosh :
-#Startfloat 70
+#Startfloat 21d
 CFunction acosh;
 Local ACOSH = acosh(0)*acosh_(0)+acosh(1.0)*acosh_(1.0)+acosh(-1)*acosh_(-1)+acosh(24/7)*acosh_(24/7);
 Evaluate acosh_;
@@ -1400,7 +1399,7 @@ assert result("ACOSH") =~ expr("
 ")
 *--#] evaluate_acosh : 
 *--#[ evaluate_atanh :
-#Startfloat 70
+#Startfloat 21d
 CFunction atanh;
 Local ATANH = atanh(0)*atanh_(0)+atanh(1.0)*atanh_(1.0)+atanh(-1)*atanh_(-1)+atanh(24/7)*atanh_(24/7)+atanh(1/9)*atanh_(1/9)+atanh(-.54321)*atanh_(-.54321);
 Evaluate atanh_;
@@ -1429,6 +1428,366 @@ assert compile_error?("Forgotten #startfloat instruction?")
 assert compile_error?("Illegal attempt to convert from float_ without activating floating point numbers.")
 assert compile_error?("Forgotten #startfloat instruction?")
 *--#] float_error :
+*--#[ format_and_floats :
+#-
+Off Statistics;
+#Startfloat 10d
+Symbol x,y;
+
+Local test =
+	+ 1
+	+ 3*x
+	+ 3/4*x^2
+	+ (2^y-1)*x^3
+	+ (2^y)*x^4
+	+ 1/(2^y-1)*x^5
+	+ 1/(2^y)*x^6
+	+ 3/(2^y-1)*x^7
+	+ 3/(2^y)*x^8
+	+ (2^y)/(2^y-1)*x^9
+	+ (2^y-1)/(2^y)*x^10
+	+ (2^y)/(2^y+1)*x^11
+	;
+.sort
+Drop;
+Local test31 = replace_(y,31)*test;
+Local test32 = replace_(y,32)*test;
+ToFloat;
+#message Raw
+Format FloatPrecision off;
+Print +s;
+.sort
+
+#message Mathematica
+Format FloatPrecision 5d;
+Format mathematica;
+Print +s;
+.sort
+
+#message Maple
+Format FloatPrecision 20b;
+Format maple;
+Print +s;
+.sort
+
+#message C
+Format FloatPrecision;
+Format c;
+Print +s;
+.sort
+
+#message Fortran
+Format Fortran;
+Print +s;
+.sort
+
+#message Doublefortran
+Format Doublefortran;
+Print +s;
+.sort
+
+#message Quadfortran
+Format Quadfortran;
+Print +s;
+.sort
+
+#message Fortran90
+Format Fortran90;
+Print +s;
+.sort
+
+#message Fortran90_ki
+Format Fortran90,_ki;
+Print +s;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+~~~Raw
+
+   test31 =
+       + x*float_(2,3,1,1020847100762815390390123822295304634368)
+       + x^2*float_(2,2,0,255211775190703847597530955573826158592)
+       + x^3*float_(2,1,1,2147483647)
+       + x^4*float_(2,3,1,730750818665451459101842416358141509827966271488)
+       + x^5*float_(2,2,0,158456325102315651516285845520)
+       + x^6*float_(2,2,0,158456325028528675187087900672)
+       + x^7*float_(2,2,0,475368975306946954548857536560)
+       + x^8*float_(2,2,0,475368975085586025561263702016)
+       + x^9*float_(2,3,1,340282367079394788565690258948054056976)
+       + x^10*float_(2,1,0,18446744065119617024)
+       + x^11*float_(2,2,0,340282366762482138508632908505158778895)
+       + float_(2,3,1,340282366920938463463374607431768211456)
+      ;
+
+   test32 =
+       + x*float_(2,3,1,1020847100762815390390123822295304634368)
+       + x^2*float_(2,2,0,255211775190703847597530955573826158592)
+       + x^3*float_(2,1,1,4294967295)
+       + x^4*float_(2,3,1,1461501637330902918203684832716283019655932542976)
+       + x^5*float_(2,2,0,79228162532711081671548469249)
+       + x^6*float_(2,2,0,79228162514264337593543950336)
+       + x^7*float_(2,2,0,237684487598133245014645407747)
+       + x^8*float_(2,2,0,237684487542793012780631851008)
+       + x^9*float_(2,3,1,340282367000166625996085689103316680705)
+       + x^10*float_(2,1,0,18446744069414584320)
+       + x^11*float_(2,2,0,340282366841710300967557013907638845440)
+       + float_(2,3,1,340282366920938463463374607431768211456)
+      ;
+
+~~~Mathematica
+
+   test31 = (
+       + 3.0*^+00*x
+       + 7.5*^-01*x^2
+       + 2.1475*^+09*x^3
+       + 2.1475*^+09*x^4
+       + 4.6566*^-10*x^5
+       + 4.6566*^-10*x^6
+       + 1.397*^-09*x^7
+       + 1.397*^-09*x^8
+       + 1.0*^+00*x^9
+       + 1.0*^+00*x^10
+       + 1.0*^+00*x^11
+       + 1.0*^+00
+      );
+
+   test32 = (
+       + 3.0*^+00*x
+       + 7.5*^-01*x^2
+       + 4.295*^+09*x^3
+       + 4.295*^+09*x^4
+       + 2.3283*^-10*x^5
+       + 2.3283*^-10*x^6
+       + 6.9849*^-10*x^7
+       + 6.9849*^-10*x^8
+       + 1.0*^+00*x^9
+       + 1.0*^+00*x^10
+       + 1.0*^+00*x^11
+       + 1.0*^+00
+      );
+
+~~~Maple
+
+   test31 =
+       + 3.0e+00*x
+       + 7.5e-01*x^2
+       + 2.14748e+09*x^3
+       + 2.14748e+09*x^4
+       + 4.65661e-10*x^5
+       + 4.65661e-10*x^6
+       + 1.39698e-09*x^7
+       + 1.39698e-09*x^8
+       + 1.0e+00*x^9
+       + 1.0e+00*x^10
+       + 1.0e+00*x^11
+       + 1.0e+00
+      ;
+
+   test32 =
+       + 3.0e+00*x
+       + 7.5e-01*x^2
+       + 4.29497e+09*x^3
+       + 4.29497e+09*x^4
+       + 2.32831e-10*x^5
+       + 2.32831e-10*x^6
+       + 6.98492e-10*x^7
+       + 6.98492e-10*x^8
+       + 1.0e+00*x^9
+       + 1.0e+00*x^10
+       + 1.0e+00*x^11
+       + 1.0e+00
+      ;
+
+~~~C
+
+   test31 =
+       + 3.0e+00*x
+       + 7.5e-01*pow(x,2)
+       + 2.147483647e+09*pow(x,3)
+       + 2.147483648e+09*pow(x,4)
+       + 4.656612875e-10*pow(x,5)
+       + 4.656612873e-10*pow(x,6)
+       + 1.396983863e-09*pow(x,7)
+       + 1.396983862e-09*pow(x,8)
+       + 1.0e+00*pow(x,9)
+       + 9.999999995e-01*pow(x,10)
+       + 9.999999995e-01*pow(x,11)
+       + 1.0e+00
+      ;
+
+   test32 =
+       + 3.0e+00*x
+       + 7.5e-01*pow(x,2)
+       + 4.294967295e+09*pow(x,3)
+       + 4.294967296e+09*pow(x,4)
+       + 2.328306437e-10*pow(x,5)
+       + 2.328306437e-10*pow(x,6)
+       + 6.984919311e-10*pow(x,7)
+       + 6.98491931e-10*pow(x,8)
+       + 1.0e+00*pow(x,9)
+       + 9.999999998e-01*pow(x,10)
+       + 9.999999998e-01*pow(x,11)
+       + 1.0e+00
+      ;
+
+~~~Fortran
+
+      test31 = + 3.0E+00*x
+     &  + 7.5E-01*x**2
+     &  + 2.147483647E+09*x**3
+     &  + 2.147483648E+09*x**4
+     &  + 4.656612875E-10*x**5
+     &  + 4.656612873E-10*x**6
+     &  + 1.396983863E-09*x**7
+     &  + 1.396983862E-09*x**8
+     &  + 1.0E+00*x**9
+     &  + 9.999999995E-01*x**10
+     &  + 9.999999995E-01*x**11
+     &  + 1.0E+00
+     &
+
+      test32 = + 3.0E+00*x
+     &  + 7.5E-01*x**2
+     &  + 4.294967295E+09*x**3
+     &  + 4.294967296E+09*x**4
+     &  + 2.328306437E-10*x**5
+     &  + 2.328306437E-10*x**6
+     &  + 6.984919311E-10*x**7
+     &  + 6.98491931E-10*x**8
+     &  + 1.0E+00*x**9
+     &  + 9.999999998E-01*x**10
+     &  + 9.999999998E-01*x**11
+     &  + 1.0E+00
+     &
+
+~~~Doublefortran
+
+      test31 = + 3.0D+00*x
+     &  + 7.5D-01*x**2
+     &  + 2.147483647D+09*x**3
+     &  + 2.147483648D+09*x**4
+     &  + 4.656612875D-10*x**5
+     &  + 4.656612873D-10*x**6
+     &  + 1.396983863D-09*x**7
+     &  + 1.396983862D-09*x**8
+     &  + 1.0D+00*x**9
+     &  + 9.999999995D-01*x**10
+     &  + 9.999999995D-01*x**11
+     &  + 1.0D+00
+     &
+
+      test32 = + 3.0D+00*x
+     &  + 7.5D-01*x**2
+     &  + 4.294967295D+09*x**3
+     &  + 4.294967296D+09*x**4
+     &  + 2.328306437D-10*x**5
+     &  + 2.328306437D-10*x**6
+     &  + 6.984919311D-10*x**7
+     &  + 6.98491931D-10*x**8
+     &  + 1.0D+00*x**9
+     &  + 9.999999998D-01*x**10
+     &  + 9.999999998D-01*x**11
+     &  + 1.0D+00
+     &
+
+~~~Quadfortran
+
+      test31 = + 3.0Q+00*x
+     &  + 7.5Q-01*x**2
+     &  + 2.147483647Q+09*x**3
+     &  + 2.147483648Q+09*x**4
+     &  + 4.656612875Q-10*x**5
+     &  + 4.656612873Q-10*x**6
+     &  + 1.396983863Q-09*x**7
+     &  + 1.396983862Q-09*x**8
+     &  + 1.0Q+00*x**9
+     &  + 9.999999995Q-01*x**10
+     &  + 9.999999995Q-01*x**11
+     &  + 1.0Q+00
+     &
+
+      test32 = + 3.0Q+00*x
+     &  + 7.5Q-01*x**2
+     &  + 4.294967295Q+09*x**3
+     &  + 4.294967296Q+09*x**4
+     &  + 2.328306437Q-10*x**5
+     &  + 2.328306437Q-10*x**6
+     &  + 6.984919311Q-10*x**7
+     &  + 6.98491931Q-10*x**8
+     &  + 1.0Q+00*x**9
+     &  + 9.999999998Q-01*x**10
+     &  + 9.999999998Q-01*x**11
+     &  + 1.0Q+00
+     &
+
+~~~Fortran90
+
+      test31 = + 3.0E+00*x
+     &  + 7.5E-01*x**2
+     &  + 2.147483647E+09*x**3
+     &  + 2.147483648E+09*x**4
+     &  + 4.656612875E-10*x**5
+     &  + 4.656612873E-10*x**6
+     &  + 1.396983863E-09*x**7
+     &  + 1.396983862E-09*x**8
+     &  + 1.0E+00*x**9
+     &  + 9.999999995E-01*x**10
+     &  + 9.999999995E-01*x**11
+     &  + 1.0E+00
+     &
+
+      test32 = + 3.0E+00*x
+     &  + 7.5E-01*x**2
+     &  + 4.294967295E+09*x**3
+     &  + 4.294967296E+09*x**4
+     &  + 2.328306437E-10*x**5
+     &  + 2.328306437E-10*x**6
+     &  + 6.984919311E-10*x**7
+     &  + 6.98491931E-10*x**8
+     &  + 1.0E+00*x**9
+     &  + 9.999999998E-01*x**10
+     &  + 9.999999998E-01*x**11
+     &  + 1.0E+00
+     &
+
+~~~Fortran90_ki
+
+      test31 = + 3.0E+00_ki*x
+     &  + 7.5E-01_ki*x**2
+     &  + 2.147483647E+09_ki*x**3
+     &  + 2.147483648E+09_ki*x**4
+     &  + 4.656612875E-10_ki*x**5
+     &  + 4.656612873E-10_ki*x**6
+     &  + 1.396983863E-09_ki*x**7
+     &  + 1.396983862E-09_ki*x**8
+     &  + 1.0E+00_ki*x**9
+     &  + 9.999999995E-01_ki*x**10
+     &  + 9.999999995E-01_ki*x**11
+     &  + 1.0E+00_ki
+     &
+
+      test32 = + 3.0E+00_ki*x
+     &  + 7.5E-01_ki*x**2
+     &  + 4.294967295E+09_ki*x**3
+     &  + 4.294967296E+09_ki*x**4
+     &  + 2.328306437E-10_ki*x**5
+     &  + 2.328306437E-10_ki*x**6
+     &  + 6.984919311E-10_ki*x**7
+     &  + 6.98491931E-10_ki*x**8
+     &  + 1.0E+00_ki*x**9
+     &  + 9.999999998E-01_ki*x**10
+     &  + 9.999999998E-01_ki*x**11
+     &  + 1.0E+00_ki
+     &
+EOF
+*--#] format_and_floats  :
+*--#[ startfloat_error :
+#Startfloat 100bd,MZV = 10
+.end
+#pend_if wordsize == 2
+runtime_error?("Illegal parameter in #StartFloat: 100bd,MZV = 10")
+*--#] startfloat_error :
 *--#[ humanstats :
 #-
 On humanstats;

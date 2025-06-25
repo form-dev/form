@@ -2019,6 +2019,9 @@ int WriteInnerTerm(WORD *term, WORD first)
 			if ( *ss == FLOATFUN ) {
 				if ( ( FloatChars = PrintFloat(ss,AO.FloatPrec) ) != 0 ) {
 					TokenToLine(AO.floatspace);
+					if ( AC.IsFortran90 == ISFORTRAN90 && AC.Fortran90Kind ) { 
+						AddToLine(AC.Fortran90Kind);
+					}
 					first = 0;
 				}
 				break;

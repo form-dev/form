@@ -3926,7 +3926,7 @@ assert succeeded?
 assert result("F") =~ expr("0")
 *--#] Issue642 :
 *--#[ Issue646 :
-#StartFloat 30
+#StartFloat 9d
 Local F = mzv_+euler_+mzvhalf_;
 Evaluate;
 Print;
@@ -3937,14 +3937,14 @@ assert result("F") =~ expr("mzv_ + euler_ + mzvhalf_")
 *--#] Issue646 :
 *--#[ Issue664 :
 #-
-#StartFloat 64
+#StartFloat 64b
 Evaluate 1;
 .end
 #pend_if wordsize == 2
 assert compile_error?("should be a built in function that can be evaluated numerically.")
 *--#] Issue664 :
 *--#[ Issue695_1 :
-#StartFloat 20
+#StartFloat 20b
 CFunction f;
 Local F1 = f(1.0)+f(1.0);
 Local F2 = f(1.0)/3+f(1.0)*2.0;
@@ -3962,7 +3962,7 @@ assert result("F4") =~ expr("f(1.0e+00) + f(1.1e+00)")
 assert result("F5") =~ expr("f(1/2) + f(5.0e-01)")
 *--#] Issue695_1 :
 *--#[ Issue695_2 :
-#StartFloat 30
+#StartFloat 9d
 Symbol a,b;
 CFunction f;
 Local F = 1.0*f(a);

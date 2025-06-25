@@ -1478,6 +1478,18 @@ statement and its corresponding endwhile\index{endwhile} statement must be part 
 module. \vspace{10mm}
 
 %--#] endwhile : 
+%--#[ evaluate :
+\section{evaluate}
+\label{substaevaluate}
+
+\noindent \begin{tabular}{ll}
+Type & Executable statement\\
+Syntax & evaluate [$<$function name$>$]; \\ 
+\end{tabular} \vspace{4mm}
+
+\noindent See chapter~\ref{floatingpoint} on the floating point capability.
+ 
+%--#] evaluate : 
 %--#[ exit :
 
 \section{exit}
@@ -1901,6 +1913,9 @@ be used for the precision.}
 \leftvitem{3.5cm}{rational\index{rational}\index{format!rational}}
 \rightvitem{13cm}{Output format is switched back to rational numbers (in 
 contrast to floating point output). This is the default.}
+
+\leftvitem{3.5cm}{floatprecision\index{floatprecision}\index{format!floatprecision} \hfill \\ \null{\tt[}$<$off$>\!|\!<$number$>${\tt]}}
+\rightvitem{13cm}{See chapter~\ref{floatingpoint} on the floating point capability.}
 
 \leftvitem{3.5cm}{nospaces\index{nospaces}\index{format!nospaces}}
 \rightvitem{13cm}{The output is printed without the spaces that make the 
@@ -5876,6 +5891,18 @@ section on \TFORM\ (\ref{tform}). To find out what its value is, use the
 `ON,setup;' statement (\ref{substaon} and \ref{setup}). \vspace{10mm}
 
 %--#] threadbucketsize : 
+%--#[ tofloat :
+\section{tofloat}
+\label{substatofloat}
+
+\noindent \begin{tabular}{ll}
+Type & Executable statement\\
+Syntax & tofloat;
+\end{tabular} \vspace{4mm}
+
+\noindent See chapter~\ref{floatingpoint} on the floating point capability.
+ 
+%--#] tofloat : 
 %--#[ topolynomial :
 
 \section{topolynomial}
@@ -5909,6 +5936,18 @@ replaced.
 \vspace{10mm}
 
 %--#] topolynomial : 
+%--#[ torational :
+\section{torational}
+\label{substatorational}
+
+\noindent \begin{tabular}{ll}
+Type & Executable statement\\
+Syntax & torational;
+\end{tabular} \vspace{4mm}
+
+\noindent See chapter~\ref{floatingpoint} on the floating point capability.
+ 
+%--#] torational : 
 %--#[ tospectator :
 
 \section{tospectator}

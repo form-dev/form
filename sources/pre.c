@@ -32,6 +32,9 @@
   	#[ Includes :
 */
 #include "form3.h"
+#ifdef WITHFLOAT
+#include "math.h"
+#endif
 
 static UBYTE pushbackchar = 0;
 static int oldmode = 0;
@@ -7680,6 +7683,7 @@ int DoStartFloat(UBYTE *s)
 	GETIDENTITY
 	int error = 0;
 	LONG x;
+	UBYTE *ss;
 	if ( AP.PreSwitchModes[AP.PreSwitchLevel] != EXECUTINGPRESWITCH ) return(0);
 	if ( AP.PreIfStack[AP.PreIfLevel] != EXECUTINGIF ) return(0);
 	if ( AR.PolyFun != 0 ) {
@@ -7691,20 +7695,42 @@ int DoStartFloat(UBYTE *s)
 		error = 1;
 	}
 	while ( *s == ',' || *s == ' ' || *s == '\t' ) s++;
+/*
+	The first parameter is the float precision
+*/
+	ss = s;
 	if ( *s >= '0' && *s <= '9' ) {
 		x = 0;
 		do {
 			x = 10*x + (*s++-'0');
 		} while ( *s >= '0' && *s <= '9' );
-		AC.tDefaultPrecision = x;
+/*
+		The precision can either be in digits or bits. 
+		AC.DefaultPrecision is always in bits. 
+*/
+		if ( tolower(*s) == 'd' ) { AC.tDefaultPrecision = (LONG)ceil(x*log2(10.0)); s++; }
+		else if ( tolower(*s) == 'b' ) { AC.tDefaultPrecision = x; s++; }
+		else goto IllPar;
 		while ( *s == ',' || *s == ' ' || *s == '\t' ) s++;
-		if ( *s >= '0' && *s <= '9' ) {
-			x = 0;
-			do {
-				x = 10*x + (*s++ - '0');
-			} while ( *s >= '0' && *s <= '9' );
-			AC.tMaxWeight = x;
-			while ( *s == ',' || *s == ' ' || *s == '\t' ) s++;
+/*
+		The second parameter is either absent, which implies zero MZV weight, 
+		or of the form MZV = <weight>
+*/
+		if ( tolower(*s) == 'm' && tolower(s[1]) == 'z' && tolower(s[2]) == 'v') {
+			s+=3;
+			while ( *s == ' ' || *s == '\t' ) s++;
+			if ( *s != '=') goto IllPar;
+			s++;
+			while ( *s == ' ' || *s == '\t' ) s++;
+			if ( *s >= '0' && *s <= '9' ) {
+				x = 0;
+				do {
+					x = 10*x + (*s++ - '0');
+				} while ( *s >= '0' && *s <= '9' );
+				AC.tMaxWeight = x;
+				while ( *s == ',' || *s == ' ' || *s == '\t' ) s++;
+			}
+			else goto IllPar;
 		}
 		else {
 			AC.tMaxWeight = 0;
@@ -7713,7 +7739,7 @@ int DoStartFloat(UBYTE *s)
 	}
 	else if ( *s != 0 ) {
 IllPar:
-		MesPrint("@Illegal parameter in %#StartFloat instruction: %s ",s);
+		MesPrint("@Illegal parameter in %#StartFloat: %s ",ss);
 		error = 1;
 	}
 	if ( error == 0 ) {
