@@ -2343,6 +2343,8 @@ int EvaluateEuler(PHEAD WORD *term, WORD level, WORD par)
 				sumweight += ABS(tt[1]); depth++;
 				tt += 2;
 			}
+			/* euler sum without arguments, i.e. mzv_(), euler_() or mzvhalf_() */
+			if ( depth == 0) goto nextfun;
 			if ( sumweight > AC.MaxWeight ) {
 				MesPrint("Error: Weight of Euler/MZV sum greater than %d",sumweight);
 				MesPrint("Please increase MaxWeight in form.set.");
