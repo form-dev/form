@@ -163,6 +163,8 @@ jobs:
               rm -rf forcer-1.0.0
               # color library for the color test in extra
               wget https://www.nikhef.nl/~form/maindir/packages/color/color.h -P formlib
+              # series library for test in extra
+              wget https://github.com/a-maier/series/releases/download/1.0.0/series.h -P formlib
               ;;
           esac
 
@@ -262,6 +264,8 @@ jobs:
               rm -rf forcer-1.0.0
               # color library for the color test in extra
               wget https://www.nikhef.nl/~form/maindir/packages/color/color.h -P formlib
+              # series library for test in extra
+              wget https://github.com/a-maier/series/releases/download/1.0.0/series.h -P formlib
               ;;
           esac
 
@@ -345,6 +349,8 @@ jobs:
               rm -rf forcer-1.0.0
               # color library for the color test in extra
               wget https://www.nikhef.nl/~form/maindir/packages/color/color.h -P formlib
+              # series library for test in extra
+              wget https://github.com/a-maier/series/releases/download/1.0.0/series.h -P formlib
               ;;
           esac
 
