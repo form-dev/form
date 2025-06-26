@@ -32,6 +32,9 @@
   	#[ Includes :
 */
 #include "form3.h"
+#ifdef WITHFLOAT
+#include "math.h"
+#endif
 
 static UBYTE pushbackchar = 0;
 static int oldmode = 0;
@@ -7691,20 +7694,41 @@ int DoStartFloat(UBYTE *s)
 		error = 1;
 	}
 	while ( *s == ',' || *s == ' ' || *s == '\t' ) s++;
+/*
+	The first parameter is the float precision
+*/
 	if ( *s >= '0' && *s <= '9' ) {
 		x = 0;
 		do {
 			x = 10*x + (*s++-'0');
 		} while ( *s >= '0' && *s <= '9' );
-		AC.tDefaultPrecision = x;
+/*
+		The precision can either be in digits or bits. 
+		AC.DefaultPrecision is always in bits. 
+*/
+		if ( tolower(*s) == 'd' ) { AC.tDefaultPrecision = x*log2(10.0); s++; }
+		else if ( tolower(*s) == 'b' ) { AC.tDefaultPrecision = x; s++; }
+		else goto IllPar;
 		while ( *s == ',' || *s == ' ' || *s == '\t' ) s++;
-		if ( *s >= '0' && *s <= '9' ) {
-			x = 0;
-			do {
-				x = 10*x + (*s++ - '0');
-			} while ( *s >= '0' && *s <= '9' );
-			AC.tMaxWeight = x;
-			while ( *s == ',' || *s == ' ' || *s == '\t' ) s++;
+/*
+		The second parameter is either absent, which implies zero MZV weight, 
+		or of the form MZV = <weight>
+*/
+		if ( tolower(*s) == 'm' && tolower(s[1]) == 'z' && tolower(s[2]) == 'v') {
+			s+=3;
+			while ( *s == ' ' || *s == '\t' ) s++;
+			if ( *s != '=') goto IllPar;
+			s++;
+			while ( *s == ' ' || *s == '\t' ) s++;
+			if ( *s >= '0' && *s <= '9' ) {
+				x = 0;
+				do {
+					x = 10*x + (*s++ - '0');
+				} while ( *s >= '0' && *s <= '9' );
+				AC.tMaxWeight = x;
+				while ( *s == ',' || *s == ' ' || *s == '\t' ) s++;
+			}
+			else goto IllPar;
 		}
 		else {
 			AC.tMaxWeight = 0;
