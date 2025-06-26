@@ -3914,6 +3914,16 @@ Print;
 assert succeeded?
 assert result("F") =~ expr("0")
 *--#] Issue642 :
+*--#[ Issue646 :
+#StartFloat 30
+Local F = mzv_+euler_+mzvhalf_;
+Evaluate;
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("mzv_ + euler_ + mzvhalf_")
+*--#] Issue646 :
 *--#[ PullReq535 :
 * This test requires more than the specified 50K workspace.
 #:maxtermsize 200
