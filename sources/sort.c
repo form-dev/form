@@ -997,7 +997,8 @@ TooLarge:
 							}
 							*((WORD **)buffer) = to;
 							NCOPY(to,t,jj);
-							retval = to - buffer - 1;
+							/* we should not set retval here in this par==2 case, it being 0 has meaning
+							   after RetRetval, and it is set properly there. */
 						}
 						else {
 							j = newout->POfill - t;
