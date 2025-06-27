@@ -54,7 +54,6 @@ void ZtoForm(UWORD *a,WORD *na,mpz_t z);
 long FloatToInteger(UWORD *out, mpf_t floatin, long *bitsused);
 void IntegerToFloat(mpf_t result, UWORD *formlong, int longsize);
 int FloatToRat(UWORD *ratout, WORD *nratout, mpf_t floatin);
-int SetFloatPrecision(WORD prec);
 int AddFloats(PHEAD WORD *fun3, WORD *fun1, WORD *fun2);
 int MulFloats(PHEAD WORD *fun3, WORD *fun1, WORD *fun2);
 int DivFloats(PHEAD WORD *fun3, WORD *fun1, WORD *fun2);
@@ -946,8 +945,12 @@ int PrintFloat(WORD *fun,int numdigits)
 	if ( numdigits > prec || numdigits == 0 ) {
 		numdigits = prec;
 	}
+/* 
+	GMP's gmp_snprintf always prints a non-zero number before the decimal point, so we 
+	ask for one digit less. 
+*/
 	if ( UnpackFloat(aux4,fun) == 0 )
-		n = gmp_snprintf((char *)(AO.floatspace),AO.floatsize,"%.*Fe",numdigits,aux4);
+		n = gmp_snprintf((char *)(AO.floatspace),AO.floatsize,"%.*Fe",numdigits-1,aux4);
 	if ( numdigits == prec ) {
 		UBYTE *s1, *s2;
 		int n1, n2 = n;
@@ -1073,8 +1076,7 @@ void SetupMZVTables(void)
 	int i, Nw, id, totnum;
 	size_t N;
 	mpf_t *a;
-	Nw = AC.DefaultPrecision+AC.MaxWeight+1;
-	SetFloatPrecision(Nw);
+	Nw = AC.DefaultPrecision;
 	N = (size_t)Nw;
 	totnum = AM.totalnumberofthreads;
     for ( id = 0; id < totnum; id++ ) {
@@ -1110,8 +1112,7 @@ void SetupMZVTables(void)
 #else
 	int i, Nw;
 	size_t N;
-	Nw = AC.DefaultPrecision+AC.MaxWeight+1;
-	SetFloatPrecision(Nw);
+	Nw = AC.DefaultPrecision;
 	N = (size_t)Nw;
 	if ( AT.mpf_tab1 ) {
 		for ( i = 0; i <= Nw; i++ ) {
@@ -1160,10 +1161,8 @@ void SetupMZVTables(void)
 void SetupMPFTables(void)
 {
 #ifdef WITHPTHREADS
-	int Nw, id, totnum;
+	int id, totnum;
 	mpf_t *a;
-	Nw = AC.DefaultPrecision+AC.MaxWeight+1;
-	SetFloatPrecision(Nw);
 /*
 	Now the aux variables
 */
@@ -1188,9 +1187,6 @@ void SetupMPFTables(void)
 		AB[id]->T.indi2 = AB[id]->T.indi1 + AC.MaxWeight;
 	}
 #else
-	int Nw;
-	Nw = AC.DefaultPrecision+AC.MaxWeight+1;
-	SetFloatPrecision(Nw);
 /*
 	Now the aux variables
 */
@@ -1695,15 +1691,19 @@ void SimpleDelta(mpf_t sum, int m)
 	We will loop until 1/2^j/j^m is smaller than the default precision.
 	Just running to prec is however overkill, specially when m is large.
 	We try to estimate a better value.
-	jmax = prec - ((2log(prec)-1)*m).
+	jmax = prec - ((log2(prec)-1)*m).
 	Hence we need the leading bit of prec.
 	We are still overshooting a bit.
 */
 	n = 0; x = xprec;
 	while ( x ) { x >>= 1; n++; }
-	jmax = (int)((int)xprec - n*m);
+/* 
+	We have now n = floor(log2(x))+1. 
+*/
+	n--;
+	jmax = (int)((int)xprec - (n-1)*m);
 	mpf_set_ui(sum,0);
-	for ( j = 1; j < jmax; j++ ) {
+	for ( j = 1; j <= jmax; j++ ) {
 #ifdef WITHCUTOFF
 		xprec--;
 		mpf_set_prec_raw(jm,xprec);
@@ -1737,16 +1737,20 @@ void SimpleDeltaC(mpf_t sum, int m)
 	We will loop until 1/2^j/j^m is smaller than the default precision.
 	Just running to prec is however overkill, specially when m is large.
 	We try to estimate a better value.
-	jmax = prec - ((2log(prec)-1)*m).
+	jmax = prec - ((log2(prec)-1)*m).
 	Hence we need the leading bit of prec.
 	We are still overshooting a bit.
 */
 	n = 0; x = xprec;
 	while ( x ) { x >>= 1; n++; }
-	jmax = (int)((int)xprec - n*m);
+/* 
+	We have now n = floor(log2(x))+1. 
+*/
+	n--;
+	jmax = (int)((int)xprec - (n-1)*m);
 	if ( s < 0 ) jmax /= 2;
 	mpf_set_si(sum,0L);
-	for ( j = 1; j < jmax; j++ ) {
+	for ( j = 1; j <= jmax; j++ ) {
 #ifdef WITHCUTOFF
 		xprec--;
 		mpf_set_prec_raw(jm,xprec);

@@ -617,14 +617,14 @@ Print;
 .end
 #pend_if wordsize == 2
 assert result("PI0") =~ expr("1.0e+00*a*b")
-assert result("PI1") =~ expr("3.1415926535897932385e+00")
-assert result("PI2") =~ expr("9.4247779607693797154e+00")
-assert result("PI3") =~ expr("5.4413980927026535518e+00")
-assert result("PI4") =~ expr("3.1006276680299820175e+01")
-assert result("PI5") =~ expr("3.1415926535897932385e+00*a*b")
-assert result("PI6") =~ expr("1.7724538509055160273e+00")
-assert result("EE1") =~ expr("2.7182818284590452354e+00")
-assert result("EE2") =~ expr("8.5397342226735670654e+00")
+assert result("PI1") =~ expr("3.141592653589793238e+00")
+assert result("PI2") =~ expr("9.424777960769379715e+00")
+assert result("PI3") =~ expr("5.441398092702653552e+00")
+assert result("PI4") =~ expr("3.100627668029982018e+01")
+assert result("PI5") =~ expr("3.141592653589793238e+00*a*b")
+assert result("PI6") =~ expr("1.772453850905516027e+00")
+assert result("EE1") =~ expr("2.718281828459045235e+00")
+assert result("EE2") =~ expr("8.539734222673567065e+00")
 assert result("EM1") =~ expr("5.772156649015328606e-01")
 *--#] evaluate_symbol :
 *--#[ evaluate_symbol_pi :
@@ -679,8 +679,115 @@ Print;
 #pend_if wordsize == 2
 assert result("PI") =~ expr("1.0e+00*pi_")
 assert result("EE") =~ expr("1.0e+00*ee_")
-assert result("EM") =~ expr("5.772156649015328606065120900824024310421593359399235988058e-01")
+assert result("EM") =~ expr("5.77215664901532860606512090082402431042159335939923598806e-01")
 *--#] evaluate_symbol_em :
+*--#[ evaluate_mzv_2 :
+#-
+L F = mzv_(2);
+.sort
+
+Hide;
+#do bits=5,65,3
+	#StartFloat `bits',2
+	Local F`bits' = F;
+	Evaluate mzv_;
+	Print;
+	.sort
+	Hide;
+	#endfloat
+#enddo
+.end
+#pend_if wordsize == 2
+assert result("F5") =~ expr("2e+00")
+assert result("F8") =~ expr("1.6e+00")
+assert result("F11") =~ expr("1.64e+00")
+assert result("F14") =~ expr("1.645e+00")
+assert result("F17") =~ expr("1.6449e+00")
+assert result("F20") =~ expr("1.64493e+00")
+assert result("F23") =~ expr("1.64493e+00")
+assert result("F26") =~ expr("1.644934e+00")
+assert result("F29") =~ expr("1.6449341e+00")
+assert result("F32") =~ expr("1.64493407e+00")
+assert result("F35") =~ expr("1.644934067e+00")
+assert result("F38") =~ expr("1.6449340668e+00")
+assert result("F41") =~ expr("1.64493406685e+00")
+assert result("F44") =~ expr("1.644934066848e+00")
+assert result("F47") =~ expr("1.6449340668482e+00")
+assert result("F50") =~ expr("1.64493406684823e+00")
+assert result("F53") =~ expr("1.64493406684823e+00")
+assert result("F56") =~ expr("1.644934066848226e+00")
+assert result("F59") =~ expr("1.6449340668482264e+00")
+assert result("F62") =~ expr("1.64493406684822644e+00")
+assert result("F65") =~ expr("1.644934066848226436e+00")
+*--#] evaluate_mzv_2 : 
+*--#[ evaluate_all_mzv_2-6 : 
+#-
+Symbol a,n,x,jj;
+CFunction mzv;
+#do weight=2,6
+	L F`weight' = x^`weight'*mzv();
+#enddo
+* Generate all possible arguments
+repeat id x^n?{>0}*mzv(?a) = sum_(jj,1,n, x^(n-jj)*mzv(?a,jj));
+* Only keep convergent MZVs
+id mzv(1,?a) = 0;
+.sort
+
+Hide;
+#do weight=2,6
+	#StartFloat 74,`weight'
+	Local MZV`weight' = F`weight';
+	id mzv(?a) = mzv(?a)*mzv_(?a);
+	Evaluate mzv_;
+	Print +s;
+	.sort
+	Hide;
+	#endfloat
+#enddo
+.end
+#pend_if wordsize == 2
+assert result("MZV2") =~ expr("
+	   + 1.644934066848226436472e+00*mzv(2)
+")
+assert result("MZV3") =~ expr("
+       + 1.2020569031595942854e+00*mzv(2,1)
+       + 1.2020569031595942854e+00*mzv(3)
+")
+assert result("MZV4") =~ expr("
+       + 1.082323233711138191516e+00*mzv(2,1,1)
+       + 8.11742425283353643637e-01*mzv(2,2)
+       + 2.70580808427784547879e-01*mzv(3,1)
+       + 1.082323233711138191516e+00*mzv(4)
+")
+assert result("MZV5") =~ expr("
+       + 1.036927755143369926331e+00*mzv(2,1,1,1)
+       + 7.11566197550572432097e-01*mzv(2,1,2)
+       + 2.288103976033537597687e-01*mzv(2,2,1)
+       + 7.11566197550572432097e-01*mzv(2,3)
+       + 9.655115998944373446565e-02*mzv(3,1,1)
+       + 2.288103976033537597687e-01*mzv(3,2)
+       + 9.655115998944373446565e-02*mzv(4,1)
+       + 1.036927755143369926331e+00*mzv(5)
+")
+assert result("MZV6") =~ expr("
+       + 1.017343061984449139715e+00*mzv(2,1,1,1,1)
+       + 6.745239140339681404916e-01*mzv(2,1,1,2)
+       + 2.137988682245925470996e-01*mzv(2,1,2,1)
+       + 6.183495605712693078956e-01*mzv(2,1,3)
+       + 8.848338245436871429433e-02*mzv(2,2,1,1)
+       + 1.907518241220842136965e-01*mzv(2,2,2)
+       + 7.922139756520716599903e-02*mzv(2,3,1)
+       + 6.745239140339681404916e-01*mzv(2,4)
+       + 4.053689727151973782905e-02*mzv(3,1,1,1)
+       + 7.922139756520716599903e-02*mzv(3,1,2)
+       + 3.230902899166988169841e-02*mzv(3,2,1)
+       + 2.137988682245925470996e-01*mzv(3,3)
+       + 1.748985316901140442593e-02*mzv(4,1,1)
+       + 8.848338245436871429433e-02*mzv(4,2)
+       + 4.053689727151973782905e-02*mzv(5,1)
+       + 1.017343061984449139715e+00*mzv(6)
+")
+*--#] evaluate_all_mzv_2-6 :
 *--#[ Issue49 :
 * Add mul_ function for polynomial multiplications
 Symbols x,y,z;
