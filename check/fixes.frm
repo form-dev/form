@@ -3935,6 +3935,14 @@ Print;
 assert succeeded?
 assert result("F") =~ expr("mzv_ + euler_ + mzvhalf_")
 *--#] Issue646 :
+*--#[ Issue664 :
+#-
+#StartFloat 64
+Evaluate 1;
+.end
+#pend_if wordsize == 2
+assert compile_error?("should be a built in function that can be evaluated numerically.")
+*--#] Issue664 :
 *--#[ Issue695_1 :
 #StartFloat 20
 CFunction f;

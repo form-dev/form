@@ -2006,7 +2006,7 @@ void deltaEuler(mpf_t result, int *indexes, int depth)
 	else if ( depth == 2 ) {
 		SingleTable(mpftab1,AC.DefaultPrecision-AC.MaxWeight+1,indexes[0],1);
 		m = indexes[1]; if ( indexes[0] < 0 ) m = -m;
-		EndTable(result,mpftab1,AC.DefaultPrecision,m,0);
+		EndTable(result,mpftab1,AC.DefaultPrecision-AC.MaxWeight,m,0);
 	}
 	else if ( depth > 2 ) {
 		int d;
@@ -2067,8 +2067,8 @@ void deltaEulerC(mpf_t result, int *indexes, int depth)
 	else if ( depth == 2 ) {
 		int par;
 		m = indexes[0];
-		if ( m < 0 ) SingleTable(mpftab1,AC.DefaultPrecision-AC.MaxWeight+depth+1,-m,2);
-		else         SingleTable(mpftab1,AC.DefaultPrecision-AC.MaxWeight+depth+1, m,1);
+		if ( m < 0 ) SingleTable(mpftab1,AC.DefaultPrecision-AC.MaxWeight+depth,-m,2);
+		else         SingleTable(mpftab1,AC.DefaultPrecision-AC.MaxWeight+depth, m,1);
 		m = indexes[1];
 		if ( m < 0 ) { m = -m; par = indexes[0] < 0 ? 0: 1; }
 		else { par = indexes[0] < 0 ? -1: 0; }
@@ -2438,9 +2438,15 @@ nextfun:
 
 int CoEvaluate(UBYTE *s)
 {
+	GETIDENTITY
 	UBYTE *subkey, c;
 	WORD numfun, type;
 	int error = 0;
+	if ( AT.aux_ == 0 ) {
+		MesPrint("&Illegal attempt to evaluate a function without activating floating point numbers.");
+		MesPrint("&Forgotten %#startfloat instruction?");
+		return(1);
+	}
 	while ( *s == ' ' || *s == ',' || *s == '\t' ) s++;
 	if ( *s == 0 ) {
 /*
@@ -2456,8 +2462,9 @@ int CoEvaluate(UBYTE *s)
 	while ( *s ) {
 	subkey = s;
 	while ( FG.cTable[*s] == 0 ) s++;
+	  if ( *s == '2' ) s++; /* cases li2_ and atan2_ */
 	  if ( *s == '_' ) s++;
-	  c = *s; *s++ = 0;
+	  c = *s; *s = 0;
 /*
 		We still need provisions for pi_ and possibly other constants.
 */
@@ -2472,17 +2479,17 @@ int CoEvaluate(UBYTE *s)
 			This cannot work.
 */
 		MesPrint("&%s should be a built in function that can be evaluated numerically.",s);
-		error = 1;
+		return(1);
 	  }
 	  else {
 		switch ( numfun+FUNCTION ) {
 			case MZV:
 			case EULER:
 			case MZVHALF:
-			case SQRTFUNCTION:
 /*
 			The following functions are treated in evaluate.c
-
+*/
+			case SQRTFUNCTION:
 			case LNFUNCTION:
 			case SINFUNCTION:
 			case COSFUNCTION:
@@ -2497,11 +2504,11 @@ int CoEvaluate(UBYTE *s)
 			case ASINHFUNCTION:
 			case ACOSHFUNCTION:
 			case ATANHFUNCTION:
-			case LI2HFUNCTION:
-			case LINHFUNCTION:
+			case LI2FUNCTION:
+			case LINFUNCTION:
 			case AGMFUNCTION:
 			case GAMMAFUN:
-
+/*
 			At a later stage we can add more functions from mpfr here
 				mpfr_(number,arg(s))
 */
