@@ -594,7 +594,7 @@ assert result("F", 3) =~ expr("
 *--#] Format_noreset_linelen :
 *--#[ evaluate_symbol :
 #-
-#StartFloat 64
+#StartFloat 64b
 
 Symbol a,b;
 Local PI0 = a*b;
@@ -629,7 +629,7 @@ assert result("EM1") =~ expr("5.77215664901532860607e-01")
 *--#] evaluate_symbol :
 *--#[ evaluate_symbol_pi :
 #-
-#StartFloat 128
+#StartFloat 128b
 
 Local PI = pi_;
 Local EE = ee_;
@@ -647,7 +647,7 @@ assert result("EM") =~ expr("1.0e+00*em_")
 *--#] evaluate_symbol_pi :
 *--#[ evaluate_symbol_ee :
 #-
-#StartFloat 160
+#StartFloat 160b
 
 Local PI = pi_;
 Local EE = ee_;
@@ -665,7 +665,7 @@ assert result("EM") =~ expr("1.0e+00*em_")
 *--#] evaluate_symbol_ee :
 *--#[ evaluate_symbol_em :
 #-
-#StartFloat 192
+#StartFloat 192b
 
 Local PI = pi_;
 Local EE = ee_;
