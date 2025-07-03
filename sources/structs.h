@@ -1873,6 +1873,7 @@ struct C_const {
                                         2 : On, single module (set by #sortreallocate) */
     int     PrintBacktraceFlag;    /* Print backtrace on terminate? */
     int    FlintPolyFlag;          /* Use Flint for polynomial arithmetic */
+    int     HumanStatsFlag;        /* Print human-readable stats in the stats print? */
 	int     doloopstacksize;
 	int     dolooplevel;
     int     CheckpointFlag;        /**< Tells preprocessor whether checkpoint code must executed.

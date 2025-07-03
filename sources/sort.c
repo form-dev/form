@@ -82,6 +82,26 @@ LONG numcompares;
  
 char *toterms[] = { "   ", " >>", "-->" };
 
+#define HUMANSTRLEN 12
+#define HUMANSUFFLEN 4
+const char humanTermsSuffix[HUMANSUFFLEN][4] = {"K  ","M  ","B  ","T  "};
+const char humanBytesSuffix[HUMANSUFFLEN][4] = {"KiB","MiB","GiB","TiB"};
+void HumanString(char* string, float input, const char suffix[HUMANSUFFLEN][4]) {
+	int ind = -1;
+	while (ind < 0 || (input >= 1000.0 && ind < HUMANSUFFLEN) ) {
+		input /= 1000.0;
+		ind++;
+	}
+	if ( input < 0.5 ) {
+		snprintf(string, HUMANSTRLEN,
+			"  ( <1 %s)", suffix[ind]);
+	}
+	else {
+		snprintf(string, HUMANSTRLEN,
+			"  (%3.f %s)", input, suffix[ind]);
+	}
+}
+
 /**
  *		Writes the statistics.
  *
@@ -123,6 +143,15 @@ void WriteStats(POSITION *plspace, WORD par, WORD checkLogType)
 		AR.ShortSortCount = 0;
 
 		S = AT.SS;
+
+		char humanGenTermsText[HUMANSTRLEN] = "";
+		char humanTermsLeftText[HUMANSTRLEN] = "";
+		char humanBytesText[HUMANSTRLEN] = "";
+		if ( AC.HumanStatsFlag ) {
+			HumanString(humanGenTermsText, (float)(S->GenTerms), humanTermsSuffix);
+			HumanString(humanTermsLeftText, (float)(S->TermsLeft), humanTermsSuffix);
+			HumanString(humanBytesText, (float)(BASEPOSITION(*plspace)), humanBytesSuffix);
+		}
 
 		MLOCK(ErrorMessageLock);
 
@@ -436,149 +465,149 @@ void WriteStats(POSITION *plspace, WORD par, WORD checkLogType)
 #if ( BITSINLONG > 32 )
 			if ( S->GenTerms >= 10000000000L ) {
 				if ( use_wtime ) {
-					MesPrint("WTime = %7l.%2i sec   Generated terms = %16l",
-						millitime,timepart,S->GenTerms);
+					MesPrint("WTime = %7l.%2i sec   Generated terms = %16l%s",
+						millitime,timepart,S->GenTerms,humanGenTermsText);
 				}
 				else {
-					MesPrint("Time = %7l.%2i sec    Generated terms = %16l",
-						millitime,timepart,S->GenTerms);
+					MesPrint("Time = %7l.%2i sec    Generated terms = %16l%s",
+						millitime,timepart,S->GenTerms,humanGenTermsText);
 				}
 			}
 			else {
 				if ( use_wtime ) {
-					MesPrint("WTime = %7l.%2i sec   Generated terms = %10l",
-						millitime,timepart,S->GenTerms);
+					MesPrint("WTime = %7l.%2i sec   Generated terms = %10l%s",
+						millitime,timepart,S->GenTerms,humanGenTermsText);
 				}
 				else {
-					MesPrint("Time = %7l.%2i sec    Generated terms = %10l",
-						millitime,timepart,S->GenTerms);
+					MesPrint("Time = %7l.%2i sec    Generated terms = %10l%s",
+						millitime,timepart,S->GenTerms,humanGenTermsText);
 				}
 			}
 #else
 			if ( use_wtime ) {
-				MesPrint("WTime = %7l.%2i sec   Generated terms = %10l",
-					millitime,timepart,S->GenTerms);
+				MesPrint("WTime = %7l.%2i sec   Generated terms = %10l%s",
+					millitime,timepart,S->GenTerms,humanGenTermsText);
 			}
 			else {
-				MesPrint("Time = %7l.%2i sec    Generated terms = %10l",
-					millitime,timepart,S->GenTerms);
+				MesPrint("Time = %7l.%2i sec    Generated terms = %10l%s",
+					millitime,timepart,S->GenTerms,humanGenTermsText);
 			}
 #endif
 		}
 #if ( BITSINLONG > 32 )
 		if ( par == STATSSPLITMERGE )
 			if ( S->TermsLeft >= 10000000000L ) {
-				MesPrint("%16s%8l Terms %s = %16l",EXPRNAME(AR.CurExpr),
-				AN.ninterms,FG.swmes[par],S->TermsLeft);
+				MesPrint("%16s%8l Terms %s = %16l%s",EXPRNAME(AR.CurExpr),
+				AN.ninterms,FG.swmes[par],S->TermsLeft,humanTermsLeftText);
 			}
 			else {
-				MesPrint("%16s%8l Terms %s = %10l",EXPRNAME(AR.CurExpr),
-				AN.ninterms,FG.swmes[par],S->TermsLeft);
+				MesPrint("%16s%8l Terms %s = %10l%s",EXPRNAME(AR.CurExpr),
+				AN.ninterms,FG.swmes[par],S->TermsLeft,humanTermsLeftText);
 			}
 		else {
 			if ( S->TermsLeft >= 10000000000L ) {
 #ifdef WITHPTHREADS
 				if ( identity > 0 && par == STATSPOSTSORT ) {
-					MesPrint("%16s         Terms in thread = %16l",
-					EXPRNAME(AR.CurExpr),S->TermsLeft);
+					MesPrint("%16s         Terms in thread = %16l%s",
+					EXPRNAME(AR.CurExpr),S->TermsLeft,humanTermsLeftText);
 				}
 				else
 #elif defined(WITHMPI)
 				if ( PF.me != MASTER && par == STATSPOSTSORT ) {
-					MesPrint("%16s         Terms in process= %16l",
-					EXPRNAME(AR.CurExpr),S->TermsLeft);
+					MesPrint("%16s         Terms in process= %16l%s",
+					EXPRNAME(AR.CurExpr),S->TermsLeft,humanTermsLeftText);
 				}
 				else
 #endif
 				{
-					MesPrint("%16s         Terms %s = %16l",
-					EXPRNAME(AR.CurExpr),FG.swmes[par],S->TermsLeft);
+					MesPrint("%16s         Terms %s = %16l%s",
+					EXPRNAME(AR.CurExpr),FG.swmes[par],S->TermsLeft,humanTermsLeftText);
 				}
 			}
 			else {
 #ifdef WITHPTHREADS
 				if ( identity > 0 && par == STATSPOSTSORT ) {
-					MesPrint("%16s         Terms in thread = %10l",
-					EXPRNAME(AR.CurExpr),S->TermsLeft);
+					MesPrint("%16s         Terms in thread = %10l%s",
+					EXPRNAME(AR.CurExpr),S->TermsLeft,humanTermsLeftText);
 				}
 				else
 #elif defined(WITHMPI)
 				if ( PF.me != MASTER && par == STATSPOSTSORT ) {
-					MesPrint("%16s         Terms in process= %10l",
-					EXPRNAME(AR.CurExpr),S->TermsLeft);
+					MesPrint("%16s         Terms in process= %10l%s",
+					EXPRNAME(AR.CurExpr),S->TermsLeft,humanTermsLeftText);
 				}
 				else
 #endif
 				{
-					MesPrint("%16s         Terms %s = %10l",
-					EXPRNAME(AR.CurExpr),FG.swmes[par],S->TermsLeft);
+					MesPrint("%16s         Terms %s = %10l%s",
+					EXPRNAME(AR.CurExpr),FG.swmes[par],S->TermsLeft,humanTermsLeftText);
 				}
 			}
 		}
 #else
 		if ( par == STATSSPLITMERGE )
-			MesPrint("%16s%8l Terms %s = %10l",EXPRNAME(AR.CurExpr),
-			AN.ninterms,FG.swmes[par],S->TermsLeft);
+			MesPrint("%16s%8l Terms %s = %10l%s",EXPRNAME(AR.CurExpr),
+			AN.ninterms,FG.swmes[par],S->TermsLeft,humanTermsLeftText);
 		else {
 #ifdef WITHPTHREADS
 			if ( identity > 0 && par == STATSPOSTSORT ) {
-				MesPrint("%16s         Terms in thread = %10l",
-				EXPRNAME(AR.CurExpr),S->TermsLeft);
+				MesPrint("%16s         Terms in thread = %10l%s",
+				EXPRNAME(AR.CurExpr),S->TermsLeft,humanTermsLeftText);
 			}
 			else
 #elif defined(WITHMPI)
 			if ( PF.me != MASTER && par == STATSPOSTSORT ) {
-				MesPrint("%16s         Terms in process= %10l",
-				EXPRNAME(AR.CurExpr),S->TermsLeft);
+				MesPrint("%16s         Terms in process= %10l%s",
+				EXPRNAME(AR.CurExpr),S->TermsLeft,humanTermsLeftText);
 			}
 			else
 #endif
 			{
-				MesPrint("%16s         Terms %s = %10l",
-				EXPRNAME(AR.CurExpr),FG.swmes[par],S->TermsLeft);
+				MesPrint("%16s         Terms %s = %10l%s",
+				EXPRNAME(AR.CurExpr),FG.swmes[par],S->TermsLeft,humanTermsLeftText);
 			}
 		}
 #endif
 		SETBASEPOSITION(pp,y);
 		if ( ISLESSPOS(*plspace,pp) ) {
-			MesPrint("%24s Bytes used      = %10p",AC.Commercial,plspace);
+			MesPrint("%24s Bytes used      = %10p%s",AC.Commercial,plspace,humanBytesText);
 		}
 		else {
 			y = 1000000000L;
 			SETBASEPOSITION(pp,y);
 			MULPOS(pp,100);
 			if ( ISLESSPOS(*plspace,pp) ) {
-				MesPrint("%24s Bytes used      =%11p",AC.Commercial,plspace);
+				MesPrint("%24s Bytes used      =%11p%s",AC.Commercial,plspace,humanBytesText);
 			}
 			else {
 				MULPOS(pp,10);
 				if ( ISLESSPOS(*plspace,pp) ) {
-				MesPrint("%24s Bytes used     =%12p",AC.Commercial,plspace);
+				MesPrint("%24s Bytes used     =%12p%s",AC.Commercial,plspace,humanBytesText);
 				}
 				else {
 				MULPOS(pp,10);
 				if ( ISLESSPOS(*plspace,pp) ) {
-				MesPrint("%24s Bytes used    =%13p",AC.Commercial,plspace);
+				MesPrint("%24s Bytes used    =%13p%s",AC.Commercial,plspace,humanBytesText);
 				}
 				else {
 				MULPOS(pp,10);
 				if ( ISLESSPOS(*plspace,pp) ) {
-				MesPrint("%24s Bytes used   =%14p",AC.Commercial,plspace);
+				MesPrint("%24s Bytes used   =%14p%s",AC.Commercial,plspace,humanBytesText);
 				}
 				else {
 				MULPOS(pp,10);
 				if ( ISLESSPOS(*plspace,pp) ) {
-				MesPrint("%24s Bytes used  =%15p",AC.Commercial,plspace);
+				MesPrint("%24s Bytes used  =%15p%s",AC.Commercial,plspace,humanBytesText);
 				}
 				else {
 				MULPOS(pp,10);
 				if ( ISLESSPOS(*plspace,pp) ) {
-				MesPrint("%24s Bytes used =%16p",AC.Commercial,plspace);
+				MesPrint("%24s Bytes used =%16p%s",AC.Commercial,plspace,humanBytesText);
 				}
 				else {
 				MULPOS(pp,10);
 				if ( ISLESSPOS(*plspace,pp) ) {
-				MesPrint("%24s Bytes used=%17p",AC.Commercial,plspace);
+				MesPrint("%24s Bytes used=%17p%s",AC.Commercial,plspace,humanBytesText);
 				}
 				} } } } }
 			}
