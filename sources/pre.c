@@ -7727,6 +7727,7 @@ IllPar:
 			AC.MaxWeight = AC.tMaxWeight;
 			AC.tMaxWeight = 0;
 		}
+		SetFloatPrecision(AC.DefaultPrecision+AC.MaxWeight+1);
 		SetupMPFTables();
 		if ( AC.MaxWeight > 0 ) SetupMZVTables();
 		SetfFloatPrecision(AC.DefaultPrecision);

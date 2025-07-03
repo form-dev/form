@@ -1755,6 +1755,7 @@ void PathOutput(PHEAD WORD *,WORD,WORD *,WORD);
 #ifdef WITHFLOAT
 int DoStartFloat(UBYTE *);
 int DoEndFloat(UBYTE *);
+int SetFloatPrecision(WORD);
 void SetupMZVTables(void);
 void SetupMPFTables(void);
 void ClearMZVTables(void);
