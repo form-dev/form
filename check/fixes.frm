@@ -2351,6 +2351,19 @@ P;
 #pend_if mpi?
 assert runtime_error?
 *--#] Issue261_7 : 
+*--#[ Issue267 :
+#-
+CFunction f,g,h,i;
+Local test = f + g + h(1,2) + i(1,2) + h(1,2,3) + i(1,2,3);
+Transform f addargs(1,last);
+Transform g mulargs(1,last);
+Transform h addargs(1,3);
+Transform i mulargs(1,3);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f + g + h(1,2) + h(6) + i(2) + i(6)");
+*--#] Issue267 :
 *--#[ Issue268_1 :
 * Invalid read in Normalize
 #define N "9999"

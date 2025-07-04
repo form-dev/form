@@ -2703,6 +2703,8 @@ WORD RunAddArg(PHEAD WORD *fun, WORD *args)
 	}
 	tt = fun+FUNHEAD; tstop = fun+fun[1]; totarg = 0;
 	while ( tt < tstop ) { totarg++; NEXTARG(tt); }
+	/* ignore functions with no arguments */
+	if ( totarg == 0 ) return(0);
 	if ( FindRange(BHEAD args,&arg1,&arg2,totarg) ) return(-1);
 /*
 	We need to:
@@ -2791,6 +2793,8 @@ WORD RunMulArg(PHEAD WORD *fun, WORD *args)
 	}
 	t = fun+FUNHEAD; tstop = fun+fun[1]; totarg = 0;
 	while ( t < tstop ) { totarg++; NEXTARG(t); }
+	/* ignore functions with no arguments */
+	if ( totarg == 0 ) return(0);
 	if ( FindRange(BHEAD args,&arg1,&arg2,totarg) ) return(-1);
 	if ( arg2 < arg1 ) { n = arg1; arg1 = arg2; arg2 = n; }
 	if ( arg1 > totarg ) return(0);
@@ -3552,20 +3556,25 @@ int FindRange(PHEAD WORD *args, WORD *arg1, WORD *arg2, WORD totarg)
 				n[i] -= MAXPOSITIVE4; /* Now we have the number of the dollar variable   */
 			}
 			n[i] = DolToNumber(BHEAD n[i]);
-			if ( AN.ErrorInDollar ) goto Error;
+			if ( AN.ErrorInDollar ) {
+				MLOCK(ErrorMessageLock);
+				MesPrint("Illegal $ value in range while executing transform statement.");
+				MUNLOCK(ErrorMessageLock);
+				return(-1);
+			}
 			if ( fromlast ) n[i] = totarg-n[i];
 		}
 		else if ( n[i] >= MAXPOSITIVE4 ) { n[i] = totarg-(n[i]-MAXPOSITIVE4); }
-		if ( n[i] <= 0 ) goto Error;
+		if ( n[i] <= 0 ) {
+			MLOCK(ErrorMessageLock);
+			MesPrint("Illegal non-positive value in range (%d) while executing transform statement.", i+1);
+			MUNLOCK(ErrorMessageLock);
+			return(-1);
+		}
 	}
 	*arg1 = n[0];
 	*arg2 = n[1];
 	return(0);
-Error:
-	MLOCK(ErrorMessageLock);
-	MesPrint("Illegal $ value in range while executing transform statement.");
-	MUNLOCK(ErrorMessageLock);
-	return(-1);
 }
 
 /*
