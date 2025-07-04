@@ -3609,7 +3609,13 @@ SkipCount:	level++;
 						if ( WildFill(BHEAD ow,term,op) < 0 ) goto GenCall;
 						AR.CompressPointer = op;
 						i = ow[0];
-						for ( j = 0; j < i; j++ ) term[j] = ow[j];
+						WORD term_changed = 0;
+						for ( j = 0; j < i; j++ ) {
+							if ( term[j] != ow[j] ) term_changed = 1;
+							term[j] = ow[j];
+						}
+						// If the term was modified by WildFill, set RepCount.
+						if ( term_changed ) *AN.RepPoint = 1;
 						AT.WorkPointer = ow;
 						ReNumber(BHEAD term);
 						goto Renormalize;
