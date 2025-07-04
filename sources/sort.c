@@ -1541,7 +1541,7 @@ WORD PutOut(PHEAD WORD *term, POSITION *position, FILEHANDLE *fi, WORD ncomp)
 				MLOCK(ErrorMessageLock);
 				MesPrint("Ran into precompressed term");
 				MUNLOCK(ErrorMessageLock);
-				Crash();
+				Terminate(-1);
 				return(-1);
 			}
 		}
@@ -1618,7 +1618,7 @@ nocompress:
 				MLOCK(ErrorMessageLock);
 				MesPrint("CompressSize of %10l is insufficient",AM.CompressSize);
 				MUNLOCK(ErrorMessageLock);
-				Crash();
+				Terminate(-1);
 				return(-1);
 			}
 		}
