@@ -640,7 +640,7 @@ void WriteStats(POSITION *plspace, WORD par, WORD checkLogType)
  *		@return Regular convention (OK -> 0)
  */
 
-WORD NewSort(PHEAD0)
+int NewSort(PHEAD0)
 {
 	GETBIDENTITY
 	SORTING *S, **newFS;
@@ -1377,7 +1377,7 @@ LONG PutIn(FILEHANDLE *file, POSITION *position, WORD *buffer, WORD **take, int 
  *	@param fi  The filesystem (or its cache) to which the patch should be written
  */
 
-WORD Sflush(FILEHANDLE *fi)
+int Sflush(FILEHANDLE *fi)
 {
 	LONG size, RetCode;
 #ifdef WITHZLIB
@@ -1825,7 +1825,7 @@ nocompress:
  *	@return   Regular conventions (OK -> 0).
  */
 
-WORD FlushOut(POSITION *position, FILEHANDLE *fi, int compr)
+int FlushOut(POSITION *position, FILEHANDLE *fi, int compr)
 {
 	GETIDENTITY
 	LONG size, RetCode;
@@ -2039,7 +2039,7 @@ WORD FlushOut(POSITION *position, FILEHANDLE *fi, int compr)
  *		The resulting term is left in *ps1.
  */
 
-WORD AddCoef(PHEAD WORD **ps1, WORD **ps2)
+int AddCoef(PHEAD WORD **ps1, WORD **ps2)
 {
 	GETBIDENTITY
 	SORTING *S = AT.SS;
@@ -2168,7 +2168,7 @@ RegEnd:
  *		@return If zero the terms cancel. Otherwise the new term is in *ps1.
  */
 
-WORD AddPoly(PHEAD WORD **ps1, WORD **ps2)
+int AddPoly(PHEAD WORD **ps1, WORD **ps2)
 {
 	GETBIDENTITY
 	SORTING *S = AT.SS;
@@ -3754,7 +3754,7 @@ void GarbHand(void)
  *
  */
 
-WORD MergePatches(WORD par)
+int MergePatches(WORD par)
 {
 	GETIDENTITY
 	SORTING *S = AT.SS;
@@ -4537,7 +4537,7 @@ PatCall2:;
  *	@return  Regular return conventions (OK -> 0)
  */
 
-WORD StoreTerm(PHEAD WORD *term)
+int StoreTerm(PHEAD WORD *term)
 {
 	GETBIDENTITY
 	SORTING *S = AT.SS;
@@ -4750,11 +4750,12 @@ void StageSort(FILEHANDLE *fout)
  *	@return  Normal conventions (OK -> 0)
  */
 
-WORD SortWild(WORD *w, WORD nw)
+int SortWild(WORD *w, WORD nw)
 {
 	GETIDENTITY
 	WORD *v, *s, *m, k, i;
-	WORD *pScrat, *stop, *sv, error = 0;
+	WORD *pScrat, *stop, *sv;
+	int error = 0;
 	pScrat = AT.WorkPointer;
 	if ( ( AT.WorkPointer + 8 * AM.MaxWildcards ) >= AT.WorkTop ) {
 		MLOCK(ErrorMessageLock);
