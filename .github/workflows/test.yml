@@ -365,7 +365,7 @@ jobs:
           esac
 
       - name: Test
-        run: ./check/check.rb ./sources/${{ matrix.bin }} --stat --timeout ${{ matrix.timeout && format('--timeout {0}', matrix.timeout) || '30' }} ${{ matrix.nthreads && format('-w{0}', matrix.nthreads) || '' }} ${{ matrix.test != 'default' && format('-C {0}', matrix.test) || '' }} --fake-valgrind
+        run: ./check/check.rb ./sources/${{ matrix.bin }} --stat --timeout ${{ matrix.timeout && format('{0}', matrix.timeout) || '30' }} ${{ matrix.nthreads && format('-w{0}', matrix.nthreads) || '' }} ${{ matrix.test != 'default' && format('-C {0}', matrix.test) || '' }} --fake-valgrind
         env:
           FORMPATH: ${{ github.workspace }}/formlib
 
