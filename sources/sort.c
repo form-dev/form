@@ -735,7 +735,7 @@ LONG EndSort(PHEAD WORD *buffer, int par)
   GETBIDENTITY
   SORTING *S = AT.SS;
   WORD j, **ss, *to, *t;
-  LONG sSpace, over, tover, spare, retval = 0, jj;
+  LONG sSpace, over, tover, spare, retval = 0;
   POSITION position, pp;
   off_t lSpace;
   FILEHANDLE *fout = 0, *oldoutfile = 0, *newout = 0;
@@ -1012,24 +1012,8 @@ TooLarge:
 					}
 					else {
 						t = newout->PObuffer;
-						if ( par == 2 ) {
-							jj = newout->POfill - t;
-							if ( AN.tryterm > 0 && ( (jj+2)*sizeof(WORD) < (size_t)(AM.MaxTer) ) ) {
-								to = TermMalloc("$-sort space");
-							}
-							else {
-								LONG allocsp = jj+2;
-								if ( allocsp < MINALLOC ) allocsp = MINALLOC;
-								allocsp = ((allocsp+7)/8)*8;
-								to = (WORD *)Malloc1(allocsp*sizeof(WORD),"$-sort space");
-								if ( AN.tryterm > 0 ) AN.tryterm = 0;
-							}
-							*((WORD **)buffer) = to;
-							NCOPY(to,t,jj);
-							/* we should not set retval here in this par==2 case, it being 0 has meaning
-							   after RetRetval, and it is set properly there. */
-						}
-						else {
+						// We deal with the par == 2 case after RetRetval.
+						if ( par != 2 ) {
 							j = newout->POfill - t;
 							to = buffer;
 							if ( to >= AT.WorkSpace && to < AT.WorkTop && to+j > AT.WorkTop )
