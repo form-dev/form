@@ -790,6 +790,27 @@ assert result("MZV6") =~ expr("
        + 1.017343061984449139715e+00*mzv(6)
 ")
 *--#] evaluate_all_mzv_2-6 :
+*--#[ humanstats :
+#-
+On humanstats;
+Symbol x;
+Local test1 = (1+x)^499;
+Local test2 = (1+x)^500;
+Local test3 = (1+x)^1000;
+.end
+# In 32bit FORM, the "Bytes used" numbers are different
+#pend_if wordsize != 4
+assert succeeded?
+assert stdout =~ exact_pattern("Generated terms =        500  ( <1 K  )")
+assert stdout =~ exact_pattern("Terms in output =        500  ( <1 K  )")
+assert stdout =~ exact_pattern("Bytes used      =      54420  ( 54 KiB)")
+assert stdout =~ exact_pattern("Generated terms =        501  (  1 K  )")
+assert stdout =~ exact_pattern("Terms in output =        501  (  1 K  )")
+assert stdout =~ exact_pattern("Bytes used      =      54644  ( 55 KiB)")
+assert stdout =~ exact_pattern("Generated terms =       1001  (  1 K  )")
+assert stdout =~ exact_pattern("Terms in output =       1001  (  1 K  )")
+assert stdout =~ exact_pattern("Bytes used      =     199172  (199 KiB)")
+*--#] humanstats :
 *--#[ Issue49 :
 * Add mul_ function for polynomial multiplications
 Symbols x,y,z;

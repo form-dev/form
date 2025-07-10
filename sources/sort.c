@@ -88,11 +88,11 @@ const char humanTermsSuffix[HUMANSUFFLEN][4] = {"K  ","M  ","B  ","T  "};
 const char humanBytesSuffix[HUMANSUFFLEN][4] = {"KiB","MiB","GiB","TiB"};
 void HumanString(char* string, float input, const char suffix[HUMANSUFFLEN][4]) {
 	int ind = -1;
-	while (ind < 0 || (input >= 1000.0 && ind < HUMANSUFFLEN) ) {
-		input /= 1000.0;
+	while (ind < 0 || (input >= 1000.0f && ind < HUMANSUFFLEN) ) {
+		input /= 1000.0f;
 		ind++;
 	}
-	if ( input < 0.5 ) {
+	if ( input <= 0.5f ) {
 		snprintf(string, HUMANSTRLEN,
 			"  ( <1 %s)", suffix[ind]);
 	}
