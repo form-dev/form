@@ -596,7 +596,7 @@ assert result("F", 3) =~ expr("
 *--#] Format_noreset_linelen :
 *--#[ evaluate_symbol :
 #-
-#StartFloat 64
+#StartFloat 64b
 
 Symbol a,b;
 Local PI0 = a*b;
@@ -631,7 +631,7 @@ assert result("EM1") =~ expr("5.772156649015328606e-01")
 *--#] evaluate_symbol :
 *--#[ evaluate_symbol_pi :
 #-
-#StartFloat 128
+#StartFloat 128b
 
 Local PI = pi_;
 Local EE = ee_;
@@ -649,7 +649,7 @@ assert result("EM") =~ expr("1.0e+00*em_")
 *--#] evaluate_symbol_pi :
 *--#[ evaluate_symbol_ee :
 #-
-#StartFloat 160
+#StartFloat 160b
 
 Local PI = pi_;
 Local EE = ee_;
@@ -667,7 +667,7 @@ assert result("EM") =~ expr("1.0e+00*em_")
 *--#] evaluate_symbol_ee :
 *--#[ evaluate_symbol_em :
 #-
-#StartFloat 192
+#StartFloat 192b
 
 Local PI = pi_;
 Local EE = ee_;
@@ -689,9 +689,9 @@ L F = mzv_(2);
 .sort
 
 Hide;
-#do bits=5,65,3
-	#StartFloat `bits',2
-	Local F`bits' = F;
+#do digits=1,20
+	#StartFloat `digits'd,MZV=2
+	Local F`digits' = F;
 	Evaluate mzv_;
 	Print;
 	.sort
@@ -700,27 +700,26 @@ Hide;
 #enddo
 .end
 #pend_if wordsize == 2
-assert result("F5") =~ expr("2e+00")
-assert result("F8") =~ expr("1.6e+00")
-assert result("F11") =~ expr("1.64e+00")
-assert result("F14") =~ expr("1.645e+00")
-assert result("F17") =~ expr("1.6449e+00")
-assert result("F20") =~ expr("1.64493e+00")
-assert result("F23") =~ expr("1.64493e+00")
-assert result("F26") =~ expr("1.644934e+00")
-assert result("F29") =~ expr("1.6449341e+00")
-assert result("F32") =~ expr("1.64493407e+00")
-assert result("F35") =~ expr("1.644934067e+00")
-assert result("F38") =~ expr("1.6449340668e+00")
-assert result("F41") =~ expr("1.64493406685e+00")
-assert result("F44") =~ expr("1.644934066848e+00")
-assert result("F47") =~ expr("1.6449340668482e+00")
-assert result("F50") =~ expr("1.64493406684823e+00")
-assert result("F53") =~ expr("1.64493406684823e+00")
-assert result("F56") =~ expr("1.644934066848226e+00")
-assert result("F59") =~ expr("1.6449340668482264e+00")
-assert result("F62") =~ expr("1.64493406684822644e+00")
-assert result("F65") =~ expr("1.644934066848226436e+00")
+assert result("F1") =~ expr("2e+00")
+assert result("F2") =~ expr("1.6e+00")
+assert result("F3") =~ expr("1.64e+00")
+assert result("F4") =~ expr("1.645e+00")
+assert result("F5") =~ expr("1.6449e+00")
+assert result("F6") =~ expr("1.64493e+00")
+assert result("F7") =~ expr("1.644934e+00")
+assert result("F8") =~ expr("1.6449341e+00")
+assert result("F9") =~ expr("1.64493407e+00")
+assert result("F10") =~ expr("1.644934067e+00")
+assert result("F11") =~ expr("1.6449340668e+00")
+assert result("F12") =~ expr("1.64493406685e+00")
+assert result("F13") =~ expr("1.644934066848e+00")
+assert result("F14") =~ expr("1.6449340668482e+00")
+assert result("F15") =~ expr("1.64493406684823e+00")
+assert result("F16") =~ expr("1.644934066848226e+00")
+assert result("F17") =~ expr("1.6449340668482264e+00")
+assert result("F18") =~ expr("1.64493406684822644e+00")
+assert result("F19") =~ expr("1.644934066848226436e+00")
+assert result("F20") =~ expr("1.6449340668482264365e+00")
 *--#] evaluate_mzv_2 : 
 *--#[ evaluate_all_mzv_2-6 : 
 #-
@@ -737,7 +736,7 @@ id mzv(1,?a) = 0;
 
 Hide;
 #do weight=2,6
-	#StartFloat 74,`weight'
+	#StartFloat 74b,MZV=`weight'
 	Local MZV`weight' = F`weight';
 	id mzv(?a) = mzv(?a)*mzv_(?a);
 	Evaluate mzv_;
@@ -790,6 +789,49 @@ assert result("MZV6") =~ expr("
        + 1.017343061984449139715e+00*mzv(6)
 ")
 *--#] evaluate_all_mzv_2-6 :
+*--#[ format_and_floats :
+#Startfloat 10d
+Format FloatPrecision off;
+Symbol a,b;
+Local F = 987654321*a+b/10-1.23456789*10^-40;
+ToFloat;
+Print;
+.sort
+
+Hide;
+Format FloatPrecision 5d;
+Format mathematica;
+Local MATHEMATICA = F;
+Print;
+.sort
+
+Hide;
+Format FloatPrecision 20b;
+Format maple;
+Local MAPLE = F;
+Print;
+.sort
+
+Hide;
+Format FloatPrecision;
+Format c;
+Local C = F;
+Print;
+.end
+#pend_if wordsize == 2
+assert result("F") =~ expr("b*float_(2,2,0,34028236692093846346337460743176821145) + a*float_(2,3,1,
+      336081350049572338814702556271664586714960101376) - float_(2,3,-2,
+      263702100800423216725453320148456572661961574491721094635)")
+assert result("MATHEMATICA") =~ expr("(1.0*^-01*b + 9.8765*^+08*a - 1.2346*^-40)")
+assert result("MAPLE") =~ expr("1.0e-01*b + 9.87654e+08*a - 1.23457e-40")
+assert result("C") =~ expr("1.0e-01*b + 9.87654321e+08*a - 1.23456789e-40")
+*--#] format_and_floats  :
+*--#[ startfloat_error :
+#Startfloat 100bd,MZV = 10
+.end
+#pend_if wordsize == 2
+runtime_error?("Illegal parameter in #StartFloat: 100bd,MZV = 10")
+*--#] startfloat_error :
 *--#[ Issue49 :
 * Add mul_ function for polynomial multiplications
 Symbols x,y,z;
