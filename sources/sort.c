@@ -2967,7 +2967,7 @@ NoPoly:
 				}
 			}
 #ifdef WITHFLOAT
-			if ( c1 == FLOATFUN && t1 == stopper1 && t2 == stopper2 && AT.aux_ != 0 ) {
+			if ( level == 0 && c1 == FLOATFUN && t1 == stopper1 && t2 == stopper2 && AT.aux_ != 0 ) {
 /*
 				We have two FLOATFUN's. Test whether they are 'legal'
 */
@@ -3039,12 +3039,12 @@ NoPoly:
 		}
 	}
 #ifdef WITHFLOAT
-	if ( t1 < stopper1 && *t1 == FLOATFUN && t1+t1[1] == stopper1
-			&& TestFloat(t1) ) {
+	if ( level == 0 && t1 < stopper1 && *t1 == FLOATFUN && t1+t1[1] == stopper1
+			&& TestFloat(t1) && AT.aux_ != 0 ) {
 		AT.SortFloatMode = 1; return(0);
 	}
-	else if ( t2 < stopper2 && *t2 == FLOATFUN && t2+t2[1] == stopper2
-			&& TestFloat(t2) ) {
+	else if ( level == 0 && t2 < stopper2 && *t2 == FLOATFUN && t2+t2[1] == stopper2
+			&& TestFloat(t2) && AT.aux_ != 0 ) {
 		AT.SortFloatMode = 2; return(0);
 	}
 #endif

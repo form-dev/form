@@ -3914,6 +3914,39 @@ Print;
 assert succeeded?
 assert result("F") =~ expr("0")
 *--#] Issue642 :
+*--#[ Issue695_1 :
+#StartFloat 20
+CFunction f;
+Local F1 = f(1.0)+f(1.0);
+Local F2 = f(1.0)/3+f(1.0)*2.0;
+Local F3 = 1.0*f(1.0)/3+f(1.0)*2.0;
+Local F4 = f(1.0)+f(1.1);
+Local F5 = f(0.5)+f(1/2);
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F1") =~ expr("2*f(1.0e+00)")
+assert result("F2") =~ expr("2.33333e+00*f(1.0e+00)")
+assert result("F3") =~ expr("2.33333e+00*f(1.0e+00)")
+assert result("F4") =~ expr("f(1.0e+00) + f(1.1e+00)")
+assert result("F5") =~ expr("f(1/2) + f(5.0e-01)")
+*--#] Issue695_1 :
+*--#[ Issue695_2 :
+#StartFloat 30
+Symbol a,b;
+CFunction f;
+Local F = 1.0*f(a);
+.sort
+#endfloat
+
+Local F = F + f(a);
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("f(a) + f(a)*float_(2,3,1,340282366920938463463374607431768211456)")
+*--#] Issue695_2 :
 *--#[ PullReq535 :
 * This test requires more than the specified 50K workspace.
 #:maxtermsize 200
