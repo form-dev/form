@@ -9,11 +9,16 @@ extern "C" {
  
 #define MAXPOINTS 120
 
+#define TKMOD
+
 typedef struct ToPoTyPe {
 	WORD *vert;
 	WORD *vertmax;
 	Options *opt;
 	int cldeg[MAXPOINTS], clnum[MAXPOINTS], clext[MAXPOINTS];
+#ifdef TKMOD
+	int cmind[MAXPOINTS], cmaxd[MAXPOINTS];
+#endif
 	int ncl, nvert;
 } TOPOTYPE;
 
@@ -333,7 +338,11 @@ void ProcessDiagram(EGraph *eg, void *ti)
 //	#] ProcessDiagram : 
 //	#[ ProcessTopology :
 
+#ifdef TKMOD
+Bool ProcessTopology(EGraph *eg, void *ti)
+#else
 void ProcessTopology(EGraph *eg, void *ti)
+#endif
 {
 //
 //	This routine is called for each new topology.
@@ -341,7 +350,11 @@ void ProcessTopology(EGraph *eg, void *ti)
 	TERMINFO *info = (TERMINFO *)ti;
 	if ( ( info->flags & TOPOLOGIESONLY ) == 0 ) {
 		info->numtopo++;
+#ifdef TKMOD
+		return True;
+#else
 		return;
+#endif
 	}
 //
 //	Now we are just generating topologies.
@@ -428,6 +441,9 @@ void ProcessTopology(EGraph *eg, void *ti)
 	Generator(BHEAD newterm,info->level);
 	AT.WorkPointer = oldworkpointer;
 	info->numtopo++;
+#ifdef TKMOD
+        return True;
+#endif
 }
 
 //	#] ProcessTopology :
@@ -481,8 +497,13 @@ WORD GenDiagrams(PHEAD WORD *term, WORD level)
 
 	opt = new Options();
 
+#ifdef TKMOD
+	opt->setOutAG(ProcessDiagram, (void*) &info);
+	opt->setOutMG(ProcessTopology, (void*) &info);
+#else
 	opt->setOutAG(ProcessDiagram, &info);
 	opt->setOutMG(ProcessTopology, &info);
+#endif
 
 	opt->values[GRCC_OPT_1PI] = ( optionnumber & ONEPARTICLEIRREDUCIBLE ) == ONEPARTICLEIRREDUCIBLE;
 	opt->values[GRCC_OPT_NoTadpole] = ( optionnumber & NOTADPOLES ) == NOTADPOLES;
@@ -497,7 +518,11 @@ WORD GenDiagrams(PHEAD WORD *term, WORD level)
 //	else
 //		opt->setStep(CL_AGraph);
 
+#ifdef TKMOD
+	opt->setOutputF(False,"");
+#else
 	opt->setOutput(False,"");
+#endif
 	opt->printLevel(babble);
 
 //	Load the various arrays.
@@ -596,10 +621,22 @@ int processVertex(TOPOTYPE *TopoInf, int pointsremaining, int level)
 			TopoInf->cldeg[TopoInf->ncl] = TopoInf->vert[level];
 			TopoInf->clnum[TopoInf->ncl] = j;
 			TopoInf->clext[TopoInf->ncl] = 0;
+#ifdef TKMOD
+			TopoInf->cmind[TopoInf->ncl] = 0;
+			TopoInf->cmaxd[TopoInf->ncl] = 0;
+#endif
 			TopoInf->ncl++;
 
+#ifdef TKMOD
+			MGraph *mgraph = new MGraph(1,  
+                                                 TopoInf->ncl, TopoInf->cldeg,
+					         TopoInf->clnum, TopoInf->clext,
+					         TopoInf->cmind, TopoInf->cmaxd,
+                                                 TopoInf->opt);
+#else
 			MGraph *mgraph = new MGraph(1, TopoInf->ncl, TopoInf->cldeg,
 					             TopoInf->clnum, TopoInf->clext, TopoInf->opt);
+#endif
 
 		    mgraph->generate();
 
@@ -679,8 +716,13 @@ WORD GenTopologies(PHEAD WORD *term, WORD level)
 	info.numdia = 0;
 	info.numtopo = 1;
 
+#ifdef TKMOD
+	opt->setOutAG(ProcessDiagram, (void*) &info);
+	opt->setOutMG(ProcessTopology, (void*) &info);
+#else
 	opt->setOutAG(ProcessDiagram, &info);
 	opt->setOutMG(ProcessTopology, &info);
+#endif
 //
 //	Now we should sum over all possible vertices and run MGraph for
 //	each combination. This is done by recursion in the processVertex routine
@@ -695,6 +737,9 @@ WORD GenTopologies(PHEAD WORD *term, WORD level)
 	}
 	for ( i = 0; i < nlegs; i++ ) {
 		TopoInf.cldeg[i] = 1; TopoInf.clnum[i] = 1; TopoInf.clext[i] = -1;
+#ifdef TKMOD
+		TopoInf.cmind[i] = 0; TopoInf.cmaxd[i] = 0;
+#endif
 	}
 	int points = 2*nloops-2+nlegs;
 

@@ -12,7 +12,7 @@
 #define GRCC_MAXNCPLG         4
 #define GRCC_MAXLEGS         10
 #define GRCC_MAXMPARTICLES   50
-#define GRCC_MAXMINTERACT   200
+#define GRCC_MAXMINTERACT   500
 #define GRCC_MAXSUBPROCS    500
 #define GRCC_MAXNODES        20
 #define GRCC_MAXEDGES       100
@@ -41,8 +41,8 @@
  */
 
 /* model definition */
-#define GRCC_DEFBYNAME   0    /* define interactions by particle name */
-#define GRCC_DEFBYCODE   1    /* define interactions by particle code */
+#define GRCC_DEFBYNAME   1    /* define interactions by particle name */
+#define GRCC_DEFBYCODE   2    /* define interactions by particle code */
 
 /* types of particles */
 #define GRCC_PT_Undef      0
@@ -82,15 +82,69 @@
 /* options for graph greneration */
 #define GRCC_OPT_Step            0
 #define GRCC_OPT_Outgrf          1
-#define GRCC_OPT_1PI             2
-#define GRCC_OPT_NoTadpole       3
-#define GRCC_OPT_No1PtBlock      4
-#define GRCC_OPT_No2PtL1PI       5
-#define GRCC_OPT_Block           6
-#define GRCC_OPT_SymmInitial     7
-#define GRCC_OPT_SymmFinal       8
-#define GRCC_OPT_Size            9
+#define GRCC_OPT_Outgrp          2
+#define GRCC_OPT_1PI             3
+#define GRCC_OPT_NoSelfLoop      4
+#define GRCC_OPT_NoTadpole       5
+#define GRCC_OPT_No1PtBlock      6
+#define GRCC_OPT_No2PtL1PI       7
+#define GRCC_OPT_NoExtSelf       8
+#define GRCC_OPT_NoAdj2PtV       9
+#define GRCC_OPT_Block          10
+#define GRCC_OPT_NoMultiEdge    11
+#define GRCC_OPT_SymmInitial    12
+#define GRCC_OPT_SymmFinal      13
+#define GRCC_OPT_Size           14
 
+typedef unsigned long ULong;
+
+typedef struct {
+    const char *name;
+    const char *mean;
+    int         defaultv;
+    int         DUMMYPADDING;
+} OptDef;
+
+typedef struct {
+    const char *name;
+    const char *cname;
+    const char *mean;
+} OptQGDef;
+
+typedef struct {
+    const char *name;
+    int         index;
+    int         sign; 
+} OptQGRef;
+
+/*---------------------------------------------------------------
+ * QGRAF options
+ */
+#define GRCC_QGRAF_OPT_ONEPI       0
+#define GRCC_QGRAF_OPT_ONSHELL     1
+#define GRCC_QGRAF_OPT_NOSIGMA     2
+#define GRCC_QGRAF_OPT_NOSNAIL     3
+#define GRCC_QGRAF_OPT_NOTADPOLE   4
+#define GRCC_QGRAF_OPT_SIMPLE      5
+#define GRCC_QGRAF_OPT_BIPART      6
+#define GRCC_QGRAF_OPT_CYCLI       7
+#define GRCC_QGRAF_OPT_FLOOP       8
+#define GRCC_QGRAF_OPT_TOPOL       9
+
+#ifdef GRCC_QGRAF_OPT_TOPOL
+#define GRCC_QGRAF_OPT_Size       10
+#else
+#define GRCC_QGRAF_OPT_Size        9
+#endif
+
+/*---------------------------------------------------------------
+ * Conversion of 
+ *     eind : index (ed) of EGraph.edges[ed]
+ *     sind : value (v)  of EGraph.nodes[nd]->edges[j])
+ */
+#define   I2Vedge(eind, sign)    (((sign<=0)?(-1):(1))*((eind)+1))
+#define   V2Iedge(sind)          (abs(sind)-1)
+#define   V2Ileg(sind)           ((sind)<0 ? 0 : 1)
 /*---------------------------------------------------------------
  * data types for model definition
  */
@@ -107,8 +161,9 @@ typedef struct {
     const char *aname;              /* name of anti-particle */
           int   pcode;              /* code of particle */
           int   acode;              /* code of anti-particle */
-    const char *ptypen;             /* type : 'GRCC_PTS_Scalar' etc */
-          long  ptypec;             /* type : 'GRCC_PT_Scalar' etc */
+    const char *ptypen;             /* type in name */
+          int   ptypec;             /* type in code */
+          int   extonly;            /* only as external particle */
 } PInput;
 
 typedef struct {
@@ -121,16 +176,32 @@ typedef struct {
 } IInput;
 
 /*---------------------------------------------------------------
+ * data type for node class input
+ */
+typedef struct {
+    /* used as input to MGraph() and SProcess() */
+    int cldeg;  
+    int clnum;
+    int cltyp;
+    int cmind;
+    int cmaxd;
+
+    /* used as input to SProcess() */
+    int ptcl;
+    int cple;
+} NCInput;
+
+/*---------------------------------------------------------------
  * data types for process definition
  */
 typedef struct {
-    long          ninitl;              /* the number of initial particles */
-    const char   *initln[GRCC_MAXNODES];    /* list of initial particles (name) */
-    int           initlc[GRCC_MAXNODES];    /* list of final particles (code) */
-    long          nfinal;              /* the number of final particles */
-    const char   *finaln[GRCC_MAXNODES];    /* list of final particles (name) */
-    int           finalc[GRCC_MAXNODES];    /* list of final particles (code) */
-    int           coupl[GRCC_MAXNCPLG];     /* list of orders of c. consts */
+    long          ninitl;              /* the number of initial prtcls */
+    const char   *initln[GRCC_MAXNODES];  /* list of initial prtcls(name) */
+    int           initlc[GRCC_MAXNODES];  /* list of final   prtcls(code) */
+    long          nfinal;              /* the number of   final prtcls */
+    const char   *finaln[GRCC_MAXNODES];  /* list of final prtcles(name) */
+    int           finalc[GRCC_MAXNODES];  /* list of final prtcles(code) */
+    int           coupl[GRCC_MAXNCPLG];   /* list of orders of c. consts */
 } FGInput;
 
 /* class of node : input for SProcess */
@@ -146,6 +217,23 @@ typedef struct {
                                       /* = 0 for vertex */
                                       /* long = int + padding */
 } PGInput;
+
+/*---------------------------------------------------------------
+ * minimum input data to EGraph
+ */
+typedef struct {
+    int    extloop;     /* external/loop */
+    int    intrct;      /* particl/interaction */
+} DNode;
+
+typedef int  DEdge[2];  /* {node0, node1} */
+
+typedef struct {
+    int    nnodes;
+    int    nedges;
+    DNode *nodes;
+    DEdge *edges;
+} DGraph;
 
 /*---------------------------------------------------------------
  */
