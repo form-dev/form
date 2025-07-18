@@ -97,14 +97,14 @@ The following example shows some work with Multiple Zeta Values (MZV's):
     .sort
 
    F1 =
-      9.1234206877960755900164875575406726239325002222490534540605137258846994\
-      916348297032751308227224952419629422497720599224543719959652966613231560\
-      6913925597e+0;
+       9.1234206877960755900164875575406726239325002222490534540605137258846994\
+       916348297032751308227224952419629422497720599224543719959652966613231560\
+       6913926e+03;
 
    F2 =
-      1.0000305882363070204935517285106450625876279487068581775065699328933322\
-      671563422795730723343470175484943669684442492832530297757588781904321794\
-      4047700034253;
+       1.0000305882363070204935517285106450625876279487068581775065699328933322\
+       671563422795730723343470175484943669684442492832530297757588781904321794\
+       40477e+00;
 
     Skip F1,F2;
     L	X = F1/F2;
@@ -122,10 +122,10 @@ for 500 bits of precision. If there is a second number it indicates the
 maximum weight for MZVs and Euler sums. The functions are only evaluated 
 when the proper command is given. In the second module we divide the 
 numbers and convert the result to a rational. It is a good idea to try this 
-with various precisions to see whether this is stable. With 100 bits the 
+with various precisions to see whether this is stable. With 60 bits the 
 final answer would be
 \begin{verbatim}
-    24136499874427167202968388241342/2645634679509635700210944273;
+    145537942402475031/15952490572234;
 \end{verbatim}
 while at 150 bits we have already the same answer as with 500 bits. The 
 fraction that is obtained by this program can be proven to be correct.
