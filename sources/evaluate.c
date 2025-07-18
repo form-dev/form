@@ -237,7 +237,7 @@ int GetFloatArgument(PHEAD mpfr_t f_out,WORD *fun,int par)
 			MUNLOCK(ErrorMessageLock);
 			Terminate(-1);
 		}
-		else if ( t[1] == SYMBOL && t[2] == 4 && t[3] == PISYMBOL && t[4] == 1 ) {
+		else if ( t[0] == SYMBOL && t[1] == 4 && t[2] == PISYMBOL && t[3] == 1 ) {
 			if ( first ) {
 				mpfr_const_pi(f_out,RND);
 				first = 0;
@@ -296,9 +296,8 @@ int GetPiArgument(PHEAD WORD *arg)
 	Mully(BHEAD co,&ii,&twelve,1);
 /*
 	Now the denominator should be 1
-	i2 = i = (ii-1)/2;
 */
-	i2 = i = ii;
+	i = ii; i2 = i-1;
 	numer = co; denom = numer + i;
 	if ( i > 1 ) {
 		while ( i2 > 0 ) {
@@ -363,7 +362,7 @@ int GetPiArgument(PHEAD WORD *arg)
 int EvaluateFun(PHEAD WORD *term, WORD level, WORD *pars)
 {
 	WORD *t, *tstop, *tt, *tnext, *newterm, i;
-	WORD *oldworkpointer = AT.WorkPointer, nsize, nsgn;
+	WORD *oldworkpointer = AT.WorkPointer, nsize, nsgn, nsgn2;
 	int retval = 0, first = 1, pimul;
 
 	tstop = term + *term; tstop -= ABS(tstop[-1]);
@@ -458,7 +457,7 @@ label6:
 			else if ( *t == COSFUNCTION ) {
 				pimul = GetPiArgument(BHEAD t+FUNHEAD);
 				if ( pimul >= 0 && pimul < 24 ) {
-					if ( pimul > 12 ) pimul = 24-12;
+					if ( pimul > 12 ) pimul = 24-pimul;
 					if ( pimul > 6 ) { pimul = 12-pimul; nsgn = -1; }
 					else nsgn = 1;
 					if ( pimul == 6 ) goto getout;
@@ -507,7 +506,7 @@ label6:
 							mpfr_mul(auxr2,auxr2,auxr3,RND);
 							break;
 					}
-					*t = 0;
+					*t = 0; first = 0;
 					goto nextfun;
 				}
 			}
@@ -528,10 +527,12 @@ label6:
 				break;
 				case LNFUNCTION:
 					if ( nsgn <= 0 ) goto nextfun;
+					if ( mpfr_cmp_ui(auxr1,1L) == 0 ) goto getout;
 					else mpfr_log(auxr3,auxr1,RND);
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;
 				case LI2FUNCTION: /* should be between -1 and +1 */
+					if ( nsgn == 0 ) goto getout;
 					mpfr_abs(auxr3,auxr1,RND);
 					if ( mpfr_cmp_ui(auxr3,1L) > 0 ) goto nextfun;
 					mpfr_li2(auxr3,auxr1,RND);
@@ -556,10 +557,15 @@ label6:
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;
 				case AGMFUNCTION:
+					nsgn = mpfr_sgn(auxr1);
+					nsgn2 = mpfr_sgn(auxr3);
+					if ( nsgn == 0 || nsgn2 == 0) goto getout;
+					if ( nsgn < 0 || nsgn2 < 0 ) goto nextfun;
 					mpfr_agm(auxr3,auxr1,auxr3,RND);
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;
 				case SINHFUNCTION:
+					if ( nsgn == 0 ) goto getout;
 					mpfr_sinh(auxr3,auxr1,RND);
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;
@@ -568,21 +574,25 @@ label6:
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;
 				case TANHFUNCTION:
+					if ( nsgn == 0 ) goto getout;
 					mpfr_tanh(auxr3,auxr1,RND);
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;
 				case ASINHFUNCTION:
+					if ( nsgn == 0 ) goto getout;
 					mpfr_asinh(auxr3,auxr1,RND);
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;
 				case ACOSHFUNCTION:
+					if ( mpfr_cmp_ui(auxr1,1L) < 0 ) goto nextfun;
+					if ( mpfr_cmp_ui(auxr1,1L) == 0 ) goto getout;
 					mpfr_acosh(auxr3,auxr1,RND);
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;
 				case ATANHFUNCTION:
 					if ( nsgn == 0 ) goto getout;
 					mpfr_abs(auxr3,auxr1,RND);
-					if ( mpfr_cmp_ui(auxr3,1L) > 0 ) goto nextfun;
+					if ( mpfr_cmp_ui(auxr3,1L) >= 0 ) goto nextfun;
 					mpfr_atanh(auxr3,auxr1,RND);
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;
@@ -594,13 +604,14 @@ label6:
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;
 				case ACOSFUNCTION:
-					if ( nsgn == 0 ) goto getout;
+					if ( mpfr_cmp_ui(auxr1,1L) == 0 ) goto getout;
 					mpfr_abs(auxr3,auxr1,RND);
 					if ( mpfr_cmp_ui(auxr3,1L) > 0 ) goto nextfun;
 					mpfr_acos(auxr3,auxr1,RND);
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;
 				case ATANFUNCTION:
+					if ( nsgn == 0 ) goto getout;
 					mpfr_atan(auxr3,auxr1,RND);
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;

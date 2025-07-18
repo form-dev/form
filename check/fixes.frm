@@ -3914,6 +3914,13 @@ Print;
 assert succeeded?
 assert result("F") =~ expr("0")
 *--#] Issue642 :
+*--#[ Issue664 :
+#-
+#StartFloat 64
+Evaluate 1;
+.end
+assert compile_error?("should be a built in function that can be evaluated numerically.")
+*--#] Issue664 :
 *--#[ Issue695_1 :
 #StartFloat 20
 CFunction f;
