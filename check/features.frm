@@ -1415,6 +1415,26 @@ assert result("ATANH") =~ expr("
        - 6.08698087464190136361e-01*atanh( - 5.4321e-01)
 ")
 *--#] evaluate_atanh : 
+*--#[ strictrounding :
+#StartFloat 6d
+CFunction f;
+Local F1 = 1.23456789e-4+f(1.0)+f(1.0000001);
+Print;
+.sort
+
+Skip F1;
+Local F2 = F1;
+StrictRounding 4d;
+Argument f;
+	StrictRounding;
+EndArgument;
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F1") =~ expr("1.23457e-04 + f(1.0e+00) + f(1.0e+00)")
+assert result("F2") =~ expr("1.235e-04 + 2*f(1.0e+00)")
+*--#] strictrounding : 
 *--#[ float_error :
 Evaluate;
 ToFloat;

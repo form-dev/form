@@ -218,6 +218,9 @@ static KEYWORD com2commands[] = {
 	,{"splitarg",       (TFUN)CoSplitArg,         STATEMENT,    PARTEST}
 	,{"splitfirstarg",  (TFUN)CoSplitFirstArg,    STATEMENT,    PARTEST}
 	,{"splitlastarg",   (TFUN)CoSplitLastArg,     STATEMENT,    PARTEST}
+#ifdef WITHFLOAT
+	,{"strictrounding", (TFUN)CoStrictRounding,   STATEMENT,    PARTEST}
+#endif
 	,{"stuffle",        (TFUN)CoStuffle,          STATEMENT,    PARTEST}
 	,{"sum",            (TFUN)CoSum,              STATEMENT,    PARTEST}
 	,{"switch",         (TFUN)CoSwitch,           STATEMENT,    PARTEST}

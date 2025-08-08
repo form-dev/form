@@ -3994,6 +3994,10 @@ CommonEnd:
 					AT.WorkPointer = term + *term;
 					if ( ToRat(BHEAD term,level) ) goto GenCall;
 					goto Return0;
+				  case TYPESTRICTROUNDING:
+					AT.WorkPointer = term + *term;
+					if ( StrictRounding(BHEAD term,level,C->lhs[level][2],C->lhs[level][3]) ) goto GenCall;
+					goto Return0;
 #endif
 				}
 				goto SkipCount;

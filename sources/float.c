@@ -902,10 +902,13 @@ dot:
   	#[ Float Routines :
  		#[ SetFloatPrecision :
 
-		We set the default precision of the floats and allocate
-		space for an output string if we want to write the float.
-		Space needed: exponent: up to 12 chars.
-		mantissa 2+10*prec/33 + a little bit extra.
+		Sets the default precision (in bits) of the floats and allocate
+		buffer space for an output string.
+		The buffer is used by PrintFloat (decimal output) and Strictrounding 
+		(binary or decimal output), so it must accommodate the larger space
+		requirement:
+		exponent: up to 12 chars.
+		mantissa: prec + a little bit extra
 */
 
 int SetFloatPrecision(WORD prec)
@@ -917,7 +920,7 @@ int SetFloatPrecision(WORD prec)
 	else {
 		AC.DefaultPrecision = prec;
 		if ( AO.floatspace != 0 ) M_free(AO.floatspace,"floatspace");
-		AO.floatsize = ((10*prec)/33+20)*sizeof(char);
+		AO.floatsize = (prec+20)*sizeof(char);
 		AO.floatspace = (UBYTE *)Malloc1(AO.floatsize,"floatspace");
 		mpf_set_default_prec(prec);
 		return(0);
@@ -1348,6 +1351,50 @@ int CoToRat(UBYTE *s)
 
 /*
  		#] CoToRat : 
+ 		#[ CoStrictRounding : 
+
+		Syntax: StrictRounding [precision][base]
+		- precision: number of digits to round to (optional)
+		- base: 'd' for decimal (base 10) or 'b' for binary (base 2)
+		
+		If no arguments are provided, uses default precision with binary base.
+*/
+int CoStrictRounding(UBYTE *s)
+{
+	GETIDENTITY
+	WORD x;
+	int base;
+	if ( AT.aux_ == 0 ) {
+		MesPrint("&Illegal attempt for strict rounding without activating floating point numbers.");
+		MesPrint("&Forgotten %#startfloat instruction?");
+		return(1);
+	}
+	while ( *s == ' ' || *s == ',' || *s == '\t' ) s++;
+	if ( *s == 0 ) {
+		/* No subkey, which means round to default precision */
+		x = AC.DefaultPrecision - AC.MaxWeight - 1;
+		Add4Com(TYPESTRICTROUNDING,x,2);
+		return(0);
+	}
+	if ( FG.cTable[*s] == 1 ) { /* number */
+		ParseNumber(x,s)
+		if ( tolower(*s) == 'd' ) { base = 10; s++; }      /* decimal base */
+		else if ( tolower(*s) == 'b' ){ base = 2; s++; }  /* binary base */
+		else goto IllPar;  /* invalid base specification */
+	}
+	while ( *s == ' ' || *s == ',' || *s == '\t' ) s++;
+	
+	/* Check for invalid arguments */
+	if ( *s ) {
+IllPar:
+		MesPrint("&Illegal argument(s) in StrictRounding statement: '%s'",s);
+		return(1);
+	}
+	Add4Com(TYPESTRICTROUNDING,x,base);
+	return(0);
+} 
+/*
+ 		#] CoStrictRounding : 
  		#[ ToFloat :
 
 		Converts the coefficient to floating point if it is still a rat.
@@ -1416,6 +1463,64 @@ int ToRat(PHEAD WORD *term, WORD level)
 
 /*
  		#] ToRat : 
+ 		#[ StrictRounding : 
+
+		Rounds floating point numbers to a specified precision
+		in a given base (decimal or binary).
+*/
+int StrictRounding(PHEAD WORD *term, WORD level, WORD prec, WORD base) {
+	WORD *t,*tstop;
+	int sign,size,maxprec = AC.DefaultPrecision-AC.MaxWeight-1;
+	/* maxprec is in bits */
+	if ( base == 2 && prec > maxprec ) {
+		prec = maxprec;
+	}
+	if ( base == 10 && prec > (int)(maxprec*log10(2.0)) ) {
+		prec = maxprec*log10(2.0);
+	}
+	/* Find the float which should be at the end. */
+	tstop = term + *term; size = ABS(tstop[-1]);
+	sign = tstop[-1] < 0 ? -1: 1; tstop -= size;
+	t = term+1;
+	while ( t < tstop ) {
+		if ( *t == FLOATFUN && t + t[1] == tstop && TestFloat(t) &&
+		size == 3 && tstop[0] == 1 && tstop[1] == 1) {
+			break;
+		}
+		t += t[1];
+	}
+	if ( t < tstop ) {
+/*
+		Now t points at the float_ function and everything is correct.
+		The result can go straight over the float_ function.
+*/
+		char *s;
+		mp_exp_t exp;
+		/* Extract the floating point value */
+		UnpackFloat(aux4,t);
+		/* Convert to string: 
+		   - Format as MeN with M the mantissa and N the exponent 
+		   - the generated string by mpf_get_str is the fraction/mantissa with 
+		   an implicit radix point immediately to the left of the first digit. 
+		   The applicable exponent is written in exp. */
+		s = (char *)AO.floatspace;
+		*s++ = '.';
+		mpf_get_str(s,&exp, base, prec, aux4);
+		while ( *s != 0 ) s++;
+		*s++ = 'e';
+		snprintf(s,AO.floatsize-(s-(char *)AO.floatspace),"%ld",exp);
+		/* Negative base values are used to specify that the exponent is in decimal */
+		mpf_set_str(aux4,(char *)AO.floatspace,-base);
+		/* Pack the rounded floating point value back into the term */
+		PackFloat(t,aux4);
+		t+=t[1];
+		*t++ = 1; *t++ = 1; *t++ = 3*sign;
+		*term = t - term;
+	}
+	return(Generator(BHEAD term,level));
+}
+/*
+ 		#] StrictRounding : 
   	#] Float Routines : 
   	#[ Sorting :
 

@@ -373,7 +373,7 @@ int CoFormat(UBYTE *s)
 #ifdef WITHFLOAT
 			else if ( key->flags == 5 ) {
 /*
-				Syntax: Format FloatPrecision number;
+				Syntax: Format FloatPrecision [precision];
 				        Format FloatPrecision off;
 */
 				while ( FG.cTable[*s] == 0 ) s++;
@@ -391,10 +391,7 @@ int CoFormat(UBYTE *s)
 				}
 				else if ( FG.cTable[*s] == 1 ) {
 					ss = s;
-					AO.FloatPrec = 0;
-					while ( *s <= '9' && *s >= '0' )
-						AO.FloatPrec = 10*AO.FloatPrec + (*s++ - '0');
-					while ( *s == ' ' || *s == '\t' || *s == ',' ) s++;
+					ParseNumber(AO.FloatPrec,s)
 /*
 					The precision can either be in digits or bits. 
 					AO.FloatPrec is in digits. 
@@ -402,6 +399,7 @@ int CoFormat(UBYTE *s)
 					if ( tolower(*s) == 'd' ) { s++; }
 					else if ( tolower(*s) == 'b' ) { AO.FloatPrec = AO.FloatPrec*log10(2.0); s++; }
 					else { s = ss; goto WrongOption; }
+					while ( *s == ' ' || *s == '\t' || *s == ',' ) s++;
 					if ( *s ) { s = ss; goto WrongOption; }
 				}
 				else {

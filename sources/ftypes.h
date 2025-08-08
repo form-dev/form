@@ -605,6 +605,7 @@ typedef int (*TFUN1)();
 #define TYPEEXPAND 88
 #define TYPETOFLOAT 89
 #define TYPETORAT 90
+#define TYPESTRICTROUNDING 91
 #endif
 
 /*
