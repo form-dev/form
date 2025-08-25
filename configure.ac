@@ -402,6 +402,17 @@ AS_IF([test "x$with_flint" != xno],
 	[flag=:
 	AS_IF([$flag], [AC_CHECK_HEADER([flint/flint.h], [], [flag=false])])
 	AS_IF([$flag],
+		[AC_MSG_CHECKING([for a suitable FLINT version])
+		AC_PREPROC_IFELSE([AC_LANG_SOURCE([[#include <flint/flint.h>
+#if __FLINT_RELEASE < 30200
+#error "FLINT version must be >= 3.2.0: https://github.com/form-dev/form/issues/679"
+#endif]])],
+			[AC_MSG_RESULT([yes])],
+			[AC_MSG_RESULT([no])
+			AC_MSG_NOTICE([FLINT version 3.2.0 or higher is required])
+			flag=false]
+		)])
+	AS_IF([$flag],
 		[# Check how to link against the math library.
 		AC_SEARCH_LIBS([pow], [m])
 		AS_IF([test "x$ac_cv_search_pow" = "xno"],
