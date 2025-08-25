@@ -7,6 +7,7 @@ extern "C" {
 #include "form3.h"
 }
 
+#include <sstream>
 #include "flintinterface.h"
 
 
@@ -289,4 +290,38 @@ void flint_startup_init(void) {
 }
 /*
 	#] flint_startup_init :
+	#[ flint_check_version :
+*/
+
+/**
+ * Checks the FLINT library version at runtime.
+ *
+ * This function should be called at startup.
+ * The program will terminate if a known buggy version of FLINT is detected.
+ */
+void flint_check_version(void) {
+	bool ok = true;
+	std::stringstream ss(flint_version);
+	int major, minor, patch;
+	char dot1, dot2;
+	if ( ss >> major >> dot1 >> minor >> dot2 >> patch ) {
+		if ( dot1 != '.' || dot2 != '.' || major < 0 || minor < 0 || patch < 0 ) {
+			ok = false;
+		}
+		else if ( major * 10000 + minor * 100 + patch < 30200 ) {
+			// flint < 3.2.0: https://github.com/form-dev/form/issues/679
+			ok = false;
+		}
+	}
+	else {
+		ok = false;
+	}
+	if ( !ok ) {
+		MesPrint("Bad FLINT version detected at runtime: %s",flint_version);
+		Terminate(-2);
+	}
+}
+
+/*
+	#] flint_check_version :
 */
