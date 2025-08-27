@@ -4285,19 +4285,17 @@ ReDo:
 			pp = CheckFloat(p,&spec);
 			if ( pp > p ) {	/* Got one */
 HaveFloat:
-				if ( spec == 1 ) { /* is zero */
-					*w++ = LONGNUMBER; *w++ = 3; *w++ = 0;
-				}
-				else if ( spec == -1 ) {
+				if ( spec == -1 ) {
 					MesPrint("&The floating point system has not been started: %s",p);
                     if ( !error ) error = 1;
 				}
 				else {
 					WORD *ow = AT.WorkPointer;
 					AT.WorkPointer = w;
-					c = *pp; c = 0;
+					c = *pp; *pp = 0;
 					ReadFloat((SBYTE *)p);	/* Is now at AT.WorkPointer */
 					*pp = c;
+					p = pp;
 					AT.WorkPointer[0] = IFFLOATNUMBER;
 					w = AT.WorkPointer + AT.WorkPointer[1];
 					AT.WorkPointer = ow;

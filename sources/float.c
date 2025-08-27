@@ -46,6 +46,7 @@
 
 #define GMPSPREAD (GMP_LIMB_BITS/BITSINWORD)
 
+
 void Form_mpf_init(mpf_t t);
 void Form_mpf_clear(mpf_t t);
 void Form_mpf_set_prec_raw(mpf_t t,ULONG newprec);
@@ -273,7 +274,6 @@ int PackFloat(WORD *fun,mpf_t infloat)
 	mp_limb_t *d = infloat->_mp_d; /* Pointer to the limbs.  */
 	int i;
 	long e = infloat->_mp_exp;
-	
 	t = fun;
 	*t++ = FLOATFUN;
 	t++;
@@ -316,6 +316,8 @@ int PackFloat(WORD *fun,mpf_t infloat)
 */
 	nlimbs = infloat->_mp_size < 0 ? -infloat->_mp_size: infloat->_mp_size;
 	if ( nlimbs == 0 ) {
+		*t++ = -SNUMBER;
+		*t++ = 0;
 	}
 	else if ( nlimbs == 1 && (ULONG)(*d) < ((ULONG)1)<<(BITSINWORD-1) ) {
 		*t++ = -SNUMBER;
@@ -849,31 +851,19 @@ UBYTE *CheckFloat(UBYTE *ss, int *spec)
 {
 	GETIDENTITY
 	UBYTE *s = ss;
-	int zero = 1, gotdot = 0;
+	int gotdot = 0;
+	/* A single dot is not a valid float */
+	if ( *s == '.' && FG.cTable[s[-1]] != 1 && FG.cTable[s[1]] != 1 ) return(ss);
 	while ( FG.cTable[s[-1]] == 1 ) s--;
+	/* This cannot be a valid float */
+	if ( *s != '.' && FG.cTable[*s] != 1 ) return(ss);
 	*spec = 0;
-	if ( FG.cTable[*s] == 1 ) {
-		while ( *s == '0' ) s++;
-		if ( FG.cTable[*s] == 1 ) {
-			s++;
-			while ( FG.cTable[*s] == 1 ) s++;
-			zero = 0;
-		}
-		if ( *s == '.' ) { goto dot; }
-	}
-	else if ( *s == '.' ) {
-dot:
+	while ( FG.cTable[*s] == 1 ) s++;
+	if ( *s == '.' ) {
 		gotdot = 1;
 		s++;
-		if ( FG.cTable[*s] != 1 && zero == 1 ) return(ss);
-		while ( *s == '0' ) s++;
-		if ( FG.cTable[*s] == 1 ) {
-			s++;
-			while ( FG.cTable[*s] == 1 ) s++;
-			zero = 0;
-		}
+		while ( FG.cTable[*s] == 1 ) s++;
 	}
-	else return(ss);
 /*
 	Now we have had the mantissa part, which may be zero.
 	Check for an exponent.
@@ -887,12 +877,11 @@ dot:
 		}
 		else { return(ss); }
 	}
-	else if ( gotdot == 0 ) return(ss);
+	else if ( gotdot == 0 ) return(ss); /* No radix point and no exponent */
 	if ( AT.aux_ == 0 ) { /* no floating point system */
 		*spec = -1;
 		return(s);
 	}
-	if ( zero ) *spec = 1;
 	return(s);
 }
 
@@ -1386,24 +1375,14 @@ int CoChop(UBYTE *s)
 		ss = CheckFloat(s, &spec);
 		if ( ss > s ) {
 			/* CheckFloat found a valid float */
-			if ( spec == 1 ) { /* Zero */
-				MesPrint("&The argument in Chop needs to be larger than 0.");
-				return(1);
-			}
-			else if ( spec == -1 ) { 
-				MesPrint("&The floating point system has not been started.");
-				return(1);
-			}
-			else {
-				AT.WorkPointer = w;
-				/* 
-					Reads the floating point number and outputs it at AT.WorkPointer as if it were a float_ 
-					function with its arguments.
-				 */
-				ReadFloat((SBYTE *)s); 
-				s = ss;
-				w += w[1];
-			}
+			AT.WorkPointer = w;
+			/* 
+				Reads the floating point number and outputs it at AT.WorkPointer as if it were a float_ 
+				function with its arguments.
+			 */
+			ReadFloat((SBYTE *)s); 
+			s = ss;
+			w += w[1];
 		}
 		else {
 			/* 2: CheckFloat didn't find a float, we now try for rationals and powers */
@@ -1411,10 +1390,6 @@ int CoChop(UBYTE *s)
 			if ( FG.cTable[*s] == 1 ) {
 				ParseNumber(x,s)
 				mpf_set_ui(aux1,x);
-			}
-			if ( mpf_sgn(aux1) == 0 ) {
-				MesPrint("&The argument in Chop needs to be larger than 0.");
-				return(1);
 			}
 			while ( *s == ' ' || *s == '\t' ) s++;
 			/* Check for rational number or power*/
@@ -1703,9 +1678,6 @@ int AddWithFloat(PHEAD WORD **ps1, WORD **ps2)
 	}
 	mpf_add(aux3,aux1,aux2);
 	sign3 = mpf_sgn(aux3);
-	if ( sign3 == 0 ) {	/* May be rare! */
-		*ps1 = 0; *ps2 = 0; AT.SortFloatMode = 0; return(0);
-	}
 	if ( sign3 < 0 ) mpf_neg(aux3,aux3);
 	fun3 = TermMalloc("AddWithFloat");
 	PackFloat(fun3,aux3);
@@ -1822,9 +1794,6 @@ int MergeWithFloat(PHEAD WORD **interm1, WORD **interm2)
 	}
 	mpf_add(aux3,aux1,aux2);
 	sign3 = mpf_sgn(aux3);
-	if ( sign3 == 0 ) {	/* May be very rare! */
-		AT.SortFloatMode = 0; return(0);
-	}
 /*
 	Now check whether we can park the result on top of one of the input terms.
 */

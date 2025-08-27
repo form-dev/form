@@ -199,10 +199,7 @@ donumber:		i = 0;
 #ifdef WITHFLOAT
 				in2 = CheckFloat(in,&spec);
 				if ( in2 > in ) {
-					if ( spec == 1 ) {
-						*out++ = TNUMBER; *out++ = 0; s = in2;
-					}
-					else if ( spec == -1 ) {
+					if ( spec == -1 ) {
 						MesPrint("&The floating point system has not been started: %s",in);
 	                    if ( !error ) error = 1;
 					}
@@ -312,11 +309,7 @@ dofloat:
 						int spec;
 						s = CheckFloat(in,&spec);
 						if ( s > in ) {
-							if ( spec == 1 ) {
-								*out++ = TNUMBER; *out++ = 0;
-								object = 2; in = s;
-							}
-							else if ( spec == -1 ) {
+							if ( spec == -1 ) {
 								MesPrint("&The floating point system has not been started: %s",in);
 								if ( !error ) error = 1;
 								in++;
