@@ -200,7 +200,7 @@ donumber:		i = 0;
 				in2 = CheckFloat(in,&spec);
 				if ( in2 > in ) {
 					if ( spec == 1 ) {
-						*out++ = TNUMBER; *out++ = 0; s = in2;
+						*out++ = TNUMBER; *out++ = 0; in = in2;
 					}
 					else if ( spec == -1 ) {
 						MesPrint("&The floating point system has not been started: %s",in);
