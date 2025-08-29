@@ -1626,6 +1626,7 @@ extern WORD* flint_ratfun_add(PHEAD WORD *, WORD *);
 extern int   flint_ratfun_normalize(PHEAD WORD *);
 extern WORD* flint_rem(PHEAD WORD *, WORD *, const WORD);
 extern void  flint_startup_init(void);
+extern void  flint_check_version(void);
 #endif
 
 extern void optimize_print_code (int);

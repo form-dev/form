@@ -1740,6 +1740,9 @@ int main(int argc, char **argv)
 #ifdef WITH_ALARM
 	if ( AM.TimeLimit > 0 ) alarm(AM.TimeLimit);
 #endif
+#ifdef WITHFLINT
+	flint_check_version();
+#endif
 	TimeCPU(0);
 	TimeChildren(0);
 	TimeWallClock(0);
