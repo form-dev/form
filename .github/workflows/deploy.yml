@@ -31,9 +31,9 @@ jobs:
 
       - name: Print tarball information
         run: |
-          ls -l $distname.tar.gz
-          file $distname.tar.gz
-          tar -tf $distname.tar.gz
+          ls -l "$distname.tar.gz"
+          file "$distname.tar.gz"
+          tar -tf "$distname.tar.gz"
 
       - name: Upload tarball as artifact
         uses: actions/upload-artifact@v4
@@ -106,24 +106,24 @@ jobs:
         continue-on-error: ${{ runner.os == 'Windows' }}
         run: |
           binname=${{ matrix.bin }}
-          if [ "$RUNNER_OS" == "Windows" ]; then
+          if [ "${{ runner.os }}" == "Windows" ]; then
             binname=$binname.exe
           fi
-          ls -l sources/$binname
-          file sources/$binname
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            otool -L sources/$binname
-            # Check if brewed libraries are statically linked.
-            if otool -L sources/$binname | grep -q '/usr/local/opt'; then
-              echo 'Error: failed to statically link brewed libraries' >&2
+          ls -l "sources/$binname"
+          file "sources/$binname"
+          if [ "${{ runner.os }}" == "macOS" ]; then
+            otool -L "sources/$binname"
+            # Check if brewed/built libraries are statically linked.
+            if otool -L "sources/$binname" | grep -Eq '/usr/local/opt/|/opt/homebrew/opt/|/form/form/lib/'; then
+              echo 'Error: unexpected dependency on shared libraries' >&2
               exit 1
             fi
           fi
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            ldd sources/$binname
-            # Check if MSYS2 DLLs are not linked.
-            if ldd sources/$binname | grep -q 'msys'; then
-              echo 'Error: failed to avoid to link with MSYS2 DLLs' >&2
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            ldd "sources/$binname"
+            # Check if MSYS2/built DLLs are not linked.
+            if ldd "sources/$binname" | grep -Eq 'msys|mingw|/form/form/lib/'; then
+              echo 'Error: unexpected dependency on DLLs' >&2
               exit 1
             fi
           fi
@@ -165,12 +165,12 @@ jobs:
           distname="${{ env.DISTNAME }}-manual"
           echo "distname=$distname" >>"$GITHUB_ENV"
           make pdf
-          cp doc/manual/manual.pdf "$distname.pdf"
+          mv doc/manual/manual.pdf "$distname.pdf"
 
       - name: Print document information
         run: |
-          ls -l $distname.pdf
-          file $distname.pdf
+          ls -l "$distname.pdf"
+          file "$distname.pdf"
 
       - name: Upload document as artifact
         uses: actions/upload-artifact@v4
@@ -213,7 +213,8 @@ jobs:
             # Print generated files.
             ls -A -C
             # Check if there are no unexpected files.
-            for f in $(ls -A); do
+            shopt -s nullglob
+            for f in * .*; do
               case "$f" in
                 index.html|manual.html|manual.css|img*.svg)
                   ;;
@@ -224,14 +225,14 @@ jobs:
               esac
             done
           )
-          cp -r doc/manual/manual $distname
-          tar -c $distname/* | gzip -c -9 > $distname.tar.gz
+          mv doc/manual/manual "$distname"
+          tar -c "$distname"/* | gzip -c -9 > "$distname.tar.gz"
 
       - name: Print file information
         run: |
-          ls -l $distname.tar.gz
-          file $distname.tar.gz
-          tar -tf $distname.tar.gz
+          ls -l "$distname.tar.gz"
+          file "$distname.tar.gz"
+          tar -tf "$distname.tar.gz"
 
       - name: Upload file as artifact
         uses: actions/upload-artifact@v4
@@ -264,27 +265,27 @@ jobs:
         run: |
           distname=$(basename artifacts/src/*.tar.gz .tar.gz)
           mkdir dist
-          mv artifacts/src/*.tar.gz dist
-          mv artifacts/doc-html/*.tar.gz dist
-          mv artifacts/doc-pdf/*.pdf dist
+          mv artifacts/src/*.tar.gz dist/
+          mv artifacts/doc-html/*.tar.gz dist/
+          mv artifacts/doc-pdf/*.pdf dist/
           make_tar_gz() {
-            if ls artifacts/$2 >/dev/null 2>&1; then
+            if compgen -G "artifacts/$2" >/dev/null; then
               pkgname=$distname-$1
-              mkdir $pkgname
-              mv artifacts/$2 $pkgname
-              chmod +x $pkgname/*form*
-              tar -c $pkgname/* | gzip -c -9 >dist/$pkgname.tar.gz
-              rm -rf $pkgname
+              mkdir "$pkgname"
+              mv artifacts/$2 "$pkgname"/
+              chmod +x "$pkgname"/*form*
+              tar -c "$pkgname"/* | gzip -c -9 >"dist/$pkgname.tar.gz"
+              rm -rf "$pkgname"
             fi
           }
           make_zip() {
-            if ls artifacts/$2 >/dev/null 2>&1; then
+            if compgen -G "artifacts/$2" >/dev/null; then
               pkgname=$distname-$1
-              mkdir $pkgname
-              mv artifacts/$2 $pkgname
-              chmod +x $pkgname/*form*
-              zip -9 dist/$pkgname.zip $pkgname/*
-              rm -rf $pkgname
+              mkdir "$pkgname"
+              mv artifacts/$2 "$pkgname"/
+              chmod +x "$pkgname"/*form*
+              zip -9 "dist/$pkgname.zip" "$pkgname"/*
+              rm -rf "$pkgname"
             fi
           }
           make_tar_gz x86_64-linux '*-ubuntu-24.04/*form'
@@ -293,13 +294,23 @@ jobs:
           make_tar_gz arm64-osx '*-macos-14/*form'
           make_zip x86_64-windows '*-windows-2022/*form.exe'
 
-      - name: Summarize files for distribution
+      - name: Summarize the distributions
         run: |
-          echo "Number of files: $(ls -1 dist | wc -l)" >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo '| File Name | Size (bytes) |' >> $GITHUB_STEP_SUMMARY
-          echo '| --- | ---: |' >> $GITHUB_STEP_SUMMARY
-          ls -l dist | tail -n +2 | awk '{ printf "| %s | %s |\n", $9, $5 }' >> $GITHUB_STEP_SUMMARY
+          expected_count=8
+          actual_count=$(find dist -type f | wc -l)
+
+          {
+            echo "Number of files: $actual_count"
+            echo
+            echo '| File Name | Size (bytes) |'
+            echo '| --- | ---: |'
+            find dist -type f -printf "| %f | %s |\n"
+          } >>"$GITHUB_STEP_SUMMARY"
+
+          if [[ $actual_count -ne $expected_count ]]; then
+            echo "Error: expected $expected_count files, but found $actual_count." >&2
+            exit 1
+          fi
 
       # Upload the distributions as an artifact, regardless of whether
       # the commit has a versioning tag. This makes checking and debugging easy.
@@ -321,7 +332,7 @@ jobs:
       # a versioning tag.
       - name: Publish distributions
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             dist/*.tar.gz
