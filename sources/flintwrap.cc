@@ -283,13 +283,6 @@ WORD* flint_rem(PHEAD WORD *a, WORD *b, const WORD must_fit_term) {
 }
 /*
 	#] flint_rem :
-	#[ flint_startup_init :
-*/
-void flint_startup_init(void) {
-	flint::startup_init();
-}
-/*
-	#] flint_startup_init :
 	#[ flint_check_version :
 */
 

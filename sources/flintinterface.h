@@ -141,8 +141,6 @@ namespace flint {
 		fmpz_mpoly_ctx_t);
 	void ratfun_read_poly(const WORD *, fmpz_poly_t, fmpz_poly_t);
 
-	void startup_init(void);
-
 	uint64_t to_argument_mpoly(PHEAD WORD *, const bool, const bool, const bool, const uint64_t,
 		const fmpz_mpoly_t, const var_map_t &, const fmpz_mpoly_ctx_t);
 	uint64_t to_argument_mpoly(PHEAD WORD *, const bool, const bool, const bool, const uint64_t,
