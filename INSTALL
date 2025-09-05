@@ -123,12 +123,12 @@ debugging versions can be specified by the environment variables
   DEBUGCOMPILEFLAGS
   DEBUGLINKFLAGS
 If they are not set, they will be chosen for the local machine where you are
-compiling executables, which may contain optimization flags that makes
-executables incompatible with other machines. If you plan to move the
-executables to other machines and want to avoid such incompatibility, use the
-following option:
+compiling executables. If you would like to enable additional optimizations
+specific to the machine on which you are compiling FORM, use the following
+option. Note that the resulting binary may not run on CPUs with a different
+feature set.
 
-    ./configure --disable-native
+    ./configure --enable-native
 
 The configure script creates a file "config.h" in which several options and
 settings are passed on to the source code files via preprocessor definitions.

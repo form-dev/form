@@ -827,10 +827,10 @@ AC_SUBST([MPI_STATIC_LDFLAGS])
 # Check for native/universal build
 AC_ARG_ENABLE([native],
 	[AS_HELP_STRING([--enable-native],
-		[tune for the compiling machine (release versions) @<:@default=yes@:>@])],
+		[tune for the compiling machine (release versions) @<:@default=no@:>@])],
 	[AS_IF([test "x$enableval" = xno || test "x$cross_compiling" = xyes],
 		[enable_native=no], [enable_native=yes])],
-	[enable_native=yes])
+	[enable_native=no])
 
 # Check for profiling option
 AC_ARG_ENABLE([profile],
