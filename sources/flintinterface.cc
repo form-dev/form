@@ -1720,36 +1720,6 @@ void flint::ratfun_read_poly(const WORD *a, fmpz_poly_t num, fmpz_poly_t den) {
 }
 /*
 	#] flint::ratfun_read_poly :
-
-	#[ flint::startup_init :
-*/
-// The purpose of this function is it work around threading issues in flint, reported in
-// https://github.com/flintlib/flint/issues/1652 and fixed in
-// https://github.com/flintlib/flint/pull/1658 . This implies versions prior to 3.1.0,
-// but at least 3.0.0 (when gr was introduced).
-void flint::startup_init(void) {
-
-#if __FLINT_RELEASE >= 30000
-	// Here we initialize some gr contexts so that their method tables are populated. Crashes have
-	// otherwise been observed due to these two contexts in particular.
-	fmpz_t dummy_fmpz;
-	fmpz_init(dummy_fmpz);
-	fmpz_set_si(dummy_fmpz, 19);
-
-	gr_ctx_t dummy_gr_ctx_fmpz_mod;
-	gr_ctx_init_fmpz_mod(dummy_gr_ctx_fmpz_mod, dummy_fmpz);
-	gr_ctx_clear(dummy_gr_ctx_fmpz_mod);
-
-	gr_ctx_t dummy_gr_ctx_nmod;
-	gr_ctx_init_nmod(dummy_gr_ctx_nmod, 19);
-	gr_ctx_clear(dummy_gr_ctx_nmod);
-
-	fmpz_clear(dummy_fmpz);
-#endif
-}
-/*
-	#] flint::startup_init :
-
 	#[ flint::to_argument_mpoly :
 */
 // Convert a fmpz_mpoly_t to a FORM argument (or 0-terminated list of terms: with_arghead==false).
