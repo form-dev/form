@@ -1178,7 +1178,7 @@ int TryFileSetups(void)
 		if ( c == ENDOFINPUT ) break;
 		if ( c == LINEFEED ) continue;
 		if ( c == 0 || c == ENDOFINPUT ) break;
-		while ( c != LINEFEED ) {
+		while ( c != LINEFEED && c != ENDOFINPUT ) {
 			*s++ = c;
 			c = GetInput();
 			if ( c != LINEFEED && c != '\r' ) continue;
