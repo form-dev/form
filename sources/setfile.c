@@ -338,7 +338,8 @@ SETUPPARAMETERS *GetSetupPar(UBYTE *s)
 {
 	int hi, med, lo, i;
 	lo = 0;
-	hi = sizeof(setupparameters)/sizeof(SETUPPARAMETERS);
+	// -1: remove possibility of out-of-bounds read in StrICmp
+	hi = sizeof(setupparameters)/sizeof(SETUPPARAMETERS) - 1;
 	do {
 		med = ( hi + lo ) / 2;
 		i = StrICmp(s,(UBYTE *)setupparameters[med].parameter);
