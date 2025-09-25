@@ -3943,6 +3943,13 @@ Evaluate 1;
 #pend_if wordsize == 2
 assert compile_error?("should be a built in function that can be evaluated numerically.")
 *--#] Issue664 :
+*--#[ Issue668 :
+* Check error message for invalid setup parameter:
+#:x
+#message test
+.end
+assert runtime_error?("Setups in .frm file: Keyword not recognized: x")
+*--#] Issue668 :
 *--#[ Issue695_1 :
 #StartFloat 20b
 CFunction f;

@@ -338,7 +338,8 @@ SETUPPARAMETERS *GetSetupPar(UBYTE *s)
 {
 	int hi, med, lo, i;
 	lo = 0;
-	hi = sizeof(setupparameters)/sizeof(SETUPPARAMETERS);
+	// -1: remove possibility of out-of-bounds read in StrICmp
+	hi = sizeof(setupparameters)/sizeof(SETUPPARAMETERS) - 1;
 	do {
 		med = ( hi + lo ) / 2;
 		i = StrICmp(s,(UBYTE *)setupparameters[med].parameter);
@@ -1178,7 +1179,7 @@ int TryFileSetups(void)
 		if ( c == ENDOFINPUT ) break;
 		if ( c == LINEFEED ) continue;
 		if ( c == 0 || c == ENDOFINPUT ) break;
-		while ( c != LINEFEED ) {
+		while ( c != LINEFEED && c != ENDOFINPUT ) {
 			*s++ = c;
 			c = GetInput();
 			if ( c != LINEFEED && c != '\r' ) continue;
