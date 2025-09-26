@@ -158,7 +158,6 @@ typedef struct {
 	int *from;
 	int numbufs;          /* number of cyclic buffers */
 	int active;           /* flag telling which buffer is active */
-	PADPOINTER(0,2,0,0);
 } PF_BUFFER;
 
 /*
@@ -182,7 +181,6 @@ typedef struct ParallelVars {
 	int         log;            /* flag for logging mode */
 	WORD        numsbufs;       /* number of cyclic send buffers (PF.sbuf->numbufs) */
 	WORD        numrbufs;       /* number of cyclic receive buffers (PF.rbufs[i]->numbufs, i=1,...numtasks-1) */
-	PADPOSITION(2,0,8,2,0);
 } PARALLELVARS;
 
 extern PARALLELVARS PF;

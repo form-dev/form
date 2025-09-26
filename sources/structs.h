@@ -108,7 +108,6 @@ typedef struct InDeXeNtRy {
 	WORD	nfunctions;			/**< Number of functions in the list */
 	WORD    size;				/**< Size of variables field */
 	SBYTE	name[MAXENAME+1];	/**< Name of expression */
-	PADPOSITION(0,1,0,5,MAXENAME+1);
 } INDEXENTRY;
 
 /**
@@ -154,7 +153,6 @@ typedef struct FiLeDaTa {
 	POSITION Position;
 	WORD Handle;
 	WORD dirtyflag;
-	PADPOSITION(0,0,0,2,0);
 } FILEDATA;
 
 /**
@@ -187,7 +185,6 @@ typedef struct ReNuMbEr {
 	WORD       *indnum;       /**< Renumbered indices */
 	WORD       *vecnum;       /**< Renumbered vectors */
 	WORD       *funnum;       /**< Renumbered functions */
-	PADPOSITION(4,0,0,0,sizeof(VARRENUM)*4);
 } *RENUMBER;
 
 /*
@@ -211,7 +208,6 @@ typedef struct {
 	int numglobal;     /**< Marker for position when .global is executed. */
 	int numtemp;       /**< At the moment only needed for sets and setstore. */
 	int numclear;      /**< Only for the clear instruction. */
-	PADPOINTER(0,6,0,0);
 } LIST;
 
 /**
@@ -252,7 +248,6 @@ typedef struct NaMeNode {
 	WORD balance;   /**< Used for the balancing of the tree. */
 	WORD type;      /**< Type associated with the name. See @ref CompilerTypes "compiler types". */
 	WORD number;    /**< Number of variable in #LIST's like for example C_const::SymbolList. */
-	PADLONG(0,6,0);
 } NAMENODE;
 
 /**
@@ -280,7 +275,6 @@ typedef struct NaMeTree {
 	LONG     clearnamefill;  /**< Marks the reset point used by the .clear statement. */
 	LONG     clearnodefill;  /**< Marks the reset point used by the .clear statement. */
 	WORD     headnode;       /**< Offset in #namenode of head node. =-1 if tree is empty. */
-	PADPOINTER(10,0,1,0);
 } NAMETREE;
 
 /**
@@ -319,7 +313,6 @@ typedef struct BrAcKeTiNdEx {	/* For indexing brackets in local expressions */
 	POSITION next;				/* Place of next indexed bracket in expr */
 	LONG bracket;				/* Offset of position in bracketbuffer */
 	LONG termsinbracket;
-	PADPOSITION(0,2,0,0,0);
 } BRACKETINDEX;
 
 /**
@@ -334,7 +327,6 @@ typedef struct BrAcKeTiNfO {
 	LONG  bracketfill;
 	LONG  indexfill;
 	WORD  SortType;            /**< The sorting criterium used (like POWERFIRST etc) */
-	PADPOINTER(4,0,1,0);
 } BRACKETINFO;
 
 /**
@@ -381,7 +373,6 @@ typedef struct TaBlEs {
 	WORD    tablenum;       /**< For testing of tableuse */
 	WORD    mode;           /**< 0: normal, 1: stub */
 	WORD    numdummies;     /**<  */
-	PADPOINTER(4,8,6,0);
 } *TABLES;
 
 /**
@@ -415,9 +406,6 @@ typedef struct ExPrEsSiOn {
     WORD    uflags;         /* User flags */
 #ifdef PARALLELCODE
     WORD    partodo;        /* Whether to be done in parallel mode */
-	PADPOSITION(5,2,0,14,0);
-#else
-	PADPOSITION(5,2,0,13,0);
 #endif
 } *EXPRESSIONS;
 
@@ -435,7 +423,6 @@ typedef struct SyMbOl {			/* Don't change unless altering .sav too */
 	WORD	node;
 	WORD	namesize;
 	WORD	dimension;			/* For dimensionality checks */
-	PADLONG(0,8,0);
 } *SYMBOLS;
 
 /**
@@ -451,7 +438,6 @@ typedef struct InDeX {			/* Don't change unless altering .sav too */
 	WORD    nmin4;				/* Used for n-4 if dimension < 0 */
 	WORD	node;
 	WORD	namesize;
-	PADLONG(0,7,0);
 } *INDICES;
 
 /**
@@ -466,7 +452,6 @@ typedef struct VeCtOr {			/* Don't change unless altering .sav too */
 	WORD	node;
 	WORD	namesize;
 	WORD	dimension;			/* For dimensionality checks */
-	PADLONG(0,6,0);
 } *VECTORS;
 
 /**
@@ -489,7 +474,6 @@ typedef struct FuNcTiOn {  /* Don't change unless altering .sav too */
 	WORD    dimension;     /* For dimensionality checks */
 	WORD    maxnumargs;
 	WORD    minnumargs;
-	PADPOINTER(2,0,11,0);
 } *FUNCTIONS;
 
 /**
@@ -505,7 +489,6 @@ typedef struct SeTs {
 	WORD	namesize;
 	WORD	dimension;			/* For dimensionality checks */
     WORD    flags;              /* Like: ordered */
-	PADLONG(0,7,0);
 } *SETS;
 
 /**
@@ -516,7 +499,6 @@ typedef struct DuBiOuS {		/* Undeclared objects. Just for compiler. */
 	LONG	name;				/* Location in names buffer */
 	WORD	node;
 	WORD	dummy;
-	PADLONG(0,2,0);
 } *DUBIOUSV;
  
 typedef struct FaCdOlLaR {
@@ -524,7 +506,6 @@ typedef struct FaCdOlLaR {
 	LONG	size;
 	WORD	type;				/* Type can be DOLNUMBER or DOLTERMS */
 	WORD	value;				/* in case it is a (short) number */
-	PADPOINTER(1,0,2,0);
 } FACDOLLAR;
 
 typedef struct DoLlArS {
@@ -542,11 +523,6 @@ typedef struct DoLlArS {
 	WORD	zero;
 	WORD	numdummies;
 	WORD	nfactors;
-#ifdef WITHPTHREADS
-	PADPOINTER(2,0,6,sizeof(pthread_mutex_t)*2);
-#else
-	PADPOINTER(2,0,6,0);
-#endif
 } *DOLLARS;
 
 /**
@@ -559,9 +535,6 @@ typedef struct MoDoPtDoLlArS {
 #endif
 	WORD	number;
 	WORD	type;
-#ifdef WITHPTHREADS
-	PADPOINTER(0,0,2,0);
-#endif
 } MODOPTDOLLAR;
 
 /**
@@ -582,7 +555,6 @@ typedef struct fixedset {
 typedef struct TaBlEbAsEsUbInDeX {
 	POSITION where;
 	LONG size;
-	PADPOSITION(0,1,0,0,0);
 } TABLEBASESUBINDEX;
 
 /**
@@ -596,7 +568,6 @@ typedef struct TaBlEbAsE {
 	int *tablenumbers;		/* Number of each table */
 	TABLEBASESUBINDEX *subindex;		/* For each table */
 	int numtables;
-	PADPOSITION(3,0,1,0,0);
 } TABLEBASE;
 
 /**
@@ -613,7 +584,6 @@ typedef struct {
 	int symmet;
 	int tensor;
 	int commute;
-	PADPOINTER(0,6,0,0);
 } FUN_INFO;
 
 typedef struct PaRtIcLe {
@@ -709,19 +679,6 @@ typedef struct FiLe {
 #endif
     int handle;					/**< Our own handle. Equal -1 if no file exists. */
 	int active;					/* File is open or closed. Not used. */
-#ifdef WITHPTHREADS
-#ifdef WITHZLIB
-	PADPOSITION(11,5,2,0,sizeof(pthread_mutex_t));
-#else
-	PADPOSITION(9,4,2,0,sizeof(pthread_mutex_t));
-#endif
-#else
-#ifdef WITHZLIB
-	PADPOSITION(7,4,2,0,0);
-#else
-	PADPOSITION(5,3,2,0,0);
-#endif
-#endif
 } FILEHANDLE;
 
 /**
@@ -759,7 +716,6 @@ typedef struct StreaM {
 	UBYTE isnextchar;
 	UBYTE nextchar[2];
 	UBYTE reserved;
-	PADPOSITION(6,3,9,0,4);
 } STREAM;
 
 typedef struct SpecTatoR {
@@ -769,7 +725,6 @@ typedef struct SpecTatoR {
 	char *name;          /* We identify the spectator by the name of the expression */
 	WORD exprnumber;     /* During running we use the number. */
 	WORD flags;          /* local, global? */
-	PADPOSITION(2,0,0,2,0);
 } SPECTATOR;
 
 /*
@@ -809,7 +764,6 @@ typedef struct TrAcEs {			/* For computing 4 dimensional traces */
 	WORD		gamm,ad,a3,a4,lc3,lc4;
 	WORD		sign1,sign2,gamma5,num,level,factor,allsign;
 	WORD		finalstep;
-	PADPOINTER(0,0,19,0);
 } TRACES;
 
 /**
@@ -826,7 +780,6 @@ typedef struct TrAcEn {			/* For computing n dimensional traces */
 	WORD		*perm;		/* number */
 	WORD		*inlist;	/* number */
 	WORD		sgn,num,level,factor,allsign;
-	PADPOINTER(0,0,5,0);
 } *TRACEN;
 
 /*
@@ -844,7 +797,6 @@ typedef struct pReVaR {
 	UBYTE *argnames;	/**< names of arguments, zero separated. points into memory of name */
 	int nargs;			/**< 0 = regular, >= 1: number of macro arguments. total number */
 	int wildarg;		/**< The number of a potential ?var. If none: 0. wildarg<nargs */
-	PADPOINTER(0,2,0,0);
 } PREVAR;
  
 /**
@@ -862,7 +814,6 @@ typedef struct {
 	WORD oldrbuf;
 	WORD inscbuf;
 	WORD oldcnumlhs;
-	PADPOINTER(0,3,6,0);
 } INSIDEINFO;
 
 /**
@@ -873,7 +824,6 @@ typedef struct {
 typedef struct {
 	UBYTE	*buffer;
     LONG	size;
-	PADPOINTER(1,0,0,0);
 } PRELOAD;
 
 /**
@@ -884,7 +834,6 @@ typedef struct {
 	PRELOAD p;
 	UBYTE	*name;
 	int		loadmode;
-	PADPOINTER(0,1,0,0);
 } PROCEDURE;
 
 /**
@@ -914,7 +863,6 @@ typedef struct DoLoOp {
 	WORD NumPreTypes;
 	WORD PreIfLevel;
 	WORD PreSwitchLevel;
-	PADPOINTER(4,4,6,0);
 } DOLOOP;
 
 /**
@@ -1010,7 +958,6 @@ typedef struct CbUf {
     int numtree;
     int rootnum;
     int MaxTreeSize;
-    PADPOINTER(1,9,0,0);
 } CBUF;
 
 /**
@@ -1023,7 +970,6 @@ typedef struct CbUf {
 typedef struct ChAnNeL {
     char *name;          /**< [D] Name of the channel */
     int handle;          /**< File handle */
-    PADPOINTER(0,1,0,0);
 } CHANNEL;
 
 /**
@@ -1039,6 +985,9 @@ typedef struct {
     UBYTE *parameter;
     int type;
     int flags;
+    // This ordering is assumed by initializer lists in many places. In this
+    // case the struct should anyway not have additional padding between the
+    // two int and the LONG members.
     LONG value;
 } SETUPPARAMETERS;
 
@@ -1067,7 +1016,6 @@ typedef struct StOrEcAcHe {
     POSITION toppos;
     struct StOrEcAcHe *next;
     WORD buffer[2];
-    PADPOSITION(1,0,0,2,0);
 } *STORECACHE;
 
 /**
@@ -1080,7 +1028,6 @@ typedef struct PeRmUtE {
     WORD sign;
     WORD n;
     WORD cycle[MAXMATCH];
-    PADPOINTER(0,0,MAXMATCH+2,0);
 } PERM;
 
 /**
@@ -1092,7 +1039,6 @@ typedef struct PeRmUtEp {
     WORD sign;
     WORD n;
     WORD cycle[MAXMATCH];
-    PADPOINTER(0,0,MAXMATCH+2,0);
 } PERMP;
 
 /**
@@ -1109,7 +1055,6 @@ typedef struct DiStRiBuTe {
     WORD n2;
     WORD n;
     WORD cycle[MAXMATCH];
-    PADPOINTER(0,0,(MAXMATCH+4),0);
 } DISTRIBUTE;
 
 /**
@@ -1125,7 +1070,6 @@ typedef struct PaRtI {
 	WORD numargs; /* the number of arguments to be partitioned */
 	WORD numpart; /* the number of partitions */
 	WORD where;   /* offset of the function in the term */
-    PADPOINTER(0,0,3,0);
 } PARTI;
 
 /**
@@ -1196,11 +1140,6 @@ typedef struct sOrT {
     WORD fPatchN;               /* Number of patches on file (output) */
     WORD inNum;                 /* Number of patches on file (input) */
     WORD stage4;                /* Are we using stage4? */
-#ifdef WITHZLIB
-    PADPOSITION(27,12,12,3,0);
-#else
-    PADPOSITION(24,12,12,3,0);
-#endif
 } SORTING;
 
 #ifdef WITHPTHREADS
@@ -1218,7 +1157,6 @@ typedef struct SoRtBlOcK {
     int     MasterNumBlocks;
     int     MasterBlock;
     int     FillBlock;
-    PADPOINTER(0,3,0,0);
 } SORTBLOCK;
 #endif
 
@@ -1253,7 +1191,6 @@ typedef struct ThReAdBuCkEt {
     int  usenum;                /* Which is the term being used at the moment */
     int  busy;                  /*  */
     int  type;                  /* Doing brackets? */
-    PADPOINTER(5,5,0,sizeof(pthread_mutex_t));
 } THREADBUCKET;
 
 #endif
@@ -1288,7 +1225,6 @@ typedef struct {
     WORD    level;
     WORD    thefunction;
     WORD    option;
-    PADPOINTER(1,0,4,0);
 } SHvariables;
 
 typedef struct {                /* Used for computing calculational cost in optim.c */
@@ -1347,8 +1283,6 @@ typedef struct {
     WORD  exprnr;       /* Problem here is: we renumber them in execute.c */
     WORD  minvar;
     WORD  maxvar;
-    
-    PADPOSITION(2,1,0,3,0);
 } OPTIMIZERESULT;
  
 typedef struct {
@@ -1600,19 +1534,6 @@ struct M_const {
     WORD    BracketFactors[8];
     BOOL    FromStdin;             /* read the input from STDIN */
     BOOL    IgnoreDeprecation;     /* ignore deprecation warning */
-#ifdef WITHFLOAT
-#ifdef WITHPTHREADS
-	PADPOSITION(17,30,62,84,(sizeof(pthread_rwlock_t)+sizeof(pthread_mutex_t)*2)+2);
-#else
-	PADPOSITION(17,28,62,84,2);
-#endif
-#else
-#ifdef WITHPTHREADS
-	PADPOSITION(17,30,62,84,(sizeof(pthread_rwlock_t)+sizeof(pthread_mutex_t)*2)+2);
-#else
-	PADPOSITION(17,28,62,84,2);
-#endif
-#endif
 };
 /*
  		#] M : 
@@ -1678,7 +1599,6 @@ struct P_const {
     WORD    preError;              /* (P) Blocks certain types of execution */
     UBYTE   ComChar;               /* (P) Commentary character */
     UBYTE   cComChar;              /* (P) Old commentary character for .clear */
-    PADPOINTER(3,22,2,2);
 };
 
 /*
@@ -1944,23 +1864,6 @@ struct C_const {
 #endif
     UBYTE   Commercial[COMMERCIALSIZE+2]; /* (C) Message to be printed in statistics */
     UBYTE   debugFlags[MAXFLAGS+2];    /* On/Off Flag number(s) */
-#ifdef WITHFLOAT
-#if defined(WITHPTHREADS)
-	PADPOSITION(50,12+3*MAXNEST,77,48+3*MAXNEST+MAXREPEAT,COMMERCIALSIZE+MAXFLAGS+4+sizeof(LIST)*17+sizeof(pthread_mutex_t));
-#elif defined(WITHMPI)
-	PADPOSITION(50,12+3*MAXNEST,77,49+3*MAXNEST+MAXREPEAT,COMMERCIALSIZE+MAXFLAGS+4+sizeof(LIST)*17);
-#else
-	PADPOSITION(48,12+3*MAXNEST,75,48+3*MAXNEST+MAXREPEAT,COMMERCIALSIZE+MAXFLAGS+4+sizeof(LIST)*17);
-#endif
-#else
-#if defined(WITHPTHREADS)
-	PADPOSITION(50,8+3*MAXNEST,77,48+3*MAXNEST+MAXREPEAT,COMMERCIALSIZE+MAXFLAGS+4+sizeof(LIST)*17+sizeof(pthread_mutex_t));
-#elif defined(WITHMPI)
-	PADPOSITION(50,8+3*MAXNEST,77,49+3*MAXNEST+MAXREPEAT,COMMERCIALSIZE+MAXFLAGS+4+sizeof(LIST)*17);
-#else
-	PADPOSITION(48,8+3*MAXNEST,75,48+3*MAXNEST+MAXREPEAT,COMMERCIALSIZE+MAXFLAGS+4+sizeof(LIST)*17);
-#endif
-#endif
 };
 /*
  		#] C : 
@@ -2003,13 +1906,6 @@ struct S_const {
     WORD    CollectOverFlag;       /* (R) Indicates overflow at Collect */
 #ifdef WITHPTHREADS
 	WORD	sLevel;                /* Copy of AR0.sLevel because it can get messy */
-#endif
-#if defined(WITHPTHREADS)
-	PADPOSITION(3,0,5,3,sizeof(pthread_mutex_t)*3);
-#elif defined(WITHMPI)
-	PADPOSITION(4,0,5,2,0);
-#else
-	PADPOSITION(4,0,4,2,0);
 #endif
 };
 /*
@@ -2091,19 +1987,6 @@ struct R_const {
     WORD    modeloptions;
     WORD    funoffset;
     WORD    moebiustablesize;
-#if ( BITSINWORD == 32 )
-#ifdef WITHPTHREADS
-	PADPOSITION(8,7,8,5029,0);
-#else
-	PADPOSITION(8,7,7,5029,0);
-#endif
-#else
-#ifdef WITHPTHREADS
-	PADPOSITION(8,7,8,27,0);
-#else
-	PADPOSITION(8,7,7,27,0);
-#endif
-#endif
 };
 
 /*
@@ -2235,27 +2118,6 @@ struct T_const {
 #ifdef WITHFLOAT
     WORD    FloatPos;
     WORD    SortFloatMode;
-#endif
-#ifdef WITHFLOAT
- #ifdef WITHPTHREADS
-  #ifdef WITHSORTBOTS
-	PADPOINTER(5,27,107+SUBEXPSIZE*4+FUNHEAD*2+ARGHEAD*2,0);
-  #else
-	PADPOINTER(5,25,107+SUBEXPSIZE*4+FUNHEAD*2+ARGHEAD*2,0);
-  #endif
- #else
-	PADPOINTER(5,23,107+SUBEXPSIZE*4+FUNHEAD*2+ARGHEAD*2,0);
- #endif
-#else
- #ifdef WITHPTHREADS
-  #ifdef WITHSORTBOTS
-	PADPOINTER(5,27,105+SUBEXPSIZE*4+FUNHEAD*2+ARGHEAD*2,0);
-  #else
-	PADPOINTER(5,25,105+SUBEXPSIZE*4+FUNHEAD*2+ARGHEAD*2,0);
-  #endif
- #else
-	PADPOINTER(5,23,105+SUBEXPSIZE*4+FUNHEAD*2+ARGHEAD*2,0);
- #endif
 #endif
 };
 /*
@@ -2407,35 +2269,6 @@ struct N_const {
 	WORD	nbino;                 /* () Used in proces.c */
 	WORD	last1;                 /* () Used in proces.c */
 #endif
-#ifdef WITHPTHREADS
-#ifdef WHICHSUBEXPRESSION
-#ifdef WITHZLIB
-	PADPOSITION(55,11,23,28,sizeof(SHvariables));
-#else
-	PADPOSITION(53,11,23,28,sizeof(SHvariables));
-#endif
-#else
-#ifdef WITHZLIB
-	PADPOSITION(54,9,23,26,sizeof(SHvariables));
-#else
-	PADPOSITION(52,9,23,26,sizeof(SHvariables));
-#endif
-#endif
-#else
-#ifdef WHICHSUBEXPRESSION
-#ifdef WITHZLIB
-	PADPOSITION(53,9,23,28,sizeof(SHvariables));
-#else
-	PADPOSITION(51,9,23,28,sizeof(SHvariables));
-#endif
-#else
-#ifdef WITHZLIB
-	PADPOSITION(52,7,23,26,sizeof(SHvariables));
-#else
-	PADPOSITION(50,7,23,26,sizeof(SHvariables));
-#endif
-#endif
-#endif
 };
 
 /*
@@ -2531,19 +2364,6 @@ struct O_const {
 /*
 	For the padding, please count also the number of int's in the OPTIMIZE struct.
 */
-#ifdef WITHFLOAT
-#if defined(mBSD) && defined(MICROTIME)
-	PADPOSITION(25,7,36,18,1);
-#else
-	PADPOSITION(25,5,36,18,1);
-#endif
-#else
-#if defined(mBSD) && defined(MICROTIME)
-	PADPOSITION(25,6,36,17,1);
-#else
-	PADPOSITION(25,4,36,17,1);
-#endif
-#endif
 };
 /*
  		#] O : 
@@ -2570,7 +2390,6 @@ struct X_const {
 	                              if !=0 (default) is sent to a whole process group*/
 	int daemonize;             /* if !=0 (default), start in a daemon mode */
 	int	currentExternalChannel;
-	PADPOINTER(0,5,0,0);
 };
 /*
  		#] X : 
@@ -2596,7 +2415,6 @@ typedef struct AllGlobals {
     struct O_const O;
     struct P_const P;
 	struct X_const X;
-	PADPOSITION(0,0,0,0,sizeof(struct P_const)+sizeof(struct X_const));
 } ALLGLOBALS;
 
 /**
@@ -2608,7 +2426,6 @@ typedef struct AllPrivates {
     struct R_const R;
     struct N_const N;
     struct T_const T;
-	PADPOSITION(0,0,0,0,sizeof(struct T_const));
 } ALLPRIVATES;
 
 #else
@@ -2627,7 +2444,6 @@ typedef struct AllGlobals {
     struct P_const P;
     struct T_const T;
 	struct X_const X;
-	PADPOSITION(0,0,0,0,sizeof(struct P_const)+sizeof(struct T_const)+sizeof(struct X_const));
 } ALLGLOBALS;
 
 #endif

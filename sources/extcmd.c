@@ -280,7 +280,6 @@ typedef struct ExternalChannel {
 	int fsend;       /*stdin of the external process*/
 	int killSignal; /*signal to kill*/
 	int daemonize;/*0 --neither setsid nor daemonize, !=0 -- full daemonization*/
-	PADPOINTER(0,3,0,0);
 } EXTHANDLE;
 
 

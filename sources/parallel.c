@@ -2480,7 +2480,6 @@ typedef struct {
 	VectorStruct(WORD) buf;
 	LONG size;
 	WORD type;
-	PADPOINTER(1,0,1,0);
 } dollar_buf;
 
 /* Buffers used to store data for each variable from each slave. */
