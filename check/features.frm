@@ -1571,6 +1571,25 @@ runtime_error?("Illegal use of a transform statement and float_")
 runtime_error?("Illegal use of a transform statement and float_")
 runtime_error?("Illegal use of a transform statement and float_")
 *--#] transform_float_error :
+*--#[ argument_float :
+#StartFloat 24d
+CFunction f;
+Symbol a,b,c,d;
+#StartFloat 24d
+Local F = 1.0 -2.0*f(a+5*b-3*c)+f(3.14*a*b);
+Normalize;
+MakeInteger;
+Argument;
+	Multiply 10*d;
+EndArgument;
+SplitArg;
+FactArg;
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("1.0e+00 + f(a,b,d,3.14e+01) + 2.0e+00*f(30,c,d,-50,b,d,-10,a,d)")
+*--#] argument_float : 
 *--#[ float_error :
 Evaluate;
 ToFloat;
