@@ -2226,7 +2226,6 @@ void *Malloc1(LONG size, const char *messageifwrong)
 	char *t, *u;
 	int i;
 	LOCK(MallocLock);
-/*	MLOCK(ErrorMessageLock); */
 	if ( size == 0 ) {
 		MesPrint("%wAsking for 0 bytes in Malloc1");
 	}
@@ -2244,13 +2243,10 @@ void *Malloc1(LONG size, const char *messageifwrong)
 		MLOCK(ErrorMessageLock);
 #endif
 		MesPrint("Attempted to allocate %l bytes.", size);
-		Error1("No memory while allocating ",(UBYTE *)messageifwrong);
+		MesPrint("@No memory while allocating %s", (UBYTE *)messageifwrong);
 #ifndef MALLOCDEBUG
 		MUNLOCK(ErrorMessageLock);
 #else
-/*		MUNLOCK(ErrorMessageLock); */
-#endif
-#ifdef MALLOCDEBUG
 		UNLOCK(MallocLock);
 #endif
 		Terminate(-1);

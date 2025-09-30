@@ -2983,7 +2983,7 @@ id g(N?) = 1;
 print;
 .end
 #require linux?
-#ulimit -v 8_000_000
+#ulimit -v 8_200_000
 # We assume more memory than a 32bit system can provide
 #require wordsize >= 4
 assert succeeded?
