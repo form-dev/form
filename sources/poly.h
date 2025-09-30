@@ -171,8 +171,6 @@ public:
 	
 	static void push_heap (PHEAD WORD **, int);
 	static void pop_heap (PHEAD WORD **, int);
-
-	PADPOINTER(1,0,2,0);
 };
 
 // comparison class for monomials (for std::sort)

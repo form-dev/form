@@ -235,7 +235,7 @@ typedef ULONG RLONG;  /* Used in reken.c. */
 typedef int64_t MLONG;  /* See commentary in minos.h. */
 /*
  * NOTE: we don't use the standard _Bool (or C++ bool) because its size is
- * implementation-dependent and messes up the traditional PADXXX macros.
+ * implementation-dependent.
  */
 typedef char BOOL;
                                                        /* E.g. in 32-bits */
@@ -279,79 +279,6 @@ template<typename T> struct calc {
 #endif
 #endif
 
-/*
- * Macros to be inserted at the end of a structure to align the whole structure.
- *
- * In the currently available systems,
- *   sizeof(POSITION) >= sizeof(pointers) == sizeof(LONG) >= sizeof(int)
- *                    >= sizeof(WORD) >= sizeof(UBYTE) = 1.
- * (POSITION is defined in struct.h and contains only an off_t variable.)
- * Thus, if we put members of a structure in this order and use those macros,
- * then we can align the data without relying on extra paddings added by
- * the compiler. For example,
- *   typedef struct {
- *     int *a;
- *     LONG b;
- *     WORD c[2];
- *     UBYTE d;
- *     PADPOINTER(1,0,2,1);
- *   } A;
- *   typedef struct {
- *     POSITION p;
- *     A a;  // aligned same as pointers
- *     int *b;
- *     LONG c;
- *     UBYTE d;
- *     PADPOSITION(1,1,0,0,1+sizeof(A));
- *   } B;
- * The cost for the use of those PADXXX macros is a padding (>= 1 byte) will
- * be always inserted even in the case that no padding is actually needed.
- *
- * Numbers for the arguments have to be calculated manually and so very
- * error-prone. Be careful!
- *
- * Note that there is a 32-bit system in which off_t is aligned on 8-byte
- * boundary, (e.g., Cygwin with large file support), but still the above
- * inequalities are satisfied.
- *
- * The legendary story of these macros--they fixed some problems in ancient
- * times when compilers were unreliable and didn't know how to correctly compute
- * structure paddings--has been handed down, though nowadays there are only
- * disadvantages for them in practice (ancient compilers most likely can't
- * compile C99 and C++98+TR1 sources anyway).
- */
-#define PADDUMMY(type, size) \
-	UBYTE d_u_m_m_y[form_alignof(type) - ((size) & (form_alignof(type) - 1))]
-#define PADPOSITION(ptr_,long_,int_,word_,byte_) \
-	PADDUMMY(off_t, \
-		+ sizeof(int *) * (ptr_) \
-		+ sizeof(LONG)  * (long_) \
-		+ sizeof(int)   * (int_) \
-		+ sizeof(WORD)  * (word_) \
-		+ sizeof(UBYTE) * (byte_) \
-	)
-#define PADPOINTER(long_,int_,word_,byte_) \
-	PADDUMMY(int *, \
-		+ sizeof(LONG)  * (long_) \
-		+ sizeof(int)   * (int_) \
-		+ sizeof(WORD)  * (word_) \
-		+ sizeof(UBYTE) * (byte_) \
-	)
-#define PADLONG(int_,word_,byte_) \
-	PADDUMMY(LONG, \
-		+ sizeof(int)   * (int_) \
-		+ sizeof(WORD)  * (word_) \
-		+ sizeof(UBYTE) * (byte_) \
-	)
-#define PADINT(word_,byte_) \
-	PADDUMMY(int, \
-		+ sizeof(WORD)  * (word_) \
-		+ sizeof(UBYTE) * (byte_) \
-	)
-#define PADWORD(byte_) \
-	PADDUMMY(WORD, \
-		+ sizeof(UBYTE) * (byte_) \
-	)
 
 /*
 #define WITHPCOUNTER

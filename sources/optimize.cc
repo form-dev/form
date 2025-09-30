@@ -129,7 +129,6 @@ public:
 	int num_visits;
 	WORD var;
 	bool finished;
-	PADPOINTER(1,1,1,1);
 
 	tree_node (int _var=0):
 		sum_results(0), num_visits(0), var(_var), finished(false) {}
