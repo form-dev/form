@@ -3998,6 +3998,10 @@ CommonEnd:
 					AT.WorkPointer = term + *term;
 					if ( StrictRounding(BHEAD term,level,C->lhs[level][2],C->lhs[level][3]) ) goto GenCall;
 					goto Return0;
+				  case TYPECHOP:
+					AT.WorkPointer = term + *term;
+					if ( Chop(BHEAD term,level) ) goto GenCall;
+					goto Return0;
 #endif
 				}
 				goto SkipCount;

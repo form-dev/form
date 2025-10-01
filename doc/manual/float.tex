@@ -89,6 +89,18 @@ represented exactly in binary. Its binary representation, up to 20 bits of preci
 $1.1100110101011111101*2^{-14}$. When rounded to 5 bits, this becomes 
 $1.1101*2^{-14}$, which in decimal digits appears as 
 1.10626220703125e-04.
+\item[Chop] This statement removes floating point numbers that are smaller 
+in absolute magnitude than a specified threshold. It takes one argument delta:
+\begin{verbatim}
+    Chop <delta>;
+\end{verbatim}
+All floating point numbers with absolute value less than delta are replaced by 0. 
+Terms with no floating point coefficient are left untouched. The threshold delta 
+can be a floating point number, integer, rational number, or power. Because 
+statements in \FORM{} act term by term, it is often important to sort before invoking the 
+chop statement. Otherwise, terms might be removed individually, while after 
+sorting and combining, their combined floating point coefficient could exceed 
+the specified chop threshold. 
 \item[Format floatprecision] This instruction controls how many digits are 
 displayed when printing floating point numbers. It only affects output 
 formatting and does not influence the internal precision or accuracy of 

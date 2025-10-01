@@ -1395,6 +1395,120 @@ IllPar:
 } 
 /*
  		#] CoStrictRounding : 
+ 		#[ CoChop :
+
+		LHS notation of the chop statement: 
+			TYPECHOP, length, FLOATFUN, ... 
+		where FLOATFUN, ... represents the threshold of the chop statement in 
+		the notation of a float_ function with its arguments. 
+
+*/
+
+int CoChop(UBYTE *s)
+{
+	GETIDENTITY
+	UBYTE *ss, c;
+	WORD *w, *OldWork;
+	int spec, pow = 1;
+	unsigned long x;
+	if ( AT.aux_ == 0 ) {
+		MesPrint("&Illegal attempt to chop a float_ without activating floating point numbers.");
+		MesPrint("&Forgotten %#startfloat instruction?");
+		return(1);
+	}
+	if ( *s == 0 ) {
+		MesPrint("&Chop needs a number (float or rational) as an argument.");
+		return(1);
+	}
+	/* Create TYPECHOP header */
+	w = OldWork = AT.WorkPointer;
+	*w++ = TYPECHOP; 
+	w++;
+
+	while ( *s == ' ' || *s == ',' || *s == '\t' ) s++;
+	
+	/* 
+		The argument of chop can be 
+	 	1: a floating-point number
+	 	2: an integer, rational number or power
+	 */
+	if ( FG.cTable[*s] == 1 || *s == '.' ) { 
+		/* 1: Attempt to parse as floating-point number */
+		ss = CheckFloat(s, &spec);
+		if ( ss > s ) {
+			/* CheckFloat found a valid float */
+			if ( spec == 1 ) { /* Zero */
+				MesPrint("&The argument in Chop needs to be larger than 0.");
+				return(1);
+			}
+			else if ( spec == -1 ) { 
+				MesPrint("&The floating point system has not been started.");
+				return(1);
+			}
+			else {
+				AT.WorkPointer = w;
+				/* 
+					Reads the floating point number and outputs it at AT.WorkPointer as if it were a float_ 
+					function with its arguments.
+				 */
+				ReadFloat((SBYTE *)s); 
+				s = ss;
+				w += w[1];
+			}
+		}
+		else {
+			/* 2: CheckFloat didn't find a float, we now try for rationals and powers */
+			/* Parse the integer part (numerator for rationals) */
+			if ( FG.cTable[*s] == 1 ) {
+				ParseNumber(x,s)
+				mpf_set_ui(aux1,x);
+			}
+			if ( mpf_sgn(aux1) == 0 ) {
+				MesPrint("&The argument in Chop needs to be larger than 0.");
+				return(1);
+			}
+			while ( *s == ' ' || *s == '\t' ) s++;
+			/* Check for rational number or power*/
+			if ( *s == '/' || *s == '^' ) {
+				c = *s; s++; 
+				while ( *s == ' ' || *s == '\t' ) s++;
+				if ( *s == '-' ) { s++; pow = -1; } /* negative power */
+				/* Parse the denominator or power */
+				if ( FG.cTable[*s] == 1 ) {
+					ParseNumber(x,s)
+					if ( c == '/' ) { /* rational */
+						if ( x == 0 ) {
+							MesPrint("&Division by zero in chop statement.");
+							return(1);
+						}
+						/* Perform the division */
+						mpf_div_ui(aux1, aux1,x);
+					}
+					else { /* Power */
+						mpf_pow_ui(aux1,aux1,x);
+						if ( pow == -1 ) {
+							mpf_ui_div(aux1,(unsigned long) 1, aux1);
+						}
+					}
+				}
+			}
+			/* Put aux1 in the notation of a float_ function */
+			PackFloat(w, aux1);
+			w += w[1];
+		}
+	}
+	if ( *s ) {
+		MesPrint("&Illegal argument(s) in Chop statement: '%s'",s);
+		return(1);
+	}
+	AT.WorkPointer = OldWork;
+	AT.WorkPointer[1] = w - AT.WorkPointer;  /* Set total length */
+	AddNtoL(AT.WorkPointer[1],AT.WorkPointer); /* Add the LHS to the compiler buffer */
+	return(0);
+}
+
+/*
+ 		#] CoChop : 
  		#[ ToFloat :
 
 		Converts the coefficient to floating point if it is still a rat.
@@ -1521,6 +1635,46 @@ int StrictRounding(PHEAD WORD *term, WORD level, WORD prec, WORD base) {
 }
 /*
  		#] StrictRounding : 
+	 	#[ Chop :
+
+	Removes terms with a floating point number smaller than a given threshold. 
+ 
+	Search for a FLOATFUN and compares its absolute value against the threshold 
+	specified in the chop statement. This threshold can be obtained from the 
+	LHS of the chop statement in the compiler buffer.
+ 
+ */
+int Chop(PHEAD WORD *term, WORD level)
+{
+	WORD *tstop, *t, nsize, *threshold; 
+	CBUF *C = cbuf+AM.rbufnum;
+	/* Find the float which should be at the end. */
+	tstop = term + *term; 
+	nsize = ABS(tstop[-1]); tstop -= nsize;
+	t = term+1;
+	while ( t < tstop ) {
+		if ( *t == FLOATFUN && t + t[1] == tstop && TestFloat(t) &&
+		nsize == 3 && tstop[0] == 1 && tstop[1] == 1 ) break;
+		t += t[1];
+	}
+	if ( t < tstop ) {
+		/* Get threshold value from compiler buffer */
+		threshold = C->lhs[level];
+		threshold += 2;  /* Skip TYPECHOP header */
+		UnpackFloat(aux5, threshold); 
+		
+		/* Extract float and compute its absolute value */
+		UnpackFloat(aux4, t);
+		mpf_abs(aux4, aux4);
+		
+		/* Remove if < threshold */
+		if ( mpf_cmp(aux4, aux5) < 0 ) return(0);
+	}
+	return(Generator(BHEAD term,level));
+}
+
+/*
+ 		#] Chop : 
   	#] Float Routines : 
   	#[ Sorting :
 
