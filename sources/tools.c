@@ -736,6 +736,8 @@ STREAM *CloseStream(STREAM *stream)
 		if ( stream->afterwards == PRERAISEAFTER ) x = 1;
 		else x = -1;
 		DollarRaiseLow(stream->pname,x);
+		if ( stream->buffer ) M_free(stream->buffer,"stream->buffer");
+		stream->buffer = 0;
 	}
 	else if ( stream->type == PRECALCSTREAM || stream->type == DOLLARSTREAM ) {
 		if ( stream->buffer ) M_free(stream->buffer,"stream->buffer");

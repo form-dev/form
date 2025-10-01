@@ -3943,6 +3943,19 @@ Evaluate 1;
 #pend_if wordsize == 2
 assert compile_error?("should be a built in function that can be evaluated numerically.")
 *--#] Issue664 :
+*--#[ Issue666 :
+#-
+#$repcount = 1;
+Local test = 1;
+Multiply 2;
+.sort:iter `$repcount++';
+Multiply 2;
+.sort:iter `$repcount++';
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("4")
+*--#] Issue666 :
 *--#[ Issue668_1 :
 * Check error message for invalid setup parameter:
 #:x
