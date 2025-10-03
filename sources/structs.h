@@ -884,6 +884,7 @@ typedef struct {
 	PRELOAD p;
 	UBYTE	*name;
 	int		loadmode;
+	int		mustfree;
 	PADPOINTER(0,1,0,0);
 } PROCEDURE;
 

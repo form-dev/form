@@ -2569,6 +2569,7 @@ int DoCall(UBYTE *s)
 	for ( i = NumProcedures-1; i >= 0; i-- ) {
 		if ( StrCmp(Procedures[i].name,name) == 0 ) break;
 	}
+	// AP.ProcList.num = NumProcedures is incremented inside FromList
 	p = (PROCEDURE *)FromList(&AP.ProcList);
 	if ( i < 0 ) {	/* Try to find a file */
 		namesize = 0;
@@ -2584,6 +2585,7 @@ int DoCall(UBYTE *s)
 		while ( *v ) *t++ = *v++;
 		*t = 0;
 		p->loadmode = 0;	/* buffer should be freed at end */
+		p->mustfree = 1;
 		p->p.buffer = LoadInputFile(p->name,PROCEDUREFILE);
 		if ( p->p.buffer == 0 ) return(-1);
 		t[-4] = 0;
@@ -2592,6 +2594,7 @@ int DoCall(UBYTE *s)
 		p->p.buffer = Procedures[i].p.buffer;
 		p->name = Procedures[i].name;
 		p->loadmode = 1;
+		p->mustfree = 0; // this is just a copy of pointers to a permanently stored procedure
 	}
 	t = p->p.buffer;
 	SKIPBLANKS(t)
@@ -3352,9 +3355,10 @@ int DoEndprocedure(UBYTE *s)
 	if ( AP.PreSwitchModes[AP.PreSwitchLevel] != EXECUTINGPRESWITCH ) return(0);
 	if ( AP.PreIfStack[AP.PreIfLevel] != EXECUTINGIF ) return(0);
 	AC.CurrentStream = CloseStream(AC.CurrentStream);
+
 	do {
 		NumProcedures--;
-		if ( Procedures[NumProcedures].loadmode == 0 ) {
+		if ( Procedures[NumProcedures].mustfree == 1 ) {
 			M_free(Procedures[NumProcedures].p.buffer,"procedures buffer");
 			M_free(Procedures[NumProcedures].name,"procedures name");
 		}
@@ -4015,9 +4019,24 @@ int DoProcedure(UBYTE *s)
 		if ( PreSkip((UBYTE *)"procedure",(UBYTE *)"endprocedure",1) ) return(-1);
 		return(0);
 	}
+	// AP.ProcList.num = NumProcedures is incremented inside FromList
 	p = (PROCEDURE *)FromList(&AP.ProcList);
 	if ( PreLoad(&(p->p),(UBYTE *)"procedure",(UBYTE *)"endprocedure"
 		,1,(char *)"procedure") ) return(-1);
+
+	// If the procedure below is not local (loadmode 0) or has been called (loadmode 1), this is a
+	// nested procedure definition. We must free its allocations when we hit its DoEndprocedure.
+	// If it seems local (loadmode 2) but is tagged as "mustfree", it is multiply nested and we
+	// similarly must free its allocations.
+	if ( NumProcedures >= 2 &&
+		( Procedures[NumProcedures-2].loadmode != 2 || Procedures[NumProcedures-2].mustfree ) ) {
+		p->mustfree = 1;
+	}
+	// Otherwise, we are defining a local procedure at "ground level", and we keep the definition
+	// on the procedure stack until FORM terminates.
+	else {
+		p->mustfree = 0;
+	}
 
 	p->loadmode = 2;
 	s = p->p.buffer + 10;

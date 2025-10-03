@@ -2428,13 +2428,12 @@ void UpdatePositions(void)
 			oldw = AS.Oldvflags;
 			AS.Oldvflags = (WORD *)Malloc1(NumExpressions*sizeof(WORD),"vflags pointers");
 			for ( i = 0; i < AS.NumOldNumFactors; i++ ) AS.Oldvflags[i] = oldw[i];
-			AS.NumOldNumFactors = NumExpressions;
 			M_free(oldw,"vflags pointers");
 			oldw = AS.Olduflags;
 			AS.Olduflags = (WORD *)Malloc1(NumExpressions*sizeof(WORD),"uflags pointers");
 			for ( i = 0; i < AS.NumOldNumFactors; i++ ) AS.Olduflags[i] = oldw[i];
-			AS.NumOldNumFactors = NumExpressions;
 			M_free(oldw,"uflags pointers");
+			AS.NumOldNumFactors = NumExpressions;
 		}
 		else {
 			AS.OldNumFactors = (WORD *)Malloc1(NumExpressions*sizeof(WORD),"numfactors pointers");
