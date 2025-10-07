@@ -62,8 +62,8 @@ jobs:
           # platforms available.
           - {os: ubuntu-24.04-arm, shell: bash, bin: form}
           - {os: ubuntu-24.04-arm, shell: bash, bin: tform}
-          - {os: macos-13, shell: bash, bin: form}
-          - {os: macos-13, shell: bash, bin: tform}
+          - {os: macos-15-intel, shell: bash, bin: form}
+          - {os: macos-15-intel, shell: bash, bin: tform}
           # The macos-14 runner image is based on the arm64 architecture.
           - {os: macos-14, shell: bash, bin: form}
           - {os: macos-14, shell: bash, bin: tform}
@@ -290,7 +290,7 @@ jobs:
           }
           make_tar_gz x86_64-linux '*-ubuntu-24.04/*form'
           make_tar_gz arm64-linux '*-ubuntu-24.04-arm/*form'
-          make_tar_gz x86_64-osx '*-macos-13/*form'
+          make_tar_gz x86_64-osx '*-macos-15-intel/*form'
           make_tar_gz arm64-osx '*-macos-14/*form'
           make_zip x86_64-windows '*-windows-2022/*form.exe'
 
