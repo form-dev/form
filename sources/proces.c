@@ -3990,6 +3990,10 @@ CommonEnd:
 					AT.WorkPointer = term + *term;
 					if ( ToRat(BHEAD term,level) ) goto GenCall;
 					goto Return0;
+				  case TYPECHOP:
+					AT.WorkPointer = term + *term;
+					if ( Chop(BHEAD term,level) ) goto GenCall;
+					goto Return0;
 #endif
 				}
 				goto SkipCount;
