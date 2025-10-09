@@ -38,6 +38,13 @@ static_assert(sizeof(slong) == sizeof(int64_t), "flint interface expects slong i
 */
 
 /*
+ * FLINT's univariate poly has a dense representation. For sufficiently sparse polynomials it is
+ * faster to use mpoly instead, which is sparse. For a density <= this threshold we switch, where
+ * the density defined as is "number of terms" / "maximum degree".
+ */
+#define UNIVARIATE_DENSITY_THR 0.01
+
+/*
 	#[ flint::cleanup :
 */
 void flint::cleanup(void) {
@@ -1061,6 +1068,7 @@ flint::var_map_t flint::get_variables(const vector <WORD *> &es, const bool with
 	const bool sort_vars) {
 
 	int32_t num_vars = 0;
+	uint32_t num_terms = 0;
 	// To be used if we sort by highest degree, as the polu code does.
 	vector<int32_t> degrees;
 	var_map_t var_map;
@@ -1068,6 +1076,9 @@ flint::var_map_t flint::get_variables(const vector <WORD *> &es, const bool with
 	// extract all variables
 	for ( size_t ei = 0; ei < es.size(); ei++ ) {
 		WORD *e = es[ei];
+
+		// We count the total number of terms to determine "density".
+		num_terms++;
 
 		// fast notation
 		if ( *e == -SNUMBER ) {
@@ -1149,6 +1160,17 @@ flint::var_map_t flint::get_variables(const vector <WORD *> &es, const bool with
 					swap(var_map.at(j0), var_map.at(j1));
 				}
 			}
+		}
+	}
+
+	if ( var_map.size() == 1 ) {
+		// In the univariate case, if the polynomials are sufficiently sparse force the use of the
+		// multivariate routines, which use a sparse representation, by adding a dummy map entry.
+		const float density = (float)num_terms / (float)degrees[0];
+		if ( density <= UNIVARIATE_DENSITY_THR ) {
+			// -1 will never be a symbol code. Built-in symbols from 0 to 19, and 20 is the first
+			// user symbol.
+			var_map[-1] = num_vars;
 		}
 	}
 
