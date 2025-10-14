@@ -2220,6 +2220,63 @@ assert stdout =~ exact_pattern(<<'EOF')
    S1(spectator)(5)
 EOF
 *--#] Issue231 :
+*--#[ Issue251_1
+#-
+Symbol x,a0,...,a3;
+Local F = <a0*x^0>+...+<a3*x^3>;
+Bracket x;
+.sort
+
+Local G =
+	+ 1 / F[1]
+	+ x * (-F[x]) / F[1]^2
+	+ x^2 * (F[x]^2 - F[1]*F[x^2]) / F[1]^3
+	+ x^3 * (-F[x]^3 + 2*F[1]*F[x]*F[x^2] - F[1]^2*F[x^3]) / F[1]^4
+	;
+Print +s G;
+.end
+assert succeeded?
+assert result("G") =~ expr("
+       + a0^-1
+       - x*a0^-2*a1
+       + x^2*a0^-3*a1^2
+       - x^2*a0^-2*a2
+       - x^3*a0^-4*a1^3
+       + 2*x^3*a0^-3*a1*a2
+       - x^3*a0^-2*a3
+")
+*--#] Issue251_1
+*--#[ Issue251_2
+#-
+Symbol x,a0,...,a3;
+Local F = <a0*x^0>+...+<a3*x^3>;
+Bracket x;
+.sort
+
+Local G =
+	+ 1 / F[1]
+	+ x * (-F[x]) / F[1]^2
+	+ x^2 * (F[x]^2 - F[1]*F[x^2]) / F[1]^3
+	+ x^3 * (-F[x]^3 + 2*F[1]*F[x]*F[x^2] - F[1]^2*F[x^3]
+		#do i = 1,100
+			+ F[1]^1
+		#enddo
+	) / F[1]^4
+	;
+Print +s G;
+.end
+assert succeeded?
+assert result("G") =~ expr("
+       + a0^-1
+       - x*a0^-2*a1
+       + x^2*a0^-3*a1^2
+       - x^2*a0^-2*a2
+       - x^3*a0^-4*a1^3
+       + 100*x^3*a0^-3
+       + 2*x^3*a0^-3*a1*a2
+       - x^3*a0^-2*a3
+")
+*--#] Issue251_2
 *--#[ Issue253 :
 * Memory error for local $-variable in TFORM
 #$x = 0;
