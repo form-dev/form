@@ -613,10 +613,11 @@ IllPos:			MesPrint("&Illegal character at this position: %s",in);
 	if ( error == 0 && ( numexp = simp3atoken(AC.tokens,leftright) ) < 0 )
 		error = 1;
 	if ( numexp > 0 ) {
+		// Make some space at the beginning of AC.tokens, filled with TEMPTY.
 		SBYTE *tt;
 		out = AC.tokens;
 		while ( *out != TENDOFIT ) out++;
-		while ( out+numexp*9+20 > outtop ) {
+		while ( out+numexp*9 > outtop ) {
 			LONG oldsize = (LONG)(out - AC.tokens);
 			SBYTE **ppp = &(AC.tokens); /* to avoid a compiler warning */
 			SBYTE **pppp = &(AC.toptokens);
@@ -624,7 +625,7 @@ IllPos:			MesPrint("&Illegal character at this position: %s",in);
 			out = AC.tokens + oldsize;
 			outtop = AC.toptokens - MAXNUMSIZE;
 		}
-		tt = out + numexp*9+20;
+		tt = out + numexp*9;
 		while ( out >= AC.tokens ) { *tt-- = *out--; }
 		while ( tt >= AC.tokens ) { *tt-- = TEMPTY; }
 		if ( error == 0 && simp3btoken(AC.tokens,leftright) ) error = 1;
@@ -1440,15 +1441,33 @@ int simp3btoken(SBYTE *s, int mode)
 	SBYTE *t, c, *fill, *ff, *ss;
 	LONG num;
 	WORD *prot;
+
+	// Work in a temporary buffer, to avoid clashes between input and output
+	SBYTE *tmptokens = (SBYTE*)Malloc1((AC.toptokens-AC.tokens)*sizeof(SBYTE), "simp3btoken scratch");
+	SBYTE* tmptoptokens = tmptokens + (AC.toptokens-AC.tokens);
+	fill = tmptokens;
+
 	if ( mode == RHSIDE ) {
 		prot = AC.ProtoType;
 		numprot = prot[1] - SUBEXPSIZE;
 		prot += SUBEXPSIZE;
 	}
 	else { prot = 0; numprot = 0; }
-	fill = s;
 	while ( *s == TEMPTY ) s++;
 	while ( *s != TENDOFIT ) {
+		// If we are near the end of the output buffer, we'd better reallocate
+		// both tmptokens and AC.tokens (which must fit the final result).
+		// Experimentally, fill can move by at least 5 per loop iteration.
+		// This buffer of might not be enough for all cases!
+		while ( tmptoptokens - fill < 20 ) {
+			LONG tmppos;
+			tmppos = s - AC.tokens;
+			DoubleBuffer((void**)&(AC.tokens), (void**)&(AC.toptokens), sizeof(SBYTE), "simp3btoken double");
+			s = AC.tokens + tmppos;
+			tmppos = fill - tmptokens;
+			DoubleBuffer((void**)&tmptokens, (void**)&tmptoptokens, sizeof(SBYTE), "simp3btoken scratch double");
+			fill = tmptokens + tmppos;
+		}
 		if ( *s == TEMPTY ) { s++; continue; }
 		denom = 1;
 		if ( *s == TDIVIDE ) { denom = -1; *fill++ = *s++; }
@@ -1806,9 +1825,17 @@ nodot:				MesPrint("&Illegal second element in dotproduct");
 		}
 	}
 	*fill = TENDOFIT;
+	// Now copy the modified tokens back to the original buffer
+	fill = tmptokens;
+	s = AC.tokens;
+	do {
+		*s++ = *fill;
+	} while ( *fill++ != TENDOFIT );
+	M_free(tmptokens, "simp3btoken scratch");
 	return(error);
 doublepower:;
 	MesPrint("&Dubious notation with power of power");
+	M_free(tmptokens, "simp3btoken scratch");
 	return(-1);
 }
 
