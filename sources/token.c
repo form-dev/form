@@ -318,7 +318,8 @@ dofloat:
 							}
 							else if ( spec == -1 ) {
 								MesPrint("&The floating point system has not been started: %s",in);
-	            		        if ( !error ) error = 1;
+								if ( !error ) error = 1;
+								in++;
 							}
 							else {
 								UBYTE *a = s; s = in; in = a;

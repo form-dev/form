@@ -801,7 +801,7 @@ int SetDictionaryOptions(UBYTE *options)
 	AO.CurDictInDollars = DICT_NOTINDOLLARS;
 	while ( *s ) {
 		opt = s;
-		while ( *s && *s != ',' && *s != ' ' ) s++;
+		while ( *s && *s != ',' ) s++;
 		c = *s; *s = 0;
 		if ( opt[0] == '$' && opt[1] == 0 ) {
 			AO.CurDictInDollars = DICT_INDOLLARS;
