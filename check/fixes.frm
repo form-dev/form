@@ -3935,6 +3935,35 @@ Print;
 assert succeeded?
 assert result("F") =~ expr("mzv_ + euler_ + mzvhalf_")
 *--#] Issue646 :
+*--#[ Issue647 :
+#-
+#define NEXPR "4"
+
+Symbol x;
+#do i = 1,`NEXPR'
+    Local F`i' = x^`i';
+    Local G`i' = x^`i';
+#enddo
+.sort
+Hide;
+.sort
+UnHide;
+
+#do i = 1,`NEXPR'
+    Local diff`i' = F`i' - G`i';
+#enddo
+ModuleOption inparallel;
+.sort
+
+Print;
+.end
+#pend_if mpi?
+assert succeeded?
+assert result("diff1") =~ expr("0")
+assert result("diff2") =~ expr("0")
+assert result("diff3") =~ expr("0")
+assert result("diff4") =~ expr("0")
+*--#] Issue647 :
 *--#[ Issue664 :
 #-
 #StartFloat 64b

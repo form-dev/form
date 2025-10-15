@@ -1614,7 +1614,8 @@ bucketstolen:;
 				}
 
 				position = AS.OldOnFile[i];
-				if ( e->status == HIDDENLEXPRESSION || e->status == HIDDENGEXPRESSION ) {
+				if ( e->status == HIDDENLEXPRESSION || e->status == HIDDENGEXPRESSION
+					|| e->status == UNHIDELEXPRESSION || e->status == UNHIDEGEXPRESSION ) {
 					AR.GetFile = 2; fi = AR.hidefile;
 				}
 				else {
