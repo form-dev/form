@@ -3864,6 +3864,89 @@ assert succeeded?
 assert result("test1") =~ expr("f(i1,N1_?,N2_?,i4)^2")
 assert result("test2") =~ expr("f(N1_?,N2_?,N3_?,N4_?)^2")
 *--#] Issue615 :
+*--#[ Issue631_1 :
+#procedure foo(?a)
+	#message `toupper_(abc)'
+	#message `toupper_(a,b,c)'
+	#message `toupper_(`?a')'
+	#message `tolower_(ABC)'
+	#message `tolower_(A,B,C)'
+	#message `tolower_(`?a')'
+	#message `?a'
+#endprocedure
+
+#call foo(1,2,3,abc,a,b,c,ABC,A,B,C)
+.end
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+~~~ABC
+~~~A,B,C
+~~~1,2,3,ABC,A,B,C,ABC,A,B,C
+~~~abc
+~~~a,b,c
+~~~1,2,3,abc,a,b,c,abc,a,b,c
+~~~1,2,3,abc,a,b,c,ABC,A,B,C
+EOF
+*--#] Issue631_1 :
+*--#[ Issue631_2 :
+#-
+#define MYTOUPPER(x,y) "toupper_(`~x',`~y')"
+#procedure foo(x,y)
+	#message ``MYTOUPPER(`x',`y')''
+	#message `toupper_(`x',`y')'
+#endprocedure
+#call foo(a,b)
+#message ``MYTOUPPER(c,d)''
+.end
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+~~~A,B
+~~~A,B
+~~~C,D
+EOF
+*--#] Issue631_2 :
+*--#[ Issue631_3 :
+#-
+#define str "abcde"
+#do i = 0,6
+	#message takeleft_(`str',`i')  = `takeleft_(`str',`i')'
+	#message takeright_(`str',`i') = `takeright_(`str',`i')'
+	#message keepleft_(`str',`i')  = `keepleft_(`str',`i')'
+	#message keepright_(`str',`i') = `keepright_(`str',`i')'
+#enddo
+.end
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+~~~takeleft_(abcde,0)  = abcde
+~~~takeright_(abcde,0) = abcde
+~~~keepleft_(abcde,0)  = 
+~~~keepright_(abcde,0) = 
+~~~takeleft_(abcde,1)  = bcde
+~~~takeright_(abcde,1) = abcd
+~~~keepleft_(abcde,1)  = a
+~~~keepright_(abcde,1) = e
+~~~takeleft_(abcde,2)  = cde
+~~~takeright_(abcde,2) = abc
+~~~keepleft_(abcde,2)  = ab
+~~~keepright_(abcde,2) = de
+~~~takeleft_(abcde,3)  = de
+~~~takeright_(abcde,3) = ab
+~~~keepleft_(abcde,3)  = abc
+~~~keepright_(abcde,3) = cde
+~~~takeleft_(abcde,4)  = e
+~~~takeright_(abcde,4) = a
+~~~keepleft_(abcde,4)  = abcd
+~~~keepright_(abcde,4) = bcde
+~~~takeleft_(abcde,5)  = 
+~~~takeright_(abcde,5) = 
+~~~keepleft_(abcde,5)  = abcde
+~~~keepright_(abcde,5) = abcde
+~~~takeleft_(abcde,6)  = 
+~~~takeright_(abcde,6) = 
+~~~keepleft_(abcde,6)  = abcde
+~~~keepright_(abcde,6) = abcde
+EOF
+*--#] Issue631_3 :
 *--#[ Issue633 :
 s x,y,z;
 c f;

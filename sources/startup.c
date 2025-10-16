@@ -1191,18 +1191,18 @@ void StartVariables(void)
 	PutPreVar((UBYTE *)"VERSION_",(UBYTE *)STRINGIFY(MAJORVERSION),0,0);
 	PutPreVar((UBYTE *)"SUBVERSION_",(UBYTE *)STRINGIFY(MINORVERSION),0,0);
 	PutPreVar((UBYTE *)"DATE_",(UBYTE *)MakeDate(),0,0);
-	PutPreVar((UBYTE *)"random_",(UBYTE *)"________",(UBYTE *)"?a",0);
+	PutPreVar((UBYTE *)"random_",(UBYTE *)"________",0,0);
 	PutPreVar((UBYTE *)"optimminvar_",(UBYTE *)("0"),0,0);
 	PutPreVar((UBYTE *)"optimmaxvar_",(UBYTE *)("0"),0,0);
 	PutPreVar(AM.oldnumextrasymbols,(UBYTE *)("0"),0,0);
 	PutPreVar((UBYTE *)"optimvalue_",(UBYTE *)("0"),0,0);
 	PutPreVar((UBYTE *)"optimscheme_",(UBYTE *)("0"),0,0);
-	PutPreVar((UBYTE *)"tolower_",(UBYTE *)("0"),(UBYTE *)("?a"),0);
-	PutPreVar((UBYTE *)"toupper_",(UBYTE *)("0"),(UBYTE *)("?a"),0);
-	PutPreVar((UBYTE *)"takeleft_",(UBYTE *)("0"),(UBYTE *)("?a"),0);
-	PutPreVar((UBYTE *)"takeright_",(UBYTE *)("0"),(UBYTE *)("?a"),0);
-	PutPreVar((UBYTE *)"keepleft_",(UBYTE *)("0"),(UBYTE *)("?a"),0);
-	PutPreVar((UBYTE *)"keepright_",(UBYTE *)("0"),(UBYTE *)("?a"),0);
+	PutPreVar((UBYTE *)"tolower_",(UBYTE *)("0"),0,0);
+	PutPreVar((UBYTE *)"toupper_",(UBYTE *)("0"),0,0);
+	PutPreVar((UBYTE *)"takeleft_",(UBYTE *)("0"),0,0);
+	PutPreVar((UBYTE *)"takeright_",(UBYTE *)("0"),0,0);
+	PutPreVar((UBYTE *)"keepleft_",(UBYTE *)("0"),0,0);
+	PutPreVar((UBYTE *)"keepright_",(UBYTE *)("0"),0,0);
 	PutPreVar((UBYTE *)"SYSTEMERROR_",(UBYTE *)("0"),0,0);
 /*
 	Next are a few 'constants' for diagram generation

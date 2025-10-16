@@ -125,7 +125,7 @@ there is an environment variable by that name. If this is the case its
 string value will be substituted.
 
 \noindent Preprocessor variables can have arguments and thereby become 
-macro's. One should consult the description of the \#define~\ref{predefine} 
+macros. One should consult the description of the \#define~\ref{predefine} 
 instruction about the delayed substitution feature to avoid the value of 
 the preprocessor variables in the macro would be substituted immediately 
 during the definition. Hence proper use is
@@ -133,15 +133,25 @@ during the definition. Hence proper use is
     #define EXCHANGE(x,y) "Multiply replace_(`~x',`~y',`~y',`~x');"
 \end{verbatim}
 
-\noindent \FORM{} has the following built in macro's:
+\noindent \FORM{} has the following built in macros:
 \begin{description}
 \item[TOLOWER\_(string)] in which the character string in the argument is 
 converted to lower case. After this it will become input.
 \item[TOUPPER\_(string)] in which the character string in the argument is 
 converted to upper case. After this it will become input.
 \end{description}
-It is anticipated that some more macro's will become available to allow for 
-the editing of names of variables.
+as well as macros which allow one to edit the names of variables,
+\begin{description}
+\item[KEEPLEFT\_(string,n)] keep only the first n characters of string.
+After this it will become input.
+\item[KEEPRIGHT\_(string,n)] keep only the last n characters of string.
+After this it will become input.
+\item[TAKELEFT\_(string,n)] remove the first n characters of string.
+After this it will become input.
+\item[TAKERIGHT\_(string,n)] remove the last n characters of string.
+After this it will become input.
+\end{description}
+Note that these macro names are not case sensitive.
 
 %--#] The preprocessor variables : 
 %--#[ Calculator :
@@ -700,7 +710,7 @@ C\index{C} language. Hence
 is allowed. The parameters should be referred to inside a pair of `' as 
 with all preprocessor variables. A special feature is the socalled 
 delayed\index{delayed substitution} 
-substitution\index{substitution!delayed}. With macro's like the above the 
+substitution\index{substitution!delayed}. With macros like the above the 
 question is always {\sl when} a preprocessor variable will be substituted. 
 Take for instance
 % THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS

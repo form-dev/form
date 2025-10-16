@@ -331,20 +331,20 @@ higherlevel:
 					if ( StrICmp(namebuf,(UBYTE *)"random_") == 0 ) {
 						UBYTE *ranvalue;
 						ranvalue = PreRandom(s);
-						PutPreVar(namebuf,ranvalue,(UBYTE *)"?a",1);
+						PutPreVar(namebuf,ranvalue,0,1);
 						M_free(ranvalue,"PreRandom");
 						goto dostream;
 					}
 					else if ( StrICmp(namebuf,(UBYTE *)"tolower_") == 0 ) {
 						UBYTE *ss = s;
 						while ( *ss ) { *ss = (UBYTE)(tolower(*ss)); ss++; }
-						PutPreVar(namebuf,s,(UBYTE *)"?a",1);
+						PutPreVar(namebuf,s,0,1);
 						goto dostream;
 					}
 					else if ( StrICmp(namebuf,(UBYTE *)"toupper_") == 0 ) {
 						UBYTE *ss = s;
 						while ( *ss ) { *ss = (UBYTE)(toupper(*ss)); ss++; }
-						PutPreVar(namebuf,s,(UBYTE *)"?a",1);
+						PutPreVar(namebuf,s,0,1);
 						goto dostream;
 					}
 					else if ( StrICmp(namebuf,(UBYTE *)"takeleft_") == 0 ) {
@@ -358,7 +358,7 @@ higherlevel:
 							if ( x > nsize ) x = nsize;
 						}
 						else x = 0;
-						PutPreVar(namebuf,s+x,(UBYTE *)"?a",1);
+						PutPreVar(namebuf,s+x,0,1);
 						goto dostream;
 					}
 					else if ( StrICmp(namebuf,(UBYTE *)"takeright_") == 0 ) {
@@ -374,7 +374,7 @@ higherlevel:
 						else x = 0;
 						x = nsize - x;
 						s[x] = 0;
-						PutPreVar(namebuf,s,(UBYTE *)"?a",1);
+						PutPreVar(namebuf,s,0,1);
 						goto dostream;
 					}
 					else if ( StrICmp(namebuf,(UBYTE *)"keepleft_") == 0 ) {
@@ -389,7 +389,7 @@ higherlevel:
 						}
 						else x = nsize;
 						s[x] = 0;
-						PutPreVar(namebuf,s,(UBYTE *)"?a",1);
+						PutPreVar(namebuf,s,0,1);
 						goto dostream;
 					}
 					else if ( StrICmp(namebuf,(UBYTE *)"keepright_") == 0 ) {
@@ -404,7 +404,7 @@ higherlevel:
 						}
 						else x = nsize;
 						x = nsize-x;
-						PutPreVar(namebuf,s+x,(UBYTE *)"?a",1);
+						PutPreVar(namebuf,s+x,0,1);
 						goto dostream;
 					}
 					while ( *s ) {
