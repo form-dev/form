@@ -3864,6 +3864,74 @@ assert succeeded?
 assert result("test1") =~ expr("f(i1,N1_?,N2_?,i4)^2")
 assert result("test2") =~ expr("f(N1_?,N2_?,N3_?,N4_?)^2")
 *--#] Issue615 :
+*--#[ Issue617_1 :
+#-
+Model TMP;
+	Particle s;
+	Particle i;
+	Particle v;
+	Particle cf;
+	Particle f;
+	Particle ct;
+	Particle t;
+	Particle ctab;
+	Particle tab;
+EndModel;
+Symbol s;
+Index i;
+Vector v;
+CFunction cf;
+Function f;
+CTensor ct;
+Tensor t;
+CTable ctab(1:2,3:4);
+NTable tab(1:2,3:4);
+.end
+assert runtime_error?("s has been declared as a function already")
+assert runtime_error?("v has been declared as a function already")
+assert runtime_error?("i has been declared as a function already")
+assert runtime_error?("Function or Tensor cf already declared as a Particle")
+assert runtime_error?("Function or Tensor f already declared as a Particle")
+assert runtime_error?("Function or Tensor ct already declared as a Particle")
+assert runtime_error?("Function or Tensor t already declared as a Particle")
+assert runtime_error?("(N)(C)Tables should not be declared previously")
+*--#] Issue617_1 :
+*--#[ Issue617_2 :
+#-
+Symbol s;
+Index i;
+Vector v;
+CFunction cf;
+Function f;
+CTensor ct;
+Tensor t;
+CTable ctab(1:2,3:4);
+NTable tab(1:2,3:4);
+Model TMP;
+	Particle s;
+	Particle i;
+	Particle v;
+	Particle cf;
+	Particle f;
+	Particle ct;
+	Particle t;
+	Particle ctab;
+	Particle tab;
+EndModel;
+.end
+assert runtime_error?("s has been declared as a symbol already")
+assert runtime_error?("Name of particle previously declared as another variable: s")
+assert runtime_error?("i has been declared as an index already")
+assert runtime_error?("Name of particle previously declared as another variable: i")
+assert runtime_error?("v has been declared as a vector already")
+assert runtime_error?("Name of particle previously declared as another variable: v")
+assert runtime_error?("Name of particle previously declared as another variable: cf")
+assert runtime_error?("Name of particle previously declared as another variable: f")
+assert runtime_error?("Name of particle previously declared as another variable: ct")
+assert runtime_error?("Name of particle previously declared as another variable: t")
+assert runtime_error?("Name of particle previously declared as another variable: ctab")
+assert runtime_error?("Name of particle previously declared as another variable: tab")
+*--#] Issue617_2 :
 *--#[ Issue633 :
 s x,y,z;
 c f;
