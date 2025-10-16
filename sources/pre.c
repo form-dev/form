@@ -568,7 +568,7 @@ UBYTE *GetPreVar(UBYTE *name, int flag)
 	else if ( ( StrICmp(name,(UBYTE *)"timer_") == 0 )
 	       || ( StrICmp(name,(UBYTE *)"stopwatch_") == 0 ) ) {
 		static char timestring[40];
-    	snprintf(timestring,40,"%ld",(GetRunningTime() - AP.StopWatchZero));
+    	snprintf(timestring,40,"%ld",(long int)(GetRunningTime() - AP.StopWatchZero));
 		return((UBYTE *)timestring);
 	}
 	else if ( StrICmp(name, (UBYTE *)"numactiveexprs_") == 0 ) {

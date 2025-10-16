@@ -924,8 +924,8 @@ typedef struct {
   	#[ Varia :
 */
 
-typedef WORD (*FINISHUFFLE)(WORD *);
-typedef WORD (*DO_UFFLE)(WORD *,WORD,WORD,WORD);
+typedef int (*FINISHUFFLE)(WORD *);
+typedef int (*DO_UFFLE)(WORD *,WORD,WORD,WORD);
 
 #ifdef WITHPTHREADS
 typedef WORD (*COMPAREDUMMY)(void *,WORD *,WORD *,WORD);
@@ -1811,6 +1811,8 @@ struct C_const {
     int     nummodels;
     int     modelspace;
     int     ModelLevel;
+    int     ShortStatsMax;         /* For  On FewerStatistics 10; */
+    int     InnerTest;             /* For debugging */
     WORD    argsumcheck[MAXNEST];  /* (C) Checking of nesting */
     WORD    insidesumcheck[MAXNEST];/* (C) Checking of nesting */
     WORD    inexprsumcheck[MAXNEST];/* (C) Checking of nesting */
@@ -1855,11 +1857,9 @@ struct C_const {
     WORD    lPolyFunPow;
     WORD    SymChangeFlag;         /* (C) */
     WORD    CollectPercentage;     /* (C) Collect function percentage */
-    WORD    ShortStatsMax;         /* For  On FewerStatistics 10; */
 	WORD	extrasymbols;          /* Flag for the extra symbols output mode */
     WORD    PolyRatFunChanged;     /* Keeps track whether we changed in the compiler */
     WORD    ToBeInFactors;
-    WORD    InnerTest;            /* For debugging */
 #ifdef WITHMPI
     WORD    RhsExprInModuleFlag;   /* (C) Set by the compiler if RHS expressions exists. */
 #endif
@@ -2043,8 +2043,8 @@ struct T_const {
     WORD    *TopologiesTerm;
     WORD    *TopologiesStart;
 #ifdef WITHFLOAT
-    int     *indi1;
-    int     *indi2;
+    WORD    *indi1;
+    WORD    *indi2;
     void    *mpf_tab1;
     void    *mpf_tab2;
     void    *aux_;
@@ -2341,6 +2341,7 @@ struct O_const {
     int     CurDictNotInFunctions;
     int     CurDictInDollars;
     int     gNumDictionaries;
+    int     IndentSpace;           /* For indentation in output */
 #ifdef WITHFLOAT
     int     FloatPrec;
 #endif
@@ -2356,7 +2357,6 @@ struct O_const {
     WORD    PrintType;             /* (O) */
     WORD    FortFirst;             /* (O) Only in sch.c */
     WORD    DoubleFlag;            /* (O) Output in double precision */
-    WORD    IndentSpace;           /* For indentation in output */
     WORD    FactorMode;            /* When the output should be written as factors */
     WORD    FactorNum;             /* Number of factor currently treated */
     WORD    ErrorBlock;
@@ -2468,11 +2468,11 @@ typedef struct AllGlobals {
 #endif
 
 #ifdef ANSI
-typedef WORD (*WCN)(PHEAD WORD *,WORD *,WORD,WORD);
-typedef WORD (*WCN2)(PHEAD WORD *,WORD *);
+typedef int (*WCN)(PHEAD WORD *,WORD *,WORD,WORD);
+typedef int (*WCN2)(PHEAD WORD *,WORD *);
 #else
-typedef WORD (*WCN)();
-typedef WORD (*WCN2)();
+typedef int (*WCN)();
+typedef int (*WCN2)();
 #endif
  
 typedef WORD (*COMPARE)(PHEAD WORD *,WORD *,WORD);

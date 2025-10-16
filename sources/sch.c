@@ -338,7 +338,7 @@ void RatToLine(UWORD *a, WORD na)
 {
 	GETIDENTITY
 	WORD adenom, anumer;
-	UWORD maxInt;
+	ULONG maxInt;
 
 	if ( AC.OutputMode == CMODE ) {
 		// In C, integer literals over 2^32-1 are automatically promoted to longer types up to

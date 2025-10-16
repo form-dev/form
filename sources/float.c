@@ -64,12 +64,12 @@ void SimpleDeltaC(mpf_t sum, int m);
 void SingleTable(mpf_t *tabl, int N, int m, int pow);
 void DoubleTable(mpf_t *tabout, mpf_t *tabin, int N, int m, int pow);
 void EndTable(mpf_t sum, mpf_t *tabin, int N, int m, int pow);
-void deltaMZV(mpf_t, int *, int);
-void deltaEuler(mpf_t, int *, int);
-void deltaEulerC(mpf_t, int *, int);
-void CalculateMZVhalf(mpf_t, int *, int);
-void CalculateMZV(mpf_t, int *, int);
-void CalculateEuler(mpf_t, int *, int);
+void deltaMZV(mpf_t, WORD *, int);
+void deltaEuler(mpf_t, WORD *, int);
+void deltaEulerC(mpf_t, WORD *, int);
+void CalculateMZVhalf(mpf_t, WORD *, int);
+void CalculateMZV(mpf_t, WORD *, int);
+void CalculateEuler(mpf_t, WORD *, int);
 int ExpandMZV(WORD *term, WORD level);
 int ExpandEuler(WORD *term, WORD level);
 int PackFloat(WORD *,mpf_t);
@@ -1201,7 +1201,7 @@ void SetupMPFTables(void)
 		a = (mpf_t *)AB[id]->T.aux_;
 		mpf_inits(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],(mpf_ptr)0);
 		if ( AB[id]->T.indi1 ) M_free(AB[id]->T.indi1,"indi1");
-		AB[id]->T.indi1 = (int *)Malloc1(sizeof(int)*AC.MaxWeight*2,"indi1");
+		AB[id]->T.indi1 = (WORD *)Malloc1(sizeof(WORD)*AC.MaxWeight*2,"indi1");
 		AB[id]->T.indi2 = AB[id]->T.indi1 + AC.MaxWeight;
 	}
 #else
@@ -1215,7 +1215,7 @@ void SetupMPFTables(void)
 	AT.aux_ = (void *)Malloc1(sizeof(mpf_t)*8,"AT.aux_");
 	mpf_inits(aux1,aux2,aux3,aux4,aux5,auxjm,auxjjm,auxsum,(mpf_ptr)0);
 	if ( AT.indi1 ) M_free(AT.indi1,"indi1");
-	AT.indi1 = (int *)Malloc1(sizeof(int)*AC.MaxWeight*2,"indi1");
+	AT.indi1 = (WORD *)Malloc1(sizeof(WORD)*AC.MaxWeight*2,"indi1");
 	AT.indi2 = AT.indi1 + AC.MaxWeight;
 #endif
 /*
@@ -1938,7 +1938,7 @@ void EndTable(mpf_t sum, mpf_t *tabin, int N, int m, int pow)
  		#[ deltaMZV :
 */
 
-void deltaMZV(mpf_t result, int *indexes, int depth)
+void deltaMZV(mpf_t result, WORD *indexes, int depth)
 {
 	GETIDENTITY
 /*
@@ -2005,7 +2005,7 @@ void deltaMZV(mpf_t result, int *indexes, int depth)
 		Regular Euler delta with - signs, but everywhere 1/2^j
 */
 
-void deltaEuler(mpf_t result, int *indexes, int depth)
+void deltaEuler(mpf_t result, WORD *indexes, int depth)
 {
 	GETIDENTITY
 	int m;
@@ -2061,7 +2061,7 @@ void deltaEuler(mpf_t result, int *indexes, int depth)
 		When there is a - in the string we have 1/4.
 */
 
-void deltaEulerC(mpf_t result, int *indexes, int depth)
+void deltaEulerC(mpf_t result, WORD *indexes, int depth)
 {
 	GETIDENTITY
 	int m;
@@ -2134,7 +2134,7 @@ void deltaEulerC(mpf_t result, int *indexes, int depth)
 		MZV's have to be calculated at the same time.
 */
 
-void CalculateMZVhalf(mpf_t result, int *indexes, int depth)
+void CalculateMZVhalf(mpf_t result, WORD *indexes, int depth)
 {
 	int i;
 	if ( depth < 0 ) {
@@ -2155,7 +2155,7 @@ void CalculateMZVhalf(mpf_t result, int *indexes, int depth)
  		#[ CalculateMZV :
 */
 
-void CalculateMZV(mpf_t result, int *indexes, int depth)
+void CalculateMZV(mpf_t result, WORD *indexes, int depth)
 {
 	GETIDENTITY
 	int num1, num2 = 0, i, j = 0;
@@ -2220,12 +2220,12 @@ void CalculateMZV(mpf_t result, int *indexes, int depth)
 		Hence we start with a conversion.
 */
 
-void CalculateEuler(mpf_t result, int *Zindexes, int depth)
+void CalculateEuler(mpf_t result, WORD *Zindexes, int depth)
 {
 	GETIDENTITY
 	int s1, num1, num2, i, j;
 
-	int *indexes = (int *)(AT.WorkPointer);
+	WORD *indexes = AT.WorkPointer;
 	for ( i = 0; i < depth; i++ ) indexes[i] = Zindexes[i];
 	for ( i = 0; i < depth-1; i++ ) {
 		if ( Zindexes[i] < 0 ) {
