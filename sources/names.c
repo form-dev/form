@@ -1603,6 +1603,10 @@ retry:;
 					MesPrint("&Tensor %s changed to function",name);
 					error = 1;
 				}
+				else if ( fun->spec == VERTEXFUNCTION ) {
+					MesPrint("&Function or Tensor %s already declared as a Particle",name);
+					error = 1;
+				}
 				fun->spec = istensor;
 				if ( fun->symmetric != symtype ) {
 					fun->symmetric = symtype;
