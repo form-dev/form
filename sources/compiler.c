@@ -117,8 +117,11 @@ static KEYWORD com2commands[] = {
 	,{"chainin",        (TFUN)CoChainin,          STATEMENT,    PARTEST}
 	,{"chainout",       (TFUN)CoChainout,         STATEMENT,    PARTEST}
 	,{"chisholm",       (TFUN)CoChisholm,         STATEMENT,    PARTEST}
-	,{"cleartable",     (TFUN)CoClearTable,       DECLARATION,  PARTEST}
+#ifdef WITHFLOAT
+	,{"chop",           (TFUN)CoChop,             STATEMENT,    PARTEST}
+#endif
 	,{"clearflag",      (TFUN)CoClearUserFlag,    STATEMENT,    PARTEST}
+	,{"cleartable",     (TFUN)CoClearTable,       DECLARATION,  PARTEST}
 	,{"collect",        (TFUN)CoCollect,          SPECIFICATION,PARTEST}
 	,{"commuteinset",   (TFUN)CoCommuteInSet,     DECLARATION,  PARTEST}
 	,{"contract",       (TFUN)CoContract,         STATEMENT,    PARTEST}
