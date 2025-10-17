@@ -51,6 +51,44 @@ functions that \FORM{} knows about will be evaluated. The currently allowed
 arguments are the functions mzv\_, euler\_, sqrt\_ and mzvhalf\_. If any 
 (or more than one) of these are specified only those functions will be 
 evaluated.
+\item[strictrounding] This statement rounds floating point numbers to a 
+given precision. The syntax is
+\begin{verbatim}
+    strictrounding [precision];
+\end{verbatim}
+where precision is an optional argument that specifies the rounding 
+precision in either digits or bits, using the same syntax as 
+\texttt{\#startfloat}. If no argument is given, this statement rounds 
+the floating point coefficients to the default precision. Internally, 
+the GMP and mpfr libraries may use extra precision beyond that set by 
+\texttt{\#startfloat}. As a result, terms may not merge due to this 
+extra precision. For example:
+\begin{verbatim}
+    #startfloat 6d
+    CFunction f;
+    Local F = f(1.0)+f(1.0000001);
+    Print;
+    .sort
+\end{verbatim}
+results in \texttt{F = f(1.0e+00)+f(1.0e+00);}. Although it may appear 
+that the terms should merge, the extra precision maintained by GMP 
+prevents this, even though it is not displayed at 6 digits of 
+precision. Using the strictrounding statement, one can force rounding 
+to exactly 6 digits. Indeed:
+\begin{verbatim}
+    Argument f;
+        strictrounding;
+    Argument;
+    Print;
+    .end
+\end{verbatim}
+results in \texttt{F = 2*f(1.0e+00);}.
+Notice that rounding in bits may produce unexpected results when viewed 
+in decimal digits. For example, the decimal number 1.1e-4 cannot be 
+represented exactly in binary. Its binary representation, up to 20 bits of precision, is 
+$1.1100110101011111101*2^{-14}$. When rounded to 5 bits, this becomes 
+$1.1101*2^{-14}$, which in decimal digits appears as 
+1.10626220703125e-04.
 \item[Format floatprecision] This instruction controls how many digits are 
 displayed when printing floating point numbers. It only affects output 
 formatting and does not influence the internal precision or accuracy of 
