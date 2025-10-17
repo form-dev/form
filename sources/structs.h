@@ -423,7 +423,17 @@ typedef struct SyMbOl {			/* Don't change unless altering .sav too */
 	WORD	node;
 	WORD	namesize;
 	WORD	dimension;			/* For dimensionality checks */
+#if BITSINWORD == 32
+	UBYTE d_u_m_m_y[8];		/* Padding for sav compatibility */
+#elif BITSINWORD == 16
+	UBYTE d_u_m_m_y[4];		/* Padding for sav compatibility */
+#endif
 } *SYMBOLS;
+#if BITSINWORD == 32
+STATIC_ASSERT(sizeof(struct SyMbOl) == 48);
+#elif BITSINWORD == 16
+STATIC_ASSERT(sizeof(struct SyMbOl) == 24);
+#endif
 
 /**
  *
@@ -439,6 +449,11 @@ typedef struct InDeX {			/* Don't change unless altering .sav too */
 	WORD	node;
 	WORD	namesize;
 } *INDICES;
+#if BITSINWORD == 32
+STATIC_ASSERT(sizeof(struct InDeX) == 40);
+#elif BITSINWORD == 16
+STATIC_ASSERT(sizeof(struct InDeX) == 20);
+#endif
 
 /**
  *
@@ -452,7 +467,17 @@ typedef struct VeCtOr {			/* Don't change unless altering .sav too */
 	WORD	node;
 	WORD	namesize;
 	WORD	dimension;			/* For dimensionality checks */
+#if BITSINWORD == 32
+	UBYTE d_u_m_m_y[8];		/* Padding for sav compatibility */
+#elif BITSINWORD == 16
+	UBYTE d_u_m_m_y[4];		/* Padding for sav compatibility */
+#endif
 } *VECTORS;
+#if BITSINWORD == 32
+STATIC_ASSERT(sizeof(struct VeCtOr) == 40);
+#elif BITSINWORD == 16
+STATIC_ASSERT(sizeof(struct VeCtOr) == 20);
+#endif
 
 /**
  *  Contains all information about a function. Also used for tables.
@@ -475,6 +500,11 @@ typedef struct FuNcTiOn {  /* Don't change unless altering .sav too */
 	WORD    maxnumargs;
 	WORD    minnumargs;
 } *FUNCTIONS;
+#if BITSINWORD == 32
+STATIC_ASSERT(sizeof(struct FuNcTiOn) == 72);
+#elif BITSINWORD == 16
+STATIC_ASSERT(sizeof(struct FuNcTiOn) == 36);
+#endif
 
 /**
  *
