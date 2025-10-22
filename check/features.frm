@@ -1415,6 +1415,16 @@ assert result("ATANH") =~ expr("
        - 6.08698087464190136361e-01*atanh( - 5.4321e-01)
 ")
 *--#] evaluate_atanh : 
+*--#[ float_zero :
+#StartFloat 10d
+CFunction f;
+Local FloatZero = f(0.0,0.0-123,000.000000,0.0e-13,.0e+4,0e1,0.,0.e+2,0e-10);
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("FloatZero") =~ expr("f(0,-123,0,0,0,0,0,0,0)")
+*--#] float_zero : 
 *--#[ float_error :
 Evaluate;
 ToFloat;

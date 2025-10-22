@@ -46,6 +46,8 @@
 
 #define GMPSPREAD (GMP_LIMB_BITS/BITSINWORD)
 
+// #define DEBUG
+
 void Form_mpf_init(mpf_t t);
 void Form_mpf_clear(mpf_t t);
 void Form_mpf_set_prec_raw(mpf_t t,ULONG newprec);
@@ -273,7 +275,20 @@ int PackFloat(WORD *fun,mpf_t infloat)
 	mp_limb_t *d = infloat->_mp_d; /* Pointer to the limbs.  */
 	int i;
 	long e = infloat->_mp_exp;
-	
+#ifdef DEBUG
+	printf("DEBUG: mpf_t internal structure:\n");
+	printf("  _mp_prec: %d\n", infloat->_mp_prec);
+	printf("  _mp_size: %d\n", infloat->_mp_size);
+	printf("  _mp_exp: %ld\n", infloat->_mp_exp);
+	printf("  _mp_d: %p\n", (void*)infloat->_mp_d);
+	printf("  Limb values: ");
+	nlimbs = infloat->_mp_size < 0 ? -infloat->_mp_size: infloat->_mp_size;
+	for (i = 0; i < nlimbs; i++) { 
+		printf("%ld ", (unsigned long)infloat->_mp_d[i]);
+	}
+	printf("\n  Actual value: ");
+	gmp_printf("%.10Fe\n", infloat);
+#endif
 	t = fun;
 	*t++ = FLOATFUN;
 	t++;
@@ -316,6 +331,8 @@ int PackFloat(WORD *fun,mpf_t infloat)
 */
 	nlimbs = infloat->_mp_size < 0 ? -infloat->_mp_size: infloat->_mp_size;
 	if ( nlimbs == 0 ) {
+		*t++ = -SNUMBER;
+		*t++ = 0;
 	}
 	else if ( nlimbs == 1 && (ULONG)(*d) < ((ULONG)1)<<(BITSINWORD-1) ) {
 		*t++ = -SNUMBER;
@@ -850,6 +867,7 @@ UBYTE *CheckFloat(UBYTE *ss, int *spec)
 	GETIDENTITY
 	UBYTE *s = ss;
 	int zero = 1, gotdot = 0;
+	if ( *s == '.' && FG.cTable[s[-1]] != 1 && FG.cTable[s[1]] != 1 ) return(ss);
 	while ( FG.cTable[s[-1]] == 1 ) s--;
 	*spec = 0;
 	if ( FG.cTable[*s] == 1 ) {
@@ -865,7 +883,7 @@ UBYTE *CheckFloat(UBYTE *ss, int *spec)
 dot:
 		gotdot = 1;
 		s++;
-		if ( FG.cTable[*s] != 1 && zero == 1 ) return(ss);
+		// if ( FG.cTable[*s] != 1 && zero == 1 ) return(ss);
 		while ( *s == '0' ) s++;
 		if ( FG.cTable[*s] == 1 ) {
 			s++;
