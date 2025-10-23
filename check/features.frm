@@ -1476,6 +1476,49 @@ assert result("F3") =~ expr("1/1000000*x^5")
 assert result("F4") =~ expr("4.7e+00*x - 5.0e-05*x^4 + 1/1000000*x^5")
 assert result("F5") =~ expr("1/1000000*x^5")
 *--#] chop : 
+*--#[ pattern_float : 
+#-
+Off Statistics;
+#StartFloat 10d
+#message StartFloat
+Symbol a,x1,...,x4;
+CFunction f,g;
+Vector p;
+Local F = 1.0-2.0*a+3.0*f-4.0*p.p+5.0*p;
+id 1.0 = 5;
+id f?(?a) = g(?a);
+id float_(?a) = g(?a);
+id float_(x1?,x2?,x3?,x4?) = g(x1,x2,x3,x4);
+Print;
+.sort
+
+#endfloat
+#message endfloat
+id float_(2,3,1,340282366920938463463374607431768211456) = 5;
+id f?(?a) = g(?a);
+id float_(?a) = g(?a);
+id float_(x1?,x2?,x3?,x4?) = g(x1,x2,x3,x4);
+Print +s;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+~~~StartFloat
+
+   F =
+       - 2.0e+00*a - 4.0e+00*p.p + 5.0e+00*p + 1.0e+00 + 3.0e+00*g;
+
+~~~endfloat
+
+   F =
+       - a*float_(2,3,1,680564733841876926926749214863536422912)
+       - p.p*float_(2,3,1,1361129467683753853853498429727072845824)
+       + p*float_(2,3,1,1701411834604692317316873037158841057280)
+       + float_(2,3,1,340282366920938463463374607431768211456)
+       + g*float_(2,3,1,1020847100762815390390123822295304634368)
+      ;
+EOF
+*--#] pattern_float :
 *--#[ float_error :
 Evaluate;
 ToFloat;

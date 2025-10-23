@@ -839,6 +839,12 @@ int MatchFunction(PHEAD WORD *pattern, WORD *interm, WORD *wilds)
 	CBUF *C = cbuf+AT.ebufnum;
 	int ntwa = AN.NumTotWildArgs;
 	LONG oldcpointer = C->Pointer - C->Buffer;
+#ifdef WITHFLOAT
+	// Pattern matching against float_ functions is currently disabled.
+	// To relax this in the future, move this early return down to where gamma
+	// functions and tensors are handled specially. 
+	if ( *interm == FLOATFUN ) return(0);
+#endif
 /*
 	Test first for a straight match
 */
@@ -860,10 +866,6 @@ int MatchFunction(PHEAD WORD *pattern, WORD *interm, WORD *wilds)
 			i = *pattern - WILDOFFSET;
 			if ( i >= FUNCTION ) {
 				if ( *interm != GAMMA
-#ifdef WITHFLOAT
-				&& ( *interm != FLOATFUN )
-#endif
-
 				&& !CheckWild(BHEAD i,FUNTOFUN,*interm,&newvalue) ) {
 					AddWild(BHEAD i,FUNTOFUN,newvalue);
 					return(1);
