@@ -1628,6 +1628,39 @@ Print;
 assert succeeded?
 assert result("F") =~ expr("1.0e+00 + f(a,b,d,3.14e+01) + 2.0e+00*f(30,c,d,-50,b,d,-10,a,d)")
 *--#] argument_float : 
+*--#[ AddWithFloat :
+* This tests AddWithFloat in float.c
+#StartFloat 10d
+Symbol x1,...,x4;
+Local F = (x1+1.0*x2+x3+1.0*x4)^5;
+id x1 = 1-x2-x3-x4;
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("1")
+*--#] AddWithFloat : 
+*--#[ MergeWithFloat :
+* This tests MergeWithFloat in float.c
+#: termsinsmall 16
+On fewerstats 1;
+#StartFloat 10d
+Auto Symbol x;
+* This tests most cases of MergeWithFloat
+Local F = (x1+1.0*x2+x3+1.0*x4)^5;
+id x1 = 1-x2-x3-x4;
+.sort
+* This tests a corncer case of MergeWithFloat
+Local G = x1+...+x15+1.0*x16+2^320*x16;
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("1")
+assert result("G") =~ expr("
+      2.135987036e+96*x16 + x15 + x14 + x13 + x12 + x11 + x10 + x9 + x8 + x7
+       + x6 + x5 + x4 + x3 + x2 + x1")
+*--#] MergeWithFloat : 
 *--#[ float_error :
 Evaluate;
 ToFloat;
