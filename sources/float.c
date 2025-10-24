@@ -1838,7 +1838,7 @@ int MergeWithFloat(PHEAD WORD **interm1, WORD **interm2)
 {
 	GETBIDENTITY
 	WORD *coef1, *coef2, size1, size2, *fun1, *fun2, *fun3, *tt;
-	WORD sign3,j,jj, *t1, *t2, i, *term1 = *interm1, *term2 = *interm2;
+	WORD sign3,jj, *t1, *t2, i, *term1 = *interm1, *term2 = *interm2;
 	int retval = 0;
 	coef1 = term1+*term1; size1 = coef1[-1]; coef1 -= ABS(size1);
 	coef2 = term2+*term2; size2 = coef2[-1]; coef2 -= ABS(size2);
@@ -1899,8 +1899,8 @@ Shift1:		t2 = term1 + *term1; tt = t2;
 			retval = 1;
 		}
 		else { /* Here we have to move term1 to the left to make room. */
-Over1:		jj = fun3[1]-fun1[1]+3-ABS(size1); /* This is positive */
-			t2 = term1-jj; t1 = term1;
+			jj = fun3[1]-fun1[1]+3-ABS(size1); /* This is positive */
+Over1:		t2 = term1-jj; t1 = term1;
 			while ( t1 < fun1 ) *t2++ = *t1++;
 			term1 -= jj;
 			*term1 += jj;
@@ -1912,25 +1912,18 @@ Over1:		jj = fun3[1]-fun1[1]+3-ABS(size1); /* This is positive */
 	else if ( AT.SortFloatMode == 1 ) {
 		if ( fun1[1] + ABS(size1) == fun3[1] + 3 ) goto OnTopOf1;
 		else if ( fun1[1] + ABS(size1) > fun3[1] + 3 ) goto Shift1;
-		else goto Over1;
+		else {
+			jj = fun3[1]-fun1[1]+3-ABS(size1); /* This is positive */
+			goto Over1;
+		}
 	}
 	else { /* Can only be 2, based on previous tests */
-		if ( fun3[1] + 3 == ABS(size1) ) {
-			t2 = coef1; t1 = fun3;
-			for ( i = 0; i < fun3[1]; i++ ) *t2++ = *t1++;
-			*t2++ = 1; *t2++ = 1;  *t2++ = sign3 < 0 ? -3: 3;
-			retval = 1;
+		if ( fun3[1] + 3 == ABS(size1) ) goto OnTopOf1;
+		else if ( fun3[1] + 3 < ABS(size1) ) goto Shift1;
+		else {
+			jj = fun3[1]+3-ABS(size1); /* This is positive */
+			goto Over1;
 		}
-		else if ( fun3[1] + 3 < ABS(size1) ) {
-			j = ABS(size1) - fun3[1] - 3;
-			t2 = term1 + *term1; tt = t2;
-			*--t2 = sign3 < 0 ? -3: 3; *--t2 = 1; *--t2 = 1;
-			t2 -= fun3[1]; t1 = t2-j;
-			while ( t2 > term1 ) *--t2 = *--t1;
-			*t2 = tt-t2; term1 = t2;
-			retval = 1;
-		}
-		else goto Over1;
 	}
 	*interm1 = term1;
 	TermFree(fun3,"MergeWithFloat");
