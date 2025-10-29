@@ -1519,6 +1519,58 @@ assert stdout =~ exact_pattern(<<'EOF')
       ;
 EOF
 *--#] pattern_float :
+*--#[ transform_float : 
+#-
+CFunction f;
+Off Statistics;
+#StartFloat 10d
+#message StartFloat
+Local F = 1.0*f(1,2,3);
+Transform replace(1,last)=(xarg_,2*xarg_+1);
+Print;
+.sort
+
+#endfloat
+#message endfloat
+Transform mulargs(1,last);
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+~~~StartFloat
+
+   F =
+      1.0e+00*f(3,5,7);
+
+~~~endfloat
+
+   F =
+      f(105)*float_(2,3,1,340282366920938463463374607431768211456);
+EOF
+*--#] transform_float :
+*--#[ transform_float_error : 
+#-
+CFunction f,g;
+Off Statistics;
+#StartFloat 10d
+Local F = 1.0*f(1,2,3)*g(3,2,1);
+Transform float_, reverse(1,last);
+Transform {float_,f}, addargs(1,last);
+Print;
+.sort
+
+#endfloat
+Transform float_, dropargs(1,last);
+Transform {float_,f}, selectargs(1,2);
+Print;
+.end
+#pend_if wordsize == 2
+runtime_error?("Illegal use of a transform statement and float_")
+runtime_error?("Illegal use of a transform statement and float_")
+runtime_error?("Illegal use of a transform statement and float_")
+runtime_error?("Illegal use of a transform statement and float_")
+*--#] transform_float_error :
 *--#[ float_error :
 Evaluate;
 ToFloat;
