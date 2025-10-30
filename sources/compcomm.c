@@ -2054,9 +2054,26 @@ skipbracks:
 					c = *s; *s = 0;
 					if ( ( type = GetName(AC.varnames,name,&number,WITHAUTO) ) == CSET ) {
 doset:					if ( Sets[number].type != CFUNCTION ) goto nofun;
+#ifdef WITHFLOAT
+						WORD *r1, *r2;
+						r1 = SetElements + Sets[number].first;
+						r2 = SetElements + Sets[number].last;
+						while ( r1 < r2 ) {
+							if ( *r1++ == FLOATFUN ) {
+								MesPrint("&Illegal use of argument environment and float_.");
+								error = 1;
+							}
+						}
+#endif
 						*w++ = CSET; *w++ = number;
 					}
 					else if ( type == CFUNCTION ) {
+#ifdef WITHFLOAT
+						if ( (number + FUNCTION) == FLOATFUN ) {
+							MesPrint("&Illegal use of argument environment and float_.");
+							error = 1;
+						}
+#endif
 						*w++ = CFUNCTION; *w++ = number + FUNCTION;
 					}
 					else {

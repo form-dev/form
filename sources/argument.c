@@ -170,13 +170,18 @@ int execarg(PHEAD WORD *term, WORD level)
 RightNum:
 					if ( m[1] == 2 ) {
 #ifdef WITHFLOAT
-						if ( *t != FLOATFUN || AT.aux_ == 0 || TestFloat(t) == 0 )
+						if ( *t != FLOATFUN || TestFloat(t) == 0 )
 #endif
 						{
 							m += 2;
 							m += *m;
 							goto HaveTodo;
 						}
+#ifdef WITHFLOAT
+						else {
+							m += 2;
+						}
+#endif
 					}
 					else {
 						r = m + m[1];

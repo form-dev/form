@@ -118,7 +118,14 @@ int CoTransform(UBYTE *in)
 			if ( *in != ',' ) break;
 			c = *in; *in = 0;
 		    type = GetName(AC.varnames,s,&number,NOAUTO);
-			if ( type == CFUNCTION ) { number += MAXVARIABLES + FUNCTION; }
+			if ( type == CFUNCTION ) { 
+#ifdef WITHFLOAT
+				if ( (number+FUNCTION) == FLOATFUN ) {
+					MesPrint("&Illegal use of a transform statement and float_");
+					if ( error == 0 ) error = 1;
+				}
+#endif
+				number += MAXVARIABLES + FUNCTION; }
 			else if ( type != CSET ) {
 				MesPrint("& %s: A transform statement starts with sets of functions",s);
 				if ( error == 0 ) error = 1;
@@ -139,6 +146,17 @@ int CoTransform(UBYTE *in)
 				MesPrint("&A set in a transform statement should be a set of functions");
 				if ( error == 0 ) error = 1;
 			}
+#ifdef WITHFLOAT
+			WORD *r1, *r2;
+			r1 = SetElements + Sets[number].first;
+			r2 = SetElements + Sets[number].last;
+			while ( r1 < r2 ) {
+				if ( *r1++ == FLOATFUN ) {
+					MesPrint("&Illegal use of a transform statement and float_");
+					if ( error == 0 ) error = 1;
+				}
+			}
+#endif
 		  }
 		}
 		else if ( error == 0 ) error = 1;
@@ -745,6 +763,9 @@ int RunTransform(PHEAD WORD *term, WORD *params)
 		if ( *t < FUNCTION ) {}
 		else if ( funs == endfun ) {  /* we do all functions */
 hit:;
+#ifdef WITHFLOAT
+			if ( *t == FLOATFUN ) goto next;
+#endif
 			while ( in < t ) *out++ = *in++;
 			tt = t + t[1]; fun = out;
 			while ( in < tt ) *out++ = *in++;
@@ -950,6 +971,9 @@ abortlyndon:;
 			funs++;
 		  }
 		}
+#ifdef WITHFLOAT
+next:
+#endif
 		t += t[1];
 	}
 	tt = term + *term; while ( in < tt ) *out++ = *in++;

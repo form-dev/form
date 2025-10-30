@@ -1476,6 +1476,120 @@ assert result("F3") =~ expr("1/1000000*x^5")
 assert result("F4") =~ expr("4.7e+00*x - 5.0e-05*x^4 + 1/1000000*x^5")
 assert result("F5") =~ expr("1/1000000*x^5")
 *--#] chop : 
+*--#[ pattern_float : 
+#-
+Off Statistics;
+#StartFloat 10d
+#message StartFloat
+Symbol a,x1,...,x4;
+CFunction f,g;
+Vector p;
+Local F = 1.0-2.0*a+3.0*f-4.0*p.p+5.0*p;
+id 1.0 = 5;
+id f?(?a) = g(?a);
+id float_(?a) = g(?a);
+id float_(x1?,x2?,x3?,x4?) = g(x1,x2,x3,x4);
+Print;
+.sort
+
+#endfloat
+#message endfloat
+id float_(2,3,1,340282366920938463463374607431768211456) = 5;
+id f?(?a) = g(?a);
+id float_(?a) = g(?a);
+id float_(x1?,x2?,x3?,x4?) = g(x1,x2,x3,x4);
+Print +s;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+~~~StartFloat
+
+   F =
+       - 2.0e+00*a - 4.0e+00*p.p + 5.0e+00*p + 1.0e+00 + 3.0e+00*g;
+
+~~~endfloat
+
+   F =
+       - a*float_(2,3,1,680564733841876926926749214863536422912)
+       - p.p*float_(2,3,1,1361129467683753853853498429727072845824)
+       + p*float_(2,3,1,1701411834604692317316873037158841057280)
+       + float_(2,3,1,340282366920938463463374607431768211456)
+       + g*float_(2,3,1,1020847100762815390390123822295304634368)
+      ;
+EOF
+*--#] pattern_float :
+*--#[ transform_float : 
+#-
+CFunction f;
+Off Statistics;
+#StartFloat 10d
+#message StartFloat
+Local F = 1.0*f(1,2,3);
+Transform replace(1,last)=(xarg_,2*xarg_+1);
+Print;
+.sort
+
+#endfloat
+#message endfloat
+Transform mulargs(1,last);
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+~~~StartFloat
+
+   F =
+      1.0e+00*f(3,5,7);
+
+~~~endfloat
+
+   F =
+      f(105)*float_(2,3,1,340282366920938463463374607431768211456);
+EOF
+*--#] transform_float :
+*--#[ transform_float_error : 
+#-
+CFunction f,g;
+Off Statistics;
+#StartFloat 10d
+Local F = 1.0*f(1,2,3)*g(3,2,1);
+Transform float_, reverse(1,last);
+Transform {float_,f}, addargs(1,last);
+Print;
+.sort
+
+#endfloat
+Transform float_, dropargs(1,last);
+Transform {float_,f}, selectargs(1,2);
+Print;
+.end
+#pend_if wordsize == 2
+runtime_error?("Illegal use of a transform statement and float_")
+runtime_error?("Illegal use of a transform statement and float_")
+runtime_error?("Illegal use of a transform statement and float_")
+runtime_error?("Illegal use of a transform statement and float_")
+*--#] transform_float_error :
+*--#[ argument_float :
+#StartFloat 24d
+CFunction f;
+Symbol a,b,c,d;
+#StartFloat 24d
+Local F = 1.0 -2.0*f(a+5*b-3*c)+f(3.14*a*b);
+Normalize;
+MakeInteger;
+Argument;
+	Multiply 10*d;
+EndArgument;
+SplitArg;
+FactArg;
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("1.0e+00 + f(a,b,d,3.14e+01) + 2.0e+00*f(30,c,d,-50,b,d,-10,a,d)")
+*--#] argument_float : 
 *--#[ float_error :
 Evaluate;
 ToFloat;
