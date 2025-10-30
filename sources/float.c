@@ -408,11 +408,11 @@ int UnpackFloat(mpf_t outfloat,WORD *fun)
 		f += ARGHEAD+6;
 		if ( f[-1] == -5 ) {
 			outfloat->_mp_exp =
-				-(mp_exp_t)((((ULONG)(f[-4]))<<BITSINWORD)+f[-5]);
+				-(mp_exp_t)((((ULONG)(f[-4]))<<BITSINWORD)+(UWORD)f[-5]);
 		}
 		else if ( f[-1] == 5 ) {
 			outfloat->_mp_exp =
-				 (mp_exp_t)((((ULONG)(f[-4]))<<BITSINWORD)+f[-5]);
+				 (mp_exp_t)((((ULONG)(f[-4]))<<BITSINWORD)+(UWORD)f[-5]);
 		}
 	}
 /*
