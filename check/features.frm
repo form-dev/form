@@ -2390,11 +2390,91 @@ assert succeeded?
 assert result("F") =~ expr("f(1,2,4,5)")
 *--#] Issue243_1 : 
 *--#[ Issue243_2 :
+NF f;
+L F = 1;
+#define i "9"
+#do i=1,2
+  #do i=1,3
+    #do i=1,8
+      #if `i' == 3
+        #continuedo 2
+      #endif
+      multiply right, f(`i');
+    #enddo
+    multiply right, f(-`i');
+  #enddo
+  multiply right, f(-`i');
+#enddo
+multiply right, f(`i');
+chainin f;
+P;
+.end
+assert succeeded?
+assert result("F") =~ expr("f(1,2,1,2,1,2,-1,1,2,1,2,1,2,-2,9)")
+*--#] Issue243_2 : 
+*--#[ Issue243_3 :
+NF f;
+L F = 1;
+#do i=1,3
+  #do i=1,2
+    #continuedo 0
+    multiply right, f(`i');
+  #enddo
+#enddo
+chainin f;
+P;
+.end
+assert succeeded?
+assert result("F") =~ expr("f(1,2,1,2,1,2)")
+*--#] Issue243_3 : 
+*--#[ Issue243_e1 :
 #continuedo
 .end
-assert preprocess_error?
-assert stdout =~ exact_pattern("#continuedo without #do")
-*--#] Issue243_2 : 
+assert preprocess_error?("#continuedo without #do")
+*--#] Issue243_e1 : 
+*--#[ Issue243_e2 :
+#do i=1,3
+  #continuedo -1
+#enddo
+.end
+assert preprocess_error?("Improper syntax of #continuedo instruction")
+*--#] Issue243_e2 : 
+*--#[ Issue243_e3 :
+#do i=1,3
+  #continuedo 1a
+#enddo
+.end
+assert preprocess_error?("Improper syntax of #continuedo instruction")
+*--#] Issue243_e3 : 
+*--#[ Issue243_e4 :
+#do i=1,3
+  #continuedo 2
+#enddo
+.end
+assert preprocess_error?("Too many loop levels requested in #continuedo instruction")
+*--#] Issue243_e4 : 
+*--#[ Issue243_e5 :
+#procedure foo
+  #continuedo
+#endprocedure
+#do i=1,3
+  #call foo
+#enddo
+.end
+assert preprocess_error?("Trying to jump out of a procedure with a #continuedo instruction")
+*--#] Issue243_e5 : 
+*--#[ Issue243_e6 :
+#procedure foo
+  #continuedo 2
+#endprocedure
+#do i=1,3
+  #do j=1,3
+    #call foo
+  #enddo
+#enddo
+.end
+assert preprocess_error?("Trying to jump out of a procedure with a #continuedo instruction")
+*--#] Issue243_e6 : 
 *--#[ Issue392_ContinuationLines_1 :
 #: ContinuationLines 1
 * Setting ContinuationLines to 0 should remove continuation line limit.

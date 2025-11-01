@@ -632,6 +632,28 @@ sign in column 1 in longer expressions.
 The default commentary character is $\ast$.
 
 %--#] commentchar : 
+%--#[ continuedo :
+
+\section{\#continuedo}
+\label{precontinuedo}
+
+\noindent Syntax:
+
+\#continuedo [{\tt<}number{\tt>}]
+
+\noindent See also \#do (\ref{predo}) and \#enddo (\ref{preenddo})
+
+\noindent The \#continuedo\index{\#continuedo} instruction allows one to
+jump to the next iteration of a \#do loop.
+If a (nonzero integer) number is specified
+it indicates the number of enclosing loops
+that the program should continue to the next iteration of.
+Control will continue at the beginning of the next iteration
+of the enclosing loop indicated by `number'.
+The default value is one.
+If the value is zero the instruction has no effect.
+
+%--#] continuedo : 
 %--#[ create :
  
 \section{\#create}
