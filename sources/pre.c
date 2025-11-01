@@ -32,6 +32,7 @@
   	#[ Includes :
 */
 #include "form3.h"
+#include "comtool.h"
 #ifdef WITHFLOAT
 #include "math.h"
 #endif
@@ -42,6 +43,8 @@ static int stopdelay = 0;
 static STREAM *oldstream = 0;
 static UBYTE underscore[2] = {'_',0};
 static PREVAR *ThePreVar = 0;
+
+static int ExitDoLoops(int, const char *);
 
 static KEYWORD precommands[] = {
 	 {"add"          , DoPreAdd       , 0, 0}
@@ -2783,9 +2786,22 @@ nonumber:
  		#[ DoContinueDo :
 */
 
+/**
+ * Jumps forward to the corresponding `#enddo` of the specified number of outer `#do` loops.
+ *
+ * @par Syntax:
+ * @code
+ *   #continuedo [<number>=1]
+ * @endcode
+ *
+ * If `number` is omitted, it defaults to 1.
+ * If `number` is zero then the instruction has no effect.
+ */
 int DoContinueDo(UBYTE *s)
 {
 	DOLOOP *loop;
+	WORD levels;
+	int result;
 
 	if ( AP.PreSwitchModes[AP.PreSwitchLevel] != EXECUTINGPRESWITCH ) return(0);
 	if ( AP.PreIfStack[AP.PreIfLevel] != EXECUTINGIF ) return(0);
@@ -2794,6 +2810,37 @@ int DoContinueDo(UBYTE *s)
 		MesPrint("@%#continuedo without %#do");
 		return(1);
 	}
+
+	SkipSpaces(&s);
+	if ( *s == 0 ) {
+		levels = 1;
+	}
+	else if ( FG.cTable[*s] == 1 ) {
+		ParseNumber(levels,s);
+		SkipSpaces(&s);
+		if ( *s != 0 ) goto improper;
+	}
+	else {
+improper:
+		MesPrint("@Improper syntax of %#continuedo instruction");
+		return(1);
+	}
+
+	if ( levels > NumDoLoops ) {
+		MesPrint("@Too many loop levels requested in %#continuedo instruction");
+		return(1);
+	}
+
+	result = ExitDoLoops(levels-1,"continuedo");
+	if ( result != 0 ) return(result);
+
+	if ( levels <= 0 ) return(0);
+
+	if ( AC.CurrentStream->type == PREREADSTREAM3
+		|| AP.PreTypes[AP.NumPreTypes] == PRETYPEPROCEDURE ) {
+			MesPrint("@Trying to jump out of a procedure with a %#continuedo instruction");
+			return(1);
+		}
 
 	loop = &(DoLoops[NumDoLoops-1]);
 	AP.NumPreTypes = loop->NumPreTypes+1;
@@ -3031,7 +3078,6 @@ illdo:;
 
 int DoBreakDo(UBYTE *s)
 {
-	DOLOOP *loop;
 	WORD levels;
 
 	if ( AP.PreSwitchModes[AP.PreSwitchLevel] != EXECUTINGPRESWITCH ) return(0);
@@ -3062,6 +3108,19 @@ improper:
 		MesPrint("@Too many loop levels requested in %#breakdo instruction");
 		Terminate(-1);
 	}
+	return(ExitDoLoops(levels,"breakdo"));
+}
+
+/**
+ * Exits the specified number of nested `#do` loops.
+ *
+ * @param levels The number of loops to exit.
+ * @param instruction The instruction name used for error reporting.
+ * @return 0 on success, nonzero on error.
+ */
+static int ExitDoLoops(int levels, const char *instruction)
+{
+	DOLOOP *loop;
 	while ( levels > 0 ) {
 		while ( AC.CurrentStream->type != PREREADSTREAM
 		  && AC.CurrentStream->type != PREREADSTREAM2
@@ -3072,16 +3131,13 @@ improper:
 		&& AP.PreTypes[AP.NumPreTypes] != PRETYPEPROCEDURE ) AP.NumPreTypes--;
 		if ( AC.CurrentStream->type == PREREADSTREAM3
 		|| AP.PreTypes[AP.NumPreTypes] == PRETYPEPROCEDURE ) {
-			MesPrint("@Trying to jump out of a procedure with a %#breakdo instruction");
-			Terminate(-1);
+			MesPrint("@Trying to jump out of a procedure with a %#%s instruction",instruction);
+			return(1);
 		}
 		loop = &(DoLoops[NumDoLoops-1]);
 		AP.NumPreTypes = loop->NumPreTypes;
 		AP.PreIfLevel = loop->PreIfLevel;
 		AP.PreSwitchLevel = loop->PreSwitchLevel;
-/*
-		AP.NumPreTypes--;
-*/
 		NumDoLoops--;
 		DoUndefine(loop->name);
 		M_free(loop->p.buffer,"loop->p.buffer");
