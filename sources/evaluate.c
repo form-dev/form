@@ -392,9 +392,9 @@ TestArgument:
 							mpfr_pow_si(auxr3,auxr3,ti[1],RND);
 						mpfr_mul(auxr2,auxr2,auxr3,RND);
 						ti[1] = 0;
+						first = 0;
 					}
 				}
-				first = 0;
 				goto nextfun;
 			}
 			if ( tt != tnext && *t != AGMFUNCTION ) goto nextfun;
@@ -663,12 +663,8 @@ label6:
 				case MZV:
 				case EULER:
 				case MZVHALF:
-					goto nextfun;
 				default:
-					MLOCK(ErrorMessageLock);
-					MesPrint("Function in evaluate statement not yet implemented.");
-					MUNLOCK(ErrorMessageLock);
-					break;
+					goto nextfun;
 			}
 		}
 		else goto nextfun;
