@@ -1259,6 +1259,23 @@ assert result("LN") =~ expr("
        + 9.99999327347282003e-01*ln(2.71828e+00)
 ")
 *--#] evaluate_ln : 
+*--#[ evaluate_eexp :
+#Startfloat 84b
+CFunction exp;
+Local EXP = exp(0)*eexp_(0)+exp(1)*eexp_(1)+exp(-10)*eexp_(-10)+exp(2/11)*eexp_(2/11)+exp(36124.5)*eexp_(36124.5);
+Evaluate;
+Print +s;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("EXP") =~ expr("
+         + 1.199396102035385909645662e+00*exp(2/11)
+       + 4.688258114961839863324201e+15688*exp(3.61245e+04)
+       + 4.539992976248485153559152e-05*exp(-10)
+       + 1.0e+00*exp(0)
+       + 2.718281828459045235360287e+00*exp(1)
+")
+*--#] evaluate_eexp : 
 *--#[ evaluate_li2 :
 #Startfloat 18d
 CFunction li2;

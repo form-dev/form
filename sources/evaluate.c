@@ -531,6 +531,10 @@ label6:
 					else mpfr_log(auxr3,auxr1,RND);
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;
+				case EXPFUNCTION:
+					mpfr_exp(auxr3,auxr1,RND);
+					mpfr_mul(auxr2,auxr2,auxr3,RND);
+				break;
 				case LI2FUNCTION: /* should be between -1 and +1 */
 					if ( nsgn == 0 ) goto getout;
 					mpfr_abs(auxr3,auxr1,RND);
@@ -645,6 +649,7 @@ label6:
 				case LNFUNCTION:
 				case LI2FUNCTION:
 				case LINFUNCTION:
+				case EXPFUNCTION:
 				case ASINFUNCTION:
 				case ACOSFUNCTION:
 				case ATANFUNCTION:
