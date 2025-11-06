@@ -252,6 +252,7 @@ static struct fixedfun {
 	,{"mzvhalf_"    ,0 ,0             ,0               ,0} /* MZVHALF */
 	,{"agm_"        ,0 ,0             ,0               ,0} /* AGMFUNCTION */
 	,{"gamma_"      ,0 ,0             ,0               ,0} /* GAMMAFUN */
+	,{"eexp_"       ,0 ,0             ,0               ,0} /* EXPFUNCTION */
 #endif
 };
 

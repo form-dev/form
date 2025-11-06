@@ -2768,6 +2768,7 @@ int CoEvaluate(UBYTE *s)
 */
 			case SQRTFUNCTION:
 			case LNFUNCTION:
+			case EXPFUNCTION:
 			case SINFUNCTION:
 			case COSFUNCTION:
 			case TANFUNCTION:
