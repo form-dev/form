@@ -7769,6 +7769,10 @@ int DoStartFloat(UBYTE *s)
 		MesPrint("@Simultaneous use of floating point and modulus arithmetic makes no sense.");
 		error = 1;
 	}
+	if ( AT.aux_ ) { // First, we clean up any previous floating point system. 
+		ClearfFloat();
+		ClearMZVTables();
+	}
 	while ( *s == ',' || *s == ' ' || *s == '\t' ) s++;
 /*
 	The first parameter is the float precision

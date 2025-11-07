@@ -1101,13 +1101,6 @@ void SetupMZVTables(void)
 	N = (size_t)Nw;
 	totnum = AM.totalnumberofthreads;
     for ( id = 0; id < totnum; id++ ) {
-		if ( AB[id]->T.mpf_tab1 ) {
-			a = (mpf_t *)AB[id]->T.mpf_tab1;
-			for ( i = 0; i <=Nw; i++ ) {
-				mpf_clear(a[i]);
-			}
-			M_free(AB[id]->T.mpf_tab1,"mpftab1");
-		}
 		AB[id]->T.mpf_tab1 = (void *)Malloc1((N+2)*sizeof(mpf_t),"mpftab1");
 		a = (mpf_t *)AB[id]->T.mpf_tab1;
 		for ( i = 0; i <=Nw; i++ ) {
@@ -1116,13 +1109,6 @@ void SetupMZVTables(void)
 	using mpf_init2.
 */
 			mpf_init(a[i]);
-		}
-		if ( AB[id]->T.mpf_tab2 ) {
-			a = (mpf_t *)AB[id]->T.mpf_tab2;
-			for ( i = 0; i <=Nw; i++ ) {
-				mpf_clear(a[i]);
-			}
-			M_free(AB[id]->T.mpf_tab2,"mpftab2");
 		}
 		AB[id]->T.mpf_tab2 = (void *)Malloc1((N+2)*sizeof(mpf_t),"mpftab2");
 		a = (mpf_t *)AB[id]->T.mpf_tab2;
@@ -1135,12 +1121,6 @@ void SetupMZVTables(void)
 	size_t N;
 	Nw = AC.DefaultPrecision;
 	N = (size_t)Nw;
-	if ( AT.mpf_tab1 ) {
-		for ( i = 0; i <= Nw; i++ ) {
-			mpf_clear(mpftab1[i]);
-		}
-		M_free(AT.mpf_tab1,"mpftab1");
-	}
 	AT.mpf_tab1 = (void *)Malloc1((N+2)*sizeof(mpf_t),"mpftab1");
 	for ( i = 0; i <= Nw; i++ ) {
 /*
@@ -1149,34 +1129,21 @@ void SetupMZVTables(void)
 */
 		mpf_init(mpftab1[i]);
 	}
-	if ( AT.mpf_tab2 ) {
-		for ( i = 0; i <= Nw; i++ ) {
-			mpf_clear(mpftab2[i]);
-		}
-		M_free(AT.mpf_tab2,"mpftab2");
-	}
 	AT.mpf_tab2 = (void *)Malloc1((N+2)*sizeof(mpf_t),"mpftab2");
 	for ( i = 0; i <= Nw; i++ ) {
 		mpf_init(mpftab2[i]);
 	}
 #endif
-	if ( AS.delta_1 ) {
-		mpf_clear(mpfdelta1);
-		M_free(AS.delta_1,"delta1");
-	}
 	AS.delta_1 = (void *)Malloc1(sizeof(mpf_t),"delta1");
 	mpf_init(mpfdelta1);
 	SimpleDelta(mpfdelta1,1); /* this can speed up things. delta1 = ln(2) */
-/*
-	Finally the character buffer for printing
-	if ( AO.floatspace ) M_free(AO.floatspace,"floatspace");
-	AO.floatspace = (UBYTE *)Malloc1(((10*AC.DefaultPrecision)/33+40)*sizeof(UBYTE),"floatspace");
-*/
 }
 
 /*
  		#] SetupMZVTables : 
  		#[ SetupMPFTables :
+	
+		Allocates the aux variables
 */
 
 void SetupMPFTables(void)
@@ -1184,22 +1151,14 @@ void SetupMPFTables(void)
 #ifdef WITHPTHREADS
 	int id, totnum;
 	mpf_t *a;
-/*
-	Now the aux variables
-*/
 #ifdef WITHSORTBOTS
 	totnum = MaX(2*AM.totalnumberofthreads-3,AM.totalnumberofthreads);
 #endif
     for ( id = 0; id < totnum; id++ ) {
-		if ( AB[id]->T.aux_ ) {
 /*
-			We work here with a[0] etc because the aux1 etc contain B which
-			in the current routine would be AB[0] only
+		We work here with a[0] etc because the aux1 etc contain B which
+		in the current routine would be AB[0] only
 */
-			a = (mpf_t *)AB[id]->T.aux_;
-			mpf_clears(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],(mpf_ptr)0);
-			M_free(AB[id]->T.aux_,"AB[id]->T.aux_");
-		}
 		AB[id]->T.aux_ = (void *)Malloc1(sizeof(mpf_t)*8,"AB[id]->T.aux_");
 		a = (mpf_t *)AB[id]->T.aux_;
 		mpf_inits(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],(mpf_ptr)0);
@@ -1208,24 +1167,12 @@ void SetupMPFTables(void)
 		AB[id]->T.indi2 = AB[id]->T.indi1 + AC.MaxWeight;
 	}
 #else
-/*
-	Now the aux variables
-*/
-	if ( AT.aux_ ) {
-		mpf_clears(aux1,aux2,aux3,aux4,aux5,auxjm,auxjjm,auxsum,(mpf_ptr)0);
-		M_free(AT.aux_,"AT.aux");
-	}
 	AT.aux_ = (void *)Malloc1(sizeof(mpf_t)*8,"AT.aux_");
 	mpf_inits(aux1,aux2,aux3,aux4,aux5,auxjm,auxjjm,auxsum,(mpf_ptr)0);
 	if ( AT.indi1 ) M_free(AT.indi1,"indi1");
 	AT.indi1 = (WORD *)Malloc1(sizeof(WORD)*AC.MaxWeight*2,"indi1");
 	AT.indi2 = AT.indi1 + AC.MaxWeight;
 #endif
-/*
-	Finally the character buffer for printing
-	if ( AO.floatspace ) M_free(AO.floatspace,"floatspace");
-	AO.floatspace = (UBYTE *)Malloc1(((10*AC.DefaultPrecision)/33+40)*sizeof(UBYTE),"floatspace");
-*/
 }
 
 /*

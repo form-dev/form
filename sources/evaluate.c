@@ -89,14 +89,6 @@ void SetfFloatPrecision(LONG prec)
   #ifdef WITHSORTBOTS
 	totnum = MaX(2*AM.totalnumberofthreads-3,AM.totalnumberofthreads);
   #endif
-	if ( AB[0]->T.auxr_ ) {
-	    for ( id = 0; id < totnum; id++ ) {
-			a = (mpfr_t *)AB[id]->T.auxr_;
-			mpfr_clears(a[0],a[1],a[2],a[3],a[4],(mpfr_ptr)0);
-			M_free(AB[id]->T.auxr_,"AB[id]->T.auxr_");
-			AB[id]->T.auxr_ = 0;
-		}
-	}
     for ( id = 0; id < totnum; id++ ) {
 		AB[id]->T.auxr_ = (void *)Malloc1(sizeof(mpfr_t)*5,"AB[id]->T.auxr_");
 		a = (mpfr_t *)AB[id]->T.auxr_;
@@ -107,11 +99,6 @@ void SetfFloatPrecision(LONG prec)
 		mpfr_inits2(fprec,a[0],a[1],a[2],a[3],a[4],(mpfr_ptr)0);
 	}
 #else
-	if ( AT.auxr_ ) {
-		mpfr_clears(auxr1,auxr2,auxr3,auxr4,auxr5,(mpfr_ptr)0);
-		M_free(AT.auxr_,"AT.auxr_");
-		AT.auxr_ = 0;
-	}
 	AT.auxr_ = (void *)Malloc1(sizeof(mpfr_t)*5,"AT.auxr_");
 	mpfr_inits2(fprec,auxr1,auxr2,auxr3,auxr4,auxr5,(mpfr_ptr)0);
 #endif
@@ -137,10 +124,6 @@ void ClearfFloat(void)
 			M_free(AB[id]->T.auxr_,"AB[id]->T.auxr_");
 			AB[id]->T.auxr_ = 0;
 		}
-/*
-		M_free(AB[0]->T.auxr_,"AB[0]->T.auxr_");
-		AB[0]->T.auxr_ = 0;
-*/
 	}
 #else
 	if ( AT.auxr_ ) {
@@ -149,12 +132,6 @@ void ClearfFloat(void)
 		AT.auxr_ = 0;
 	}
 #endif
-/*
-	if ( AS.delta_1 ) {
-		mpf_clear(ln2);
-		AS.delta_1 = 0;
-	}
-*/
 }
 
 /*
