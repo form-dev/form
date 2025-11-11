@@ -468,7 +468,6 @@ typedef int (*TFUN1)();
 #define BLOCK 113
 #define ONEPI 114
 #define PHI 115
-#ifdef WITHFLOAT
 #define FLOATFUN 116
 #define TOFLOAT 117
 #define TORAT 118
@@ -481,9 +480,6 @@ typedef int (*TFUN1)();
 #define HPLFUNCTION 125
 #define MPLFUNCTION 126
 #define MAXBUILTINFUNCTION 126
-#else
-#define MAXBUILTINFUNCTION 115
-#endif
 
 #define FIRSTUSERFUNCTION 150
 

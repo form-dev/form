@@ -243,7 +243,6 @@ static struct fixedfun {
 	,{"block_"      ,0 ,0             ,0               ,0} /* BLOCK */
 	,{"onepi_"      ,0 ,0             ,0               ,0} /* ONEPI */
 	,{"phi_"        ,0 ,VERTEXFUNCTION,0               ,0} /* PHI */
-#ifdef WITHFLOAT
 	,{"float_"      ,0 ,0             ,0               ,0} /* FLOATFUN */
 	,{"tofloat_"    ,0 ,0             ,0               ,0} /* TOFLOAT */
 	,{"torat_"      ,0 ,0             ,0               ,0} /* TORAT */
@@ -255,7 +254,6 @@ static struct fixedfun {
 	,{"eexp_"       ,0 ,0             ,0               ,0} /* EXPFUNCTION */
 	,{"hpl_"        ,0 ,0             ,0               ,0} /* HPLFUNCTION */
 	,{"mpl_"        ,0 ,0             ,0               ,0} /* MPLFUNCTION */
-#endif
 };
 
 FIXEDSET fixedsets[] = {
