@@ -1920,6 +1920,18 @@ void SimpleDelta(mpf_t sum, int m)
 */
 	n--;
 	jmax = (int)((int)xprec - (n-1)*m);
+/*
+	For small prec and large m, the estimate can be wrong and even be negative, 
+	so we increase jmax until jmax + m*log2(jmax) > prec
+*/
+	if ( jmax < 0 ) jmax = 1;
+	do {
+		n = 0;
+		x = (unsigned long)jmax;
+		while (x) { x >>= 1; n++; }
+		n--; // floor(log2(jmax))
+		jmax++; 
+	} while ( jmax + m * n <= prec );
 	mpf_set_ui(sum,0);
 	for ( j = 1; j <= jmax; j++ ) {
 #ifdef WITHCUTOFF
@@ -1966,6 +1978,18 @@ void SimpleDeltaC(mpf_t sum, int m)
 */
 	n--;
 	jmax = (int)((int)xprec - (n-1)*m);
+/*
+	For small prec and large m, the estimate can be wrong and even be negative, 
+	so we increase jmax until jmax + m*log2(jmax) > prec
+*/
+	if ( jmax < 0 ) jmax = 1;
+	do {
+		n = 0;
+		x = (unsigned long)jmax;
+		while (x) { x >>= 1; n++; }
+		n--; // floor(log2(jmax))
+		jmax++; 
+	} while ( jmax + m * n <= prec );
 	if ( s < 0 ) jmax /= 2;
 	mpf_set_si(sum,0L);
 	for ( j = 1; j <= jmax; j++ ) {
