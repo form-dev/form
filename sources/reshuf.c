@@ -1006,7 +1006,7 @@ WORD DimensionExpression(PHEAD WORD *expr)
 		dim = DimensionTerm(term);
 		if ( dim ==  MAXPOSITIVE ) goto undefined;
 		if ( dim == -MAXPOSITIVE ) goto outofrange;
-		if ( first ) { x = dim; }
+		if ( first ) { x = dim; first = 0; }
 		else if ( x != dim ) {
 			old  = AN.currentTerm;
 			MLOCK(ErrorMessageLock);
@@ -1015,6 +1015,7 @@ WORD DimensionExpression(PHEAD WORD *expr)
 			while ( *term ) {
 				AN.currentTerm = term;
 				MesPrint("   %T");
+				term += *term;
 			}
 			MUNLOCK(ErrorMessageLock);
 			AN.currentTerm = old;

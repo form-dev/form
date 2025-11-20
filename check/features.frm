@@ -2764,3 +2764,60 @@ TableBase "no212.tbl" open, readonly;
 .end
 assert runtime_error?('Trying to open non-existent TableBase in readonly mode: no212.tbl')
 *--#] tablebase_ro_2 :
+*--#[ Dimension_1 :
+#-
+Off Statistics;
+
+Symbol m{d=1},m2{d=2},s{d=2},t{d=2},sqrts{d=1};
+
+#define DIM "4"
+Local test1 = (m^2 + m2 + s + t)^{`DIM'/2};
+Local test2 = test1;
+.sort
+Hide test2;
+
+* Set s = 1 WLOG
+Identify s = 1;
+
+* Do some work
+
+* Restore s dependence
+$dim = dimension_;
+Multiply s^((`DIM'-$dim)/2);
+ModuleOption,local $dim;
+.sort
+
+Drop;
+Local diff = test1 - test2;
+Print +s;
+.end
+assert succeeded?
+assert result("diff") =~ expr("0")
+*--#] Dimension_1 :
+*--#[ Dimension_2 :
+#-
+Off Statistics;
+
+Symbol m{d=1},s{d=2},t{d=2};
+CFunction f;
+
+* Oops! Forgot the ^2
+Local test = f(m + s + t);
+.sort
+
+ArgToExtraSymbol f;
+Identify f(m?) = f(m);
+Argument f;
+	FromPolynomial;
+EndArgument;
+
+Print +s;
+.end
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+Dimension is not the same in the terms of the expression
+   t
+   s
+   m
+EOF
+*--#] Dimension_2 :
