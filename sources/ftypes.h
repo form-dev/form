@@ -1102,16 +1102,33 @@ typedef int (*TFUN1)();
 #define DENSETABLE 1
 #define SPARSETABLE 0
 
-#define ONEPARTICLEIRREDUCIBLE 1
-#define WITHINSERTIONS         2
-#define NOTADPOLES             4
-#define WITHSYMMETRIZE         8
-#define TOPOLOGIESONLY        16
-#define NONODES               32
-#define WITHEDGES             64
-#define CHECKEXTERN          128
-#define WITHBLOCKS           256
-#define WITHONEPI            512
-#define NOSNAILS            1024
-#define NOEXTSELF           2048
+// Diagram generator flags. They should be powers of two, since they are added
+// to pass to diagrams and masked in diawrap.cc to check the flags.
+// We use a "stringified" version of these when defining the FORM preprocessor
+// variables, so can't neatly use "1<<10" etc here.
+#define TOPOLOGIESONLY 1
+#define WITHOUTNODES   2
+#define WITHEDGES      4
+#define WITHBLOCKS     8
+#define WITHONEPISETS  16
+#define WITHSYMMETRIZE 32
+#define CHECKEXTERN    64
+// The "qgraf compatible" filtering flags:
+#define ONEPARTI       128
+#define ONEPARTR       256
+#define ONSHELL        512
+#define OFFSHELL       1024
+#define NOSIGMA        2048
+#define SIGMA          4096
+#define NOSNAIL        8192
+#define SNAIL          16384
+#define NOTADPOLE      32768
+#define TADPOLE        65536
+#define SIMPLE         131072
+#define NOTSIMPLE      262144
+#define BIPART         524288
+#define NONBIPART      1048576
+#define CYCLI          2097152
+#define CYCLR          4194304
+#define FLOOP          8388608
 
