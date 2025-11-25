@@ -373,7 +373,7 @@ int EvaluateFun(PHEAD WORD *term, WORD level, WORD *pars)
 		if ( pars[2] == *t ) {	/* have to do this one if possible */
 TestArgument:
 /*
-			There must be a single argument, except for the AGM function
+			There must be a single argument, except for the AGM or atan2 functions
 */
 			tnext = t+t[1]; tt = t+FUNHEAD; NEXTARG(tt);
 			if( *t == SYMBOL) {
@@ -397,7 +397,7 @@ TestArgument:
 				first = 0;
 				goto nextfun;
 			}
-			if ( tt != tnext && *t != AGMFUNCTION ) goto nextfun;
+			if ( tt != tnext && *t != AGMFUNCTION && *t != ATAN2FUNCTION) goto nextfun;
 			if ( *t == SINFUNCTION ) {
 				pimul = GetPiArgument(BHEAD t+FUNHEAD);
 				if ( pimul >= 0 && pimul < 24 ) {
@@ -511,7 +511,7 @@ label6:
 				}
 			}
 
-			if ( *t == AGMFUNCTION ) {
+			if ( *t == AGMFUNCTION || *t == ATAN2FUNCTION ) {
 				if ( GetFloatArgument(BHEAD auxr1,t,1) < 0 ) goto nextfun;
 				if ( GetFloatArgument(BHEAD auxr3,t,-2) < 0 ) goto nextfun;
 			}
@@ -619,6 +619,14 @@ label6:
 					mpfr_atan(auxr3,auxr1,RND);
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
 				break;
+				case ATAN2FUNCTION:
+					nsgn = mpfr_sgn(auxr1);
+					nsgn2 = mpfr_sgn(auxr3);
+					// We follow the conventions of mpfr here:
+					if ( nsgn == 0 && nsgn2 >= 0) goto getout;
+					mpfr_atan2(auxr3,auxr1,auxr3,RND);
+					mpfr_mul(auxr2,auxr2,auxr3,RND);
+				break;
 				case SINFUNCTION:
 					mpfr_sin(auxr3,auxr1,RND);
 					mpfr_mul(auxr2,auxr2,auxr3,RND);
@@ -653,6 +661,7 @@ label6:
 				case ASINFUNCTION:
 				case ACOSFUNCTION:
 				case ATANFUNCTION:
+				case ATAN2FUNCTION:
 				case SINHFUNCTION:
 				case COSHFUNCTION:
 				case TANHFUNCTION:
