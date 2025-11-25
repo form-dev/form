@@ -662,13 +662,13 @@ assert stdout =~ exact_pattern(<<'EOF')
    G1 =
       float_(10,10,1,225649930152063087544280124519603661924016376904153173222\
       961313295752588365049496190204609112667217257624737508104376810254484309\
-      3830597279756558899541412580219255737022507716035);
+      3830597279756558899541412586941038636793415360118);
 EOF
 assert stdout =~ exact_pattern(<<'EOF')
    G2 =
       float_(10,10,1,247337966873870703631573653423368526098272821023387457752\
       643030990710929556575503489173572446024607642191456056189912528713904095\
-      704444384800390830056125051605311704862654126);
+      704444384800390830056125051897088334731440434);
 EOF
 *--#] Float_1 :
 *--#[ evaluate_symbol :
@@ -766,7 +766,7 @@ L F = mzv_(2);
 .sort
 
 Hide;
-#do digits=1,20
+#do digits=1,10
 	#StartFloat `digits'd,MZV=2
 	Local F`digits' = F;
 	Evaluate mzv_;
@@ -774,6 +774,16 @@ Hide;
 	.sort
 	Hide;
 	#endfloat
+#enddo
+* The following checks that a new StartFloat without a previous  
+* EndFloat causes no problems. 
+#do digits=11,20
+	#StartFloat `digits'd,MZV=2
+	Local F`digits' = F;
+	Evaluate mzv_;
+	Print;
+	.sort
+	Hide;
 #enddo
 .end
 #pend_if wordsize == 2
@@ -909,7 +919,7 @@ assert result("EULER3") =~ expr("
        - 3.888958461681063290997e-01*euler(-1,-2)
        + 2.140723708667062274342e-01*euler(-1,-1,-1)
        - 5.372131936080402009406e-01*euler(-1,-1,1)
-       + 9.475300423012770572182e-02*euler(-1,1,-1)
+       + 9.475300423012770572183e-02*euler(-1,1,-1)
        - 5.550410866482157995314e-02*euler(-1,1,1)
        + 2.695764795315278073874e-01*euler(-1,2)
        - 5.082152128046848508121e-01*euler(2,-1)
@@ -983,7 +993,7 @@ assert result("MZVHALF1") =~ expr("
         +6.931471805599453094172e-01*mzvhalf(1)
 ")
 assert result("MZVHALF2") =~ expr("
-        +2.402265069591007123335e-01*mzvhalf(1,1)
+        +2.402265069591007123336e-01*mzvhalf(1,1)
        + 5.822405264650125059027e-01*mzvhalf(2)
 ")
 assert result("MZVHALF3") =~ expr("
@@ -1590,6 +1600,177 @@ Print;
 assert succeeded?
 assert result("F") =~ expr("1.0e+00 + f(a,b,d,3.14e+01) + 2.0e+00*f(30,c,d,-50,b,d,-10,a,d)")
 *--#] argument_float : 
+*--#[ AddWithFloat :
+* This tests AddWithFloat in float.c
+#StartFloat 10d
+Symbol x1,...,x4;
+Local F = (x1+1.0*x2+x3+1.0*x4)^5;
+id x1 = 1-x2-x3-x4;
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("1")
+*--#] AddWithFloat : 
+*--#[ float_extremes :
+#StartFloat 10d
+CFunction f;
+#do i = 0,62
+	Local F`i' = 1.`i'e{2^`i'}*f({2^`i'});
+	Local G`i' = 1.`i'e{-2^`i'}*f({2^`i'});
+#enddo
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F0") =~ expr("1.0e+01*f(1)")
+assert result("G0") =~ expr("1.0e-01*f(1)")
+assert result("F1") =~ expr("1.1e+02*f(2)")
+assert result("G1") =~ expr("1.1e-02*f(2)")
+assert result("F2") =~ expr("1.2e+04*f(4)")
+assert result("G2") =~ expr("1.2e-04*f(4)")
+assert result("F3") =~ expr("1.3e+08*f(8)")
+assert result("G3") =~ expr("1.3e-08*f(8)")
+assert result("F4") =~ expr("1.4e+16*f(16)")
+assert result("G4") =~ expr("1.4e-16*f(16)")
+assert result("F5") =~ expr("1.5e+32*f(32)")
+assert result("G5") =~ expr("1.5e-32*f(32)")
+assert result("F6") =~ expr("1.6e+64*f(64)")
+assert result("G6") =~ expr("1.6e-64*f(64)")
+assert result("F7") =~ expr("1.7e+128*f(128)")
+assert result("G7") =~ expr("1.7e-128*f(128)")
+assert result("F8") =~ expr("1.8e+256*f(256)")
+assert result("G8") =~ expr("1.8e-256*f(256)")
+assert result("F9") =~ expr("1.9e+512*f(512)")
+assert result("G9") =~ expr("1.9e-512*f(512)")
+assert result("F10") =~ expr("1.1e+1024*f(1024)")
+assert result("G10") =~ expr("1.1e-1024*f(1024)")
+assert result("F11") =~ expr("1.11e+2048*f(2048)")
+assert result("G11") =~ expr("1.11e-2048*f(2048)")
+assert result("F12") =~ expr("1.12e+4096*f(4096)")
+assert result("G12") =~ expr("1.12e-4096*f(4096)")
+assert result("F13") =~ expr("1.13e+8192*f(8192)")
+assert result("G13") =~ expr("1.13e-8192*f(8192)")
+assert result("F14") =~ expr("1.14e+16384*f(16384)")
+assert result("G14") =~ expr("1.14e-16384*f(16384)")
+assert result("F15") =~ expr("1.15e+32768*f(32768)")
+assert result("G15") =~ expr("1.15e-32768*f(32768)")
+assert result("F16") =~ expr("1.16e+65536*f(65536)")
+assert result("G16") =~ expr("1.16e-65536*f(65536)")
+assert result("F17") =~ expr("1.17e+131072*f(131072)")
+assert result("G17") =~ expr("1.17e-131072*f(131072)")
+assert result("F18") =~ expr("1.18e+262144*f(262144)")
+assert result("G18") =~ expr("1.18e-262144*f(262144)")
+assert result("F19") =~ expr("1.19e+524288*f(524288)")
+assert result("G19") =~ expr("1.19e-524288*f(524288)")
+assert result("F20") =~ expr("1.2e+1048576*f(1048576)")
+assert result("G20") =~ expr("1.2e-1048576*f(1048576)")
+assert result("F21") =~ expr("1.21e+2097152*f(2097152)")
+assert result("G21") =~ expr("1.21e-2097152*f(2097152)")
+assert result("F22") =~ expr("1.22e+4194304*f(4194304)")
+assert result("G22") =~ expr("1.22e-4194304*f(4194304)")
+assert result("F23") =~ expr("1.23e+8388608*f(8388608)")
+assert result("G23") =~ expr("1.23e-8388608*f(8388608)")
+assert result("F24") =~ expr("1.24e+16777216*f(16777216)")
+assert result("G24") =~ expr("1.24e-16777216*f(16777216)")
+assert result("F25") =~ expr("1.25e+33554432*f(33554432)")
+assert result("G25") =~ expr("1.25e-33554432*f(33554432)")
+assert result("F26") =~ expr("1.26e+67108864*f(67108864)")
+assert result("G26") =~ expr("1.26e-67108864*f(67108864)")
+assert result("F27") =~ expr("1.27e+134217728*f(134217728)")
+assert result("G27") =~ expr("1.27e-134217728*f(134217728)")
+assert result("F28") =~ expr("1.28e+268435456*f(268435456)")
+assert result("G28") =~ expr("1.28e-268435456*f(268435456)")
+assert result("F29") =~ expr("1.29e+536870912*f(536870912)")
+assert result("G29") =~ expr("1.29e-536870912*f(536870912)")
+assert result("F30") =~ expr("1.3e+1073741824*f(1073741824)")
+assert result("G30") =~ expr("1.3e-1073741824*f(1073741824)")
+assert result("F31") =~ expr("1.31e+2147483648*f(2147483648)")
+assert result("G31") =~ expr("1.31e-2147483648*f(2147483648)")
+assert result("F32") =~ expr("1.32e+4294967296*f(4294967296)")
+assert result("G32") =~ expr("1.32e-4294967296*f(4294967296)")
+assert result("F33") =~ expr("1.33e+8589934592*f(8589934592)")
+assert result("G33") =~ expr("1.33e-8589934592*f(8589934592)")
+assert result("F34") =~ expr("1.34e+17179869184*f(17179869184)")
+assert result("G34") =~ expr("1.34e-17179869184*f(17179869184)")
+assert result("F35") =~ expr("1.35e+34359738368*f(34359738368)")
+assert result("G35") =~ expr("1.35e-34359738368*f(34359738368)")
+assert result("F36") =~ expr("1.36e+68719476736*f(68719476736)")
+assert result("G36") =~ expr("1.36e-68719476736*f(68719476736)")
+assert result("F37") =~ expr("1.37e+137438953472*f(137438953472)")
+assert result("G37") =~ expr("1.37e-137438953472*f(137438953472)")
+assert result("F38") =~ expr("1.38e+274877906944*f(274877906944)")
+assert result("G38") =~ expr("1.38e-274877906944*f(274877906944)")
+assert result("F39") =~ expr("1.39e+549755813888*f(549755813888)")
+assert result("G39") =~ expr("1.39e-549755813888*f(549755813888)")
+assert result("F40") =~ expr("1.4e+1099511627776*f(1099511627776)")
+assert result("G40") =~ expr("1.4e-1099511627776*f(1099511627776)")
+assert result("F41") =~ expr("1.41e+2199023255552*f(2199023255552)")
+assert result("G41") =~ expr("1.41e-2199023255552*f(2199023255552)")
+assert result("F42") =~ expr("1.42e+4398046511104*f(4398046511104)")
+assert result("G42") =~ expr("1.42e-4398046511104*f(4398046511104)")
+assert result("F43") =~ expr("1.43e+8796093022208*f(8796093022208)")
+assert result("G43") =~ expr("1.43e-8796093022208*f(8796093022208)")
+assert result("F44") =~ expr("1.44e+17592186044416*f(17592186044416)")
+assert result("G44") =~ expr("1.44e-17592186044416*f(17592186044416)")
+assert result("F45") =~ expr("1.45e+35184372088832*f(35184372088832)")
+assert result("G45") =~ expr("1.45e-35184372088832*f(35184372088832)")
+assert result("F46") =~ expr("1.46e+70368744177664*f(70368744177664)")
+assert result("G46") =~ expr("1.46e-70368744177664*f(70368744177664)")
+assert result("F47") =~ expr("1.47e+140737488355328*f(140737488355328)")
+assert result("G47") =~ expr("1.47e-140737488355328*f(140737488355328)")
+assert result("F48") =~ expr("1.48e+281474976710656*f(281474976710656)")
+assert result("G48") =~ expr("1.48e-281474976710656*f(281474976710656)")
+assert result("F49") =~ expr("1.49e+562949953421312*f(562949953421312)")
+assert result("G49") =~ expr("1.49e-562949953421312*f(562949953421312)")
+assert result("F50") =~ expr("1.5e+1125899906842624*f(1125899906842624)")
+assert result("G50") =~ expr("1.5e-1125899906842624*f(1125899906842624)")
+assert result("F51") =~ expr("1.51e+2251799813685248*f(2251799813685248)")
+assert result("G51") =~ expr("1.51e-2251799813685248*f(2251799813685248)")
+assert result("F52") =~ expr("1.52e+4503599627370496*f(4503599627370496)")
+assert result("G52") =~ expr("1.52e-4503599627370496*f(4503599627370496)")
+assert result("F53") =~ expr("1.53e+9007199254740992*f(9007199254740992)")
+assert result("G53") =~ expr("1.53e-9007199254740992*f(9007199254740992)")
+assert result("F54") =~ expr("1.54e+18014398509481984*f(18014398509481984)")
+assert result("G54") =~ expr("1.54e-18014398509481984*f(18014398509481984)")
+assert result("F55") =~ expr("1.55e+36028797018963968*f(36028797018963968)")
+assert result("G55") =~ expr("1.55e-36028797018963968*f(36028797018963968)")
+assert result("F56") =~ expr("1.56e+72057594037927936*f(72057594037927936)")
+assert result("G56") =~ expr("1.56e-72057594037927936*f(72057594037927936)")
+assert result("F57") =~ expr("1.57e+144115188075855872*f(144115188075855872)")
+assert result("G57") =~ expr("1.57e-144115188075855872*f(144115188075855872)")
+assert result("F58") =~ expr("1.58e+288230376151711744*f(288230376151711744)")
+assert result("G58") =~ expr("1.58e-288230376151711744*f(288230376151711744)")
+assert result("F59") =~ expr("1.59e+576460752303423488*f(576460752303423488)")
+assert result("G59") =~ expr("1.59e-576460752303423488*f(576460752303423488)")
+assert result("F60") =~ expr("1.6e+1152921504606846976*f(1152921504606846976)")
+assert result("G60") =~ expr("1.6e-1152921504606846976*f(1152921504606846976)")
+assert result("F61") =~ expr("1.61e+2305843009213693952*f(2305843009213693952)")
+assert result("G61") =~ expr("1.61e-2305843009213693952*f(2305843009213693952)")
+assert result("F62") =~ expr("1.62e+4611686018427387904*f(4611686018427387904)")
+assert result("G62") =~ expr("1.62e-4611686018427387904*f(4611686018427387904)")
+*--#] float_extremes : 
+*--#[ MergeWithFloat :
+* This tests MergeWithFloat in float.c
+#: termsinsmall 16
+On fewerstats 1;
+#StartFloat 10d
+Auto Symbol x;
+* This tests most cases of MergeWithFloat
+Local F = (x1+1.0*x2+x3+1.0*x4)^5;
+id x1 = 1-x2-x3-x4;
+.sort
+* This tests a corncer case of MergeWithFloat
+Local G = x1+...+x15+1.0*x16+2^320*x16;
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("1")
+assert result("G") =~ expr("
+      2.135987036e+96*x16 + x15 + x14 + x13 + x12 + x11 + x10 + x9 + x8 + x7
+       + x6 + x5 + x4 + x3 + x2 + x1")
+*--#] MergeWithFloat : 
 *--#[ float_error :
 Evaluate;
 ToFloat;
