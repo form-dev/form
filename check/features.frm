@@ -1225,6 +1225,27 @@ assert result("ATAN") =~ expr("
        + 7.85398163397448309615661e-01*atan(1)
 ")
 *--#] evaluate_atan : 
+*--#[ evaluate_atan2 :
+#Startfloat 21d
+CFunction atan2;
+Local ATAN2 = atan2(0,0)*atan2_(0,0)
+			+atan2(0,24)*atan2_(0,24)
+			+atan2(24/13,0)*atan2_(24/13,0)
+			+atan2(3,-1.45)*atan2_(3,-1.45)
+			+atan2(0.54321,-1.2345)*atan2_(0.54321,-1.2345)
+			+atan2(5.4321,-45/11)*atan2_(5.4321,-45/11);
+Evaluate;
+Print +s;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("ATAN2") =~ expr("
+         + 1.57079632679489661923e+00*atan2(24/13,0)
+       + 2.72706541948852419832e+00*atan2(5.4321e-01, - 1.2345e+00)
+       + 2.21627784862167698618e+00*atan2(5.4321e+00, - 45/11)
+       + 2.02102192305561165724e+00*atan2(3, - 1.45e+00)
+")
+*--#] evaluate_atan2 : 
 *--#[ evaluate_sqrt :
 #Startfloat 21d
 CFunction sqrt;
