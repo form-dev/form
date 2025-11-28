@@ -7,9 +7,9 @@ check the results.
 ## Prerequisites
 
 The test runner script is written in [Ruby](https://www.ruby-lang.org/)
-and requires Ruby 2.0 or later. The script uses the so-called `test/unit`
-library. In some Linux distributions the library is installed together with
-Ruby, while some distributions may have the library as an optional package,
+and requires Ruby 2.0 or later. The script uses the library commonly referred to as
+`test/unit`. In some Linux distributions, it is installed together with
+Ruby, while some distributions may have it as an optional package,
 or one may need to manually install
 [test-unit](http://test-unit.github.io/test-unit/en/) via the `gem` command.
 
@@ -37,7 +37,7 @@ Alternatively, one can run the test runner script directly:
 ./check.rb
 ```
 
-By default, this tests `form` found in `$PATH`.
+By default, this runs tests with the `form` executable found in `$PATH`.
 To test another executable, specify its path as a command-line argument:
 
 ```bash
@@ -50,7 +50,7 @@ option).
 
 By default, all test cases in all FORM files (`*.frm`) found in the `check`
 directory (not in subdirectories) are used. To select test cases or FORM files
-to be run, specify their names as command-line arguments. For example:
+to run, specify their names as command-line arguments. For example:
 
 ```bash
 ./check.rb Issue8
@@ -64,7 +64,7 @@ For more advanced options, refer to the help message using the `--help` option.
 
 ### Where to add test cases?
 
-Currently, the standard test set (run by default) consists of 4 files:
+Currently, the standard test set (run by default) includes:
 
 - `examples.frm`: Examples provided in the manual.
 - `features.frm`: Test cases for newly added features.
@@ -73,11 +73,11 @@ Currently, the standard test set (run by default) consists of 4 files:
 
 Each test case in these files should finish in a short time: the timeout is set
 to 10 seconds. Bigger tests that take more time are put in subdirectories
-(e.g., `forcer`) and should be specified by command-line options when the test
+(e.g., `extra`) and should be specified by command-line options when the test
 suite is invoked:
 
 ```bash
-./check.rb -C forcer  # The Forcer library must be available in FORMPATH.
+./check.rb -C extra  # Extra library files must be available in FORMPATH.
 ```
 
 ### Structure of a test case
@@ -171,7 +171,30 @@ assert result("F") =~ expr("1 + 2*x + x^2")
 In this example, `#require unix?` ensures that the test runs
 only on Unix, where `#pipe` is expected to work.
 
+### Available environment variables
+
+The following environment variables are accessible in FORM test cases via preprocessor variables.
+
+- `FORM`  
+  Path to the currently used FORM executable, possibly with additional command-line options.  
+  Example: `/home/form-dev/form/build/sources/tvorm -w4`
+- `TESTFILE`  
+  Path to the FORM test file.  
+  Example: `/home/form-dev/form/check/examples.frm`
+- `TESTFILEDIR`  
+  Path to the directory containing the FORM test file.
+  This path is prepended to the `FORMPATH` environment variable.  
+  Example: `/home/form-dev/form/check`
+- `TESTCASE`  
+  Name of the current test case.  
+  Example: `Var_Symbols_1`
+- `TESTTMPDIR`  
+  Path to the temporary directory used as the current working directory.  
+  Example: `/tmp/form_check_20251121-426943-de5rmj/Test_Var_Symbols_1_20251121-426943-cczq26`
+
 ### Available methods
+
+The following methods are available in Ruby test programs.
 
 #### Execution configuration
 
@@ -273,6 +296,8 @@ The following methods assume the default format for statistics:
   Writes a text into the specified file.
 
 ### Available instructions
+
+`check.rb` recognises the following instructions.
 
 - `#require <condition>`  
   Ensures that the test is executed only if the specified `<condition>` is met.

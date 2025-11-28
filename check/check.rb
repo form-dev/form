@@ -435,9 +435,15 @@ module FormTest
       prepare
       @stdout = ""
       @stderr = ""
+      old_formpath = ENV.fetch("FORMPATH", nil)
       begin
+        ENV["FORM"] = FormTest.cfg.form_cmd
+        ENV["FORMPATH"] = add_path(old_formpath, File.dirname(info.full_filename))
+        ENV["TESTFILE"] = info.full_filename
+        ENV["TESTFILEDIR"] = File.dirname(info.full_filename)
+        ENV["TESTCASE"] = info.classname
+        ENV["TESTTMPDIR"] = @tmpdir
         nfiles.times do |i|
-          ENV["FORM"] = FormTest.cfg.form_cmd
           @filename = "#{i + 1}.frm"
           execute("#{ulimits}#{FormTest.cfg.form_cmd} #{@filename}")
           if !finished?
@@ -502,6 +508,8 @@ module FormTest
           $stderr.puts
         end
         info.status = "OK"
+      ensure
+        ENV["FORMPATH"] = old_formpath
       end
       break
     end
@@ -666,7 +674,7 @@ module FormTest
   # The number of terms in the given expression.
   # Must be in the default statistics format.
   def nterms(exprname, index = -1)
-    matches = @stdout.scan(/^[ \t]+#{exprname}\s*Terms in output\s*=\s*(\d+)\s*Bytes used\s*=\s*\d+/m)
+    matches = @stdout.scan(/^[ \t]+#{exprname}\s*Terms in output\s*=\s*(\d+).*?Bytes used\s*=\s*\d+/m)
     return matches[index].first.to_i if !matches.empty? && !matches[index].nil?
 
     -1
@@ -675,7 +683,7 @@ module FormTest
   # The size in byte.
   # Must be in the default statistics format.
   def bytesize(exprname, index = -1)
-    matches = @stdout.scan(/^[ \t]+#{exprname}\s*Terms in output\s*=\s*\d+\s*Bytes used\s*=\s*(\d+)/m)
+    matches = @stdout.scan(/^[ \t]+#{exprname}\s*Terms in output\s*=\s*\d+.*?Bytes used\s*=\s*(\d+)/m)
     return matches[index].first.to_i if !matches.empty? && !matches[index].nil?
 
     -1
@@ -841,6 +849,7 @@ end
 class TestInfo
   def initialize
     @classname = nil
+    @full_filename = nil
     @where = nil    # where the test is defined
     @foldname = nil # fold name of the test
     @enabled = nil  # enabled or not
@@ -851,7 +860,7 @@ class TestInfo
     @times = nil    # elapsed time (array)
   end
 
-  attr_accessor :classname, :where, :foldname, :enabled, :sources, :time_dilation,
+  attr_accessor :classname, :full_filename, :where, :foldname, :enabled, :sources, :time_dilation,
                 :status, :times
 
   # Return the description of the test.
@@ -888,8 +897,24 @@ class TestCases
   end
 
   # Convert a .frm file to a .rb file and load it.
-  def make_ruby_file(filename)
+  def make_ruby_file(filename, fold_markers = nil)
+    # Handle fold markers.
+    if fold_markers.nil?
+      fold_open_pattern = /^\*..#\[/
+      fold_open_with_name_pattern = /^\*..#\[\s*([^:]*)/
+      fold_close_pattern = /^\*..#\]/
+      fold_close_with_name_pattern = /^\*..#\]\s*([^:]*)/
+    else
+      fold_open_marker = Regexp.escape(fold_markers[:open])
+      fold_close_marker = Regexp.escape(fold_markers[:close])
+      fold_open_pattern = /^#{fold_open_marker}/
+      fold_open_with_name_pattern = /^#{fold_open_marker}\s*([^:]*)/
+      fold_close_pattern = /^#{fold_close_marker}/
+      fold_close_with_name_pattern = /^#{fold_close_marker}\s*([^:]*)/
+    end
+
     # Check existing files.
+    full_filename = File.expand_path(filename)
     inname = File.basename(filename)
     outname = "#{File.basename(filename, '.frm')}.rb"
     if @files.include?(outname)
@@ -921,7 +946,7 @@ class TestCases
           lineno += 1
           if level == 0
             case line
-            when /^\*..#\[\s*([^:]*)/
+            when fold_open_with_name_pattern
               # fold open: start a class
               fold = $1.strip
               if fold.empty?
@@ -932,6 +957,7 @@ class TestCases
               @classes.push(classname)
               @classes_info["Test_#{classname}"] = info
               info.classname = classname
+              info.full_filename = full_filename
               info.where = "#{inname}:#{lineno}"
               info.foldname = fold
               info.enabled = test_enabled?(classname)
@@ -952,14 +978,14 @@ class TestCases
               else
                 line = "class Test_#{classname} < Test::Unit::TestCase; include FormTest"
               end
-            when /^\*..#\]/
+            when fold_close_pattern
               # unexpected fold close
               fatal("unexpected fold close", inname, lineno)
             else
               # as commentary
               line = ""
             end
-          elsif heredoc.nil? && line =~ /^\*..#\]\s*([^:]*)/ && level == 1
+          elsif heredoc.nil? && line =~ fold_close_with_name_pattern && level == 1
             # fold close: end of the class
             fold = $1.strip
             foldname = info.foldname
@@ -1076,10 +1102,10 @@ class TestCases
             line = ""
           else
             if heredoc.nil?
-              if line =~ /^\*..#\[/
+              if line =~ fold_open_pattern
                 # fold open
                 level += 1
-              elsif line =~ /^\*..#\]\s*([^:]*)/
+              elsif line =~ fold_close_with_name_pattern
                 # fold close
                 level -= 1
               elsif line =~ /<</ && (line =~ /<<-?(\w+)/ ||
@@ -1414,7 +1440,7 @@ def add_path(oldpath, newpath)
     return newpath
   end
 
-  "#{newpath}:#{oldpath}"
+  "#{newpath}#{File::PATH_SEPARATOR}#{oldpath}"
 end
 
 # Parse `TEST=...`.
@@ -1547,6 +1573,8 @@ def main
             "Do not run tests matching NAME")     { |pat| opts.exclude_patterns << pat }
   parser.on("-g", "--group GROUPID/GROUPCOUNT",
             "Split tests and run only one group") { |group| opts.group_id, opts.group_count = parse_group(group) }
+  parser.on("--fold-markers OPEN,CLOSE",
+            "Set fold markers")                   { |open_close| a = open_close.split(",", 2); opts.fold_markers = { open: a[0], close: a[1] } }
   parser.on("-v", "--verbose",
             "Enable verbose output")              { opts.verbose = true }
   parser.on("--show-newlines",
@@ -1595,7 +1623,7 @@ def main
   end
 
   opts.files.uniq.sort.each do |file|
-    FormTest.tests.make_ruby_file(file)
+    FormTest.tests.make_ruby_file(file, opts.fold_markers)
   end
 
   # Split tests into groups and run only one group.
@@ -1643,12 +1671,8 @@ def main
 
   # --path option.
   if !opts.path.nil?
-    ENV["PATH"] = "#{opts.path}#{File::PATH_SEPARATOR}#{ENV.fetch('PATH', '')}"
+    ENV["PATH"] = add_path(ENV.fetch("PATH", nil), opts.path)
   end
-
-  # Set FORMPATH
-  ENV["FORMPATH"] = File.expand_path(opts.dir.nil? ? TESTDIR : opts.dir) +
-                    (ENV["FORMPATH"].nil? ? "" : ":#{ENV['FORMPATH']}")
 
   # Default mpirun_opts.
   if opts.mpirun_opts.nil?
@@ -1730,7 +1754,7 @@ def output_detailed_statistics(output = nil)
   end
 
   infos.each do |info|
-    (0..info.sources.length - 1).each do |i|
+    (0..(info.sources.length - 1)).each do |i|
       t = 0
       if !info.times.nil? && i < info.times.length
         t = info.times[i]
@@ -1779,7 +1803,7 @@ end
 # Return the string with padding to left.
 def lpad(str, len)
   if str.length > len
-    str[0..len - 1]
+    str[0..(len - 1)]
   elsif str.length < len
     str + " " * (len - str.length)
   else
