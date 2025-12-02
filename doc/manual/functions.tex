@@ -495,6 +495,14 @@ will be unspecified. This use is considered illegal, even though it does
 not generate an error message.
 
 %--#] firstterm_ : 
+%--#[ float_ : 
+\section{float\_}\index{float\_}\index{function!float\_}
+\label{funfloat}
+\noindent Internal function to describe floating point numbers. 
+For a description, of this function, see chapter~\ref{floatingpoint} 
+on the floating point system.
+
+%--#] float_ : 
 %--#[ g5_ :
 
 \section{g5\_}\index{g5\_}\index{function!g5\_}
@@ -1291,6 +1299,13 @@ in natural order the function is replaced by one. In all other cases
 nothing is done.
 
 %--#] thetap_ : 
+%--#[ tofloat_ :
+
+\section{tofloat\_}\index{tofloat\_}\index{function!tofloat\_}
+\label{funmatch}
+\noindent Currently not active.
+
+%--#] tofloat_ : 
 %--#[ topologies_ :
 
 \section{topologies\_}\index{topologies\_}\index{function!topologies\_}
@@ -1299,15 +1314,22 @@ nothing is done.
 diagrams~\ref{diagrams}.
 
 %--#] topologies_ : 
+%--#[ torat_ :
+
+\section{torat\_}\index{torat\_}\index{function!torat\_}
+\label{funmatch}
+\noindent Currently not active.
+
+%--#] torat_ : 
 
 %--#[ Reserved names :
 
 \section{Extra reserved names}
 
-\noindent In addition there are some names that have been reserved for 
-future use. At the moment these functions do not do very much. It is hoped 
-that in the future some simplifications of the arguments can be 
-implemented. These functions are:
+\noindent In addition there are reserved function names for the common 
+mathematical functions. Since \FORM{} 5.0, these functions can be 
+evaluated numerically. See also chapter~\ref{floatingpoint} on the 
+floating point system. These functions are:
 
 \leftvitem{3cm}{sqrt\_}\index{sqrt\_}\index{function!sqrt\_}
 \rightvitem{13cm}{The regular square root.}
@@ -1315,8 +1337,14 @@ implemented. These functions are:
 \leftvitem{3cm}{ln\_}\index{ln\_}\index{function!ln\_}
 \rightvitem{13cm}{The natural logarithm.}
 
-\leftvitem{3cm}{eexp\_}\index{eexp\_}\index{function!eexp\_}
+\leftvitem{3cm}{eexp\_}\index{eexp\_}\index{function!exp\_}
 \rightvitem{13cm}{The exponential function.}
+
+\leftvitem{3cm}{gamma\_}\index{gamma\_}\index{function!gamma\_}
+\rightvitem{13cm}{The gamma function.}
+
+\leftvitem{3cm}{agm\_}\index{agm\_}\index{function!agm\_}
+\rightvitem{13cm}{The arithmetic-geometric mean function.}
 
 \leftvitem{3cm}{sin\_}\index{sin\_}\index{function!sin\_}
 \rightvitem{13cm}{The sine function.}
@@ -1360,8 +1388,26 @@ implemented. These functions are:
 \leftvitem{3cm}{li2\_}\index{li2\_}\index{function!li2\_}
 \rightvitem{13cm}{The dilogarithm function.}
 
+\leftvitem{3cm}{mzv\_}\index{mzv\_}\index{function!mzv\_}
+\rightvitem{13cm}{The multiple zeta values.}
+
+\leftvitem{3cm}{euler\_}\index{euler\_}\index{function!euler\_}
+\rightvitem{13cm}{The Euler sums.}
+
+\leftvitem{3cm}{mzvhalf\_}\index{mzvhalf\_}\index{function!mzvhalf\_}
+\rightvitem{13cm}{The harmonic polylogarithms of argument 1/2.}
+
+\noindent In addition there are some names that have been reserved for 
+future use. 
+
 \leftvitem{3cm}{lin\_}\index{lin\_}\index{function!lin\_}
 \rightvitem{13cm}{The polylogarithm function.}
+
+\leftvitem{3cm}{hpl\_}\index{hpl\_}\index{function!hpl\_}
+\rightvitem{13cm}{The harmonic polylogarithm function.}
+
+\leftvitem{3cm}{mpl\_}\index{mpl\_}\index{function!mpl\_}
+\rightvitem{13cm}{The multiple polylogarithm function.}
 
 \noindent The user is allowed to use these functions, but it could be that 
 in the future they will develop a nontrivial behaviour. Hence caution is 
