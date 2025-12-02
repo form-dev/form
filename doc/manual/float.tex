@@ -1,68 +1,133 @@
 
-\chapter{Floating point}
+\chapter{Floating point arithmetic}
 \label{floatingpoint}
 
-Starting with version 5.0 \FORM\ is equiped with arbitrary floating point 
-capability. The low level routines are part of the GMP and mpfr libraries 
-which should be available on most systems. If not they can be picked up 
-easily from the internet. The main commands involving the floating point 
-system are
+Starting with version 5.0, \FORM{} is equiped with arbitrary precision floating point 
+arithmetic. The low level routines are handled by the GMP and MPFR libraries, 
+which are available on most systems and if missing can be easily picked up 
+from the internet. This chapter describes the commands, functions, and behaviour
+of \FORM's floating point sytem.
+
+\section{Initializing and closing the floating point system}
+Before any floating-point operations can be performed, \FORM{} must activate the 
+floating point system and set the working precision. This initialization allocates 
+the internal data structures used by the GMP and MPFR libraries. The system remains 
+active until the end of the program, or until it is explicitly closed.
+The two statements that control these operations are:
 \begin{description}
-\item[\#startfloat] This instruction is needed to startup the floating 
-point system. Invoking it will allocate a number of arrays. The instruction 
-has either one or two arguments:
+\item[\#StartFloat] This instruction initializes the floating 
+point system and allocates the necessary internal arrays. 
+It takes either one or two arguments:
 \begin{verbatim}
-    #startfloat <precision> [,MZV=<maximumweight>]
+    #StartFloat <precision> [,MZV=<maximumweight>]
 \end{verbatim}
 The first argument is mandatory and specifies the desired precision. It must 
-be a positive integer followed by either \texttt{b} (for precision in bits) 
+be a positive integer followed by either a \texttt{b} (for precision in bits) 
 or \texttt{d} (for precision in decimal digits).
-\FORM{} will round to at least this precision. Because the internal 
-routines work with WORDs, the precision (in bits) will internally be rounded up to the nearest 
-integer number of WORDs. The second argument is optional for when one wants 
-to work with multiple zeta values (MZVs) or Euler sums. It specifies the 
-maximum weight that will be used. The evaluation of the sums requires a 
-number of auxiliary arrays. The default value is zero. If one would like to 
-change the precision during a run, this is possible. The effect would be 
-that the existing arrays are released and new arrays will be allocated.
-\item[\#endfloat] This instruction releases all arrays allocated for the 
-floating point system.
+\FORM{} will round to at least this precision. 
+The second argument is optional and only needed when working with multiple 
+zeta values (MZVs) or Euler sums. It specifies the maximum weight 
+that will be used. The evaluation of the sums requires a 
+number of auxiliary arrays that depend on this weight. The default weight is zero. 
+\item[\#EndFloat] This instruction releases all arrays allocated for the 
+floating point system. Note that if one would like to change the precision during a run, 
+this is now possible with a new \texttt{\#StartFloat} instruction. 
 \end{description}
+Example programs that illustrate the use of these statements and the 
+functionality of \FORM's floating point system are given below. 
+
+
+\section{Conversion between rational and floating point coefficients}
+A term in an expression can have a rational or floating point coefficient. 
+The following statements convert between the two.
 \begin{description}
-\item[tofloat] Converts the rational coefficients at the ground level to 
-floating point numbers in the precision specified in the \#startfloat 
-instruction. From this point on the coefficient at this level will be 
-floating point. If one needs to convert numbers inside a function argument 
-one should use the argument environment. This can be nested.
-\item[torational] Tries to convert the floating point coefficients to 
-rational numbers. To this end it uses repeated fractions as in
+\item[ToFloat] Converts rational coefficients to 
+floating point numbers in the precision specified by \texttt{\#StartFloat}. 
+From this point on, the coefficient will be floating point. 
+\item[ToRational] Attempts to convert floating point coefficients to 
+rational numbers. To this end it uses continued fractions as in
 \begin{eqnarray}
-	x & \rightarrow & n_0 + 1/(n_1+1/(n_2+1/(n_3+\cdots))) \nonumber
+	x \;\rightarrow\; n_0 + \frac{1}{\,n_1 + \frac{1}{\,n_2 + \frac{1}{\,n_3 + \cdots}}}\;,
+	\nonumber
 \end{eqnarray}
 with $x$ a floating point number. The algorithm keeps track of the 
 remaining precision and if $1/n_i$ is close to this precision it truncates 
-the sequence at $n_{i-1}$. After that it works out the fraction. It could 
-be that $x$ cannot be expressed as a fraction within the given precision. 
+the sequence at $n_{i-1}$. After that it works out the corresponding fraction. 
+It could be that $x$ cannot be expressed as a fraction within the given precision. 
 This can usually be seen by that the fractions are `rather wild', or that 
 the result changes when the precision is increased. This statement can also 
-be abbreviated to `torat'.
-\item[evaluate] If this command has no arguments all floating point 
-functions that \FORM{} knows about will be evaluated. The currently allowed 
-arguments are the functions mzv\_, euler\_, sqrt\_ and mzvhalf\_. If any 
-(or more than one) of these are specified only those functions will be 
-evaluated.
-\item[strictrounding] This statement rounds floating point numbers to a 
-given precision. The syntax is
+be abbreviated as \texttt{ToRat}.
+\end{description}
+
+The above statements operate on ground level coefficient only. To convert numbers 
+inside a function argument, one must use the \texttt{Argument} environment. 
+For example: 
 \begin{verbatim}
-    strictrounding [precision];
+    CFunction f;
+    #StartFloat 10d
+    Local F = 0.1666666666*f(0.1428571429);
+    ToRat;
+    Print "<1> %t";
+    Argument f;
+        ToRat;
+    EndArgument;
+    Print "<2> %t";
+    .end
+<1>  + 1/6*f(1.428571429e-01)
+<2>  + 1/6*f(1/7)
 \end{verbatim}
-where precision is an optional argument that specifies the rounding 
+The argument environment may be nested.
+Similarly, the statements \texttt{Evaluate}, \texttt{StrictRounding} and \texttt{Chop} act at
+the ground level. To have them act on function argument, one uses the \texttt{Argument} environment.
+These statements are explained further below. 
+
+\section{Evaluation of functions and symbols}
+Before version 5.0, \FORM{} already reserved function names for many common mathematical
+functions. These functions can now be evaluated numerically using:
+
+\begin{description}
+\item[Evaluate] This statement evaluates the mathematical functions and or symbols numerically:
+\begin{verbatim}
+Evaluate [function(s)],[symbol(s)];
+\end{verbatim}
+where the argument specifies the function(s) and/or symbol(s) to evaluate. 
+More than one function and/or symbol may be listed. 
+If this statement is used without arguments, all floating point functions and symbols that \FORM{} 
+knows will be evaluated. Currently, the full list of functions that can be evaluated numerically reads 
+\begin{verbatim}
+sqrt_, ln_, eexp_, li2_, gamma_, agm_, 
+sin_, cos_, tan_, asin_, acos_, atan_, atan2_, 
+sinh_, cosh_, tanh_, asinh_, acosh_, atanh_,
+mzv_, euler_, mzvhalf_,
+\end{verbatim}
+where the functions on the last line denote the multiple zeta values, Euler sums and 
+harmonic polylogarithms of argument $1/2$ respectively.
+The list of symbols/constants that can be evaluated is 
+\begin{verbatim}
+pi_, ee_, em_,
+\end{verbatim}
+where \texttt{ee\_}\index{ee\_} denotes the basis of the natural logarithm 
+and \texttt{em\_}\index{em\_} the Euler-Mascheroni constant.
+
+In addition, the functions \texttt{lin\_}, \texttt{hpl\_} and \texttt{mpl\_} are reserved function names, 
+but currently have no numerical evaluation.
+\end{description}
+
+
+\section{Rounding behaviour}
+\begin{description}
+\item[StrictRounding] This statement rounds floating point numbers to a 
+given precision:
+\begin{verbatim}
+	StrictRounding [<precision>];
+\end{verbatim}
+where \texttt{<precision>} is an optional argument that specifies the rounding 
 precision in either digits or bits, using the same syntax as 
-\texttt{\#startfloat}. If no argument is given, this statement rounds 
-the floating point coefficients to the default precision. Internally, 
-the GMP and mpfr libraries may use extra precision beyond that set by 
-\texttt{\#startfloat}. As a result, terms may not merge due to this 
-extra precision. For example:
+\texttt{\#startfloat}. If omitted, the default precision is used. 
+
+Internally, the GMP and MPFR libraries may use extra precision beyond that set by 
+\texttt{\#startfloat}. As a result, terms that print the same may still differ slightly 
+due to this extra precision and therefore fail to merge. For example:
 \begin{verbatim}
     #startfloat 6d
     CFunction f;
@@ -89,13 +154,13 @@ represented exactly in binary. Its binary representation, up to 20 bits of preci
 $1.1100110101011111101*2^{-14}$. When rounded to 5 bits, this becomes 
 $1.1101*2^{-14}$, which in decimal digits appears as 
 1.10626220703125e-04.
-\item[Chop] This statement removes floating point numbers that are smaller 
-in absolute magnitude than a specified threshold. It takes one argument delta:
+\item[Chop] This statement removes floating point numbers that are {\em smaller}
+in absolute magnitude than a specified threshold. It takes one argument:
 \begin{verbatim}
     Chop <delta>;
 \end{verbatim}
-All floating point numbers with absolute value less than delta are replaced by 0. 
-Terms with no floating point coefficient are left untouched. The threshold delta 
+All floating point numbers with absolute value {\em less} than \texttt{<delta>} are replaced by 0. 
+Terms with no floating point coefficient are left untouched. The threshold \texttt{<delta>} 
 can be a floating point number, integer, rational number, or power. Because 
 statements in \FORM{} act term by term, it is often important to sort before invoking the 
 chop statement. Otherwise, terms might be removed individually, while after 
@@ -109,33 +174,21 @@ computations. It can be used in three ways: in case of
     Format floatprecision;
 \end{verbatim}
 \FORM{} prints floats with the number of digits specified by the current 
-\#startfloat instruction. With
+\texttt{\#startfloat} instruction. With
 \begin{verbatim}
     Format floatprecision <precision>;
 \end{verbatim}
 \FORM{} prints the number of digits specified by \texttt{<precision>}. 
-The syntax is the same as for the precision in \#startfloat: a positive 
-integer followed by either \texttt{b} (for bits) or \texttt{d} (for decimal 
-digits). If the requested precision exceeds the precision specified by 
-\#startfloat, only the available digits are printed. Finally, with 
+The syntax is the same as for the precision in \texttt{\#startfloat}. 
+If the requested precision exceeds the precision specified by 
+\texttt{\#startfloat}, only the available digits are printed. Finally, with 
 \begin{verbatim}
     Format floatprecision off;
 \end{verbatim}
-the floating point numbers are printed in raw internal format. 
+the floating point numbers are printed in raw internal format, see also section \ref{sec:float_raw}. 
 \end{description}
-In addition to the above commands there are the following functions that 
-can be evaluated sqrt\_, ln\_, eexp\_, li2\_, gamma\_, agm\_, sin\_, cos\_, tan\_,
-asin\_, acos\_, atan\_, atan2\_, sinh\_, cosh\_, tanh\_, asinh\_, acosh\_, atanh\_.
-For the function lin\_ there is currently no code.
-The agm\_ function is the arithmetic geometric mean of its two input 
-values.
 
-In addition to the above functions there are also the constant 
-pi\_\index{pi\_}, the basis of the natural logarithm ee\_\index{ee\_} and the 
-Euler-Mascheroni constant em\_\index{em\_}. These constants will also be 
-expanded with the evaluate command. When given as an argument to evaluate, 
-only the specified constants will be evaluated.
-
+\section{Examples}
 The following example shows some work with Multiple Zeta Values (MZV's):
 \begin{verbatim}
     #StartFloat 500b, MZV=15
@@ -190,10 +243,10 @@ The following example shows some work with Multiple Zeta Values (MZV's):
 
   0.08 sec out of 0.09 sec
 \end{verbatim}
-The \#startfloat initializes the floating point system and allocates arrays 
-for 500 bits of precision. If there is a second number it indicates the 
-maximum weight for MZVs and Euler sums. The functions are only evaluated 
-when the proper command is given. In the second module we divide the 
+In the first module, \texttt{\#startfloat} initializes the floating point system with 
+500 bits of precision and a maximum weight for the MZVs and Euler sums of 15. 
+The \texttt{mzv\_} functions are then evaluated with the \texttt{Evaluate}
+statement. In the second module we divide the 
 numbers and convert the result to a rational. It is a good idea to try this 
 with various precisions to see whether this is stable. With 60 bits the 
 final answer would be
@@ -202,5 +255,51 @@ final answer would be
 \end{verbatim}
 while at 150 bits we have already the same answer as with 500 bits. The 
 fraction that is obtained by this program can be proven to be correct.
-\vspace{3mm}
 
+
+\section{Raw form}
+\label{sec:float_raw}
+Internally, floating point numbers are represented by the function \texttt{float\_}, 
+i.e. \texttt{float\_(prec, size, exp, limbs)}. The integer arguments encode the 
+internal representation of the floating point number as in the GMP library:
+\begin{description}
+\item[prec] The precision of the mantissa in limbs.
+\item[size] The number of limbs currently in use.
+\item[exp] The exponent, determining the location of the implied radix point.
+\item[limbs] The limbs packed as the numerator of a \FORM{} rational. 
+\end{description}
+In a normalized term containing \texttt{float\_}, the rational coefficient must 
+be either $1/1$ or $-1/1$, where the sign of the term is absorbed into the rational 
+coefficient. 
+Furthermore, the \texttt{float\_} is protected from the pattern matcher and from 
+statements that act on functions -- such as \texttt{Transform}, \texttt{Argument}, 
+\texttt{Normalize} etc.
+The following program illustrates this:
+%
+\begin{verbatim}
+    CFunction f;
+    #StartFloat 10d
+    Local F = 1.23456789 + f(1,2);
+    Identify f?(?a) = f(10);
+    Print "<1> %t";
+    .sort
+<1>  + 1.23456789e+00
+<1>  + f(10)
+    #EndFloat
+    Normalize;
+    Print "<2> %t";
+    .sort
+<2>  + float_(2,3,1,420101683733788795657820481376616399786)
+<2>  + 10*f(1)
+    #StartFloat 5d
+    Print "<3> %t";
+    .end
+<3>  + 1.2346e+00
+<3>  + 10*f(1)
+\end{verbatim}
+%
+As shown, the \texttt{id}-statement does not effect the \texttt{float\_} function. 
+Here we also see the use of the preprocessor statement \texttt{\#EndFloat} which closes 
+the floating point system. After this statement, the \texttt{float\_} function becomes a 
+regular function. Its protected status, however, persists so that \texttt{id}-statements 
+or statements like \texttt{Normalize} still do not modify it. 
