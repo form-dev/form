@@ -1463,7 +1463,7 @@ assert result("ATANH") =~ expr("
        - 6.08698087464190136361e-01*atanh( - 5.4321e-01)
 ")
 *--#] evaluate_atanh : 
-*--#[ strictrounding :
+*--#[ strictrounding_1 :
 #StartFloat 6d
 CFunction f;
 Local F1 = 1.23456789e-4+f(1.0)+f(1.0000001);
@@ -1482,7 +1482,37 @@ Print;
 assert succeeded?
 assert result("F1") =~ expr("1.23457e-04 + f(1.0e+00) + f(1.0e+00)")
 assert result("F2") =~ expr("1.235e-04 + 2*f(1.0e+00)")
-*--#] strictrounding : 
+*--#] strictrounding_1 : 
+*--#[ strictrounding_2 :
+#StartFloat 20b
+CFunction f;
+Local F = 1.1e-4;
+StrictRounding 5b;
+.sort
+
+#EndFloat
+#StartFloat 40d
+Print;
+.end
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("1.10626220703125e-04")
+*--#] strictrounding_2 : 
+*--#[ strictrounding_error: 
+#-
+StrictRounding;
+#StartFloat 10d
+StrictRounding 5;
+StrictRounding d5;
+StrictRounding 5 d;
+.end
+#pend_if wordsize == 2
+runtime_error?("Illegal attempt for strict rounding without activating floating point numbers.")
+runtime_error?("Forgotten #startfloat instruction?")
+runtime_error?("Illegal argument(s) in StrictRounding statement: ''")
+runtime_error?("Illegal argument(s) in StrictRounding statement: 'd5'")
+runtime_error?("Illegal argument(s) in StrictRounding statement: ',d'")
+*--#] strictrounding_error :
 *--#[ chop :
 #StartFloat 15d
 #StartFloat 15d
