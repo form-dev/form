@@ -1320,14 +1320,16 @@ int CoStrictRounding(UBYTE *s)
 	if ( *s == 0 ) {
 		/* No subkey, which means round to default precision */
 		x = AC.DefaultPrecision - AC.MaxWeight - 1;
-		Add4Com(TYPESTRICTROUNDING,x,2);
-		return(0);
+		base = 2;
 	}
-	if ( FG.cTable[*s] == 1 ) { /* number */
+	else if ( FG.cTable[*s] == 1 ) { /* number */
 		ParseNumber(x,s)
 		if ( tolower(*s) == 'd' ) { base = 10; s++; }      /* decimal base */
 		else if ( tolower(*s) == 'b' ){ base = 2; s++; }  /* binary base */
 		else goto IllPar;  /* invalid base specification */
+	}
+	else {
+		goto IllPar;
 	}
 	while ( *s == ' ' || *s == ',' || *s == '\t' ) s++;
 	
