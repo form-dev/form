@@ -243,7 +243,6 @@ static struct fixedfun {
 	,{"block_"      ,0 ,0             ,0               ,0} /* BLOCK */
 	,{"onepi_"      ,0 ,0             ,0               ,0} /* ONEPI */
 	,{"phi_"        ,0 ,VERTEXFUNCTION,0               ,0} /* PHI */
-#ifdef WITHFLOAT
 	,{"float_"      ,0 ,0             ,0               ,0} /* FLOATFUN */
 	,{"tofloat_"    ,0 ,0             ,0               ,0} /* TOFLOAT */
 	,{"torat_"      ,0 ,0             ,0               ,0} /* TORAT */
@@ -252,7 +251,6 @@ static struct fixedfun {
 	,{"mzvhalf_"    ,0 ,0             ,0               ,0} /* MZVHALF */
 	,{"agm_"        ,0 ,0             ,0               ,0} /* AGMFUNCTION */
 	,{"gamma_"      ,0 ,0             ,0               ,0} /* GAMMAFUN */
-#endif
 };
 
 FIXEDSET fixedsets[] = {

@@ -408,11 +408,11 @@ int UnpackFloat(mpf_t outfloat,WORD *fun)
 		f += ARGHEAD+6;
 		if ( f[-1] == -5 ) {
 			outfloat->_mp_exp =
-				-(mp_exp_t)((((ULONG)(f[-4]))<<BITSINWORD)+f[-5]);
+				-(mp_exp_t)((((ULONG)(f[-4]))<<BITSINWORD)+(UWORD)f[-5]);
 		}
 		else if ( f[-1] == 5 ) {
 			outfloat->_mp_exp =
-				 (mp_exp_t)((((ULONG)(f[-4]))<<BITSINWORD)+f[-5]);
+				 (mp_exp_t)((((ULONG)(f[-4]))<<BITSINWORD)+(UWORD)f[-5]);
 		}
 	}
 /*
@@ -1101,13 +1101,6 @@ void SetupMZVTables(void)
 	N = (size_t)Nw;
 	totnum = AM.totalnumberofthreads;
     for ( id = 0; id < totnum; id++ ) {
-		if ( AB[id]->T.mpf_tab1 ) {
-			a = (mpf_t *)AB[id]->T.mpf_tab1;
-			for ( i = 0; i <=Nw; i++ ) {
-				mpf_clear(a[i]);
-			}
-			M_free(AB[id]->T.mpf_tab1,"mpftab1");
-		}
 		AB[id]->T.mpf_tab1 = (void *)Malloc1((N+2)*sizeof(mpf_t),"mpftab1");
 		a = (mpf_t *)AB[id]->T.mpf_tab1;
 		for ( i = 0; i <=Nw; i++ ) {
@@ -1116,13 +1109,6 @@ void SetupMZVTables(void)
 	using mpf_init2.
 */
 			mpf_init(a[i]);
-		}
-		if ( AB[id]->T.mpf_tab2 ) {
-			a = (mpf_t *)AB[id]->T.mpf_tab2;
-			for ( i = 0; i <=Nw; i++ ) {
-				mpf_clear(a[i]);
-			}
-			M_free(AB[id]->T.mpf_tab2,"mpftab2");
 		}
 		AB[id]->T.mpf_tab2 = (void *)Malloc1((N+2)*sizeof(mpf_t),"mpftab2");
 		a = (mpf_t *)AB[id]->T.mpf_tab2;
@@ -1135,12 +1121,6 @@ void SetupMZVTables(void)
 	size_t N;
 	Nw = AC.DefaultPrecision;
 	N = (size_t)Nw;
-	if ( AT.mpf_tab1 ) {
-		for ( i = 0; i <= Nw; i++ ) {
-			mpf_clear(mpftab1[i]);
-		}
-		M_free(AT.mpf_tab1,"mpftab1");
-	}
 	AT.mpf_tab1 = (void *)Malloc1((N+2)*sizeof(mpf_t),"mpftab1");
 	for ( i = 0; i <= Nw; i++ ) {
 /*
@@ -1149,34 +1129,21 @@ void SetupMZVTables(void)
 */
 		mpf_init(mpftab1[i]);
 	}
-	if ( AT.mpf_tab2 ) {
-		for ( i = 0; i <= Nw; i++ ) {
-			mpf_clear(mpftab2[i]);
-		}
-		M_free(AT.mpf_tab2,"mpftab2");
-	}
 	AT.mpf_tab2 = (void *)Malloc1((N+2)*sizeof(mpf_t),"mpftab2");
 	for ( i = 0; i <= Nw; i++ ) {
 		mpf_init(mpftab2[i]);
 	}
 #endif
-	if ( AS.delta_1 ) {
-		mpf_clear(mpfdelta1);
-		M_free(AS.delta_1,"delta1");
-	}
 	AS.delta_1 = (void *)Malloc1(sizeof(mpf_t),"delta1");
 	mpf_init(mpfdelta1);
 	SimpleDelta(mpfdelta1,1); /* this can speed up things. delta1 = ln(2) */
-/*
-	Finally the character buffer for printing
-	if ( AO.floatspace ) M_free(AO.floatspace,"floatspace");
-	AO.floatspace = (UBYTE *)Malloc1(((10*AC.DefaultPrecision)/33+40)*sizeof(UBYTE),"floatspace");
-*/
 }
 
 /*
  		#] SetupMZVTables : 
  		#[ SetupMPFTables :
+	
+		Allocates the aux variables
 */
 
 void SetupMPFTables(void)
@@ -1184,22 +1151,14 @@ void SetupMPFTables(void)
 #ifdef WITHPTHREADS
 	int id, totnum;
 	mpf_t *a;
-/*
-	Now the aux variables
-*/
 #ifdef WITHSORTBOTS
 	totnum = MaX(2*AM.totalnumberofthreads-3,AM.totalnumberofthreads);
 #endif
     for ( id = 0; id < totnum; id++ ) {
-		if ( AB[id]->T.aux_ ) {
 /*
-			We work here with a[0] etc because the aux1 etc contain B which
-			in the current routine would be AB[0] only
+		We work here with a[0] etc because the aux1 etc contain B which
+		in the current routine would be AB[0] only
 */
-			a = (mpf_t *)AB[id]->T.aux_;
-			mpf_clears(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],(mpf_ptr)0);
-			M_free(AB[id]->T.aux_,"AB[id]->T.aux_");
-		}
 		AB[id]->T.aux_ = (void *)Malloc1(sizeof(mpf_t)*8,"AB[id]->T.aux_");
 		a = (mpf_t *)AB[id]->T.aux_;
 		mpf_inits(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],(mpf_ptr)0);
@@ -1208,24 +1167,12 @@ void SetupMPFTables(void)
 		AB[id]->T.indi2 = AB[id]->T.indi1 + AC.MaxWeight;
 	}
 #else
-/*
-	Now the aux variables
-*/
-	if ( AT.aux_ ) {
-		mpf_clears(aux1,aux2,aux3,aux4,aux5,auxjm,auxjjm,auxsum,(mpf_ptr)0);
-		M_free(AT.aux_,"AT.aux");
-	}
 	AT.aux_ = (void *)Malloc1(sizeof(mpf_t)*8,"AT.aux_");
 	mpf_inits(aux1,aux2,aux3,aux4,aux5,auxjm,auxjjm,auxsum,(mpf_ptr)0);
 	if ( AT.indi1 ) M_free(AT.indi1,"indi1");
 	AT.indi1 = (WORD *)Malloc1(sizeof(WORD)*AC.MaxWeight*2,"indi1");
 	AT.indi2 = AT.indi1 + AC.MaxWeight;
 #endif
-/*
-	Finally the character buffer for printing
-	if ( AO.floatspace ) M_free(AO.floatspace,"floatspace");
-	AO.floatspace = (UBYTE *)Malloc1(((10*AC.DefaultPrecision)/33+40)*sizeof(UBYTE),"floatspace");
-*/
 }
 
 /*
@@ -1373,14 +1320,16 @@ int CoStrictRounding(UBYTE *s)
 	if ( *s == 0 ) {
 		/* No subkey, which means round to default precision */
 		x = AC.DefaultPrecision - AC.MaxWeight - 1;
-		Add4Com(TYPESTRICTROUNDING,x,2);
-		return(0);
+		base = 2;
 	}
-	if ( FG.cTable[*s] == 1 ) { /* number */
+	else if ( FG.cTable[*s] == 1 ) { /* number */
 		ParseNumber(x,s)
 		if ( tolower(*s) == 'd' ) { base = 10; s++; }      /* decimal base */
 		else if ( tolower(*s) == 'b' ){ base = 2; s++; }  /* binary base */
 		else goto IllPar;  /* invalid base specification */
+	}
+	else {
+		goto IllPar;
 	}
 	while ( *s == ' ' || *s == ',' || *s == '\t' ) s++;
 	
@@ -1838,7 +1787,7 @@ int MergeWithFloat(PHEAD WORD **interm1, WORD **interm2)
 {
 	GETBIDENTITY
 	WORD *coef1, *coef2, size1, size2, *fun1, *fun2, *fun3, *tt;
-	WORD sign3,j,jj, *t1, *t2, i, *term1 = *interm1, *term2 = *interm2;
+	WORD sign3,jj, *t1, *t2, i, *term1 = *interm1, *term2 = *interm2;
 	int retval = 0;
 	coef1 = term1+*term1; size1 = coef1[-1]; coef1 -= ABS(size1);
 	coef2 = term2+*term2; size2 = coef2[-1]; coef2 -= ABS(size2);
@@ -1899,8 +1848,8 @@ Shift1:		t2 = term1 + *term1; tt = t2;
 			retval = 1;
 		}
 		else { /* Here we have to move term1 to the left to make room. */
-Over1:		jj = fun3[1]-fun1[1]+3-ABS(size1); /* This is positive */
-			t2 = term1-jj; t1 = term1;
+			jj = fun3[1]-fun1[1]+3-ABS(size1); /* This is positive */
+Over1:		t2 = term1-jj; t1 = term1;
 			while ( t1 < fun1 ) *t2++ = *t1++;
 			term1 -= jj;
 			*term1 += jj;
@@ -1912,25 +1861,18 @@ Over1:		jj = fun3[1]-fun1[1]+3-ABS(size1); /* This is positive */
 	else if ( AT.SortFloatMode == 1 ) {
 		if ( fun1[1] + ABS(size1) == fun3[1] + 3 ) goto OnTopOf1;
 		else if ( fun1[1] + ABS(size1) > fun3[1] + 3 ) goto Shift1;
-		else goto Over1;
+		else {
+			jj = fun3[1]-fun1[1]+3-ABS(size1); /* This is positive */
+			goto Over1;
+		}
 	}
 	else { /* Can only be 2, based on previous tests */
-		if ( fun3[1] + 3 == ABS(size1) ) {
-			t2 = coef1; t1 = fun3;
-			for ( i = 0; i < fun3[1]; i++ ) *t2++ = *t1++;
-			*t2++ = 1; *t2++ = 1;  *t2++ = sign3 < 0 ? -3: 3;
-			retval = 1;
+		if ( fun3[1] + 3 == ABS(size1) ) goto OnTopOf1;
+		else if ( fun3[1] + 3 < ABS(size1) ) goto Shift1;
+		else {
+			jj = fun3[1]+3-ABS(size1); /* This is positive */
+			goto Over1;
 		}
-		else if ( fun3[1] + 3 < ABS(size1) ) {
-			j = ABS(size1) - fun3[1] - 3;
-			t2 = term1 + *term1; tt = t2;
-			*--t2 = sign3 < 0 ? -3: 3; *--t2 = 1; *--t2 = 1;
-			t2 -= fun3[1]; t1 = t2-j;
-			while ( t2 > term1 ) *--t2 = *--t1;
-			*t2 = tt-t2; term1 = t2;
-			retval = 1;
-		}
-		else goto Over1;
 	}
 	*interm1 = term1;
 	TermFree(fun3,"MergeWithFloat");
@@ -1980,6 +1922,18 @@ void SimpleDelta(mpf_t sum, int m)
 */
 	n--;
 	jmax = (int)((int)xprec - (n-1)*m);
+/*
+	For small prec and large m, the estimate can be wrong and even be negative, 
+	so we increase jmax until jmax + m*log2(jmax) > prec
+*/
+	if ( jmax < 0 ) jmax = 1;
+	do {
+		n = 0;
+		x = (unsigned long)jmax;
+		while (x) { x >>= 1; n++; }
+		n--; // floor(log2(jmax))
+		jmax++; 
+	} while ( jmax + m * n <= prec );
 	mpf_set_ui(sum,0);
 	for ( j = 1; j <= jmax; j++ ) {
 #ifdef WITHCUTOFF
@@ -2026,6 +1980,18 @@ void SimpleDeltaC(mpf_t sum, int m)
 */
 	n--;
 	jmax = (int)((int)xprec - (n-1)*m);
+/*
+	For small prec and large m, the estimate can be wrong and even be negative, 
+	so we increase jmax until jmax + m*log2(jmax) > prec
+*/
+	if ( jmax < 0 ) jmax = 1;
+	do {
+		n = 0;
+		x = (unsigned long)jmax;
+		while (x) { x >>= 1; n++; }
+		n--; // floor(log2(jmax))
+		jmax++; 
+	} while ( jmax + m * n <= prec );
 	if ( s < 0 ) jmax /= 2;
 	mpf_set_si(sum,0L);
 	for ( j = 1; j <= jmax; j++ ) {
