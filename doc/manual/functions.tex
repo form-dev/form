@@ -986,10 +986,11 @@ Groebner basis procedure that is in the packages library in the \FORM{} site.
 This function allows one to select a given argument by its number. The 
 syntax is:
 \begin{verbatim}
-      putfirst_(functionname,numberofargument,arguments.....);
+      putfirst_(name,argument_number,arguments...);
 \end{verbatim}
-It will select the indicated argument in the argument field indicated by 
-arguments and output this as the first argument in the indicated function. 
+It will select the argument indicated by ``argument\_number'' in the argument
+field ``arguments'' and output this as the first argument in the function or
+tensor specified by ``name''.
 This argument will then be followed by the remaining arguments.
 Example:
 % THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS

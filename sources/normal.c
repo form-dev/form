@@ -2356,6 +2356,25 @@ redoshort:
 					rr = term + *term;
 					while ( argTail < rr ) *tt2++ = *argTail++;
 					*term = tt2-term;
+					if ( functions[*t-FUNCTION].spec == TENSORFUNCTION ) {
+						// If the output function is a tensor, we have one more job to do.
+						// The args are formatted as single words, representing indices or vectors.
+						// There is no ARGHEAD.
+						WORD *dst = t + FUNHEAD;
+						WORD *src = dst + 1;
+						// Strip the type information from the args:
+						while ( src < t + t[1] ) {
+							*dst = *src;
+							dst++; src++; src++;
+						}
+						t[1] = dst - t;
+						// Now copy the rest of the term. We've advanced src one too many above.
+						src--;
+						while ( src < term + *term ) {
+							*dst++ = *src++;
+						}
+						*term = dst - term;
+					}
 					goto Restart;
 				}
 				else pnco[nnco++] = t;
