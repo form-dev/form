@@ -1205,20 +1205,37 @@ void StartVariables(void)
 	PutPreVar((UBYTE *)"keepright_",(UBYTE *)("0"),0,0);
 	PutPreVar((UBYTE *)"SYSTEMERROR_",(UBYTE *)("0"),0,0);
 /*
-	Next are a few 'constants' for diagram generation
+	Next are the flags to control diagram generation filters
 */
-	PutPreVar((UBYTE *)"ONEPI_",(UBYTE *)("1"),0,0);
-	PutPreVar((UBYTE *)"WITHOUTINSERTIONS_",(UBYTE *)("2"),0,0);
-	PutPreVar((UBYTE *)"NOTADPOLES_",(UBYTE *)("4"),0,0);
-	PutPreVar((UBYTE *)"SYMMETRIZE_",(UBYTE *)("8"),0,0);
-	PutPreVar((UBYTE *)"TOPOLOGIESONLY_",(UBYTE *)("16"),0,0);
-	PutPreVar((UBYTE *)"NONODES_",(UBYTE *)("32"),0,0);
-	PutPreVar((UBYTE *)"WITHEDGES_",(UBYTE *)("64"),0,0);
-/*		Note that CHECKEXTERN is 128 */
-	PutPreVar((UBYTE *)"WITHBLOCKS_",(UBYTE *)("256"),0,0);
-		PutPreVar((UBYTE *)"WITHONEPISETS_",(UBYTE *)("512"),0,0);
-	PutPreVar((UBYTE *)"NOSNAILS_",(UBYTE *)("1024"),0,0);
-	PutPreVar((UBYTE *)"NOEXTSELF_",(UBYTE *)("2048"),0,0);
+	#define STR2(x) #x
+	#define STR(x) STR2(x)
+	PutPreVar((UBYTE *)"TOPOLOGIESONLY_" ,(UBYTE*)(STR(TOPOLOGIESONLY)) ,0,0);
+	PutPreVar((UBYTE *)"WITHOUTNODES_"   ,(UBYTE*)(STR(WITHOUTNODES))   ,0,0);
+	PutPreVar((UBYTE *)"WITHEDGES_"      ,(UBYTE*)(STR(WITHEDGES))      ,0,0);
+	PutPreVar((UBYTE *)"WITHBLOCKS_"     ,(UBYTE*)(STR(WITHBLOCKS))     ,0,0);
+	PutPreVar((UBYTE *)"WITHONEPISETS_"  ,(UBYTE*)(STR(WITHONEPISETS))  ,0,0);
+	PutPreVar((UBYTE *)"WITHSYMMETRIZEI_",(UBYTE*)(STR(WITHSYMMETRIZEI)),0,0);
+	PutPreVar((UBYTE *)"WITHSYMMETRIZEF_",(UBYTE*)(STR(WITHSYMMETRIZEF)),0,0);
+	// This is not an "option" preprocessor var but is set by "external" particle definitions
+//	PutPreVar((UBYTE *)"CHECKEXTERN_"    ,(UBYTE*)(STR(CHECKEXTERN))    ,0,0);
+	PutPreVar((UBYTE *)"ONEPI_"          ,(UBYTE*)(STR(ONEPARTI))       ,0,0);
+	PutPreVar((UBYTE *)"ONEPR_"          ,(UBYTE*)(STR(ONEPARTR))       ,0,0);
+	PutPreVar((UBYTE *)"ONSHELL_"        ,(UBYTE*)(STR(ONSHELL))        ,0,0);
+	PutPreVar((UBYTE *)"OFFSHELL_"       ,(UBYTE*)(STR(OFFSHELL))       ,0,0);
+	PutPreVar((UBYTE *)"NOSIGMA_"        ,(UBYTE*)(STR(NOSIGMA))        ,0,0);
+	PutPreVar((UBYTE *)"SIGMA_"          ,(UBYTE*)(STR(SIGMA))          ,0,0);
+	PutPreVar((UBYTE *)"NOSNAIL_"        ,(UBYTE*)(STR(NOSNAIL))        ,0,0);
+	PutPreVar((UBYTE *)"SNAIL_"          ,(UBYTE*)(STR(SNAIL))          ,0,0);
+	PutPreVar((UBYTE *)"NOTADPOLE_"      ,(UBYTE*)(STR(NOTADPOLE))      ,0,0);
+	PutPreVar((UBYTE *)"TADPOLE_"        ,(UBYTE*)(STR(TADPOLE))        ,0,0);
+	PutPreVar((UBYTE *)"SIMPLE_"         ,(UBYTE*)(STR(SIMPLE))         ,0,0);
+	PutPreVar((UBYTE *)"NOTSIMPLE_"      ,(UBYTE*)(STR(NOTSIMPLE))      ,0,0);
+	PutPreVar((UBYTE *)"BIPART_"         ,(UBYTE*)(STR(BIPART))         ,0,0);
+	PutPreVar((UBYTE *)"NONBIPART_"      ,(UBYTE*)(STR(NONBIPART))      ,0,0);
+	PutPreVar((UBYTE *)"CYCLI_"          ,(UBYTE*)(STR(CYCLI))          ,0,0);
+	PutPreVar((UBYTE *)"CYCLR_"          ,(UBYTE*)(STR(CYCLR))          ,0,0);
+	PutPreVar((UBYTE *)"FLOOP_"          ,(UBYTE*)(STR(FLOOP))          ,0,0);
+	PutPreVar((UBYTE *)"NOTFLOOP_"       ,(UBYTE*)(STR(NOTFLOOP))       ,0,0);
 
 	{
 		char buf[41];  /* up to 128-bit */
