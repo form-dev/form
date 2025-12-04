@@ -3554,7 +3554,7 @@ nextj:;
 void CleanDollarFactors(DOLLARS d)
 {
 	int i;
-	if ( d->nfactors > 1 ) {
+	if ( d->nfactors >= 1 ) {
 		for ( i = 0; i < d->nfactors; i++ ) {
 			if ( d->factors[i].where )
 				M_free(d->factors[i].where,"dollar factors");

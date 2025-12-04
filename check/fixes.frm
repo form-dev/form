@@ -4334,6 +4334,51 @@ Print;
 assert succeeded?
 assert result("expr") =~ expr("indhide(e_(N1_?,N2_?,N3_?,N4_?))*v1(N1_?)*v2(N2_?)*v3(N3_?)*v4(N4_?)")
 *--#] Issue710_5 :
+*--#[ Issue747_1 :
+#-
+Off Statistics;
+
+Symbol a;
+CFunction f,g;
+
+Local test = f(a)^2;
+
+#do i = 1,2
+	Identify,once f(a?$dol) = g(a);
+	FactDollar $dol;
+	Do $i = 1,$dol[0];
+		Print "In %t factor %$ is %$",$i,$dol[$i];
+	Enddo;
+	ModuleOption local $dol,$i;
+	.sort
+#enddo
+
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("g(a)^2")
+assert stdout =~ exact_pattern(<<'EOF')
+In  + f(a)*g(a) factor 1 is a
+In  + g(a)^2 factor 1 is a
+EOF
+*--#] Issue747_1 :
+*--#[ Issue747_2 :
+#-
+Off Statistics;
+
+Symbol a;
+#$dol = a;
+#FactDollar $dol
+#FactDollar $dol
+#do i = 1,`$dol[0]'
+	#message Factor `i' is `$dol[`i']'
+#enddo
+.end
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+~~~Factor 1 is a
+EOF
+*--#] Issue747_2 :
 *--#[ PullReq535 :
 * This test requires more than the specified 50K workspace.
 #:maxtermsize 200
