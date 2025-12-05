@@ -780,6 +780,28 @@ That should set things straight. A final remark: if an elegant solution is
 found with which the above cases could be made to work without the penalty 
 in execution time, it will be built in in the future.
 
+One must also take care when working with extra symbols when processing
+expressions which contain dummy indices. Dummy indices which are inside
+the extra symbol definitions are not visible to {\FORM}'s renumbering
+routines, which can lead to ambiguous results. For example:
+\begin{verbatim}
+    CFunction f,g;
+    Index mu;
+
+    Local test = f(mu,mu)*g(N1_?,N1_?);
+    ArgToExtraSymbol g;
+    Sum mu;
+    Argument g;
+        FromPolynomial;
+    EndArgument;
+
+    Print;
+    .end
+
+   test =
+      f(N1_?,N1_?)*g(N1_?,N1_?);
+\end{verbatim}
+
 \section{Kronecker delta's}
 
 \label{sect-kroneckerdelta}
@@ -825,7 +847,8 @@ not numbers or symbols to positive powers by extra symbols. This may be
 needed for some new manipulations and can also be very handy for output 
 that is to be treated by for instance a FORTRAN or C compiler. The 
 FromPolynomial statement replaces the extra symbols again by their original 
-meaning.
+meaning. Care should be taken if extra symbol definitions include dummy
+indices, see \ref{sect-dummies}.
 
 % THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
 % WELL! (Var_Extra_Symbols_1)
