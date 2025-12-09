@@ -253,6 +253,8 @@ static struct fixedfun {
 	,{"agm_"        ,0 ,0             ,0               ,0} /* AGMFUNCTION */
 	,{"gamma_"      ,0 ,0             ,0               ,0} /* GAMMAFUN */
 	,{"eexp_"       ,0 ,0             ,0               ,0} /* EXPFUNCTION */
+	,{"hpl_"        ,0 ,0             ,0               ,0} /* HPLFUNCTION */
+	,{"mpl_"        ,0 ,0             ,0               ,0} /* MPLFUNCTION */
 #endif
 };
 
