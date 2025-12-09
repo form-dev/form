@@ -129,7 +129,8 @@ typedef struct {
 #define GRCC_QGRAF_OPT_BIPART      6
 #define GRCC_QGRAF_OPT_CYCLI       7
 #define GRCC_QGRAF_OPT_FLOOP       8
-#define GRCC_QGRAF_OPT_TOPOL       9
+//TODO what does this do? Does it work?
+//#define GRCC_QGRAF_OPT_TOPOL       9
 
 #ifdef GRCC_QGRAF_OPT_TOPOL
 #define GRCC_QGRAF_OPT_Size       10
