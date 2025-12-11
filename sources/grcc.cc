@@ -7242,16 +7242,22 @@ Bool EGraph::optQGrafA(Options *opt)
     printf("optQGrafA: %8ld\n", mId);
     econn->print();
 #endif
+    Bool retval = True;
     if (opt->qgopt[GRCC_QGRAF_OPT_FLOOP] != 0) {
         for (int fl=0; fl < nFlines; fl++) {
             if (flines[fl]->ftype == FL_Closed) {
                 if (flines[fl]->nlist % 2 != 0) {
-                    return False;
+                    retval = False;
+                    break;
                 }
             }
         }
+        // `notfloop_' is the dual of `floop_', so flip the decision:
+        if (opt->qgopt[GRCC_QGRAF_OPT_FLOOP] == -1) {
+            retval = (retval == True ? False : True);
+        }
     }
-    return True;
+    return retval;
 }
 
 //--------------------------------------------------------------
