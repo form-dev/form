@@ -36,10 +36,12 @@ WORD* flint_div(PHEAD WORD *a, WORD *b, const WORD must_fit_term) {
 	e.push_back(b);
 	const bool with_arghead = false;
 	const bool sort_vars = false;
-	const flint::var_map_t var_map = flint::get_variables(e, with_arghead, sort_vars);
+	flint::var_map_t var_map = flint::get_variables(e, with_arghead, sort_vars);
 
 	const bool return_rem = false;
 	if ( var_map.size() > 1 ) {
+		// a "-1" just variable forces mpoly routines for a univariate problem, remove it:
+		var_map.erase(-1);
 		return flint::divmod_mpoly(BHEAD a, b, return_rem, must_fit_term, var_map);
 	}
 	else {
@@ -54,11 +56,13 @@ int flint_factorize_argument(PHEAD WORD *argin, WORD *argout) {
 
 	const bool with_arghead = true;
 	const bool sort_vars = true;
-	const flint::var_map_t var_map = flint::get_variables(vector<WORD*>(1,argin), with_arghead,
+	flint::var_map_t var_map = flint::get_variables(vector<WORD*>(1,argin), with_arghead,
 		sort_vars);
 
 	const bool is_fun_arg = true;
 	if ( var_map.size() > 1 ) {
+		// a "-1" just variable forces mpoly routines for a univariate problem, remove it:
+		var_map.erase(-1);
 		flint::factorize_mpoly(BHEAD argin, argout, with_arghead, is_fun_arg, var_map);
 	}
 	else {
@@ -75,11 +79,13 @@ WORD* flint_factorize_dollar(PHEAD WORD *argin) {
 
 	const bool with_arghead = false;
 	const bool sort_vars = true;
-	const flint::var_map_t var_map = flint::get_variables(vector<WORD*>(1,argin), with_arghead,
+	flint::var_map_t var_map = flint::get_variables(vector<WORD*>(1,argin), with_arghead,
 		sort_vars);
 
 	const bool is_fun_arg = false;
 	if ( var_map.size() > 1 ) {
+		// a "-1" just variable forces mpoly routines for a univariate problem, remove it:
+		var_map.erase(-1);
 		return flint::factorize_mpoly(BHEAD argin, NULL, with_arghead, is_fun_arg, var_map);
 	}
 	else {
@@ -98,9 +104,11 @@ WORD* flint_gcd(PHEAD WORD *a, WORD *b, const WORD must_fit_term) {
 	e.push_back(b);
 	const bool with_arghead = false;
 	const bool sort_vars = true;
-	const flint::var_map_t var_map = flint::get_variables(e, with_arghead, sort_vars);
+	flint::var_map_t var_map = flint::get_variables(e, with_arghead, sort_vars);
 
 	if ( var_map.size() > 1 ) {
+		// a "-1" just variable forces mpoly routines for a univariate problem, remove it:
+		var_map.erase(-1);
 		return flint::gcd_mpoly(BHEAD a, b, must_fit_term, var_map);
 	}
 	else {
@@ -117,7 +125,9 @@ WORD* flint_inverse(PHEAD WORD *a, WORD *b) {
 	e.reserve(2);
 	e.push_back(a);
 	e.push_back(b);
-	const flint::var_map_t var_map = flint::get_variables(e, false, false);
+	flint::var_map_t var_map = flint::get_variables(e, false, false);
+	// a "-1" just variable forces mpoly routines for a univariate problem, remove it:
+	var_map.erase(-1);
 
 	if ( var_map.size() > 1 ) {
 		MLOCK(ErrorMessageLock);
@@ -138,9 +148,11 @@ WORD* flint_mul(PHEAD WORD *a, WORD *b) {
 	e.reserve(2);
 	e.push_back(a);
 	e.push_back(b);
-	const flint::var_map_t var_map = flint::get_variables(e, false, false);
+	flint::var_map_t var_map = flint::get_variables(e, false, false);
 
 	if ( var_map.size() > 1 ) {
+		// a "-1" just variable forces mpoly routines for a univariate problem, remove it:
+		var_map.erase(-1);
 		return flint::mul_mpoly(BHEAD a, b, var_map);
 	}
 	else {
@@ -175,9 +187,11 @@ WORD* flint_ratfun_add(PHEAD WORD *t1, WORD *t2) {
 	}
 	const bool with_arghead = true;
 	const bool sort_vars = true;
-	const flint::var_map_t var_map = flint::get_variables(e, with_arghead, sort_vars);
+	flint::var_map_t var_map = flint::get_variables(e, with_arghead, sort_vars);
 
 	if ( var_map.size() > 1 ) {
+		// a "-1" just variable forces mpoly routines for a univariate problem, remove it:
+		var_map.erase(-1);
 		flint::ratfun_add_mpoly(BHEAD t1, t2, oldworkpointer, var_map);
 	}
 	else {
@@ -241,9 +255,11 @@ int flint_ratfun_normalize(PHEAD WORD *term) {
 	}
 	const bool with_arghead = true;
 	const bool sort_vars = true;
-	const flint::var_map_t var_map = flint::get_variables(e, with_arghead, sort_vars);
+	flint::var_map_t var_map = flint::get_variables(e, with_arghead, sort_vars);
 
 	if ( var_map.size() > 1 ) {
+		// a "-1" just variable forces mpoly routines for a univariate problem, remove it:
+		var_map.erase(-1);
 		flint::ratfun_normalize_mpoly(BHEAD term, var_map);
 	}
 	else {
@@ -271,10 +287,12 @@ WORD* flint_rem(PHEAD WORD *a, WORD *b, const WORD must_fit_term) {
 	e.push_back(b);
 	const bool with_arghead = false;
 	const bool sort_vars = false;
-	const flint::var_map_t var_map = flint::get_variables(e, with_arghead, sort_vars);
+	flint::var_map_t var_map = flint::get_variables(e, with_arghead, sort_vars);
 
 	const bool return_rem = true;
 	if ( var_map.size() > 1 ) {
+		// a "-1" just variable forces mpoly routines for a univariate problem, remove it:
+		var_map.erase(-1);
 		return flint::divmod_mpoly(BHEAD a, b, return_rem, must_fit_term, var_map);
 	}
 	else {

@@ -38,6 +38,13 @@ static_assert(sizeof(slong) == sizeof(int64_t), "flint interface expects slong i
 */
 
 /*
+ * FLINT's univariate poly has a dense representation. For sufficiently sparse polynomials it is
+ * faster to use mpoly instead, which is sparse. For a density <= this threshold we switch, where
+ * the density defined as is "number of terms" / "maximum degree".
+ */
+#define UNIVARIATE_DENSITY_THR 0.02f
+
+/*
 	#[ flint::cleanup :
 */
 void flint::cleanup(void) {
@@ -1061,7 +1068,9 @@ flint::var_map_t flint::get_variables(const vector <WORD *> &es, const bool with
 	const bool sort_vars) {
 
 	int32_t num_vars = 0;
-	// To be used if we sort by highest degree, as the polu code does.
+	// We count the total number of terms to determine "density".
+	uint32_t num_terms = 0;
+	// To be used if we sort by highest degree, as the poly code does.
 	vector<int32_t> degrees;
 	var_map_t var_map;
 
@@ -1071,8 +1080,10 @@ flint::var_map_t flint::get_variables(const vector <WORD *> &es, const bool with
 
 		// fast notation
 		if ( *e == -SNUMBER ) {
+			num_terms++;
 		}
 		else if ( *e == -SYMBOL ) {
+			num_terms++;
 			if ( !var_map.count(e[1]) ) {
 				var_map[e[1]] = num_vars++;
 				degrees.push_back(1);
@@ -1087,6 +1098,7 @@ flint::var_map_t flint::get_variables(const vector <WORD *> &es, const bool with
 		}
 		else {
 			for ( WORD i = with_arghead ? ARGHEAD:0; with_arghead ? i < e[0]:e[i] != 0; i += e[i] ) {
+				num_terms++;
 				if ( i+1 < i+e[i]-ABS(e[i+e[i]-1]) && e[i+1] != SYMBOL ) {
 					MLOCK(ErrorMessageLock);
 					MesPrint("ERROR: polynomials and polyratfuns must contain symbols only");
@@ -1149,6 +1161,16 @@ flint::var_map_t flint::get_variables(const vector <WORD *> &es, const bool with
 					swap(var_map.at(j0), var_map.at(j1));
 				}
 			}
+		}
+	}
+
+	if ( var_map.size() == 1 ) {
+		// In the univariate case, if the polynomials are sufficiently sparse force the use of the
+		// multivariate routines, which use a sparse representation, by adding a dummy map entry.
+		if ( (float)num_terms <= UNIVARIATE_DENSITY_THR * (float)degrees[0] ) {
+			// -1 will never be a symbol code. Built-in symbols from 0 to 19, and 20 is the first
+			// user symbol.
+			var_map[-1] = num_vars;
 		}
 	}
 
