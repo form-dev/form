@@ -704,15 +704,6 @@ Bool ProcessTopology(EGraph *eg, void *ti)
 		*fill++ = 0; *fill++ = 1; *fill++ = 5;
 	}
 //
-//	Symmetry factors. We let Normalize do the multiplication.
-//
-	if ( eg->nsym != 1 ) {
-		*fill++ = SNUMBER; *fill++ = 4; *fill++ = (WORD)eg->nsym; *fill++ = -1;
-	}
-	if ( eg->esym != 1 ) {
-		*fill++ = SNUMBER; *fill++ = 4; *fill++ = (WORD)eg->esym; *fill++ = -1;
-	}
-//
 //	finish it off
 //
 	while ( tail < tend ) *fill++ = *tail++;

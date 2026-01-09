@@ -138,6 +138,7 @@ static void    *erExitArg  = NULL;
 // Utility functions
 //==============================================================
 
+static void   grcc_fprintf(FILE* out, const char* fmt, ...);
 static void   erEnd(const char *msg);
 static Bool   nextPart(int nelem, int nclist, int *clist, int *nl, int *r);
 static void   prilist(int n, const int *a, const char *msg);
@@ -176,10 +177,10 @@ static Bool   isIn(int n, int *a, int v);
 Options::Options(void)
 {
     if (nOptDef != GRCC_OPT_Size) {
-        fprintf(GRCC_Stderr, "*** Options: inconsistent default values\n");
-        fprintf(GRCC_Stderr, "nOptDef=%d, GRCC_OPT_Size=%d\n",
+        grcc_fprintf(GRCC_Stderr, "*** Options: inconsistent default values\n");
+        grcc_fprintf(GRCC_Stderr, "nOptDef=%d, GRCC_OPT_Size=%d\n",
                 nOptDef, GRCC_OPT_Size);
-        exit(1);
+        GRCC_ABORT();
     }
     
     model  = NULL;
@@ -198,10 +199,10 @@ Options::Options(void)
 
     // QGraf options
     if (nOptQGDef != GRCC_QGRAF_OPT_Size) {
-        fprintf(GRCC_Stderr, "*** Options: inconsistent default values\n");
-        fprintf(GRCC_Stderr, "nOptQGDef=%d, GRCC_QGRAF_OPT_Size=%d\n",
+        grcc_fprintf(GRCC_Stderr, "*** Options: inconsistent default values\n");
+        grcc_fprintf(GRCC_Stderr, "nOptQGDef=%d, GRCC_QGRAF_OPT_Size=%d\n",
                 nOptQGDef, GRCC_QGRAF_OPT_Size);
-        exit(1);
+        GRCC_ABORT();
     }
     nqgopt = 0;
     for (int j = 0; j < nOptQGDef; j++) {
@@ -318,9 +319,9 @@ void Options::setValue(int ind, int val)
         values[ind] = val;
     } else {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** Options::setValue : invalid index=%d ",
+            grcc_fprintf(GRCC_Stderr, "*** Options::setValue : invalid index=%d ",
                     ind);
-            fprintf(GRCC_Stderr, "(val=%d)\n", val);
+            grcc_fprintf(GRCC_Stderr, "(val=%d)\n", val);
         }
         erEnd("Options::setValue : invalid index");
     }
@@ -333,7 +334,7 @@ int Options::getValue(int ind)
         return values[ind];
     } else {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** Options::getValue : invalid index=%d\n", ind);
+            grcc_fprintf(GRCC_Stderr, "*** Options::getValue : invalid index=%d\n", ind);
         }
         erEnd("Options::getValue : invalid index");
     }
@@ -420,18 +421,18 @@ void Options::print(void)
 {
     int j;
     
-    printf("Options\n");
-    printf("+++ GRCC_OPT_Size=%d, print level=%d: ",
+    grcc_fprintf(GRCC_Stdout, "Options\n");
+    grcc_fprintf(GRCC_Stdout, "+++ GRCC_OPT_Size=%d, print level=%d: ",
            GRCC_OPT_Size, prlevel);
-    printf("symbol = value (default)\n");
+    grcc_fprintf(GRCC_Stdout, "symbol = value (default)\n");
     for (j=0; j < GRCC_OPT_Size; j++) {
-        printf("   %4d GRCC_OPT_%-15s = %2d (%2d)\n", 
+        grcc_fprintf(GRCC_Stdout, "   %4d GRCC_OPT_%-15s = %2d (%2d)\n", 
                j, optDef[j].name, values[j], optDef[j].defaultv);
     }
-    printf("    outgrf=%s, outgrp=%s\n", out->outgrf, out->outgrp);
-    printf("    GRCC_QGRAF_OPT_Size=%d:\n", GRCC_QGRAF_OPT_Size);
+    grcc_fprintf(GRCC_Stdout, "    outgrf=%s, outgrp=%s\n", out->outgrf, out->outgrp);
+    grcc_fprintf(GRCC_Stdout, "    GRCC_QGRAF_OPT_Size=%d:\n", GRCC_QGRAF_OPT_Size);
     for (j=0; j < GRCC_QGRAF_OPT_Size; j++) {
-        printf("   %4d %-10s = %2d\n", j, optQGDef[j].name, qgopt[j]);
+        grcc_fprintf(GRCC_Stdout, "   %4d %-10s = %2d\n", j, optQGDef[j].name, qgopt[j]);
     }
 }
 
@@ -474,7 +475,7 @@ void Options::printModel(void)
         if (model != NULL) {
             model->prModel();
         } else {
-            printf("*** model is not defined\n");
+            grcc_fprintf(GRCC_Stdout, "*** model is not defined\n");
         }
     }
 }
@@ -512,23 +513,23 @@ void Options::begin(Model *mdl)
 void Options::end(void)
 {
     if (prlevel > 1) {
-        printf("Optimization: ");
+        grcc_fprintf(GRCC_Stdout, "Optimization: ");
 #ifdef SIMPSEL
-        printf("SIMPSEL=1 ");
+        grcc_fprintf(GRCC_Stdout, "SIMPSEL=1 ");
 #else
-        printf("SIMPSEL=0 ");
+        grcc_fprintf(GRCC_Stdout, "SIMPSEL=0 ");
 #endif
 #ifdef MINMAXLEG
-        printf("MINMAXLEG=1 ");
+        grcc_fprintf(GRCC_Stdout, "MINMAXLEG=1 ");
 #else
-        printf("MINMAXLEG=0 ");
+        grcc_fprintf(GRCC_Stdout, "MINMAXLEG=0 ");
 #endif
 #ifdef OPTEXTONLY
-        printf("OPTEXTONLY=1 ");
+        grcc_fprintf(GRCC_Stdout, "OPTEXTONLY=1 ");
 #else
-        printf("OPTEXTONLY=0 ");
+        grcc_fprintf(GRCC_Stdout, "OPTEXTONLY=0 ");
 #endif
-        printf("\n");
+        grcc_fprintf(GRCC_Stdout, "\n");
     }
 
     if (out != NULL && values[GRCC_OPT_Outgrf]) {
@@ -571,68 +572,68 @@ void Options::endProc(void)
         return;
     }
     if (prlevel > 0) {
-        printf("\n");
-        printf("+++ Proc %d: ext=%d, loop=%d, ",
+        grcc_fprintf(GRCC_Stdout, "\n");
+        grcc_fprintf(GRCC_Stdout, "+++ Proc %d: ext=%d, loop=%d, ",
                proc->id, proc->nExtern, proc->loop);
         if (model != NULL) {
-            printf("order=");
+            grcc_fprintf(GRCC_Stdout, "order=");
             prIntArray(model->ncouple, proc->clist, ": ");
             model->prParticleArray(proc->ninitl, proc->initlPart, "-->");
             model->prParticleArray(proc->nfinal, proc->finalPart, "");
         }
-        printf(" (%8.2f sec)\n", proc->sec);
+        grcc_fprintf(GRCC_Stdout, " (%8.2f sec)\n", proc->sec);
     
     
-        printf("    Proc    %d: Total M-Graphs=%ld, M-Graphs=",
+        grcc_fprintf(GRCC_Stdout, "    Proc    %d: Total M-Graphs=%ld, M-Graphs=",
                proc->id, proc->nMGraphs);
         proc->wMGraphs.print(" (Conn)\n");
 
-        printf("    Proc    %d: Total M-Graphs=%ld, M-Graphs=",
+        grcc_fprintf(GRCC_Stdout, "    Proc    %d: Total M-Graphs=%ld, M-Graphs=",
                proc->id, proc->nMOPI);
         proc->wMOPI.print(" (1PI)\n");
     
-        printf("    Proc    %d: Total A-Graphs=%ld, A-Graphs=",
+        grcc_fprintf(GRCC_Stdout, "    Proc    %d: Total A-Graphs=%ld, A-Graphs=",
                proc->id, proc->nAGraphs);
         proc->wAGraphs.print(" (Conn)\n");
 
-        printf("    Proc    %d: Total A-Graphs=%ld, A-Graphs=",
+        grcc_fprintf(GRCC_Stdout, "    Proc    %d: Total A-Graphs=%ld, A-Graphs=",
                proc->id, proc->nAOPI);
         proc->wAOPI.print(" (1PI)\n");
 
-        printf("#  { %d,{", proc->ninitl);
+        grcc_fprintf(GRCC_Stdout, "#  { %d,{", proc->ninitl);
         for (k = 0; k < proc->ninitl; k++) {
             if (k != 0) {
-                printf(", ");
+                grcc_fprintf(GRCC_Stdout, ", ");
             }
             if (proc->model != NULL) {
-                printf("\"%s\"", proc->model->particleName(proc->initlPart[k]));
+                grcc_fprintf(GRCC_Stdout, "\"%s\"", proc->model->particleName(proc->initlPart[k]));
             } else {
-                printf("%d", proc->initlPart[k]);
+                grcc_fprintf(GRCC_Stdout, "%d", proc->initlPart[k]);
             }
         }
-        printf("}, %d,{", proc->nfinal);
+        grcc_fprintf(GRCC_Stdout, "}, %d,{", proc->nfinal);
         for (k = 0; k < proc->nfinal; k++) {
             if (k != 0) {
-                printf(", ");
+                grcc_fprintf(GRCC_Stdout, ", ");
             }
             if (proc->model != NULL) {
-                printf("\"%s\"", proc->model->particleName(proc->finalPart[k]));
+                grcc_fprintf(GRCC_Stdout, "\"%s\"", proc->model->particleName(proc->finalPart[k]));
             } else {
-                printf("%d", proc->initlPart[k]);
+                grcc_fprintf(GRCC_Stdout, "%d", proc->initlPart[k]);
             }
         }
-        printf("}, ");
+        grcc_fprintf(GRCC_Stdout, "}, ");
         if (model != NULL) {
-            printf("{");
+            grcc_fprintf(GRCC_Stdout, "{");
             for (k = 0; k < model->ncouple; k++) {
                 if (k != 0) {
-                    printf(", ");
+                    grcc_fprintf(GRCC_Stdout, ", ");
                 }
-                printf("%d", proc->clist[k]);
+                grcc_fprintf(GRCC_Stdout, "%d", proc->clist[k]);
             }
-            printf("},");
+            grcc_fprintf(GRCC_Stdout, "},");
         }
-        printf("},%6ldL,%6ldL,%3ldL, -1.0, %4.2f},\n",
+        grcc_fprintf(GRCC_Stdout, "},%6ldL,%6ldL,%3ldL, -1.0, %4.2f},\n",
                proc->nAOPI, proc->wAOPI.num, proc->wAOPI.den, proc->sec);
     }
 
@@ -687,39 +688,39 @@ void Options::endSubProc(void)
     }
 
     if (prlevel > 1) {
-        printf("\n");
-        printf("+++ Subproc %d: ext=%d, loop=%d, nodes=%d, edges=%d\n",
+        grcc_fprintf(GRCC_Stdout, "\n");
+        grcc_fprintf(GRCC_Stdout, "+++ Subproc %d: ext=%d, loop=%d, nodes=%d, edges=%d\n",
                sproc->id, sproc->nExtern, sproc->loop,
                sproc->nNodes, sproc->nEdges);
     
-        printf("    Subproc %d: Total M-Graphs=%ld, M-Wsum=",
+        grcc_fprintf(GRCC_Stdout, "    Subproc %d: Total M-Graphs=%ld, M-Wsum=",
                sproc->id, sproc->nMGraphs);
         sproc->wMGraphs.print(" (Conn)\n");
 
-        printf("    Subproc %d: Total M-Graphs=%ld, M-Wsum=",
+        grcc_fprintf(GRCC_Stdout, "    Subproc %d: Total M-Graphs=%ld, M-Wsum=",
                sproc->id, sproc->nMOPI);
         sproc->wMOPI.print(" (1PI)\n");
     
-        printf("    Subproc %d: Total A-Graphs=%ld, A-Wsum=", 
+        grcc_fprintf(GRCC_Stdout, "    Subproc %d: Total A-Graphs=%ld, A-Wsum=", 
                sproc->id, sproc->nAGraphs);
         sproc->wAGraphs.print(" (Conn)\n");
 
-        printf("    Subproc %d: Total A-Graphs=%ld, A-Wsum=", 
+        grcc_fprintf(GRCC_Stdout, "    Subproc %d: Total A-Graphs=%ld, A-Wsum=", 
                sproc->id, sproc->nAOPI);
         sproc->wAOPI.print(" (1PI)\n");
     }
     if (prlevel > 0) {
-        printf("\n");
-        printf("* Total %ld MGraphs; %ld 1PI", mgraph->cDiag, mgraph->c1PI);
-        printf(" wscon = ");
+        grcc_fprintf(GRCC_Stdout, "\n");
+        grcc_fprintf(GRCC_Stdout, "* Total %ld MGraphs; %ld 1PI", mgraph->cDiag, mgraph->c1PI);
+        grcc_fprintf(GRCC_Stdout, " wscon = ");
         mgraph->wscon.print(" ( ");
         mgraph->wsopi.print(" 1PI)\n");
 
 #ifdef MONITOR
-        printf("* refine:                     %ld\n", mgraph->nCallRefine);
-        printf("* discarded for refinement:   %ld\n", mgraph->discardRefine);
-        printf("* discarded for disconnected: %ld\n", mgraph->discardDisc);
-        printf("* discarded for duplication:  %ld\n", mgraph->discardIso);
+        grcc_fprintf(GRCC_Stdout, "* refine:                     %ld\n", mgraph->nCallRefine);
+        grcc_fprintf(GRCC_Stdout, "* discarded for refinement:   %ld\n", mgraph->discardRefine);
+        grcc_fprintf(GRCC_Stdout, "* discarded for disconnected: %ld\n", mgraph->discardDisc);
+        grcc_fprintf(GRCC_Stdout, "* discarded for duplication:  %ld\n", mgraph->discardIso);
 #endif
     }
     
@@ -825,7 +826,7 @@ Output::~Output(void)
 {
     if (outgrfp != NULL) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** file has not been closed : \"%s\"\n",
+            grcc_fprintf(GRCC_Stderr, "*** file has not been closed : \"%s\"\n",
                     outgrf);
         }
         fclose(outgrfp);
@@ -838,7 +839,7 @@ Output::~Output(void)
     }
     if (outgrpp != NULL) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** file has not been closed : \"%s\"\n",
+            grcc_fprintf(GRCC_Stderr, "*** file has not been closed : \"%s\"\n",
                     outgrp);
         }
         fclose(outgrpp);
@@ -900,7 +901,7 @@ Bool Output::outBeginF(Model *mdl, Bool pr)
         return True;
     } else if (outgrfp != NULL) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** outBegin: \"%s\" is already opened\n",
+            grcc_fprintf(GRCC_Stderr, "*** outBegin: \"%s\" is already opened\n",
                     outgrf);
         }
         erEnd("outBegin: file is already opened\n");
@@ -911,7 +912,7 @@ Bool Output::outBeginF(Model *mdl, Bool pr)
     }
     if ((outgrfp = fopen(outgrf, "w")) == NULL) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** outBegin: cannot open %s\n", outgrf);
+            grcc_fprintf(GRCC_Stderr, "*** outBegin: cannot open %s\n", outgrf);
         }
         return False;
     }
@@ -946,7 +947,7 @@ Bool Output::outBeginP(Model *mdl, Bool pr)
         return True;
     } else if (outgrpp != NULL) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** outBegin: \"%s\" is already opened\n",
+            grcc_fprintf(GRCC_Stderr, "*** outBegin: \"%s\" is already opened\n",
                     outgrp);
         }
         erEnd("outBegin: file is already opened\n");
@@ -957,7 +958,7 @@ Bool Output::outBeginP(Model *mdl, Bool pr)
     }
     if ((outgrpp = fopen(outgrp, "w")) == NULL) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** outBegin: cannot open %s\n", outgrp);
+            grcc_fprintf(GRCC_Stderr, "*** outBegin: cannot open %s\n", outgrp);
         }
         return False;
     }
@@ -1341,11 +1342,11 @@ void Output::outEGraphP(EGraph *eg)
     }
 
     if (eg->assigned) {
-        printf("outEGraphP:egraph:egraph[%ld]\n", eg->mId-1);
+        grcc_fprintf(GRCC_Stdout, "outEGraphP:egraph:egraph[%ld]\n", eg->mId-1);
         eg->printPy(outgrpp, eg->mId);
         return;
     } else {
-        printf("outEGraphP:mgraph:egraph[%ld]\n", eg->mId-1);
+        grcc_fprintf(GRCC_Stdout, "outEGraphP:mgraph:egraph[%ld]\n", eg->mId-1);
         eg->mgraph->printPy(outgrpp, eg->mId);
         return;
     }
@@ -1475,7 +1476,7 @@ void Output::outModelF(void)
 
     if (model == NULL) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** Output::outModel : model is not defined\n");
+            grcc_fprintf(GRCC_Stderr, "*** Output::outModel : model is not defined\n");
         }
         return;
     }
@@ -1485,7 +1486,7 @@ void Output::outModelF(void)
 
     if ((mdlfp = fopen(mdlfn, "w")) == NULL) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** Output::outModel : cannot open \"%s\"\n",
+            grcc_fprintf(GRCC_Stderr, "*** Output::outModel : cannot open \"%s\"\n",
                     mdlfn);
         }
         return;
@@ -1556,8 +1557,8 @@ void Output::outModelP(void)
 
     if (model == NULL) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** Output::outModel : ");
-            fprintf(GRCC_Stderr, "model is not defined\n");
+            grcc_fprintf(GRCC_Stderr, "*** Output::outModel : ");
+            grcc_fprintf(GRCC_Stderr, "model is not defined\n");
         }
         return;
     }
@@ -1567,7 +1568,7 @@ void Output::outModelP(void)
 
     if ((mdlfp = fopen(mdlfn, "w")) == NULL) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** Output::outModel : cannot open \"%s\"\n",
+            grcc_fprintf(GRCC_Stderr, "*** Output::outModel : cannot open \"%s\"\n",
                     mdlfn);
         }
         return;
@@ -1687,7 +1688,7 @@ Particle::Particle(Model *modl, int pid, PInput *pinp)
     if (Abs(mdl->defpart) == GRCC_DEFBYCODE) {
         if (pinp->ptypec < GRCC_PT_Undef || pinp->ptypec > GRCC_PT_Size) {
             if (prlevel > 0) {
-                fprintf(GRCC_Stderr, "*** particle type is not defined: %d\n",
+                grcc_fprintf(GRCC_Stderr, "*** particle type is not defined: %d\n",
                         pinp->ptypec);
             }
             erEnd("particle type is not defined (illegal code)");
@@ -1706,7 +1707,7 @@ Particle::Particle(Model *modl, int pid, PInput *pinp)
         }
         if (ptype < 0) {
             if (prlevel > 0) {
-                fprintf(GRCC_Stderr, "*** particle type \"%s\" is not defined\n",
+                grcc_fprintf(GRCC_Stderr, "*** particle type \"%s\" is not defined\n",
                         pinp->ptypen);
             }
             erEnd("particle type is not defined (name)");
@@ -1782,11 +1783,11 @@ char *Particle::aparticle(void)
 void Particle::prParticle(void)
 {
     if (isNeutral()) {
-        printf("pid=%d, name=\"%s\", real_field, ", id, name);
+        grcc_fprintf(GRCC_Stdout, "pid=%d, name=\"%s\", real_field, ", id, name);
     } else {
-        printf("pid=%d, name=\"%s\", aname=\"%s\", ", id, name, aname);
+        grcc_fprintf(GRCC_Stdout, "pid=%d, name=\"%s\", aname=\"%s\", ", id, name, aname);
     }
-    printf("ptype=%s, pcode=%d, acode=%d, extonly=%d, cdeg=(%d,%d)\n", 
+    grcc_fprintf(GRCC_Stdout, "ptype=%s, pcode=%d, acode=%d, extonly=%d, cdeg=(%d,%d)\n", 
            ptypenames[ptype], pcode, acode, extonly, cmindeg, cmaxdeg);
 }
 
@@ -1858,7 +1859,7 @@ Interaction::Interaction(Model *modl, int iid, const char *nam, int icd, int *cp
             if (Abs(sdir) == 1) {
                 jdir = j;
             } else if ((Abs(sdir) == 0 && j != jdir + 1) || Abs(sdir) > 1) {
-                fprintf(GRCC_Stderr, "*** Interaction: Dirac and anti-Dirac should "
+                grcc_fprintf(GRCC_Stderr, "*** Interaction: Dirac and anti-Dirac should "
                         "arranged in pairs in an interaction.\n");
                 ok = False;
             }
@@ -1872,7 +1873,7 @@ Interaction::Interaction(Model *modl, int iid, const char *nam, int icd, int *cp
             if (Abs(sgho) == 1) {
                 jgho = j;
             } else if ((Abs(sgho) == 0 && j != jgho + 1) || Abs(sgho) > 1) {
-                fprintf(GRCC_Stderr, "*** Interaction: Ghost and anti-Ghost should "
+                grcc_fprintf(GRCC_Stderr, "*** Interaction: Ghost and anti-Ghost should "
                         "arranged in pairs in an interaction.\n");
                 ok = False;
             }
@@ -1881,32 +1882,32 @@ Interaction::Interaction(Model *modl, int iid, const char *nam, int icd, int *cp
             if (nmaj % 2 == 1) {
                 jmaj = j;
             } else if (j != jmaj + 1) {
-                fprintf(GRCC_Stderr, "*** Interaction: two Majoranas should "
+                grcc_fprintf(GRCC_Stderr, "*** Interaction: two Majoranas should "
                         "arranged in pairs in an interaction.\n");
                 ok = False;
             }
         }
     }
     if (sdir != 0) {
-        fprintf(GRCC_Stderr, "*** Interaction: Dirac number is not conserved\n");
+        grcc_fprintf(GRCC_Stderr, "*** Interaction: Dirac number is not conserved\n");
         ok = False;
     }
     if (sgho != 0) {
-        fprintf(GRCC_Stderr, "*** Interaction: Ghost number is not conserved\n");
+        grcc_fprintf(GRCC_Stderr, "*** Interaction: Ghost number is not conserved\n");
         ok = False;
     }
     if (nmaj % 2 != 0) {
-        fprintf(GRCC_Stderr, "*** Interaction: odd number of Majorana particles\n");
+        grcc_fprintf(GRCC_Stderr, "*** Interaction: odd number of Majorana particles\n");
         ok = False;
     }
     if (ndir + nmaj + ngho > 2 && prmsg) {
-        fprintf(GRCC_Stderr, "+++ Interaction: more than 2 "
+        grcc_fprintf(GRCC_Stderr, "+++ Interaction: more than 2 "
                              "Dirac/Majorana/Ghost "
                              "particles are interacting.\n");
-        fprintf(GRCC_Stderr, "    Interaction has %d Dirac, %d Ghost "
+        grcc_fprintf(GRCC_Stderr, "    Interaction has %d Dirac, %d Ghost "
                              "and %d Majorana particles.\n", 
                              ndir, nmaj, ngho);
-        fprintf(GRCC_Stderr, "    Sign factors related to fermions may "
+        grcc_fprintf(GRCC_Stderr, "    Sign factors related to fermions may "
                              "be inconsistent with your calculation method.\n");
         prmsg = False;
     }
@@ -1936,16 +1937,16 @@ void Interaction::prInteraction(void)
 {
     int j;
 
-    printf("vid=%d, icode=%d, name=\"%s\", loop=%d, csum=%d, cpl=",
+    grcc_fprintf(GRCC_Stdout, "vid=%d, icode=%d, name=\"%s\", loop=%d, csum=%d, cpl=",
           id, icode, name, loop, csum);
     prIntArray(mdl->ncouple, clist, ", legs=[");
     for (j = 0; j < nplist; j++) {
         if (j != 0) {
-            printf(", ");
+            grcc_fprintf(GRCC_Stdout, ", ");
         }
-        printf("%s", mdl->particleName(plist[j]));
+        grcc_fprintf(GRCC_Stdout, "%s", mdl->particleName(plist[j]));
     }
-    printf("];\n");
+    grcc_fprintf(GRCC_Stdout, "];\n");
 
 }
 
@@ -2061,46 +2062,46 @@ void Model::prModel(void)
     static char hd1[] = "#-------------------------------------------------\n";
     int j;
 
-    printf("%s", hdr);
-    printf("Model=\"%s\", ", name);
-    printf("coupling=[");
+    grcc_fprintf(GRCC_Stdout, "%s", hdr);
+    grcc_fprintf(GRCC_Stdout, "Model=\"%s\", ", name);
+    grcc_fprintf(GRCC_Stdout, "coupling=[");
     for (j = 0; j < ncouple; j++) {
         if (j != 0) {
-            printf(", ");
+            grcc_fprintf(GRCC_Stdout, ", ");
         }
-        printf("\"%s\"", cnlist[j]);
+        grcc_fprintf(GRCC_Stdout, "\"%s\"", cnlist[j]);
     }
-    printf("];\n");
-    printf("%s", hd1);
-    printf("Particles=%d;\n", nParticles);
+    grcc_fprintf(GRCC_Stdout, "];\n");
+    grcc_fprintf(GRCC_Stdout, "%s", hd1);
+    grcc_fprintf(GRCC_Stdout, "Particles=%d;\n", nParticles);
     for (j = 1; j < nParticles; j++) {
         particles[j]->prParticle();
     }
-    printf("EndParticle;\n");
-    printf("allPart (%d) = [", nallPart);
+    grcc_fprintf(GRCC_Stdout, "EndParticle;\n");
+    grcc_fprintf(GRCC_Stdout, "allPart (%d) = [", nallPart);
     for (j = 0; j < nallPart; j++) {
         if (j != 0) {
-            printf(", ");
+            grcc_fprintf(GRCC_Stdout, ", ");
         }
-        printf("%d", allPart[j]);
+        grcc_fprintf(GRCC_Stdout, "%d", allPart[j]);
     }
-    printf("]\n");
+    grcc_fprintf(GRCC_Stdout, "]\n");
 
-    printf("%s", hd1);
-    printf("Interactions=%d;\n", nInteracts);
+    grcc_fprintf(GRCC_Stdout, "%s", hd1);
+    grcc_fprintf(GRCC_Stdout, "Interactions=%d;\n", nInteracts);
     for (j = 0; j < nInteracts; j++) {
         interacts[j]->prInteraction();
     }
-    printf("EndInteraction;\n");
-    printf("%s", hd1);
-    printf("InteractionTable;\n");
-    printf("#  %d class in (total coupling, degree)\n", ncplgcp);
+    grcc_fprintf(GRCC_Stdout, "EndInteraction;\n");
+    grcc_fprintf(GRCC_Stdout, "%s", hd1);
+    grcc_fprintf(GRCC_Stdout, "InteractionTable;\n");
+    grcc_fprintf(GRCC_Stdout, "#  %d class in (total coupling, degree)\n", ncplgcp);
     for (j = 0; j < ncplgcp; j++) {
-        printf("  class=%d: cp=%d, lg=%d, vl=", j, cplgcp[j], cplglg[j]);
+        grcc_fprintf(GRCC_Stdout, "  class=%d: cp=%d, lg=%d, vl=", j, cplgcp[j], cplglg[j]);
         prIntArray(cplgnvl[j], cplgvl[j], "\n");
     }
-    printf("EndInteractionTable;\n");
-    printf("%s", hdr);
+    grcc_fprintf(GRCC_Stdout, "EndInteractionTable;\n");
+    grcc_fprintf(GRCC_Stdout, "%s", hdr);
 }
 
 //--------------------------------------------------------------
@@ -2118,9 +2119,9 @@ void Model::addParticle(PInput *pinp)
         acd = findParticleCode(pinp->acode);
         if (pcd > 0 || acd > 0) {
             if (prlevel > 0) {
-                fprintf(GRCC_Stderr, "*** particle code [%d, %d] ", 
+                grcc_fprintf(GRCC_Stderr, "*** particle code [%d, %d] ", 
                         pinp->pcode, pinp->acode);
-                fprintf(GRCC_Stderr, "is already used.\n");
+                grcc_fprintf(GRCC_Stderr, "is already used.\n");
             }
             erEnd("particle code is already defined");
         }
@@ -2133,9 +2134,9 @@ void Model::addParticle(PInput *pinp)
         aid = findParticleName(pinp->aname);
         if (nid > 0 || aid > 0) {
             if (prlevel > 0) {
-                fprintf(GRCC_Stderr, "*** particle name [%s, %s] ", 
+                grcc_fprintf(GRCC_Stderr, "*** particle name [%s, %s] ", 
                         pinp->name, pinp->aname);
-                fprintf(GRCC_Stderr, "is already used.\n");
+                grcc_fprintf(GRCC_Stderr, "is already used.\n");
             }
             erEnd("particle name is already defined.");
         }
@@ -2205,7 +2206,7 @@ void Model::addInteraction(IInput *iinp)
     if (defpart == GRCC_DEFBYCODE) {
         if (iinp->icode < 0) {
             if (prlevel > 0) {
-                fprintf(GRCC_Stderr, "*** vertex code %d should be positive\n",
+                grcc_fprintf(GRCC_Stderr, "*** vertex code %d should be positive\n",
                         iinp->icode);
             }
             erEnd("vertex code should be positive");
@@ -2213,7 +2214,7 @@ void Model::addInteraction(IInput *iinp)
             vid = findInteractionCode(iinp->icode);
             if (vid >= 0) {
                 if (prlevel > 0) {
-                    fprintf(GRCC_Stderr, "*** vertex code %d is already used\n",
+                    grcc_fprintf(GRCC_Stderr, "*** vertex code %d is already used\n",
                             iinp->icode);
                 }
                 erEnd("vertex code is already used");
@@ -2226,7 +2227,7 @@ void Model::addInteraction(IInput *iinp)
         vid = findInteractionName(iinp->name);
         if (vid >= 0) {
             if (prlevel > 0) {
-                fprintf(GRCC_Stderr, "*** vertex name %s is already used\n",
+                grcc_fprintf(GRCC_Stderr, "*** vertex name %s is already used\n",
                 iinp->name);
                 erEnd("vertex name is already used");
             }
@@ -2247,9 +2248,9 @@ void Model::addInteraction(IInput *iinp)
             plist[j] = findParticleCode(iinp->plistc[j]);
             if (plist[j] == 0) {
                 if (prlevel > 0) {
-                    fprintf(GRCC_Stderr, "*** particle code %d ",
+                    grcc_fprintf(GRCC_Stderr, "*** particle code %d ",
                             iinp->plistc[j]);
-                    fprintf(GRCC_Stderr, "is not defined\n");
+                    grcc_fprintf(GRCC_Stderr, "is not defined\n");
                 }
                 erEnd("particle is not defined (code)");
             }
@@ -2257,9 +2258,9 @@ void Model::addInteraction(IInput *iinp)
             plist[j] = findParticleName(iinp->plistn[j]);
             if (plist[j] == 0) {
                 if (prlevel > 0) {
-                    fprintf(GRCC_Stderr, "*** particle name %s ",
+                    grcc_fprintf(GRCC_Stderr, "*** particle name %s ",
                             iinp->plistn[j]);
-                    fprintf(GRCC_Stderr, "is not defined\n");
+                    grcc_fprintf(GRCC_Stderr, "is not defined\n");
                 }
                 erEnd("particle is not defined (name)");
             }
@@ -2271,9 +2272,9 @@ void Model::addInteraction(IInput *iinp)
         c = iinp->cvallist[j];
         if (c < 0) {
             if (prlevel > 0) {
-                fprintf(GRCC_Stderr, "*** illegal value of c-constants \n");
+                grcc_fprintf(GRCC_Stderr, "*** illegal value of c-constants \n");
                 for (k = 0; k < ncouple; k++) {
-                      fprintf(GRCC_Stderr, "    %s = %d\n",
+                      grcc_fprintf(GRCC_Stderr, "    %s = %d\n",
                               cnlist[k], iinp->cvallist[k]);
                 }
             }
@@ -2283,10 +2284,10 @@ void Model::addInteraction(IInput *iinp)
     }
     if (csum < 0) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** illegal total coupling-constants %d\n",
+            grcc_fprintf(GRCC_Stderr, "*** illegal total coupling-constants %d\n",
                     csum);
             for (k = 0; k < ncouple; k++) {
-                fprintf(GRCC_Stderr, "    %s = %d\n", 
+                grcc_fprintf(GRCC_Stderr, "    %s = %d\n", 
                         cnlist[k], iinp->cvallist[k]);
             }
         }
@@ -2297,8 +2298,8 @@ void Model::addInteraction(IInput *iinp)
     lp2 = csum - nlegs + 2;
     if (lp2 % 2 != 0 || lp2 < 0) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** illegal coupling const : ");
-            fprintf(GRCC_Stderr, "nlegs - 2 + 2*loop: 2*loop = %d\n", lp2);
+            grcc_fprintf(GRCC_Stderr, "*** illegal coupling const : ");
+            grcc_fprintf(GRCC_Stderr, "nlegs - 2 + 2*loop: 2*loop = %d\n", lp2);
         }
     }
     lp = lp2/2;
@@ -2421,8 +2422,8 @@ char *Model::particleName(int p)
 
     if (Abs(p) >= nParticles) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "\n*** Model::particleName: ");
-            fprintf(GRCC_Stderr, "illegal particle id=%d\n", p);
+            grcc_fprintf(GRCC_Stderr, "\n*** Model::particleName: ");
+            grcc_fprintf(GRCC_Stderr, "illegal particle id=%d\n", p);
         }
         erEnd("Model::particleName: illegal particle");
     }
@@ -2440,7 +2441,7 @@ int Model::particleCode(int p)
     int q;
 
     if (Abs(p) >= nParticles) {
-        fprintf(GRCC_Stderr, "\n*** Model::particleCode: illegal particle id=%d\n",
+        grcc_fprintf(GRCC_Stderr, "\n*** Model::particleCode: illegal particle id=%d\n",
                 p);
         erEnd("Model::particleCode: illegal particle");
     }
@@ -2457,14 +2458,14 @@ void Model::prParticleArray(int n, int *a, const char *msg)
 {
     int j;
 
-    printf("[");
+    grcc_fprintf(GRCC_Stdout, "[");
     for (j = 0; j < n; j++) {
         if (j != 0) {
-            printf(", ");
+            grcc_fprintf(GRCC_Stdout, ", ");
         }
-        printf("%s", particleName(a[j]));
+        grcc_fprintf(GRCC_Stdout, "%s", particleName(a[j]));
     }
-    printf("]%s", msg);
+    grcc_fprintf(GRCC_Stdout, "]%s", msg);
 }
 
 //--------------------------------------------------------------
@@ -2547,27 +2548,27 @@ int Model::findInteractionCode(int icd)
 //--------------------------------------------------------------
 void Model::printMInput(MInput *min)
 {
-    printf("  \"Model\": [\"%s\", %d, [",
+    grcc_fprintf(GRCC_Stdout, "  \"Model\": [\"%s\", %d, [",
            min->name, min->ncouple);
     for (int j = 0; j < min->ncouple; j++) {
         if (j != 0) {
-            printf(", ");
+            grcc_fprintf(GRCC_Stdout, ", ");
         }
-        printf("\"%s\"", min->cnamlist[j]);
+        grcc_fprintf(GRCC_Stdout, "\"%s\"", min->cnamlist[j]);
     }
-    printf("], ");
+    grcc_fprintf(GRCC_Stdout, "], ");
     if (min->defpart == GRCC_DEFBYCODE) {
-        printf("\"ByCode\"");
+        grcc_fprintf(GRCC_Stdout, "\"ByCode\"");
     } else {
-        printf("\"ByName\"");
+        grcc_fprintf(GRCC_Stdout, "\"ByName\"");
     }
-    printf("],\n");
+    grcc_fprintf(GRCC_Stdout, "],\n");
 }
 
 //--------------------------------------------------------------
 void Model::printPInput(PInput *pin)
 {
-    printf("    [\"%s\"(%d), \"%s\"(%d), \"%s\"(%d), %d],\n",
+    grcc_fprintf(GRCC_Stdout, "    [\"%s\"(%d), \"%s\"(%d), \"%s\"(%d), %d],\n",
            pin->name, pin->pcode, pin->aname, pin->acode,
            pin->ptypen, pin->ptypec, pin->extonly);
 }
@@ -2577,21 +2578,21 @@ void Model::printIInput(IInput *iin)
 {
     int j;
 
-    printf("    [\"%s\"(%d), %d, [", iin->name, iin->icode, iin->nplistn);
+    grcc_fprintf(GRCC_Stdout, "    [\"%s\"(%d), %d, [", iin->name, iin->icode, iin->nplistn);
     for (j = 0; j < iin->nplistn; j++) {
         if (j != 0) {
-            printf(", ");
+            grcc_fprintf(GRCC_Stdout, ", ");
         }
-        printf("\"%s\"(%d)", iin->plistn[j], iin->plistc[j]);
+        grcc_fprintf(GRCC_Stdout, "\"%s\"(%d)", iin->plistn[j], iin->plistc[j]);
     }
-    printf("], [");
+    grcc_fprintf(GRCC_Stdout, "], [");
     for (j = 0; j < GRCC_MAXNCPLG; j++) {
         if (j != 0) {
-            printf(", ");
+            grcc_fprintf(GRCC_Stdout, ", ");
         }
-        printf("%d", iin->cvallist[j]);
+        grcc_fprintf(GRCC_Stdout, "%d", iin->cvallist[j]);
     }
-    printf("],\n");
+    grcc_fprintf(GRCC_Stdout, "],\n");
 }
 
 //**************************************************************
@@ -2631,13 +2632,13 @@ PNodeClass::PNodeClass(SProcess *spc, int nnods, int nclss, NCInput *cls)
         lp2 = (couple[j]-deg[j]+2);
         if (!isATExternal(type[j]) && (lp2 % 2 != 0 || lp2 < 0)) {
             if (prlevel > 0) {
-                fprintf(GRCC_Stderr, "*** PNodeClass: illegal loop: "
+                grcc_fprintf(GRCC_Stderr, "*** PNodeClass: illegal loop: "
                        ": 2*loop=cpl[%d](%d)-deg[%d](%d)+2 =2*loop = %d\n",
                        j, couple[j], j, deg[j], lp2);
                 for (k = 0; k < nclss; k++) {
-                    fprintf(GRCC_Stderr, "k=%d, deg=%d, typ=%d, ptcl=%d, ",
+                    grcc_fprintf(GRCC_Stderr, "k=%d, deg=%d, typ=%d, ptcl=%d, ",
                             k, deg[k], type[k], particle[k]);
-                    fprintf(GRCC_Stderr, "cpl=%d, cnt=%d\n", 
+                    grcc_fprintf(GRCC_Stderr, "cpl=%d, cnt=%d\n", 
                             couple[k], count[k]);
                 }
             }
@@ -2663,8 +2664,8 @@ PNodeClass::PNodeClass(SProcess *spc, int nnods, int nclss, NCInput *cls)
             cl2mcl[j] = spc->model->findMClass(couple[j], deg[j]);
             if (cl2mcl[j] < 0) {
                 if (prlevel > 0) {
-                    fprintf(GRCC_Stderr, "*** PNodeClass : no vertex : ");
-                    fprintf(GRCC_Stderr, "coupling=%d, degree=%d\n",
+                    grcc_fprintf(GRCC_Stderr, "*** PNodeClass : no vertex : ");
+                    grcc_fprintf(GRCC_Stderr, "coupling=%d, degree=%d\n",
                            couple[j], deg[j]);
                 }
                 erEnd("PNodeClass : no vertex");
@@ -2709,13 +2710,13 @@ PNodeClass::PNodeClass(SProcess *spc, int nnods, int nclss, int *dgs, int *typ, 
         lp2 = (cpl[j]-dgs[j]+2);
         if (!isATExternal(type[j]) && (lp2 % 2 != 0 || lp2 < 0)) {
             if (prlevel > 0) {
-                fprintf(GRCC_Stderr, "*** PNodeClass: illegal loop: "
+                grcc_fprintf(GRCC_Stderr, "*** PNodeClass: illegal loop: "
                        ": 2*loop=cpl[%d](%d)-deg[%d](%d)+2 =2*loop = %d\n",
                        j, cpl[j], j, dgs[j], lp2);
                 for (k = 0; k < nclss; k++) {
-                    fprintf(GRCC_Stderr, "k=%d, dgs=%d, typ=%d, ptcl=%d, ",
+                    grcc_fprintf(GRCC_Stderr, "k=%d, dgs=%d, typ=%d, ptcl=%d, ",
                            k, dgs[k], typ[k], ptcl[k]);
-                    fprintf(GRCC_Stderr, "cpl=%d, cnt=%d\n", cpl[k], cnt[k]);
+                    grcc_fprintf(GRCC_Stderr, "cpl=%d, cnt=%d\n", cpl[k], cnt[k]);
                 }
             }
             ok = False;
@@ -2740,8 +2741,8 @@ PNodeClass::PNodeClass(SProcess *spc, int nnods, int nclss, int *dgs, int *typ, 
             cl2mcl[j] = spc->model->findMClass(couple[j], deg[j]);
             if (cl2mcl[j] < 0) {
                 if (prlevel > 0) {
-                    fprintf(GRCC_Stderr, "*** PNodeClass : no vertex : ");
-                    fprintf(GRCC_Stderr, "coupling=%d, degree=%d\n",
+                    grcc_fprintf(GRCC_Stderr, "*** PNodeClass : no vertex : ");
+                    grcc_fprintf(GRCC_Stderr, "coupling=%d, degree=%d\n",
                            couple[j], deg[j]);
                 }
                 erEnd("PNodeClass : no vertex");
@@ -2771,11 +2772,11 @@ void PNodeClass::prPNodeClass(void)
 {
     int j;
 
-    printf("+++ PNodeClass: nclass=%d, nnodes=%d\n", nclass, nnodes);
+    grcc_fprintf(GRCC_Stdout, "+++ PNodeClass: nclass=%d, nnodes=%d\n", nclass, nnodes);
     for (j = 0; j < nclass; j++) {
         prElem(j);
     }
-    printf("\n");
+    grcc_fprintf(GRCC_Stdout, "\n");
 }
 
 //--------------------------------------------------------------
@@ -2783,18 +2784,18 @@ void PNodeClass::prElem(int j)
 {
     int tp;
 
-    printf("%3d: %-7s(%2d), ", j, GRCC_AT_NdStr(type[j]), type[j]);
-    printf("deg=%d, count=%d, nodes[%d--%d], couple=%d, cmindeg=%d, cmaxdeg=%d",
+    grcc_fprintf(GRCC_Stdout, "%3d: %-7s(%2d), ", j, GRCC_AT_NdStr(type[j]), type[j]);
+    grcc_fprintf(GRCC_Stdout, "deg=%d, count=%d, nodes[%d--%d], couple=%d, cmindeg=%d, cmaxdeg=%d",
            deg[j], count[j], cl2nd[j], cl2nd[j+1], couple[j], cmindeg[j], cmaxdeg[j]);
     tp = type[j];
     if (isATExternal(tp)) {
         if (sproc->model != NULL) {
-            printf(", ptcl=%s ", sproc->model->particleName(particle[j]));
+            grcc_fprintf(GRCC_Stdout, ", ptcl=%s ", sproc->model->particleName(particle[j]));
         } else {
-            printf(", ptcl=%d ", particle[j]);
+            grcc_fprintf(GRCC_Stdout, ", ptcl=%d ", particle[j]);
         }
     }
-    printf("\n");
+    grcc_fprintf(GRCC_Stdout, "\n");
 
 }
 
@@ -2821,7 +2822,7 @@ SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, 
     bool ok;
 
     if (ncls < 1) {
-        fprintf(GRCC_Stderr, "*** SProcess::SProcess: no class %d\n", ncls);
+        grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: no class %d\n", ncls);
         erEnd("SProcess::SProcess: no Class");
     }
     id       = sid;
@@ -2873,7 +2874,7 @@ SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, 
             lp2 = cpl[j] - cdeg[j] + 2;
             if (lp2 % 2 != 0 || lp2 < 0) {
                 if (prlevel > 0) {
-                    fprintf(GRCC_Stderr, "*** SProcess::SProcess: illegal loop:"
+                    grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: illegal loop:"
                            "class %d, cp=%d, deg=%d, lp2=%d\n",
                            j, cp, cdeg[j], lp2);
                 }
@@ -2888,9 +2889,9 @@ SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, 
         } else if (isATExternal(ctyp[j])) {
             if (model->normalParticle(ptcl[j]) == 0) {
                 if (prlevel > 0) {
-                    fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
-                    fprintf(GRCC_Stderr, "illegal particle code: ");
-                    fprintf(GRCC_Stderr, "code: class %d, ptcl=%d\n", j, ptcl[j]);
+                    grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
+                    grcc_fprintf(GRCC_Stderr, "illegal particle code: ");
+                    grcc_fprintf(GRCC_Stderr, "code: class %d, ptcl=%d\n", j, ptcl[j]);
                 }
                 ok = False;
             } else {
@@ -2900,25 +2901,25 @@ SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, 
   
         } else {
             if (prlevel > 0) {
-                fprintf(GRCC_Stderr, "*** SProcess::SProcess: illegal type: ");
-                fprintf(GRCC_Stderr, "class %d, type=%d\n", j, ctyp[j]);
+                grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: illegal type: ");
+                grcc_fprintf(GRCC_Stderr, "class %d, type=%d\n", j, ctyp[j]);
             }
             ok = False;
         }
     }
     if (tcpl0 != tCouple) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
-            fprintf(GRCC_Stderr, "illegal coupling constants:");
-            fprintf(GRCC_Stderr, " %d != %d\n", tcpl0, tCouple);
+            grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
+            grcc_fprintf(GRCC_Stderr, "illegal coupling constants:");
+            grcc_fprintf(GRCC_Stderr, " %d != %d\n", tcpl0, tCouple);
         }
         ok = False;
     }
     if (ndeg == nExtern) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
-            fprintf(GRCC_Stderr, "no vertices: ");
-            fprintf(GRCC_Stderr, "nExtern=%d, ndeg=%d\n", nExtern, ndeg);
+            grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
+            grcc_fprintf(GRCC_Stderr, "no vertices: ");
+            grcc_fprintf(GRCC_Stderr, "nExtern=%d, ndeg=%d\n", nExtern, ndeg);
         }
         ok = False;
     }
@@ -2926,17 +2927,17 @@ SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, 
         nEdges = ndeg/2;
     } else {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
-            fprintf(GRCC_Stderr, "illegal total deg = %d (not even)\n", ndeg);
+            grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
+            grcc_fprintf(GRCC_Stderr, "illegal total deg = %d (not even)\n", ndeg);
         }
         ok = False;
     }
     nNodes = nvrt + nExtern;
     if (nNodes >= GRCC_MAXNODES) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
-            fprintf(GRCC_Stderr, "too many nodes = %d\n", nNodes);
-            fprintf(GRCC_Stderr, "    nExtern=%d, nvert=%d (GRCC_MAXNODES)\n",
+            grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
+            grcc_fprintf(GRCC_Stderr, "too many nodes = %d\n", nNodes);
+            grcc_fprintf(GRCC_Stderr, "    nExtern=%d, nvert=%d (GRCC_MAXNODES)\n",
                     nExtern, nvert);
         }
         ok = False;
@@ -2952,7 +2953,7 @@ SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, 
     lp2 = tCouple - nExtern + 2;
     if (lp2 % 2 != 0 || lp2 < 0) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** SProcess::SProcess: illegal loop: "
+            grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: illegal loop: "
                    "tCouple=%d, nExtern=%d, 2*loop=%d\n",
                    tCouple, nExtern, lp2);
         }
@@ -2984,7 +2985,7 @@ SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, 
     bool ok;
 
     if (ncls < 1) {
-        fprintf(GRCC_Stderr, "*** SProcess::SProcess: no class %d\n", ncls);
+        grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: no class %d\n", ncls);
         erEnd("SProcess::SProcess: no Class");
     }
     id       = sid;
@@ -3036,7 +3037,7 @@ SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, 
             lp2 = cls[j].cple - cls[j].cldeg + 2;
             if (lp2 % 2 != 0 || lp2 < 0) {
                 if (prlevel > 0) {
-                    fprintf(GRCC_Stderr, "*** SProcess::SProcess: illegal loop: "
+                    grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: illegal loop: "
                            "class %d, cp=%d, deg=%d, lp2=%d\n",
                            j, cp, cls[j].cldeg, lp2);
                 }
@@ -3051,9 +3052,9 @@ SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, 
         } else if (isATExternal(cls[j].cltyp)) {
             if (model->normalParticle(cls[j].ptcl) == 0) {
                 if (prlevel > 0) {
-                    fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
-                    fprintf(GRCC_Stderr, "illegal particle code: ");
-                    fprintf(GRCC_Stderr, "code: class %d, ptcl=%d\n", j, cls[j].ptcl);
+                    grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
+                    grcc_fprintf(GRCC_Stderr, "illegal particle code: ");
+                    grcc_fprintf(GRCC_Stderr, "code: class %d, ptcl=%d\n", j, cls[j].ptcl);
                 }
                 ok = False;
             } else {
@@ -3063,25 +3064,25 @@ SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, 
   
         } else {
             if (prlevel > 0) {
-                fprintf(GRCC_Stderr, "*** SProcess::SProcess: illegal type: ");
-                fprintf(GRCC_Stderr, "class %d, type=%d\n", j, cls[j].cltyp);
+                grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: illegal type: ");
+                grcc_fprintf(GRCC_Stderr, "class %d, type=%d\n", j, cls[j].cltyp);
             }
             ok = False;
         }
     }
     if (tcpl0 != tCouple) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
-            fprintf(GRCC_Stderr, "illegal coupling constants:");
-            fprintf(GRCC_Stderr, " %d != %d\n", tcpl0, tCouple);
+            grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
+            grcc_fprintf(GRCC_Stderr, "illegal coupling constants:");
+            grcc_fprintf(GRCC_Stderr, " %d != %d\n", tcpl0, tCouple);
         }
         ok = False;
     }
     if (ndeg == nExtern) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
-            fprintf(GRCC_Stderr, "no vertices: ");
-            fprintf(GRCC_Stderr, "nExtern=%d, ndeg=%d\n", nExtern, ndeg);
+            grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
+            grcc_fprintf(GRCC_Stderr, "no vertices: ");
+            grcc_fprintf(GRCC_Stderr, "nExtern=%d, ndeg=%d\n", nExtern, ndeg);
         }
         ok = False;
     }
@@ -3089,17 +3090,17 @@ SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, 
         nEdges = ndeg/2;
     } else {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
-            fprintf(GRCC_Stderr, "illegal total deg = %d (not even)\n", ndeg);
+            grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
+            grcc_fprintf(GRCC_Stderr, "illegal total deg = %d (not even)\n", ndeg);
         }
         ok = False;
     }
     nNodes = nvrt + nExtern;
     if (nNodes >= GRCC_MAXNODES) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
-            fprintf(GRCC_Stderr, "too many nodes = %d\n", nNodes);
-            fprintf(GRCC_Stderr, "    nExtern=%d, nvert=%d (GRCC_MAXNODES)\n",
+            grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: ");
+            grcc_fprintf(GRCC_Stderr, "too many nodes = %d\n", nNodes);
+            grcc_fprintf(GRCC_Stderr, "    nExtern=%d, nvert=%d (GRCC_MAXNODES)\n",
                     nExtern, nvert);
         }
         ok = False;
@@ -3114,7 +3115,7 @@ SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, 
     lp2 = tCouple - nExtern + 2;
     if (lp2 % 2 != 0 || lp2 < 0) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** SProcess::SProcess: illegal loop: "
+            grcc_fprintf(GRCC_Stderr, "*** SProcess::SProcess: illegal loop: "
                    "tCouple=%d, nExtern=%d, 2*loop=%d\n",
                    tCouple, nExtern, lp2);
         }
@@ -3143,12 +3144,12 @@ SProcess::~SProcess(void)
 //--------------------------------------------------------------
 void SProcess::prSProcess(void)
 {
-    printf("\n");
-    printf("+++ Subprocess %d, class=%d\n", id, nclass);
+    grcc_fprintf(GRCC_Stdout, "\n");
+    grcc_fprintf(GRCC_Stdout, "+++ Subprocess %d, class=%d\n", id, nclass);
     if (pnclass != NULL) {
         pnclass->prPNodeClass();
     } else {
-        printf("  pnclass = NULL\n");
+        grcc_fprintf(GRCC_Stdout, "  pnclass = NULL\n");
    }
 }
 
@@ -3227,7 +3228,7 @@ PNodeClass *SProcess::match(MGraph *mgr)
 
     if (mgr->nNodes != nNodes) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** SProcess::match: different nNodes=%d != %d\n",
+            grcc_fprintf(GRCC_Stderr, "*** SProcess::match: different nNodes=%d != %d\n",
                    nNodes, mgr->nNodes);
         }
         erEnd("SProcess::match: different nNodes");
@@ -3249,10 +3250,10 @@ PNodeClass *SProcess::match(MGraph *mgr)
             mc = mgr->nodes[nd]->clss;
             if (mc != n2m[nd]) {
                 if (prlevel > 0) {
-                    fprintf(GRCC_Stderr, "*** SProcess::match: ");
-                    fprintf(GRCC_Stderr, "inconsistent class\n");
+                    grcc_fprintf(GRCC_Stderr, "*** SProcess::match: ");
+                    grcc_fprintf(GRCC_Stderr, "inconsistent class\n");
                     for (l = 0; l < nNodes; l++) {
-                        fprintf(GRCC_Stderr, "    %d: %d, %d\n", 
+                        grcc_fprintf(GRCC_Stderr, "    %d: %d, %d\n", 
                                 j, mgr->nodes[l]->clss, n2m[l]);
                     }
                 }
@@ -3378,14 +3379,14 @@ Process::Process(int pid, Model *modl, Options *optn, int nini, int *intlPrt, in
     lp2 = ctotal - nExtern + 2;
     if (lp2 % 2 != 0) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** cannot generate : 2*loop is odd : " 
+            grcc_fprintf(GRCC_Stderr, "*** cannot generate : 2*loop is odd : " 
                     "2*loop = %d, ctotal=%d, nExtern=%d\n",
                     lp2, ctotal, nExtern);
         }
         ok = False;
     } else if (lp2 < 0) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** cannot make a connected graph : "
+            grcc_fprintf(GRCC_Stderr, "*** cannot make a connected graph : "
                     "2*loop=%d, ctotal=%d, nExtern=%d\n",
                     lp2, ctotal, nExtern);
         }
@@ -3396,7 +3397,7 @@ Process::Process(int pid, Model *modl, Options *optn, int nini, int *intlPrt, in
 
     if (!ok) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** Process: illegal input: lp2 = %d\n", lp2);
+            grcc_fprintf(GRCC_Stderr, "*** Process: illegal input: lp2 = %d\n", lp2);
         }
         erEnd("Process: illegal input");
     }
@@ -3424,7 +3425,7 @@ Process::~Process(void)
 //--------------------------------------------------------------
 void Process::prProcess(void)
 {
-    printf("+++ process options : OPI = %d, (Step) = %d, coupling=%d: ",
+    grcc_fprintf(GRCC_Stdout, "+++ process options : OPI = %d, (Step) = %d, coupling=%d: ",
            opt->values[GRCC_OPT_1PI], opt->values[GRCC_OPT_Step], ctotal);
     prIntArray(model->ncouple, clist, "\n");
 }
@@ -3435,7 +3436,7 @@ void Process::prProcessP(const char *fname)
     FILE *fp;
 
     if ((fp = fopen(fname, "w")) == NULL) {
-        fprintf(GRCC_Stderr, "*** cannot open \"%s\"\n", fname);
+        grcc_fprintf(GRCC_Stderr, "*** cannot open \"%s\"\n", fname);
         return;
     }
     fprintf(fp, "Process = {\n");
@@ -3866,27 +3867,27 @@ void MNodeClass::printMat(void)
 
     int j1, j2;
 
-    printf("\n");
+    grcc_fprintf(GRCC_Stdout, "\n");
   
-    printf("nClasses=%d", nClasses);
-    printf(" clord="); prIntArray(nClasses, clord, "");
-    printf(" flist="); prIntArray(nClasses, flist, "\n");
-    printf("flg = (%d, %d, %d)\n", flg0, flg1, flg2);
+    grcc_fprintf(GRCC_Stdout, "nClasses=%d", nClasses);
+    grcc_fprintf(GRCC_Stdout, " clord="); prIntArray(nClasses, clord, "");
+    grcc_fprintf(GRCC_Stdout, " flist="); prIntArray(nClasses, flist, "\n");
+    grcc_fprintf(GRCC_Stdout, "flg = (%d, %d, %d)\n", flg0, flg1, flg2);
 
     // the first line
-    printf("nd: cl:   ");
+    grcc_fprintf(GRCC_Stdout, "nd: cl:   ");
     for (j2 = 0; j2 < nClasses; j2++) {
-        printf("%2d ", j2);
+        grcc_fprintf(GRCC_Stdout, "%2d ", j2);
     }
-    printf("\n");
+    grcc_fprintf(GRCC_Stdout, "\n");
   
     // print raw
     for (j1 = 0; j1 < nNodes; j1++) {
-        printf("%2d; %2d: [", j1, ndcl[j1]);
+        grcc_fprintf(GRCC_Stdout, "%2d; %2d: [", j1, ndcl[j1]);
         for (j2 = 0; j2 < nClasses; j2++) {
-            printf(" %2d", clmat[j1][j2]);
+            grcc_fprintf(GRCC_Stdout, " %2d", clmat[j1][j2]);
         }
-        printf("]\n");
+        grcc_fprintf(GRCC_Stdout, "]\n");
     }
 }
 
@@ -4009,9 +4010,9 @@ MGraph::MGraph(int pid, int ncl, int *cldeg, int *clnum, int *cltyp, int *cmind,
     }
     if (ne % 2 != 0) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "Sum of degrees are not even\n");
+            grcc_fprintf(GRCC_Stderr, "Sum of degrees are not even\n");
             for (j = 0; j < nClasses; j++) {
-                fprintf(GRCC_Stderr, "class %2d: %2d %2d %2d\n", 
+                grcc_fprintf(GRCC_Stderr, "class %2d: %2d %2d %2d\n", 
                        j, cldeg[j], clnum[j], cltyp[j]);
             }
         }
@@ -4077,9 +4078,9 @@ MGraph::MGraph(int pid, int ncl, NCInput *mgi, Options *opts)
     }
     if (ne % 2 != 0) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "Sum of degrees are not even\n");
+            grcc_fprintf(GRCC_Stderr, "Sum of degrees are not even\n");
             for (j = 0; j < nClasses; j++) {
-                fprintf(GRCC_Stderr, "class %2d: %2d %2d %2d\n", 
+                grcc_fprintf(GRCC_Stderr, "class %2d: %2d %2d %2d\n", 
                        j, mgi[j].cldeg, mgi[j].clnum, mgi[j].cltyp);
             }
         }
@@ -4088,7 +4089,7 @@ MGraph::MGraph(int pid, int ncl, NCInput *mgi, Options *opts)
     pId    = pid;
     nNodes = nn;
     if (nNodes < 0) {
-        printf("*** nNodes = %d\n", nNodes);
+        grcc_fprintf(GRCC_Stdout, "*** nNodes = %d\n", nNodes);
         erEnd("MGraph::MGrap : nNodes < 0");
     }
     nodes  = new MNode*[nNodes];
@@ -4196,17 +4197,17 @@ void MGraph::printAdjMat(MNodeClass *cl)
 {
     int j1, j2;
 
-    printf("      ");
+    grcc_fprintf(GRCC_Stdout, "      ");
     for (j2 = 0; j2 < nNodes; j2++) {
-        printf(" %2d", j2);
+        grcc_fprintf(GRCC_Stdout, " %2d", j2);
     }
-    printf("\n");
+    grcc_fprintf(GRCC_Stdout, "\n");
     for (j1 = 0; j1 < nNodes; j1++) {
-        printf("%2d : [", j1);
+        grcc_fprintf(GRCC_Stdout, "%2d : [", j1);
         for (j2 = 0; j2 < nNodes; j2++) {
-            printf(" %2d", adjMat[j1][j2]);
+            grcc_fprintf(GRCC_Stdout, " %2d", adjMat[j1][j2]);
         }
-        printf("] %2d\n", cl->ndcl[j1]);
+        grcc_fprintf(GRCC_Stdout, "] %2d\n", cl->ndcl[j1]);
     }
 }
 
@@ -4215,21 +4216,21 @@ void MGraph::print(void)
 {
     int j;
 
-    printf("MGraph: pId=%d, cDiag=%ld, c1PI=%ld\n", pId, cDiag, c1PI);
-    printf("     nNodes=%d, nEdges=%d, nExtern=%d, nLoops=%d "
+    grcc_fprintf(GRCC_Stdout, "MGraph: pId=%d, cDiag=%ld, c1PI=%ld\n", pId, cDiag, c1PI);
+    grcc_fprintf(GRCC_Stdout, "     nNodes=%d, nEdges=%d, nExtern=%d, nLoops=%d "
            "mindeg=%d, maxdeg=%d, sym=(%ld, %ld)\n",
            nNodes, nEdges, nExtern, nLoops, mindeg, maxdeg, nsym, esym);
-    printf("  Nodes=%d\n", nNodes);
+    grcc_fprintf(GRCC_Stdout, "  Nodes=%d\n", nNodes);
     for (j = 0; j < nNodes; j++) {
-        printf("    %2d: id=%d, deg=%d, clss=%d, extloop=%d, ",
+        grcc_fprintf(GRCC_Stdout, "    %2d: id=%d, deg=%d, clss=%d, extloop=%d, ",
                j, nodes[j]->id, nodes[j]->deg, nodes[j]->clss,
                nodes[j]->extloop);
-        printf("mind=%d, maxd=%d, freelg=%d\n",
+        grcc_fprintf(GRCC_Stdout, "mind=%d, maxd=%d, freelg=%d\n",
                nodes[j]->cmindeg, nodes[j]->cmaxdeg, nodes[j]->freelg);
     }
         
     curcl->printMat();
-    printf("\n");
+    grcc_fprintf(GRCC_Stdout, "\n");
  
     printAdjMat(curcl);
 }
@@ -4585,11 +4586,11 @@ void MGraph::biconnME(void)
             }
             bool ok = True;
             if (momset != m) {
-                printf("*** momset = %ld != %ld\n", momset, m);
+                grcc_fprintf(GRCC_Stdout, "*** momset = %ld != %ld\n", momset, m);
                 ok = False;
             }
             if (mconn->nbacked != nLoops) {
-                printf("*** nbacked = %d != %c\n", mconn->nbacked, nLoops);
+                grcc_fprintf(GRCC_Stdout, "*** nbacked = %d != %c\n", mconn->nbacked, nLoops);
                 ok = False;
             }
             if (! ok) {
@@ -4660,7 +4661,7 @@ void MGraph::bisearchME(int nd, int pd, int ned,  int col,
 
     newv = (bidef[nd] < 0);
     if (! newv) {
-        printf("*** nd=%d, pd=%d, bidef[nd]=%d\n", nd, pd, bidef[nd]);
+        grcc_fprintf(GRCC_Stdout, "*** nd=%d, pd=%d, bidef[nd]=%d\n", nd, pd, bidef[nd]);
         erEnd("bisearchME: illegal connection");
     }
 
@@ -4786,11 +4787,11 @@ void MGraph::bisearchME(int nd, int pd, int ned,  int col,
                     }
                 }
                 if (cn != conn) {
-                    printf("*** revisit back-ed (%d --> %d) cn=%d != conn=%d\n",
+                    grcc_fprintf(GRCC_Stdout, "*** revisit back-ed (%d --> %d) cn=%d != conn=%d\n",
                            nd, td, cn, conn);
-                    printf("    sedges = %d\n", mconn->sedges);
+                    grcc_fprintf(GRCC_Stdout, "    sedges = %d\n", mconn->sedges);
                     for (int ed = 0; ed < mconn->sedges; ed++) {
-                        printf("    %d : (%d --> %d) : [%2d*%2ld]\n", ed,
+                        grcc_fprintf(GRCC_Stdout, "    %d : (%d --> %d) : [%2d*%2ld]\n", ed,
                             mconn->cedges[ed].nodes[0],
                             mconn->cedges[ed].nodes[1],
                             mconn->cedges[ed].momdir,
@@ -5110,7 +5111,7 @@ void MGraph::connectLeg(int so, int sn, int to, int ts, MNodeClass *cl)
 #ifdef CHECK
                 if ((adjMat[sn][tn] != 0) || 
                     (adjMat[sn][tn] != adjMat[tn][sn])) {
-                    printf("*** inconsistent connection: sn=%d, tn=%d",
+                    grcc_fprintf(GRCC_Stdout, "*** inconsistent connection: sn=%d, tn=%d",
                            sn, tn);
                     printAdjMat(cl);
                     erEnd("inconsistent connection ");
@@ -5299,9 +5300,9 @@ void MGraph::newGraph(MNodeClass *cl)
                             }
               
 #ifdef MONITOR
-                            printf("\n");
-                            printf("Graph : %ld (%ld)", cDiag, ngen);
-                            printf(" sym. factor = (%ld*%ld)\n", nsym, esym);
+                            grcc_fprintf(GRCC_Stdout, "\n");
+                            grcc_fprintf(GRCC_Stdout, "Graph : %ld (%ld)", cDiag, ngen);
+                            grcc_fprintf(GRCC_Stdout, " sym. factor = (%ld*%ld)\n", nsym, esym);
                             printAdjMat(cl);
                             // cl->printMat();
 #  ifdef ORBITS
@@ -5344,10 +5345,10 @@ void MOrbits::print(void)
 {
     int c;
 
-    printf("Orbits : nOrbits=%d: nd2or=", nOrbits);
+    grcc_fprintf(GRCC_Stdout, "Orbits : nOrbits=%d: nd2or=", nOrbits);
     prIntArray(nNodes, nd2or, "\n");
     for (c = 0; c < nOrbits; c++) {
-        printf("    %2d: (%2d -- %2d) :", c, flist[c], flist[c+1]-1);
+        grcc_fprintf(GRCC_Stdout, "    %2d: (%2d -- %2d) :", c, flist[c], flist[c+1]-1);
         prIntArray(flist[c+1]-flist[c], or2nd+flist[c], "\n");
     }
 }
@@ -5392,8 +5393,8 @@ void MOrbits::fromPerm(int *perm)
         }     
 #ifdef CHECK
         if (j1 >= nNodes) {
-            printf("*** fromPerm: illegal control: j=%d, k=%d\n", j, k);
-            printf("perm=");
+            grcc_fprintf(GRCC_Stdout, "*** fromPerm: illegal control: j=%d, k=%d\n", j, k);
+            grcc_fprintf(GRCC_Stdout, "perm=");
             prIntArray(nNodes, perm,  " nd2or=");
             prIntArray(nNodes, nd2or, "\n");
             erEnd("fromPerm: illegal control");
@@ -5621,7 +5622,7 @@ void MConn::initCEdges(MGraph *mg)
         }
     }
     if (ed != sedges) {
-        printf("*** ed=%d != sedges=%d\n", ed, sedges);
+        grcc_fprintf(GRCC_Stdout, "*** ed=%d != sedges=%d\n", ed, sedges);
         erEnd("MConn::initCEdge: table overflow");
     }
 }
@@ -5752,71 +5753,71 @@ void MConn::print(void)
 {
     int j, k;
 
-    printf("+++ MConn object: snodes=%d, sedges=%d\n", snodes, sedges);
-    printf("    nopic=%d, nlpopic=%d, nbacked=%d, nctopic=%d, "
+    grcc_fprintf(GRCC_Stdout, "+++ MConn object: snodes=%d, sedges=%d\n", snodes, sedges);
+    grcc_fprintf(GRCC_Stdout, "    nopic=%d, nlpopic=%d, nbacked=%d, nctopic=%d, "
            "nbridges=%d, ne0bridges=%d, ne1bridges=%d\n",
            nopic, nlpopic, nbacked, nctopic, 
            nbridges, ne0bridges, ne1bridges);
-    printf("    nblocks=%d, neblocks=%d, na1blocks=%d, narticuls=%d, nselfloop=%d\n",
+    grcc_fprintf(GRCC_Stdout, "    nblocks=%d, neblocks=%d, na1blocks=%d, narticuls=%d, nselfloop=%d\n",
            nblocks, neblocks, na1blocks, narticuls, nselfloops);
-    printf("    nmultiedges=%d\n", nmultiedges);
+    grcc_fprintf(GRCC_Stdout, "    nmultiedges=%d\n", nmultiedges);
 
-    printf("  cEdges (%d)\n", sedges);
+    grcc_fprintf(GRCC_Stdout, "  cEdges (%d)\n", sedges);
     if (sedges > 0) {
         for (j = 0; j < sedges; j++) {
-            printf("    %2d: (%d,%d)[%2d*%2ld] \n", j,
+            grcc_fprintf(GRCC_Stdout, "    %2d: (%d,%d)[%2d*%2ld] \n", j,
                    cedges[j].nodes[0], cedges[j].nodes[1], 
                    cedges[j].momdir, cedges[j].momset);
         }
     }
-    printf("\n");
+    grcc_fprintf(GRCC_Stdout, "\n");
 
-    printf("  1PI components (%d)\n", nopic);
+    grcc_fprintf(GRCC_Stdout, "  1PI components (%d)\n", nopic);
     for (j = 0; j < nopic; j++) {
-        printf("    %d: nleg=%d, nnodes=%d, nedge=%d, ",
+        grcc_fprintf(GRCC_Stdout, "    %d: nleg=%d, nnodes=%d, nedge=%d, ",
                 j, opics[j].nlegs, opics[j].nnodes, opics[j].nedges);
-        printf("next=%d, loop=%d, ctlp=%d: m0lg=%d [",
+        grcc_fprintf(GRCC_Stdout, "next=%d, loop=%d, ctlp=%d: m0lg=%d [",
                 opics[j].next, opics[j].loop, opics[j].ctloop, 
                 opics[j].mom0lg);
         for (k = 0; k < opics[j].nnodes; k++) {
-            printf(" %d", opics[j].nodes[k]);
+            grcc_fprintf(GRCC_Stdout, " %d", opics[j].nodes[k]);
         }
-        printf("]\n");
+        grcc_fprintf(GRCC_Stdout, "]\n");
     }
 
-    printf("  bridges (%d)\n", nbridges);
+    grcc_fprintf(GRCC_Stdout, "  bridges (%d)\n", nbridges);
     if (nbridges > 0) {
-        printf("    ");
+        grcc_fprintf(GRCC_Stdout, "    ");
         for (j = 0; j < nbridges; j++) {
-            printf("(%d,%d)[mom=%d] ", 
+            grcc_fprintf(GRCC_Stdout, "(%d,%d)[mom=%d] ", 
                    bridges[j].nodes[0], bridges[j].nodes[1], bridges[j].next);
         }
-        printf("\n");
+        grcc_fprintf(GRCC_Stdout, "\n");
     }
 
-    printf("  blocks (%d)\n", nblocks);
+    grcc_fprintf(GRCC_Stdout, "  blocks (%d)\n", nblocks);
     for (j = 0; j < nblocks; j++) {
-        printf("    %d: nmedges=%d, nartps=%d, loop=%d: [",
+        grcc_fprintf(GRCC_Stdout, "    %d: nmedges=%d, nartps=%d, loop=%d: [",
                j, blocks[j].nmedges, blocks[j].nartps, blocks[j].loop);
         for (k = 0; k < blocks[j].nmedges; k++) {
-            printf(" (%d,%d)", blocks[j].edges[k][0], blocks[j].edges[k][1]);
+            grcc_fprintf(GRCC_Stdout, " (%d,%d)", blocks[j].edges[k][0], blocks[j].edges[k][1]);
         }
-        printf("]\n");
+        grcc_fprintf(GRCC_Stdout, "]\n");
     }
 
-    printf("  articulation points (%d)\n", narticuls);
+    grcc_fprintf(GRCC_Stdout, "  articulation points (%d)\n", narticuls);
     if (narticuls > 0) {
-        printf("    ");
+        grcc_fprintf(GRCC_Stdout, "    ");
         for (j = 0; j < snodes; j++) {
             if (articuls[j] != 0) {
 #if 0
-                printf("%d(%d) ", j, articuls[j]);
+                grcc_fprintf(GRCC_Stdout, "%d(%d) ", j, articuls[j]);
 #else
-                printf("%d ", j);
+                grcc_fprintf(GRCC_Stdout, "%d ", j);
 #endif
             }
         }
-        printf("\n");
+        grcc_fprintf(GRCC_Stdout, "\n");
     }
 }
 
@@ -5825,17 +5826,17 @@ void MConn::prEdges(void)
 {
     int j;
 
-    printf("  cEdges (%d)", sedges);
+    grcc_fprintf(GRCC_Stdout, "  cEdges (%d)", sedges);
     if (sedges > 0) {
         for (j = 0; j < sedges; j++) {
             if (j % 5 == 0) {
-                printf("\n    ");
+                grcc_fprintf(GRCC_Stdout, "\n    ");
             }
-            printf("(%d,%d)[%2d*%3ld] ", 
+            grcc_fprintf(GRCC_Stdout, "(%d,%d)[%2d*%3ld] ", 
                    cedges[j].nodes[0], cedges[j].nodes[1], 
                    cedges[j].momdir, cedges[j].momset);
         }
-        printf("\n");
+        grcc_fprintf(GRCC_Stdout, "\n");
     }
 }
 
@@ -5876,12 +5877,12 @@ void SGroup::print(void)
 {
     int j;
 
-    printf("SGroup : nnodes = %d, nelem=%ld, cgen=%d, csav=%d\n",
+    grcc_fprintf(GRCC_Stdout, "SGroup : nnodes = %d, nelem=%ld, cgen=%d, csav=%d\n",
            nnodes, nelem, cgen, csav);
-    printf("  eclass =");
+    grcc_fprintf(GRCC_Stdout, "  eclass =");
     prIntArray(neclass, eclass, "\n");
     for (j = 0; j < nelem; j++) {
-        printf("    %4d: ", j);
+        grcc_fprintf(GRCC_Stdout, "    %4d: ", j);
         prIntArray(nnodes, elem[j], "\n");
     }
 }
@@ -6077,7 +6078,7 @@ void ENode::setExtern(int typ, int pt)
     if (typ == GRCC_AT_Initial || typ == GRCC_AT_Final) {
         extloop = typ;
     } else {
-        fprintf(GRCC_Stderr, "** ENode::setExternal:: illegal typ=%d\n",
+        grcc_fprintf(GRCC_Stderr, "** ENode::setExternal:: illegal typ=%d\n",
                 typ);
         erEnd("ENode::setExternal:: illegal typ");
     }
@@ -6088,7 +6089,7 @@ void ENode::setType(int typ)
 { 
 #ifdef CHECK
     if (ndtype != GRCC_ND_Undef && ndtype != typ) { 
-        fprintf(GRCC_Stderr, "*** ndtype is already defined : old=%d, new = %d\n",
+        grcc_fprintf(GRCC_Stderr, "*** ndtype is already defined : old=%d, new = %d\n",
                ndtype, typ);
         erEnd("ndtype is already defined");
     }
@@ -6101,16 +6102,16 @@ void ENode::print(void)
 {
     int j;
 
-    printf("Enode %d deg=%d, extl=%2d, intr=%d ",
+    grcc_fprintf(GRCC_Stdout, "Enode %d deg=%d, extl=%2d, intr=%d ",
            id, deg, extloop, intrct);
     if (egraph->bicount > 0) {
-        printf("(%-8s) ", GRCC_ND_names[ndtype]);
+        grcc_fprintf(GRCC_Stdout, "(%-8s) ", GRCC_ND_names[ndtype]);
     }
-    printf("edge=[");
+    grcc_fprintf(GRCC_Stdout, "edge=[");
     for (j = 0; j < deg; j++) {
-        printf(" %2d", edges[j]);
+        grcc_fprintf(GRCC_Stdout, " %2d", edges[j]);
     }
-    printf("]\n");
+    grcc_fprintf(GRCC_Stdout, "]\n");
 }
 
 //==============================================================
@@ -6220,24 +6221,24 @@ void EEdge::print(void)
 {
     int zero, n, k;
 
-    printf("Edge %2d ext=%d ptcl=%2d ", id, ext, ptcl);
+    grcc_fprintf(GRCC_Stdout, "Edge %2d ext=%d ptcl=%2d ", id, ext, ptcl);
     if (egraph == NULL || !egraph->assigned) {
-        printf("[%d, %d]", nodes[0], nodes[1]);
+        grcc_fprintf(GRCC_Stdout, "[%d, %d]", nodes[0], nodes[1]);
     } else {
-        printf("[(%d,%d), (%d,%d))", nodes[0], nlegs[0], nodes[1], nlegs[1]);
+        grcc_fprintf(GRCC_Stdout, "[(%d,%d), (%d,%d))", nodes[0], nlegs[0], nodes[1], nlegs[1]);
     }
     if (momdir != 0) {
-        printf("[%2d*%2lu]", momdir, momset);
+        grcc_fprintf(GRCC_Stdout, "[%2d*%2lu]", momdir, momset);
     }
 
     if (egraph != NULL && egraph->bicount > 0) {
         if (cut) {
-            printf(" %-9s ", "Cut");
+            grcc_fprintf(GRCC_Stdout, " %-9s ", "Cut");
         } else {
-            printf(" %-9s ", GRCC_ED_names[edtype]);
+            grcc_fprintf(GRCC_Stdout, " %-9s ", GRCC_ED_names[edtype]);
         }
-        printf("c%2d: ", opicomp);
-        printf("%s%d =", (ext)?"Q":"p", id);
+        grcc_fprintf(GRCC_Stdout, "c%2d: ", opicomp);
+        grcc_fprintf(GRCC_Stdout, "%s%d =", (ext)?"Q":"p", id);
         zero = True;
         for (n = 0; n < egraph->nEdges; n++) {
             if (emom[n] != 0) {
@@ -6252,16 +6253,16 @@ void EEdge::print(void)
             }
         }
         if (zero) {
-            printf(" 0");
+            grcc_fprintf(GRCC_Stdout, " 0");
         }
     } else {
         if (egraph == NULL) {
-            printf(" egraph=NULL");
+            grcc_fprintf(GRCC_Stdout, " egraph=NULL");
         } else {
-            printf(" egraph->bicount=%d", egraph->bicount);
+            grcc_fprintf(GRCC_Stdout, " egraph->bicount=%d", egraph->bicount);
         }
     }
-    printf("\n");
+    grcc_fprintf(GRCC_Stdout, "\n");
 }
 
 //==============================================================
@@ -6278,22 +6279,22 @@ EFLine::EFLine(void)
 void EFLine::print(const char *msg)
 {
     if (ftype == FL_Open) {
-        printf(" Open");
+        grcc_fprintf(GRCC_Stdout, " Open");
     } else if (ftype == FL_Closed) {
-        printf(" Loop");
+        grcc_fprintf(GRCC_Stdout, " Loop");
     } else {
-        printf(" ?%d", ftype);
+        grcc_fprintf(GRCC_Stdout, " ?%d", ftype);
     }
     if (fkind == GRCC_PT_Dirac) {
-        printf(" Dirac");
+        grcc_fprintf(GRCC_Stdout, " Dirac");
     } else if (fkind == GRCC_PT_Majorana) {
-        printf(" Major");
+        grcc_fprintf(GRCC_Stdout, " Major");
     } else if (fkind == GRCC_PT_Ghost) {
-        printf(" Ghost");
+        grcc_fprintf(GRCC_Stdout, " Ghost");
     } else {
-        printf(" ?%d", fkind);
+        grcc_fprintf(GRCC_Stdout, " ?%d", fkind);
     }
-    printf(" len=%d ", nlist);
+    grcc_fprintf(GRCC_Stdout, " len=%d ", nlist);
     prIntArray(nlist, elist, msg);
 }
 
@@ -6462,20 +6463,20 @@ void EGraph::fromDGraph(DGraph *dg)
     int n0, n1, e;
 
     if (dg->nnodes > GRCC_MAXNODES) {
-        fprintf(GRCC_Stderr, "*** too many nodes (GRCC_MAXNODES)\n");
-        exit(1);
+        grcc_fprintf(GRCC_Stderr, "*** too many nodes (GRCC_MAXNODES)\n");
+        GRCC_ABORT();
     }
     if (dg->nedges > GRCC_MAXEDGES) {
-        fprintf(GRCC_Stderr, "*** too many edges (GRCC_MAXEDGES)\n");
-        exit(1);
+        grcc_fprintf(GRCC_Stderr, "*** too many edges (GRCC_MAXEDGES)\n");
+        GRCC_ABORT();
     }
 
     for (e = 0; e < dg->nedges; e++) {
         if (dg->edges[e][0] >= dg->nnodes || dg->edges[e][0] >= dg->nnodes) {
-            fprintf(GRCC_Stderr, "*** undefined node:");
-            fprintf(GRCC_Stderr, "edge[%d] = {%d, %d}\n", 
+            grcc_fprintf(GRCC_Stderr, "*** undefined node:");
+            grcc_fprintf(GRCC_Stderr, "edge[%d] = {%d, %d}\n", 
                     e, dg->edges[e][0], dg->edges[e][0]);
-            exit(1);
+            GRCC_ABORT();
         }
     }
 
@@ -6493,7 +6494,7 @@ void EGraph::fromDGraph(DGraph *dg)
         if (deg[n0] == 1) {
             nextern++;
         } if (deg[n0] < 0) {
-            fprintf(GRCC_Stderr, "+++ node %d is isolated\n", n0);
+            grcc_fprintf(GRCC_Stderr, "+++ node %d is isolated\n", n0);
         }
     }
 
@@ -6577,7 +6578,7 @@ void EGraph::fromMGraph(MGraph *mg)
         erEnd("EGraph::fromMGraph: sizes are too small");
     }
     if (sLoops < mg->nLoops) {
-        printf("too small sLoops : %d < %d\n", sLoops, mg->nLoops);
+        grcc_fprintf(GRCC_Stdout, "too small sLoops : %d < %d\n", sLoops, mg->nLoops);
         erEnd("too small sLoops");
     }
 #endif
@@ -6652,7 +6653,7 @@ void EGraph::fromMGraph(MGraph *mg)
     }
 #ifdef CHECK
     if (ed != nEdges) {
-        printf("*** EGraph::init: ed=%d != nEdges=%d\n",
+        grcc_fprintf(GRCC_Stdout, "*** EGraph::init: ed=%d != nEdges=%d\n",
                ed, nEdges+1);
         erEnd("EGraph::init: illegal connection");
     }
@@ -6734,7 +6735,7 @@ void EGraph::fromMGraph(MGraph *mg)
         }
 
         if (! found) {
-            printf("*** EGraph::fromMGraph:edge (%d->%d) is not found\n", 
+            grcc_fprintf(GRCC_Stdout, "*** EGraph::fromMGraph:edge (%d->%d) is not found\n", 
                    m0, m1);
         }
     }
@@ -6751,7 +6752,7 @@ ENode *EGraph::setExtern(int n0, int pt, int ndtyp)
     nd = nodes[n0];
     if (nd->deg != 1) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** illegal external particle %d, %d, %d\n",
+            grcc_fprintf(GRCC_Stderr, "*** illegal external particle %d, %d, %d\n",
                     n0,pt,ndtyp);
         }
         erEnd("illegal external particle");
@@ -6765,7 +6766,7 @@ ENode *EGraph::setExtern(int n0, int pt, int ndtyp)
     } else {
         npt = 0;
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** illegal type of an external particle : "
+            grcc_fprintf(GRCC_Stderr, "*** illegal type of an external particle : "
                    "node = %d, particle = %d, type = %d", n0, pt, ndtyp);
         }
         erEnd("illegal type of an external particle");
@@ -6797,58 +6798,58 @@ void EGraph::print(void)
     int  nd, ed, nlp;
   
     nlp = nEdges - nNodes + 1;
-    printf("\nEGraph\n");
-    printf("    pId=%d, gSubId=%ld, mId=%ld, aId=%ld, sId=%ld\n",
+    grcc_fprintf(GRCC_Stdout, "\nEGraph\n");
+    grcc_fprintf(GRCC_Stdout, "    pId=%d, gSubId=%ld, mId=%ld, aId=%ld, sId=%ld\n",
            pId, gSubId, mId, aId, sId);
-    printf("    sNodes=%d, sEdges=%d, sMaxdeg=%d, sLoops=%d\n",
+    grcc_fprintf(GRCC_Stdout, "    sNodes=%d, sEdges=%d, sMaxdeg=%d, sLoops=%d\n",
            sNodes, sEdges, sMaxdeg, sLoops);
-    printf("    nNodes=%d, nEdges=%d, nExtern=%d, nLoops=%d, totalc=%d\n",
+    grcc_fprintf(GRCC_Stdout, "    nNodes=%d, nEdges=%d, nExtern=%d, nLoops=%d, totalc=%d\n",
            nNodes, nEdges, nExtern, nlp, totalc);
-    printf("    ");
+    grcc_fprintf(GRCC_Stdout, "    ");
     if (model == NULL) {
-        printf("model=NULL,");
+        grcc_fprintf(GRCC_Stdout, "model=NULL,");
     } else {
-        printf("model=\"%s\",", model->name);
+        grcc_fprintf(GRCC_Stdout, "model=\"%s\",", model->name);
     }
     if (proc == NULL) {
-        printf("proc=NULL,");
+        grcc_fprintf(GRCC_Stdout, "proc=NULL,");
     } else {
-        printf("proc=%d,", proc->id);
+        grcc_fprintf(GRCC_Stdout, "proc=%d,", proc->id);
     }
     if (sproc == NULL) {
-        printf("sproc=NULL,");
+        grcc_fprintf(GRCC_Stdout, "sproc=NULL,");
     } else {
-        printf("sproc=%d,", sproc->id);
+        grcc_fprintf(GRCC_Stdout, "sproc=%d,", sproc->id);
     }
-    printf("\n");
-    printf("    assigned=%d, sym = (%ld * %ld) ", 
+    grcc_fprintf(GRCC_Stdout, "\n");
+    grcc_fprintf(GRCC_Stdout, "    assigned=%d, sym = (%ld * %ld) ", 
            assigned, nsym, esym);
-    printf("extperm=%ld, nsym1=%ld, multp=%ld\n", 
+    grcc_fprintf(GRCC_Stdout, "extperm=%ld, nsym1=%ld, multp=%ld\n", 
            extperm, nsym1, multp);
 
-    printf("  Nodes\n");
+    grcc_fprintf(GRCC_Stdout, "  Nodes\n");
     for (nd = 0; nd < nNodes; nd++) {
         if (isExternal(nd)) {
-            printf("    %2d Extern ", nd);
+            grcc_fprintf(GRCC_Stdout, "    %2d Extern ", nd);
         } else {
-            printf("    %2d Vertex ", nd);
+            grcc_fprintf(GRCC_Stdout, "    %2d Vertex ", nd);
         }
         nodes[nd]->print();
     }
-    printf("  Edges\n");
+    grcc_fprintf(GRCC_Stdout, "  Edges\n");
     for (ed = 0; ed < nEdges; ed++) {
         if (edges[ed]->ext) {
-            printf("    %2d Extern ", ed);
+            grcc_fprintf(GRCC_Stdout, "    %2d Extern ", ed);
         } else {
-            printf("    %2d Intern ", ed);
+            grcc_fprintf(GRCC_Stdout, "    %2d Intern ", ed);
         }
         edges[ed]->print();
     }
     if (bicount > 0) {
-        printf("  Biconn: nopicomp=%d, nopi2p=%d, opi2plp=%d, nadj2ptv=%d\n",
+        grcc_fprintf(GRCC_Stdout, "  Biconn: nopicomp=%d, nopi2p=%d, opi2plp=%d, nadj2ptv=%d\n",
                nopicomp, nopi2p, opi2plp, nadj2ptv);
     }
-    printf("\n");
+    grcc_fprintf(GRCC_Stdout, "\n");
 
     if (nFlines > 0) {
         prFLines();
@@ -6915,10 +6916,10 @@ void EGraph::prFLines(void)
 {
     int j;
 
-    printf("  Fermion lines %d, sign=%d (mId=%ld, aId=%ld)\n", 
+    grcc_fprintf(GRCC_Stdout, "  Fermion lines %d, sign=%d (mId=%ld, aId=%ld)\n", 
             nFlines, fsign, mId, aId);
     for (j = 0; j < nFlines; j++) {
-        printf("%4d ", j);
+        grcc_fprintf(GRCC_Stdout, "%4d ", j);
         flines[j]->print("\n");
     }
 }
@@ -7025,12 +7026,12 @@ Bool EGraph::optQGrafM(Options *opt)
     mext = (~ mext) << nExtern;
 
 #ifdef PRINT
-    printf("optQGrafM:");
+    grcc_fprintf(GRCC_Stdout, "optQGrafM:");
     print();
 #endif
 
 #ifdef PRINT
-    printf("optQGrafM: %8ld\n", mId);
+    grcc_fprintf(GRCC_Stdout, "optQGrafM: %8ld\n", mId);
     econn->print();
 #endif
 
@@ -7040,8 +7041,8 @@ Bool EGraph::optQGrafM(Options *opt)
         maxlegs = Max(maxlegs, econn->opics[j].nlegs);
     }
     if (maxlegs >= GRCC_MAXEDGES) {
-        printf("*** table overflow\n");
-        abort();
+        grcc_fprintf(GRCC_Stdout, "*** table overflow\n");
+        GRCC_ABORT();
     }
     for (int k = 0; k < GRCC_MAXEDGES; k++) {
         nopis[k] = 0;
@@ -7239,7 +7240,7 @@ Bool EGraph::optQGrafM(Options *opt)
 Bool EGraph::optQGrafA(Options *opt)
 {
 #ifdef PRINT
-    printf("optQGrafA: %8ld\n", mId);
+    grcc_fprintf(GRCC_Stdout, "optQGrafA: %8ld\n", mId);
     econn->print();
 #endif
     Bool retval = True;
@@ -7688,9 +7689,9 @@ void EGraph::bisearchE(int nd, int *extlst, int *intlst, int *opiext, int *opilo
 #ifdef CHECK
                 } else if (nodes[nd]->ndtype != GRCC_ND_CPoint) {
                     if (prlevel > 0) {
-                        fprintf(GRCC_Stderr, "bisearch: node %d is a cut point ",
+                        grcc_fprintf(GRCC_Stderr, "bisearch: node %d is a cut point ",
                                 nd);
-                        fprintf(GRCC_Stderr, "(not undef %d)\n", 
+                        grcc_fprintf(GRCC_Stderr, "(not undef %d)\n", 
                                 nodes[nd]->ndtype);
                     }
 #endif
@@ -7706,8 +7707,8 @@ void EGraph::bisearchE(int nd, int *extlst, int *intlst, int *opiext, int *opilo
 #ifdef CHECK
                 } else if (edges[ed]->edtype != GRCC_ED_Bridge) {
                     if (prlevel > 0) {
-                        fprintf(GRCC_Stderr, "bisearch: edges %d is a bridge ", ed);
-                        fprintf(GRCC_Stderr, "(not undef %d)\n", edges[ed]->edtype);
+                        grcc_fprintf(GRCC_Stderr, "bisearch: edges %d is a bridge ", ed);
+                        grcc_fprintf(GRCC_Stderr, "(not undef %d)\n", edges[ed]->edtype);
                     }
 #endif
                 }
@@ -7745,8 +7746,8 @@ void EGraph::bisearchE(int nd, int *extlst, int *intlst, int *opiext, int *opilo
 #ifdef CHECK
                 } else if (edges[ed]->edtype != GRCC_ED_Inloop) {
                     if (prlevel > 0) {
-                        fprintf(GRCC_Stderr, "bisearch: ");
-                        fprintf(GRCC_Stderr, "edges %d is not undef (%d)\n", 
+                        grcc_fprintf(GRCC_Stderr, "bisearch: ");
+                        grcc_fprintf(GRCC_Stderr, "edges %d is not undef (%d)\n", 
                                ed, edges[ed]->edtype);
                     }
 #endif
@@ -7842,7 +7843,7 @@ void EGraph::chkMomConsv(void)
         for (ex = 0; ex < nEdges; ex++) {
             if (esum[ex] != 0) {
                 okn = False;
-                fprintf(GRCC_Stderr, "chkMomConsv:n=%d, esum[%d]=%d\n",
+                grcc_fprintf(GRCC_Stderr, "chkMomConsv:n=%d, esum[%d]=%d\n",
                         n, ex, esum[ex]);
             }
         }
@@ -7850,7 +7851,7 @@ void EGraph::chkMomConsv(void)
         for (lk = 0; lk < nLoops; lk++) {
             if (lsum[lk] != 0) {
                 okn = False;
-                fprintf(GRCC_Stderr, "chkMomConsv:n=%d, lsum[%d]=%d\n",
+                grcc_fprintf(GRCC_Stderr, "chkMomConsv:n=%d, lsum[%d]=%d\n",
                         n, lk, lsum[lk]);
    
             }
@@ -7858,8 +7859,8 @@ void EGraph::chkMomConsv(void)
   
         if (!okn) {
             ok = False;
-            fprintf(GRCC_Stderr, "*** Violation of momentum conservation ");
-            fprintf(GRCC_Stderr, "at node =%d\n",n);
+            grcc_fprintf(GRCC_Stderr, "*** Violation of momentum conservation ");
+            grcc_fprintf(GRCC_Stderr, "at node =%d\n",n);
        }
     }
 
@@ -7908,7 +7909,7 @@ int  EGraph::fltrace(int fk, int nd0, int *fl)
     // maximal possible length of a fline is nEdges
     for (k = 0; k < nEdges; k++) {
         if (k >= nfl) {
-            printf("*** fltrace:illegal contorl: k=%d, nEdges=%d\n", k, nEdges);
+            grcc_fprintf(GRCC_Stdout, "*** fltrace:illegal contorl: k=%d, nEdges=%d\n", k, nEdges);
             break;
         }
 
@@ -7918,7 +7919,7 @@ int  EGraph::fltrace(int fk, int nd0, int *fl)
         el = V2Ileg(e);
 #ifdef CHECK
         if (ed > nEdges) {
-            fprintf(GRCC_Stderr, "*** fltrace: ed=%d > nEdges=%d, fl=",
+            grcc_fprintf(GRCC_Stderr, "*** fltrace: ed=%d > nEdges=%d, fl=",
                     ed, nEdges);
             prIntArray(nNodes, fl, "\n");
             erEnd("fltrace: illegal fl");
@@ -7975,19 +7976,19 @@ int  EGraph::fltrace(int fk, int nd0, int *fl)
             } // not visited
         }  // end of for k
         if (fgcnt == 0) {
-            printf("*** fline: Fermion number is not conserved\n");
-            printf("    nd=%d, e=%d, ed=%d, fgcnt=%d\n",
+            grcc_fprintf(GRCC_Stdout, "*** fline: Fermion number is not conserved\n");
+            grcc_fprintf(GRCC_Stdout, "    nd=%d, e=%d, ed=%d, fgcnt=%d\n",
                    nd, e, ed, fgcnt);
             // erEnd("fline: Fermion number is not conserved");
         } else if (fgcnt > 1) {
-            printf("+++ fline: more than two fermions: check fsign\n");
-            printf("    nd=%d, e=%d, ed=%d, fgcnt=%d\n",
+            grcc_fprintf(GRCC_Stdout, "+++ fline: more than two fermions: check fsign\n");
+            grcc_fprintf(GRCC_Stdout, "    nd=%d, e=%d, ed=%d, fgcnt=%d\n",
                    nd, e, ed, fgcnt);
         }
     }
     if (k >= nEdges || k >= nfl) {
-        printf("*** fline: illegal control\n");
-        printf("    nEdges=%d, nfl=%d, k=%d, ", nEdges, nfl, k);
+        grcc_fprintf(GRCC_Stdout, "*** fline: illegal control\n");
+        grcc_fprintf(GRCC_Stdout, "    nEdges=%d, nfl=%d, k=%d, ", nEdges, nfl, k);
         prIntArray(nfl, fl, "\n");
         erEnd("fline: illegal control");
     }
@@ -8153,7 +8154,7 @@ NCand::~NCand(void)
 //---------------------------------------------------------------
 void NCand::prNCand(const char* msg)
 {
-    printf("%d %d ",  st, deg);
+    grcc_fprintf(GRCC_Stdout, "%d %d ",  st, deg);
     prIntArray(nilist, ilist, msg);
 }
 
@@ -8171,7 +8172,7 @@ ECand::ECand(int dt, int nplst, int *plst)
 
     if (det && nplist != 1) {
         if (prlevel > 0) {
-            fprintf(GRCC_Stderr, "*** ECand : len(plist) != 1 : det=%d ", det);
+            grcc_fprintf(GRCC_Stderr, "*** ECand : len(plist) != 1 : det=%d ", det);
             prIntArrayErr(nplist, plist, "\n");
         }
         erEnd("ECand : len(plist) != 1");
@@ -8187,7 +8188,7 @@ ECand::~ECand(void)
 void ECand::prECand(const char *msg)
 {
     prIntArray(nplist, plist, "");
-    printf(" (det=%d)%s", det, msg);
+    grcc_fprintf(GRCC_Stdout, " (det=%d)%s", det, msg);
 }
 
 //===============================================================
@@ -8236,7 +8237,7 @@ int ANode::newleg(void)
     nlegs++;
 #ifdef CHECK
     if (nlegs > deg) {
-        fprintf(GRCC_Stderr, "*** ANode::newleg : nlegs = %d > deg = %d\n",
+        grcc_fprintf(GRCC_Stderr, "*** ANode::newleg : nlegs = %d > deg = %d\n",
                 nlegs, deg);
         erEnd("ANode::newleg : nlegs > deg");
     }
@@ -8369,28 +8370,28 @@ void Assign::prCand(const char *msg)
     int    n, e, ne;
     AEdge *ed;
 
-    printf("\n");
-    printf("+++ Candidate list: %s\n", msg);
-    printf("  Nodes %d\n", nNodes);
+    grcc_fprintf(GRCC_Stdout, "\n");
+    grcc_fprintf(GRCC_Stdout, "+++ Candidate list: %s\n", msg);
+    grcc_fprintf(GRCC_Stdout, "  Nodes %d\n", nNodes);
     for (n = 0; n < nNodes; n++) {
-       printf("%d: edges=", n);
+       grcc_fprintf(GRCC_Stdout, "%d: edges=", n);
        prIntArray(nodes[n]->deg, nodes[n]->aedges, ": cand=");
        if (nodes[n]->cand == NULL) {
-           printf("NULL\n");
+           grcc_fprintf(GRCC_Stdout, "NULL\n");
        } else {
            nodes[n]->cand->prNCand("\n");
        }
     }
     ne = Min(nEdges, nETotal);
-    printf("  Edges %d\n", ne);
+    grcc_fprintf(GRCC_Stdout, "  Edges %d\n", ne);
     for (e = 0; e < ne; e++) {
        ed = edges[e];
        if (ed == NULL) {
-           printf("NULL_Edge\n");
+           grcc_fprintf(GRCC_Stdout, "NULL_Edge\n");
        } else {
-           printf("%d: %d->%d: cand=", e, ed->nodes[0], ed->nodes[1]);
+           grcc_fprintf(GRCC_Stdout, "%d: %d->%d: cand=", e, ed->nodes[0], ed->nodes[1]);
            if (edges[e]->cand == NULL) {
-               printf("NULL\n");
+               grcc_fprintf(GRCC_Stdout, "NULL\n");
            } else {
                edges[e]->cand->prECand("\n");
            }
@@ -8407,7 +8408,7 @@ void Assign::checkAG(const char *msg)
     for (n = 0; n < nNodes; n++) {
         for (lg = 0; lg < nodes[n]->deg; lg++) {
             if (nodes[n]->aedges[lg] < 0) {
-                printf("*** checkAG:%s: n=%d, lg=%d, aedges=%d\n",
+                grcc_fprintf(GRCC_Stdout, "*** checkAG:%s: n=%d, lg=%d, aedges=%d\n",
                        msg, n, lg, nodes[n]->aedges[lg]);
                 ok = False;
             }
@@ -8863,7 +8864,7 @@ Bool Assign::fromMGraph(void)
 
 #ifdef CHECK
             if (mgraph->nodes[n]->deg != 1) {
-                printf("*** assign:fromMGraph : "
+                grcc_fprintf(GRCC_Stdout, "*** assign:fromMGraph : "
                        "external but deg[%d] = %d != 1, type=%d\n",
                        n, mgraph->nodes[n]->deg, typ);
                 mgraph->print();
@@ -8930,7 +8931,7 @@ Bool Assign::fromMGraph(void)
     }
 #ifdef CHECK
     if (nETotal != nEdges) {
-        printf("*** Assign::fromMGraph nETotal=%d != nEdges=%d\n",
+        grcc_fprintf(GRCC_Stdout, "*** Assign::fromMGraph nETotal=%d != nEdges=%d\n",
                nETotal, nEdges);
         erEnd("Assign::fromMGraph nETotal= != nEdges");
     }
@@ -8986,7 +8987,7 @@ void Assign::addEdge(int n0, int n1, int nplist, int *plist)
 
 #ifdef CHECK
     if (n0 >= nNodes || n1 >= nNodes) {
-        printf("*** Assign::addEdge : undefined nodes %d: [%d, %d]",
+        grcc_fprintf(GRCC_Stdout, "*** Assign::addEdge : undefined nodes %d: [%d, %d]",
               nETotal, n0, n1);
         erEnd("Assign::addEdge : undefined nodes");
     }
@@ -9091,7 +9092,7 @@ Bool Assign::fillEGraph(int aid, BigInt nsym, BigInt esym, BigInt nsym1)
         if (isATExternal(pnclass->type[cl])) {
             ;
         } else if (nodes[n]->cand->st != AS_Assigned) {
-            printf("*** fillEGraph : node %d is not assigned", n);
+            grcc_fprintf(GRCC_Stdout, "*** fillEGraph : node %d is not assigned", n);
             prCand("fillEGraph: node");
             erEnd("fillEGraph : node is not assigned");
         }
@@ -9112,7 +9113,7 @@ Bool Assign::fillEGraph(int aid, BigInt nsym, BigInt esym, BigInt nsym1)
             }
 #ifdef CHECK
             if (lg < 0 || lg >= nodes[n]->deg) {
-                printf("*** fillEGraph: n=%d, lr=%d: 0 <= lg=%d < %d\n",
+                grcc_fprintf(GRCC_Stdout, "*** fillEGraph: n=%d, lr=%d: 0 <= lg=%d < %d\n",
                        n, lr, lg, nodes[n]->deg);
                 erEnd("fillEGraph: illegal reordering");
             }
@@ -9130,7 +9131,7 @@ Bool Assign::fillEGraph(int aid, BigInt nsym, BigInt esym, BigInt nsym1)
     for (e = 0; e < nEdges; e++) {
 #ifdef CHECK
         if (edges[e]->cand->nplist != 1) {
-            printf("*** fillEGraph : edge %d is not assigned", e);
+            grcc_fprintf(GRCC_Stdout, "*** fillEGraph : edge %d is not assigned", e);
             prCand("fillEGraph: edge");
             erEnd("fillEGraph : edge is not assigned");
         }
@@ -9160,14 +9161,14 @@ Bool Assign::fillEGraph(int aid, BigInt nsym, BigInt esym, BigInt nsym1)
         n  = egraph->edges[ed]->nodes[0];
         lr = egraph->edges[ed]->nlegs[0];
         if (egraph->nodes[n]->edges[lr] != -ed-1) {
-            fprintf(GRCC_Stderr, "+++ node[%d][%d]=%d != - (edge[%d][0] + 1) = %d\n", 
+            grcc_fprintf(GRCC_Stderr, "+++ node[%d][%d]=%d != - (edge[%d][0] + 1) = %d\n", 
                     n, lr, egraph->nodes[n]->edges[lr], e, -ed-1);
             ok = False;
         }
         n = egraph->edges[ed]->nodes[1];
         lr = egraph->edges[ed]->nlegs[1];
         if (egraph->nodes[n]->edges[lr] != ed+1) {
-            fprintf(GRCC_Stderr, "+++ node[%d][%d]=%d != + (edge[%d][0] + 1) = %d\n", 
+            grcc_fprintf(GRCC_Stderr, "+++ node[%d][%d]=%d != + (edge[%d][0] + 1) = %d\n", 
                     n, lr, egraph->nodes[n]->edges[lr], e, ed+1);
             ok = False;
         }
@@ -9247,10 +9248,10 @@ int *Assign::reordLeg(int n, int *reord, int *plist, int *used)
 
 #ifdef CHECK
         if (!found) {
-            printf("*** reordLeg: illegal list of particles:"
+            grcc_fprintf(GRCC_Stdout, "*** reordLeg: illegal list of particles:"
                    "interaction %d ", ia);
             prIntArray(deg, ilegs, "; ");
-            printf("vertex %d ", n);
+            grcc_fprintf(GRCC_Stdout, "vertex %d ", n);
             prIntArray(deg, plist, "\n");
             prCand("reordLeg");
             erEnd("reordLeg: illegal list of particles");
@@ -9340,7 +9341,7 @@ int Assign::candPart(int v, int ln, int *plist, const int size)
 
 #ifdef CHECK
     if (edges[en]->cand->det) {
-        printf("*** candPart : particle of leg (%d, %d) "
+        grcc_fprintf(GRCC_Stdout, "*** candPart : particle of leg (%d, %d) "
                "is assigned to %d\n",
                v, ln, edges[en]->cand->plist[0]);
         checkCand("candPart");
@@ -9433,8 +9434,8 @@ int Assign::selUnAssLeg(int v, int lastlg)
         }
         n1 = nodes[v]->anodes[lg];
         if (n0 > n1) {
-            printf("*** selUnAssLeg: n0=%d > n1=%d\n", n0, n1);
-            printf("*** illegal connection\n");
+            grcc_fprintf(GRCC_Stdout, "*** selUnAssLeg: n0=%d > n1=%d\n", n0, n1);
+            grcc_fprintf(GRCC_Stdout, "*** illegal connection\n");
             erEnd("selUnAssLeg: n0 > n1");
         }
 #endif
@@ -9526,7 +9527,7 @@ Bool Assign::assignPLeg(int n, int ln, int pt)
 
 #ifdef CHECK
     if (!isIn(edges[e]->cand->nplist, edges[e]->cand->plist, ept)) {
-        printf("*** assignPLeg: particle %d is not in the cand. of e=%d",
+        grcc_fprintf(GRCC_Stdout, "*** assignPLeg: particle %d is not in the cand. of e=%d",
                 ept, e);
         edges[e]->cand->prECand("\n");
         prCand("assignPLeg");
@@ -9672,7 +9673,7 @@ Bool Assign::updateCandNode(int v)
 #ifdef CHECK
         e = nodes[v]->aedges[0];
         if (e < 0 || edges[e]->cand->nplist != 1) {
-            printf("*** illegal external node: v=%d e=%d :", v, e);
+            grcc_fprintf(GRCC_Stdout, "*** illegal external node: v=%d e=%d :", v, e);
             prCand("updateCandNode");
             erEnd("illegal external node");
         }
@@ -9881,7 +9882,7 @@ Bool Assign::isIsomorphic(MNodeClass *cl, BigInt *nsym, BigInt *esym, BigInt *ns
     ngelem = mgraph->group->nElem();
 #ifdef CHECK
     if (mgraph->nsym > 1 && ngelem <= 1) {
-        printf("*** isIsomorphic: illegal group: "
+        grcc_fprintf(GRCC_Stdout, "*** isIsomorphic: illegal group: "
                "ngelem=%ld, mgraph->sym=(%ld, %ld)\n",
                ngelem, mgraph->nsym, mgraph->esym);
         erEnd("Assign::isIsomorphic: illegal group");
@@ -10123,7 +10124,7 @@ Bool Assign::checkCand(const char *msg)
         // check assigned vertex
         } else if (nc->st == AS_Assigned) {
             if (nc->nilist < 1) {
-                printf("*** checkCand:7:%s:status (%d) of node %d says"
+                grcc_fprintf(GRCC_Stdout, "*** checkCand:7:%s:status (%d) of node %d says"
                        " interaction is assigned to %d but ilist=",
                        msg, nc->st, n, nc->st);
                 prIntArray(nc->nilist, nc->ilist, "\n");
@@ -10134,7 +10135,7 @@ Bool Assign::checkCand(const char *msg)
                 e  = na->aedges[lg];
                 ec = edges[e]->cand;
                 if (ec->nplist != 1) {
-                    printf("*** checkCand:8:%s:status (%d) of node %d says"
+                    grcc_fprintf(GRCC_Stdout, "*** checkCand:8:%s:status (%d) of node %d says"
                           " interaction is assigned "
                           " but unassigned edge %d is found\n",
                           msg, nc->st, n, e);
@@ -10147,7 +10148,7 @@ Bool Assign::checkCand(const char *msg)
             // pt  = nc->ilist[0];
             // *** pte = legEdgeParticle(n, 0, - pt);
         } else {
-            printf("*** checkCand:10:%s:illegal status of node %d : %d",
+            grcc_fprintf(GRCC_Stdout, "*** checkCand:10:%s:illegal status of node %d : %d",
                    msg, n, nc->st);
             ok = False;
         }
@@ -10158,15 +10159,15 @@ Bool Assign::checkCand(const char *msg)
     for (e = 0; e < nEdges; e++) {
         ec = edges[e]->cand;
         if (ec != NULL && ec->nplist < 1) {
-            printf("*** checkCand:12:%s:illegal edge %d\n", msg, e);
+            grcc_fprintf(GRCC_Stdout, "*** checkCand:12:%s:illegal edge %d\n", msg, e);
             ok = False;
         }
     }
 
     if (!ok) {
-        printf("*** checkCand:15:%s:illegal configuration\n", msg);
+        grcc_fprintf(GRCC_Stdout, "*** checkCand:15:%s:illegal configuration\n", msg);
         prCand("checkCand");
-        printf("*** checkCand:16:illegal configuration\n");
+        grcc_fprintf(GRCC_Stdout, "*** checkCand:16:illegal configuration\n");
         erEnd("checkCand:16:illegal configuration");
     }
     return ok;
@@ -10180,9 +10181,9 @@ void Assign::checkNode(int n, const char *msg)
     for (j = 0; j < nodes[n]->cand->nilist; j++) {
         it = nodes[n]->cand->ilist[j];
         if (Abs(it) >= GRCC_MAXMINTERACT) {
-            printf("*** %s: n=%d, j=%d, it=%d\n", msg, n, j, it);
+            grcc_fprintf(GRCC_Stdout, "*** %s: n=%d, j=%d, it=%d\n", msg, n, j, it);
             nodes[n]->cand->prNCand(msg);
-            printf("\n");
+            grcc_fprintf(GRCC_Stdout, "\n");
             erEnd("checkNode:illegal it");
         }
     }
@@ -10200,14 +10201,14 @@ void Assign::checkNode(int n, const char *msg)
 //--------------------------------------------------------------
 void NStack::print(const char *msg)
 {
-    printf("  node=%d, deg=%d, st=%d, ilist=", noden, deg, st);
+    grcc_fprintf(GRCC_Stdout, "  node=%d, deg=%d, st=%d, ilist=", noden, deg, st);
     prilist(nilist, ilist, msg);
 }
 
 //--------------------------------------------------------------
 void EStack::print(const char *msg)
 {
-    printf("  edge=%d, det=%d, plist=", edgen, det);
+    grcc_fprintf(GRCC_Stdout, "  edge=%d, det=%d, plist=", edgen, det);
     prilist(nplist, plist, msg);
 }
 
@@ -10398,7 +10399,7 @@ void AStack::restoreMsg(CheckPt sav, const char *msg)
     restore(sav);
 
     if (!agraph->checkCand("restore")) {
-        printf("restore is called from %s\n", msg);
+        grcc_fprintf(GRCC_Stdout, "restore is called from %s\n", msg);
     }
 }
 #endif
@@ -10408,13 +10409,13 @@ void AStack::prStack(void)
 {
     int j;
 
-    printf("+++ prStack : (%d, %d)", nStackP, eStackP);
+    grcc_fprintf(GRCC_Stdout, "+++ prStack : (%d, %d)", nStackP, eStackP);
     for (j = 0; j < nStackP; j++) {
-        printf("N:%4d ", j);
+        grcc_fprintf(GRCC_Stdout, "N:%4d ", j);
         nStack[j]->print("\n");
     }
     for (j = 0; j < eStackP; j++) {
-        printf("E:%4d ", j);
+        grcc_fprintf(GRCC_Stdout, "E:%4d ", j);
         eStack[j]->print("\n");
     }
 }
@@ -10438,9 +10439,9 @@ void Fraction::print(const char *msg)
     double err = Abs(Real(num)/Real(den) - ratio);
 
     if (err > GRCC_FRACERROR) {
-        printf("%ld/%ld(%g)(overflow)%s", num, den, ratio, msg);
+        grcc_fprintf(GRCC_Stdout, "%ld/%ld(%g)(overflow)%s", num, den, ratio, msg);
     } else {
-        printf("%ld/%ld(%g)%s", num, den, ratio, msg);
+        grcc_fprintf(GRCC_Stdout, "%ld/%ld(%g)%s", num, den, ratio, msg);
     }
 }
 
@@ -10547,12 +10548,43 @@ Bool Fraction::isEq(Fraction f)
 //**************************************************************
 // common.cc
 //==============================================================
+
+// Wrapper function for printing messages. This allows the use
+// of FORM MesPrint when compiled as part of FORM, and the
+// usual fprintf to GRCC_Stdout or GRCC_Stderr otherwise.
+static void grcc_fprintf(FILE* out, const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+
+#ifndef NOFORM
+    DUMMYUSE(out);
+    // the second call of vsnprintf requires a copy of args
+    va_list args_copy;
+    va_copy(args_copy, args);
+    // determine the required buffer size for the formatted string:
+    const int len = vsnprintf(NULL, 0, fmt, args);
+    char *buffer = new char[len+1];
+    vsnprintf(buffer, len+1, fmt, args_copy);
+    MLOCK(ErrorMessageLock);
+    MesPrint("%s", buffer);
+    MUNLOCK(ErrorMessageLock);
+    delete[] buffer;
+    va_end(args_copy);
+#else
+    vfprintf(out, fmt, args);
+#endif
+
+    va_end(args);
+    return;
+}
+
 static void erEnd(const char *msg)
 {
     if (erExit != NULL) {
         (*erExit)(msg, erExitArg);
     }
-    fprintf(GRCC_Stderr, "*** Error : %s\n\n", msg);
+    grcc_fprintf(GRCC_Stderr, "*** Error : %s\n\n", msg);
     GRCC_ABORT();
 }
 
@@ -10631,12 +10663,12 @@ static int   *delintdup(int *a)
 //------------------------------------------------------------
 static void   prilist(int n, const int *a, const char *msg)
 {
-    printf("[");
+    grcc_fprintf(GRCC_Stdout, "[");
     for (int j = 0; j < n; j++) {
-        if (j!=0) printf(", ");
-        printf("%d", a[j]);
+        if (j!=0) grcc_fprintf(GRCC_Stdout, ", ");
+        grcc_fprintf(GRCC_Stdout, "%d", a[j]);
     }
-    printf("]%s", msg);
+    grcc_fprintf(GRCC_Stdout, "]%s", msg);
 }
 
 //------------------------------------------------------------
@@ -10793,13 +10825,13 @@ static void prMomStr(int mom, const char *ms, int mn)
     if (mom == 0) {
         return;
     } else if (mom == 1) {
-        printf(" + %s%d", ms, mn);
+        grcc_fprintf(GRCC_Stdout, " + %s%d", ms, mn);
     } else if (mom > 0) {
-        printf(" + %d*%s%d", mom, ms, mn);
+        grcc_fprintf(GRCC_Stdout, " + %d*%s%d", mom, ms, mn);
     } else if (mom == -1) {
-        printf(" - %s%d", ms, mn);
+        grcc_fprintf(GRCC_Stdout, " - %s%d", ms, mn);
     } else {
-        printf(" - %d*%s%d", -mom, ms, mn);
+        grcc_fprintf(GRCC_Stdout, " - %d*%s%d", -mom, ms, mn);
     }
 }
 
@@ -10809,12 +10841,12 @@ static void prIntArray(int n, int *p, const char *msg)
 
     int j;
 
-    printf("[");
+    grcc_fprintf(GRCC_Stdout, "[");
     for (j = 0; j < n; j++) {
-        if (j!=0) printf(", ");
-        printf("%2d", p[j]);
+        if (j!=0) grcc_fprintf(GRCC_Stdout, ", ");
+        grcc_fprintf(GRCC_Stdout, "%2d", p[j]);
     }
-    printf("]%s", msg);
+    grcc_fprintf(GRCC_Stdout, "]%s", msg);
 }
 
 //--------------------------------------------------------------
@@ -10823,12 +10855,12 @@ static void prIntArrayErr(int n, int *p, const char *msg)
 
     int j;
 
-    fprintf(GRCC_Stderr, "[");
+    grcc_fprintf(GRCC_Stderr, "[");
     for (j = 0; j < n; j++) {
-        if (j!=0) fprintf(GRCC_Stderr, ", ");
-        fprintf(GRCC_Stderr, "%2d", p[j]);
+        if (j!=0) grcc_fprintf(GRCC_Stderr, ", ");
+        grcc_fprintf(GRCC_Stderr, "%2d", p[j]);
     }
-    fprintf(GRCC_Stderr, "]%s", msg);
+    grcc_fprintf(GRCC_Stderr, "]%s", msg);
 }
 
 //--------------------------------------------------------------
@@ -10905,7 +10937,7 @@ static int intSetAdd(int n, int *a, int v, const int size)
     int j, k;
 
     if (n >= size) {
-        fprintf(GRCC_Stderr, "*** intSetAdd : array out of range (>%d)\n", size);
+        grcc_fprintf(GRCC_Stderr, "*** intSetAdd : array out of range (>%d)\n", size);
         erEnd("intSetAdd : array out of range (GRCC_MAXPSLIST)");
     }
     for (j = 0; j < n; j++) {
@@ -10935,7 +10967,7 @@ static int intSListAdd(int n, int *a, int v, const int size)
     int j, k;
 
     if (n >= size) {
-        fprintf(GRCC_Stderr, "*** intSListAdd : array out of range (>%d)\n", size);
+        grcc_fprintf(GRCC_Stderr, "*** intSListAdd : array out of range (>%d)\n", size);
         erEnd("intSListAdd : array out of range");
     }
     for (j = 0; j < n; j++) {

@@ -318,6 +318,11 @@ int CoVertex(UBYTE *s)
 				return(1);
 			}
 			ss = s; s = SkipName(s); c = *s; *s = 0; name = ConstructName(ss,0);
+			// Forbid couplings which have no symbol or an overal numerical factor.
+			if ( *name == 0 ) {
+				v->error = 1;
+				MesPrint("&Invalid coupling constant in vertex statement.");
+			}
 			if ( GetVar(name,&type,&v->couplings[v->ncouplings],CSYMBOL,WITHAUTO)
 				 == NAMENOTFOUND ) {
 				WORD minpow = -MAXPOWER;
@@ -336,6 +341,10 @@ int CoVertex(UBYTE *s)
 				while ( *s == '-' || *s == '+' ) {
 					if ( *s == '-' ) sign = -sign;
 					s++;
+				}
+				if ( sign == -1 ) {
+					v->error = 1;
+					MesPrint("&Invalid negative power of coupling constant.");
 				}
 				while ( FG.cTable[*s] == 1 ) x = 10*x + *s++ - '0';
 				v->couplings[v->ncouplings++] = x;
