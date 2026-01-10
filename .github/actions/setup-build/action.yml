@@ -12,7 +12,7 @@ inputs:
   flint_version:
     description: FLINT version to build.
     required: false
-    default: '3.3.1'
+    default: '3.4.0'
 
 runs:
   using: composite
