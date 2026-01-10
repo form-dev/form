@@ -133,13 +133,7 @@ int MesWork(void)
 	the tabulator in the print "" statement.
 */
 
-int
-#ifdef ANSI
-MesPrint(const char *fmt, ... )
-#else
-MesPrint(va_alist)
-va_dcl
-#endif
+int MesPrint(const char *fmt, ... )
 {
 	GETIDENTITY
 	char Out[MAXLINELENGTH+14], *stopper, *t, *s, *u, c, *carray;
@@ -152,13 +146,8 @@ va_dcl
 	LONG (*OldWrite)(int handle, UBYTE *buffer, LONG size) = WriteFile;
 	/*:[19apr2004 mt]*/
 	va_list ap;
-#ifdef ANSI
 	va_start(ap,fmt);
 	s = (char *)fmt;
-#else
-	va_start(ap);
-	s = va_arg(ap,char *);
-#endif
 #ifdef WITHMPI
 	/*
 	 * On slaves, if AS.printflag is

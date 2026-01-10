@@ -2497,13 +2497,8 @@ typedef struct AllGlobals {
 #define BHEAD0
 #endif
 
-#ifdef ANSI
 typedef int (*WCN)(PHEAD WORD *,WORD *,WORD,WORD);
 typedef int (*WCN2)(PHEAD WORD *,WORD *);
-#else
-typedef int (*WCN)();
-typedef int (*WCN2)();
-#endif
  
 typedef WORD (*COMPARE)(PHEAD WORD *,WORD *,WORD);
 

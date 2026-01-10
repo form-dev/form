@@ -2081,28 +2081,19 @@ char *LongLongCopy(off_t *y, char *to)
 		Routine produces a string with the date and time of the run
 */
 
-#ifdef ANSI
-#else
-#ifdef mBSD
+#if defined(ANSI) || defined(mBSD)
 #else
 static char notime[] = "";
-#endif
 #endif
 
 UBYTE *MakeDate(void)
 {
-#ifdef ANSI
-	time_t tp;
-	time(&tp);
-	return((UBYTE *)ctime(&tp));
-#else
-#ifdef mBSD
+#if defined(ANSI) || defined(mBSD)
 	time_t tp;
 	time(&tp);
 	return((UBYTE *)ctime(&tp));
 #else
 	return((UBYTE *)notime);
-#endif
 #endif
 }
 
