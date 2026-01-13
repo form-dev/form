@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 #
 # @file run-latex2html.sh
 #
 # Usage:
 #   run-latex2html.sh main.tex
 #
-set -eu
+set -euo pipefail
 
 if [ $# -ne 1 ]; then
   echo "Usage: $(basename "$0") main.tex" >&2
@@ -41,8 +41,10 @@ LATEX2HTML_INIT=$BINDIR/.latex2html-init
 "$LATEX2HTML" -init_file "$LATEX2HTML_INIT" "$MAIN_PATH"
 
 fix_html() {
-  # HREF="main.html#SECTION..." -> HREF="#SECTION..."
-  sed "s/$2.html#/#/g" "$1" >"$1.tmp"
+  # (1) HREF="main.html#SECTION..." -> HREF="#SECTION..."
+  # (2) workaround for latex2html < v2025
+  #     See: https://github.com/latex2html/latex2html/commit/b77ee98
+  sed "s/$2.html#/#/g" "$1" | sed 's/&&#x308;#305;/\&iuml;/g' >"$1.tmp"
   mv "$1.tmp" "$1"
 }
 
