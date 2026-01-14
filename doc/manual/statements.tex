@@ -470,58 +470,8 @@ See also & functions (\ref{substafunctions}), nfunctions (\ref{substanfunctions}
 \noindent This statement declares commuting\index{commuting} 
 functions\index{functions!commuting}. The name of a 
 function can be followed by some information that specifies additional 
-properties of the preceding function. These can be (name indicates the 
-name of the function to be declared): \vspace{4mm}
-
-\leftvitem{4.1cm}{name{\hash}r}
-\rightvitem{12cm}{The function is considered to be a real\index{real} function (default).}
-
-\leftvitem{4.1cm}{name{\hash}c}
-\rightvitem{12cm}{The function is considered to be a complex\index{complex} function. This means 
-that internally two spaces are reserved. One for the variable name and one 
-for its complex conjugate name{\hash}.}
-
-\leftvitem{4.1cm}{name{\hash}i}
-\rightvitem{12cm}{The function is considered to be imaginary\index{imaginary}.}
-
-\leftvitem{4.1cm}{name(s[ymmetric])}
-\rightvitem{12cm}{The function is totally symmetric\index{symmetric}. This means that during 
-normalization {\FORM} will order the arguments according to its internal 
-notion of order by trying permutations. The result will depend on the order 
-of declaration of variables.}
-
-\leftvitem{4.1cm}{name(a[ntisymmetric])}
-\rightvitem{12cm}{The function is totally antisymmetric\index{antisymmetric}. This means that 
-during normalization {\FORM} will order the arguments according to its 
-internal notion of order and if the resulting permutation of arguments is 
-odd the coefficient of the term will change sign. The order will depend on 
-the order of declaration of variables.}
-
-\leftvitem{4.1cm}{name(c[yclesymmetric])}
-\rightvitem{12cm}{The function is cycle\index{cycle symmetric} symmetric in 
-all its arguments. This means that during normalization {\FORM} will order 
-the arguments according to its internal notion of order by trying cyclic 
-permutations. The result will depend on the order of declaration of 
-variables.}
-
-\leftvitem{4.1cm}{name(r[cyclesymmetric)
-
-name(r[cyclic])
-
-name(r[eversecyclic])}
-\rightvitem{12cm}{The function is reverse\index{reverse cycle symmetric} 
-cycle symmetric in all its arguments. This means that during normalization 
-{\FORM} will order the arguments according to its internal notion of order 
-by trying cyclic permutations and/or a complete reverse order of all 
-arguments. The result will depend on the order of declaration of 
-variables.}
-
-\noindent The complexity properties and the symmetric properties can be 
-combined. In that case the complexity properties should come first as in
-\begin{verbatim}
-    CFunction f1#i(antisymmetric);
-\end{verbatim}
-\vspace{10mm}
+properties of the preceding function, which are the same as
+those for functions (see \ref{substafunctions}). \vspace{10mm}
 
 %--#] cfunctions : 
 %--#[ chainin :
@@ -2073,12 +2023,14 @@ symbols and replaces them back by their original meaning.
 \noindent \begin{tabular}{ll}
 Type & Declaration statement\\
 Syntax & f[unctions] {\tt<}list of functions to be declared{\tt>}; \\
-See also & cfunctions (\ref{substacfunctions}), 
+See also & cfunctions (\ref{substacfunctions}),
+           nfunctions (\ref{substanfunctions}),
            tensors (\ref{substatensors}),
+           ctensors (\ref{substactensors}),
            ntensors (\ref{substantensors}), \\ &
            table (\ref{substatable}),
-           ntable (\ref{substantable}),
-           ctable (\ref{substactable})
+           ctable (\ref{substactable}),
+           ntable (\ref{substantable})
 \end{tabular} \vspace{4mm}
 
 \noindent Used to declare one or more functions\index{functions}. The functions declared 
@@ -2132,13 +2084,13 @@ to its internal notion of order by trying cyclic permutations and/or a
 complete reverse order of all arguments. The result will depend on the 
 order of declaration of variables.}
 
-\leftvitem{4.1cm}{name<number
+\leftvitem{4.1cm}{name$<$number
 
-name<=number
+name$<=$number
 
-name>number
+name$>$number
 
-name>=number}
+name$>=$number}
 \rightvitem{12cm}{The function has a restriction on the number of 
 arguments. If the number of arguments of an occurrence of the function is 
 not fulfilling the condition during normalization {\FORM} will set the term 
