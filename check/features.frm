@@ -1554,6 +1554,20 @@ assert result("F3") =~ expr("1/1000000*x^5")
 assert result("F4") =~ expr("4.7e+00*x - 5.0e-05*x^4 + 1/1000000*x^5")
 assert result("F5") =~ expr("1/1000000*x^5")
 *--#] chop : 
+*--#[ chop_error :
+Chop 10;
+#StartFloat 10d
+Chop;
+Chop 1/0;
+Chop 1e-10a;
+.end
+#pend_if wordsize == 2
+assert compile_error?("Illegal attempt to chop a float_ without activating floating point numbers.")
+assert compile_error?("Forgotten #startfloat instruction?")
+assert compile_error?("Chop needs a number (float, rational or power) as an argument.")
+assert compile_error?("Division by zero in chop statement.")
+assert compile_error?("Illegal argument(s) in Chop statement: 'a'.")
+*--#] chop_error :
 *--#[ pattern_float : 
 #-
 Off Statistics;
@@ -1875,17 +1889,33 @@ assert result("FloatZero") =~ expr("f(0.0e+00, - 1.23e+02,0.0e+00,0.0e+00,0.0e+0
       0.0e+00)")
 *--#] float_zero : 
 *--#[ float_error :
+Local F = 1.0;
 Evaluate;
 ToFloat;
 ToRat;
+.sort
+#StartFloat 10d
+Evaluate x;
+.sort
+CFunction x;
+Evaluate x;
+ToFloat y;
+ToRat z;
 .end
 #pend_if wordsize == 2
+assert compile_error?("The floating point system has not been started: .0")
+assert compile_error?("Illegal character at this position: .0")
+assert compile_error?("Illegal position for 0")
 assert compile_error?("Illegal attempt to evaluate a function without activating floating point numbers.")
 assert compile_error?("Forgotten #startfloat instruction?")
 assert compile_error?("Illegal attempt to convert to float_ without activating floating point numbers.")
 assert compile_error?("Forgotten #startfloat instruction?")
 assert compile_error?("Illegal attempt to convert from float_ without activating floating point numbers.")
 assert compile_error?("Forgotten #startfloat instruction?")
+assert compile_error?("should be a built in function that can be evaluated numerically.")
+assert compile_error?("should be a built in function that can be evaluated numerically.")
+assert compile_error?("Illegal argument(s) in ToFloat statement: 'y'")
+assert compile_error?("Illegal argument(s) in ToRat statement: 'z'")
 *--#] float_error :
 *--#[ format_and_floats :
 #-
@@ -2247,6 +2277,52 @@ EOF
 #pend_if wordsize == 2
 runtime_error?("Illegal parameter in #StartFloat: 100bd,MZV = 10")
 *--#] startfloat_error :
+*--#[ mzv_error_1: 
+#StartFloat 10d, MZV=2
+Local F = mzv_(2,1);
+Evaluate mzv_;
+.end
+#pend_if wordsize == 2
+#pend_if mpi?
+runtime_error?("Error: Weight of Euler/MZV sum greater than 2.")
+runtime_error?("Please increase the maximum weight in #startfloat.")
+*--#] mzv_error_1 :
+*--#[ mzv_error_2: 
+#StartFloat 10d, MZV=3
+Local F = mzv_(1,2);
+Evaluate mzv_;
+.end
+#pend_if wordsize == 2
+#pend_if mpi?
+runtime_error?("Divergent MZV in CalculateMZV")
+*--#] mzv_error_2 :
+*--#[ mzv_error_3: 
+#StartFloat 10d, MZV=3
+Local F = mzv_(-2,1);
+Evaluate mzv_;
+.end
+#pend_if wordsize == 2
+#pend_if mpi?
+runtime_error?("Illegal index[0] in CalculateMZV: -2")
+*--#] mzv_error_3 :
+*--#[ mzv_error_4: 
+#StartFloat 10d, MZV=3
+Local F = mzvhalf_(2,-1);
+Evaluate mzvhalf_;
+.end
+#pend_if wordsize == 2
+#pend_if mpi?
+runtime_error?("Illegal index[1] in CalculateMZVhalf: -1")
+*--#] mzv_error_4 :
+*--#[ mzv_error_5: 
+#StartFloat 10d, MZV=3
+Local F = euler_(1,-2);
+Evaluate euler_;
+.end
+#pend_if wordsize == 2
+#pend_if mpi?
+runtime_error?("Divergent Euler sum in CalculateEuler")
+*--#] mzv_error_5 :
 *--#[ humanstats :
 #-
 On humanstats;

@@ -374,8 +374,10 @@ int UnpackFloat(mpf_t outfloat,WORD *fun)
 */
 	GETIDENTITY
 	if ( AT.aux_ == 0 ) {
+		MLOCK(ErrorMessageLock);
 		MesPrint("Illegal attempt at using a float_ function without proper startup.");
 		MesPrint("Please use %#StartFloat <options> first.");
+		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
 	}
 /*
@@ -1355,7 +1357,7 @@ int CoChop(UBYTE *s)
 		return(1);
 	}
 	if ( *s == 0 ) {
-		MesPrint("&Chop needs a number (float or rational) as an argument.");
+		MesPrint("&Chop needs a number (float, rational or power) as an argument.");
 		return(1);
 	}
 	/* Create TYPECHOP header */
@@ -1422,7 +1424,7 @@ int CoChop(UBYTE *s)
 		}
 	}
 	if ( *s ) {
-		MesPrint("&Illegal argument(s) in Chop statement: '%s'",s);
+		MesPrint("&Illegal argument(s) in Chop statement: '%s'.",s);
 		return(1);
 	}
 	AT.WorkPointer = OldWork;
@@ -2006,8 +2008,10 @@ void SingleTable(mpf_t *tabl, int N, int m, int pow)
 	mpf_t jm,jjm;
 	mpf_init(jm); mpf_init(jjm);
 	if ( pow < 1 || pow > 2 ) {
-		printf("Wrong parameter pow in SingleTable: %d\n",pow);
-		exit(-1);
+		MLOCK(ErrorMessageLock);
+		MesPrint("Wrong parameter pow in SingleTable: %d\n",pow);
+		MUNLOCK(ErrorMessageLock);
+		Terminate(-1);
 	}
 	if ( m < 0 ) { m = -m; s = -1; }
 	mpf_set_si(auxsum,0L);
@@ -2047,8 +2051,10 @@ void DoubleTable(mpf_t *tabout, mpf_t *tabin, int N, int m, int pow)
 	mpf_t jm,jjm;
 	mpf_init(jm); mpf_init(jjm);
 	if ( pow < -1 || pow > 2 ) {
-		printf("Wrong parameter pow in SingleTable: %d\n",pow);
-		exit(-1);
+		MLOCK(ErrorMessageLock);
+		MesPrint("Wrong parameter pow in DoubleTable: %d\n",pow);
+		MUNLOCK(ErrorMessageLock);
+		Terminate(-1);
 	}
 	if ( m < 0 ) { m = -m; s = -1; }
 	mpf_set_ui(auxsum,0L);
@@ -2097,8 +2103,10 @@ void EndTable(mpf_t sum, mpf_t *tabin, int N, int m, int pow)
 	mpf_t jm,jjm;
 	mpf_init(jm); mpf_init(jjm);
 	if ( pow < -1 || pow > 2 ) {
-		printf("Wrong parameter pow in SingleTable: %d\n",pow);
-		exit(-1);
+		MLOCK(ErrorMessageLock);
+		MesPrint("Wrong parameter pow in EndTable: %d\n",pow);
+		MUNLOCK(ErrorMessageLock);
+		Terminate(-1);
 	}
 	if ( m < 0 ) { m = -m; s = -1; }
 	mpf_set_si(sum,0L);
@@ -2271,7 +2279,10 @@ void deltaEulerC(mpf_t result, WORD *indexes, int depth)
 	mpf_set_ui(result,0);
 	if ( depth == 1 ) {
 		if ( indexes[0] == 0 ) {
-			printf("Illegal index in depth=1 deltaEulerC: %d\n",indexes[0]);
+			MLOCK(ErrorMessageLock);
+			MesPrint("Illegal index in depth=1 deltaEulerC: %d\n",indexes[0]);
+			MUNLOCK(ErrorMessageLock);
+			Terminate(-1);
 		}
 		if ( indexes[0] < 0 ) SimpleDeltaC(result,indexes[0]);
 		else                  SimpleDelta(result,indexes[0]);
@@ -2332,13 +2343,17 @@ void CalculateMZVhalf(mpf_t result, WORD *indexes, int depth)
 {
 	int i;
 	if ( depth < 0 ) {
-		printf("Illegal depth in CalculateMZVhalf: %d\n",depth);
-		exit(-1);
+		MLOCK(ErrorMessageLock);
+		MesPrint("Illegal depth in CalculateMZVhalf: %d",depth);
+		MUNLOCK(ErrorMessageLock);
+		Terminate(-1);
 	}
 	for ( i = 0; i < depth; i++ ) {
 		if ( indexes[i] <= 0 ) {
-			printf("Illegal index[%d] in CalculateMZVhalf: %d\n",i,indexes[i]);
-			exit(-1);
+			MLOCK(ErrorMessageLock);
+			MesPrint("Illegal index[%d] in CalculateMZVhalf: %d",i,indexes[i]);
+			MUNLOCK(ErrorMessageLock);
+			Terminate(-1);
 		}
 	}
 	deltaMZV(result,indexes,depth);
@@ -2354,18 +2369,24 @@ void CalculateMZV(mpf_t result, WORD *indexes, int depth)
 	GETIDENTITY
 	int num1, num2 = 0, i, j = 0;
 	if ( depth < 0 ) {
-		printf("Illegal depth in CalculateMZV: %d\n",depth);
-		exit(-1);
+		MLOCK(ErrorMessageLock);
+		MesPrint("Illegal depth in CalculateMZV: %d",depth);
+		MUNLOCK(ErrorMessageLock);
+		Terminate(-1);
 	}
 	if ( indexes[0] == 1 ) {
-		printf("Divergent MZV in CalculateMZV\n");
-		exit(-1);
+		MLOCK(ErrorMessageLock);
+		MesPrint("Divergent MZV in CalculateMZV");
+		MUNLOCK(ErrorMessageLock);
+		Terminate(-1);
 	}
 /*	MesPrint("calculateMZV(%a)",depth,indexes); */
 	for ( i = 0; i < depth; i++ ) {
 		if ( indexes[i] <= 0 ) {
-			printf("Illegal index[%d] in CalculateMZV: %d\n",i,indexes[i]);
-			exit(-1);
+			MLOCK(ErrorMessageLock);
+			MesPrint("Illegal index[%d] in CalculateMZV: %d",i,indexes[i]);
+			MUNLOCK(ErrorMessageLock);
+			Terminate(-1);
 		}
 		AT.indi1[i] = indexes[i];
 	}
@@ -2428,17 +2449,23 @@ void CalculateEuler(mpf_t result, WORD *Zindexes, int depth)
 	}
 
 	if ( depth < 0 ) {
-		printf("Illegal depth in CalculateEuler: %d\n",depth);
-		exit(-1);
+		MLOCK(ErrorMessageLock);
+		MesPrint("Illegal depth in CalculateEuler: %d\n",depth);
+		MUNLOCK(ErrorMessageLock);
+		Terminate(-1);
 	}
 	if ( indexes[0] == 1 ) {
-		printf("Divergent Euler sum in CalculateEuler\n");
-		exit(-1);
+		MLOCK(ErrorMessageLock);
+		MesPrint("Divergent Euler sum in CalculateEuler\n");
+		MUNLOCK(ErrorMessageLock);
+		Terminate(-1);
 	}
 	for ( i = 0, j = 0; i < depth; i++ ) {
 		if ( indexes[i] == 0 ) {
-			printf("Illegal index[%d] in CalculateEuler: %d\n",i,indexes[i]);
-			exit(-1);
+			MLOCK(ErrorMessageLock);
+			MesPrint("Illegal index[%d] in CalculateEuler: %d\n",i,indexes[i]);
+			MUNLOCK(ErrorMessageLock);
+			Terminate(-1);
 		}
 		if ( indexes[i] < 0 ) j = 1;
 		AT.indi1[i] = indexes[i];
@@ -2558,8 +2585,10 @@ int EvaluateEuler(PHEAD WORD *term, WORD level, WORD par)
 			/* euler sum without arguments, i.e. mzv_(), euler_() or mzvhalf_() */
 			if ( depth == 0) goto nextfun;
 			if ( sumweight > AC.MaxWeight ) {
-				MesPrint("Error: Weight of Euler/MZV sum greater than %d",sumweight);
-				MesPrint("Please increase MaxWeight in form.set.");
+				MLOCK(ErrorMessageLock);
+				MesPrint("Error: Weight of Euler/MZV sum greater than %d.",AC.MaxWeight);
+				MesPrint("Please increase the maximum weight in %#startfloat.");
+				MUNLOCK(ErrorMessageLock);
 				Terminate(-1);
 			}
 /*
