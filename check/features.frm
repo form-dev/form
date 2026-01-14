@@ -2268,6 +2268,19 @@ assert stdout =~ exact_pattern("Generated terms =       1001  (  1 K  )")
 assert stdout =~ exact_pattern("Terms in output =       1001  (  1 K  )")
 assert stdout =~ exact_pattern("Bytes used      =     199172  (199 KiB)")
 *--#] humanstats :
+*--#[ ModuleOption_dollar_order :
+$a = 0;
+ModuleOption sum,$a;
+$b = 0;
+ModuleOption maximum,$b;
+$c = 0;
+ModuleOption minimum,$c;
+$d = 0;
+ModuleOption local,$d;
+discard;
+.end
+assert succeeded?
+*--#] ModuleOption_dollar_order : 
 *--#[ Issue49 :
 * Add mul_ function for polynomial multiplications
 Symbols x,y,z;

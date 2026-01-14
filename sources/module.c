@@ -502,7 +502,14 @@ Error2:;
 	AR.PolyFunExp = 0;
 	AC.PolyRatFunChanged = 1;
 	*t = c;
-	if ( *t == '+' ) {
+	if ( *t == '+' || *t == ',' ) {
+		if ( *t == ',' ) {
+			/*
+			 * Somehow "+" is not checked by CoModuleOption, and the word
+			 * after "+" is ignored. We take advantage of this.
+			 */
+			*t = '+';
+		}
 		t++; s = t;
 		t = EndOfToken(s);
 		c = *t; *t = 0;
@@ -672,7 +679,7 @@ UBYTE * DoModDollar(UBYTE *s, int type)
 			number = GetDollar(name);
 			if ( number < 0 ) {
 				number = AddDollar(s,0,0,0);
-				Warning("&Undefined $-variable in module statement");
+				Warning("Undefined $-variable in module statement");
 			}
 			md = (MODOPTDOLLAR *)FromList(&AC.ModOptDolList);
 			md->number = number;

@@ -1526,7 +1526,7 @@ illegsym:		*s = cc;
 			else goto illegsym;
 			*s = cc;
 			if ( *s != ')' || ( s[1] && s[1] != ',' && s[1] != '<' ) ) {
-				Warning("&Excess information in symmetric properties currently ignored");
+				Warning("Excess information in symmetric properties currently ignored");
 				s = SkipField(s,1);
 			}
 			else s++;
@@ -1547,7 +1547,7 @@ retry:;
 				if ( ( StrICont(par,(UBYTE *)"arguments") == 0 )
 				|| ( StrICont(par,(UBYTE *)"args") == 0 ) ) {}
 				else {
-					Warning("&Illegal information in number of arguments properties currently ignored");
+					Warning("Illegal information in number of arguments properties currently ignored");
 					error = 1;
 				}
 				*s = cc;
@@ -1571,7 +1571,7 @@ retry:;
 				if ( ( StrICont(par,(UBYTE *)"arguments") == 0 )
 				|| ( StrICont(par,(UBYTE *)"args") == 0 ) ) {}
 				else {
-					Warning("&Illegal information in number of arguments properties currently ignored");
+					Warning("Illegal information in number of arguments properties currently ignored");
 					error = 1;
 				}
 				*s = cc;

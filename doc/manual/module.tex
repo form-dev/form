@@ -31,7 +31,7 @@ existing expressions as a whole.
 \item [Definitions\index{definitions}] These define new expressions.
 \item [Executable\index{executable statements} statements] The operations 
 on all active expressions.
-\item [OutputSpecifications\index{output specifications}] These specify the 
+\item [Output specifications\index{output specifications}] These specify the 
 output representation.
 \item [End-of-module specifications\index{end of module specifications}] 
 Extra settings that are for this module only.
@@ -39,10 +39,33 @@ Extra settings that are for this module only.
 classes. Most notably the print statement.
 \end{description}
 Statements must occur in such an order that no statement follows a 
-statement of a later category. The only exception is formed by the mixed 
-statements, which can occur anywhere. This is different from earlier 
+statement of a later category, except as described bellow.
+This is different from earlier 
 versions of \FORM\ in which the order of the statements was not fixed. This 
 did cause a certain amount of confusion about the workings of \FORM\@.
+
+The exceptions are:
+\begin{itemize}
+\item Mixed statements are permitted in the executable statements,
+      output specifications, and end-of-module specifications parts of a module.
+\item \texttt{Format}\index{format} statements are permitted anywhere.
+\item \texttt{ModuleOption}\index{moduleoption} statements that control how \$-variables are handled
+      during parallel execution are permitted anywhere.
+\end{itemize}
+The last exception allows such \texttt{ModuleOption} statements to appear inside procedures
+that use \$-variables and do not contain a \texttt{.sort}.
+For example, the following structure is valid:
+\begin{verbatim}
+    #procedure SortlessProc
+        $procLocalDollar = ...
+        ModuleOption local $procLocalDollar;
+    * more executable statements here
+    #endprocedure
+
+    #call SortlessProc
+    * more executable statements here
+    .sort
+\end{verbatim}
 
 There are several types of modules.
 \begin{description}
