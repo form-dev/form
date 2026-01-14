@@ -2247,6 +2247,52 @@ EOF
 #pend_if wordsize == 2
 runtime_error?("Illegal parameter in #StartFloat: 100bd,MZV = 10")
 *--#] startfloat_error :
+*--#[ mzv_error_1: 
+#StartFloat 10d, MZV=2
+Local F = mzv_(2,1);
+Evaluate mzv_;
+.end
+#pend_if wordsize == 2
+#pend_if mpi?
+runtime_error?("Error: Weight of Euler/MZV sum greater than 2.")
+runtime_error?("Please increase the maximum weight in #startfloat.")
+*--#] mzv_error_1 :
+*--#[ mzv_error_2: 
+#StartFloat 10d, MZV=3
+Local F = mzv_(1,2);
+Evaluate mzv_;
+.end
+#pend_if wordsize == 2
+#pend_if mpi?
+runtime_error?("Divergent MZV in CalculateMZV")
+*--#] mzv_error_2 :
+*--#[ mzv_error_3: 
+#StartFloat 10d, MZV=3
+Local F = mzv_(-2,1);
+Evaluate mzv_;
+.end
+#pend_if wordsize == 2
+#pend_if mpi?
+runtime_error?("Illegal index[0] in CalculateMZV: -2")
+*--#] mzv_error_3 :
+*--#[ mzv_error_4: 
+#StartFloat 10d, MZV=3
+Local F = mzvhalf_(2,-1);
+Evaluate mzvhalf_;
+.end
+#pend_if wordsize == 2
+#pend_if mpi?
+runtime_error?("Illegal index[1] in CalculateMZVhalf: -1")
+*--#] mzv_error_4 :
+*--#[ mzv_error_5: 
+#StartFloat 10d, MZV=3
+Local F = euler_(1,-2);
+Evaluate euler_;
+.end
+#pend_if wordsize == 2
+#pend_if mpi?
+runtime_error?("Divergent Euler sum in CalculateEuler")
+*--#] mzv_error_5 :
 *--#[ humanstats :
 #-
 On humanstats;
