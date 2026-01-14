@@ -292,16 +292,13 @@ template<typename T> struct calc {
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
-#ifdef ANSI
 #include <stdarg.h>
 #include <time.h>
-#endif
 #ifdef WINDOWS
 #include "fwin.h"
 #endif
 #ifdef UNIX
 #include <unistd.h>
-#include <time.h>
 #include <fcntl.h>
 #include <sys/file.h>
 #include "unix.h"

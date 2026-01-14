@@ -35,24 +35,6 @@
 
 #include "form3.h"
 
-#ifdef ANSI
-#include <stdarg.h>
-#else
-#ifdef mBSD
-#include <varargs.h>
-#else
-#ifdef VMS
-#include <varargs.h>
-#else
-typedef UBYTE *va_list;
-#define va_dcl int va_alist;
-#define va_start(list) list = (UBYTE *) &va_alist
-#define va_end(list)
-#define va_arg(list,mode) (((mode *)(list += sizeof(mode)))[-1])
-#endif
-#endif
-#endif
-
 static int startinline = 0;
 static char fcontchar = '&';
 static int noextralinefeed = 0;

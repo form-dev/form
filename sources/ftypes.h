@@ -168,24 +168,11 @@
 	The typedefs are to allow the compilers to do better error checking.
 */
 
-#ifdef ANSI
 typedef void (*PVFUNWP)(WORD *);
-#ifdef INTELCOMPILER
-typedef void (*PVFUNV)();
-typedef int (*CFUN)();
-#else
 typedef void (*PVFUNV)(void);
 typedef int (*CFUN)(void);
-#endif
 typedef int (*TFUN)(UBYTE *);
 typedef int (*TFUN1)(UBYTE *,int);
-#else
-typedef void (*PVFUNWP)();
-typedef void (*PVFUNV)();
-typedef int (*CFUN)();
-typedef int (*TFUN)();
-typedef int (*TFUN1)();
-#endif
 
 
 #define NOAUTO 0
