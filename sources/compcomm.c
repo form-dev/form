@@ -3361,7 +3361,7 @@ int DoInParallel(UBYTE *s, int par)
 				*s = c;
 			}
 			else {
-				MesPrint("&Illegal object in InExpression statement");
+				MesPrint("&Illegal object in InParallel statement");
 				error = 1;
 				while ( *s && *s != ',' ) s++;
 				if ( *s == 0 ) break;
