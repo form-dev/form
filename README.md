@@ -45,7 +45,7 @@ FORM can match many more complicated patterns and has many more features, as doc
 Build instructions
 ------------
 
-Before building FORM, it is advised to install the optional dependencies `gmp` and `zlib` for better performance. To quickly build FORM, install the `autoconf` and `automake` packages. Then, after cloning the repository, run:
+Before building FORM, it is advised to install the optional dependencies `gmp`, `mpfr`, `zstd`, `zlib` and `flint` for better performance. To use arbitrary-precision floating-point arithmetic, both `gmp` and `mpfr` are required; if either is unavailable it will not be enabled. To quickly build FORM, install the `autoconf` and `automake` packages. Then, after cloning the repository, run:
 
 ```sh
 autoreconf -i
@@ -60,9 +60,9 @@ For more advanced build options, see the file "[INSTALL](INSTALL)".
 Additional information
 ----------------------
 
-The latest reference manual can be found [here](https://github.com/vermaseren/form/releases/download/v4.3.1/form-4.3.1-manual.pdf) and the Form Cookbook can be found [here](https://github.com/vermaseren/form/wiki/FORM-Cookbook).
+The latest release notes are available on the [Wiki](https://github.com/form-dev/form/wiki/Release-Notes-FORM-5.0.0); the latest reference manual can be found [here](https://form-dev.github.io/form-docs/stable/manual/), and the Form Cookbook can be found [here](https://github.com/form-dev/form/wiki/FORM-Cookbook).
 
-More background information, a collection of FORM programs, and a number of courses can be found on the official [FORM website](http://www.nikhef.nl/~form) and on the [Wiki](https://github.com/vermaseren/form/wiki).
+More background information, a collection of FORM programs, and a number of courses can be found on the official [FORM website](http://www.nikhef.nl/~form) and on the [Wiki](https://github.com/form-dev/form/wiki).
 
 Information about copying and licensing of this software can be found in the file "[COPYING](COPYING)".
 
