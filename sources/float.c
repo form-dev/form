@@ -591,7 +591,7 @@ long FloatToInteger(UWORD *out, mpf_t floatin, long *bitsused)
 	mpz_set_f(z,floatin);
 	ZtoForm(out,&nout,z);
 	mpz_clear(z);
-	x = out[0]; nx = 0;
+	x = out[nout-1]; nx = 0;
 	while ( x ) { nx++; x >>= 1; }
 	*bitsused = (nout-1)*BITSINWORD + nx;
 	return(nout);
@@ -678,7 +678,7 @@ int FloatToRat(UWORD *ratout, WORD *nratout, mpf_t floatin)
 	WORD na, nb, nc, nd, i;
 	int nout;
 	LONG oldpWorkPointer = AT.pWorkPointer;
-	long bitsused = 0, totalbitsused = 0, totalbits = AC.DefaultPrecision;
+	long bitsused = 0, totalbitsused = 0, totalbits = AC.DefaultPrecision-AC.MaxWeight-1;
 	int retval = 0, startnul;
 	WantAddPointers(AC.DefaultPrecision);  /* Horrible overkill */
 	AT.pWorkSpace[AT.pWorkPointer++] = out;
@@ -710,14 +710,23 @@ int FloatToRat(UWORD *ratout, WORD *nratout, mpf_t floatin)
 		else {
 			nout = FloatToInteger((UWORD *)out,aux1,&bitsused);
 			out += nout;
-			totalbitsused += bitsused;
 		}
 		if ( bitsused > (totalbits-totalbitsused)/2 ) { break; }
 		if ( mpf_sgn(aux2) == 0 ) {
 			/*if ( startnul == 1 )*/ AT.pWorkSpace[AT.pWorkPointer++] = out;
 			break;
 		}
+		totalbitsused += bitsused;
 		AT.pWorkSpace[AT.pWorkPointer++] = out;
+	  }
+	  /* 
+	  	For |floatin| << 1, we have startnul = 1 and hit the precision guard 
+	  	already on the first continued-fraction step. The resulting float is 
+		therefore close to the rational 0/1 and we can immediately return.
+	   */
+	  if ( startnul == 1 && AT.pWorkPointer == oldpWorkPointer + 2 ) {
+		*ratout++ = 0; *ratout++ = 1; *ratout = *nratout = 3;
+		goto ret;
 	  }
 /*
 	  At this point we have the function with the repeated fraction.
@@ -734,11 +743,6 @@ int FloatToRat(UWORD *ratout, WORD *nratout, mpf_t floatin)
 	  na = 1; a[0] = 1;
 	  c = (UWORD *)(AT.pWorkSpace[--AT.pWorkPointer]);
 	  nc = nb = ((UWORD *)out)-c;
-	  if ( nc > 10 ) {
-		mc = c;
-		c = (UWORD *)(AT.pWorkSpace[--AT.pWorkPointer]);
-		nc = nb = ((UWORD *)mc)-c;
-	  }
 	  for ( i = 0; i < nb; i++ ) b[i] = c[i];
 	  mc = c = NumberMalloc("FloatToRat");
 	  while ( AT.pWorkPointer > oldpWorkPointer ) {
@@ -791,12 +795,13 @@ int FloatToRat(UWORD *ratout, WORD *nratout, mpf_t floatin)
 	if ( s < 0 ) mpf_neg(floatin,floatin);
 /*
 	{
-		WORD n = *ratout;
+		WORD n = *nratout;
 		RatToFloat(aux1,ratout,n);
 		mpf_sub(aux2,floatin,aux1);
 		gmp_printf("Diff is %.*Fe\n",40,aux2);
 	}
 */
+ret:
 	return(retval);
 }
 
@@ -1492,7 +1497,11 @@ int ToRat(PHEAD WORD *term, WORD level)
 		The result can go straight over the float_ function.
 */
 		UnpackFloat(aux4,t);
+		// If aux4 is zero, the term vanishes
+		if ( mpf_sgn(aux4) == 0 ) return(0);
 		if ( FloatToRat((UWORD *)t,&ncoef,aux4) == 0 ) {
+			// Check if the resulting rational is zero
+			if ( t[0] == 0 && t[1] == 1 && ncoef == 3 ) return(0);
 			t += ABS(ncoef);
 			t[-1] = ncoef*nsign;
 			*term = t - term;
