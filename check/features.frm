@@ -3048,3 +3048,43 @@ TableBase "no212.tbl" open, readonly;
 .end
 assert runtime_error?('Trying to open non-existent TableBase in readonly mode: no212.tbl')
 *--#] tablebase_ro_2 :
+*--#[ diagrams_err_1 :
+Model PHI3;
+	Particle phi,1;
+	Vertex phi,phi,phi:1;
+EndModel;
+.end
+#pend_if mpi?
+assert runtime_error?('Invalid coupling constant in vertex statement.')
+*--#] diagrams_err_1 :
+*--#[ diagrams_err_2 :
+Model PHI3;
+	Particle phi,1;
+	Vertex phi,phi,phi:g^-1;
+EndModel;
+.end
+#pend_if mpi?
+assert runtime_error?('Invalid negative power of coupling constant.')
+*--#] diagrams_err_2 :
+*--#[ diagrams_err_3 :
+Vector q1,q2,p1,p2;
+Model PHI3;
+	Particle phi,1;
+	Vertex phi,phi,phi:g;
+EndModel;
+Local test = diagrams_(PHI3,{phi},{phi},{},{p1,p2},1,0);
+.end
+#pend_if mpi?
+assert runtime_error?('Insufficient external momenta in diagrams_')
+*--#] diagrams_err_3 :
+*--#[ diagrams_err_4 :
+Vector q1,q2,p1,p2;
+Model PHI3;
+	Particle phi,1;
+	Vertex phi,phi,phi:g;
+EndModel;
+Local test = diagrams_(PHI3,{phi},{phi},{q1,q2},{},1,0);
+.end
+#pend_if mpi?
+assert runtime_error?('Insufficient internal momenta in diagrams_')
+*--#] diagrams_err_4 :

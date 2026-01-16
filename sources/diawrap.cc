@@ -267,7 +267,7 @@ void ProcessDiagram(EGraph *eg, void *ti)
 	int i, j, intr;
 	Model *model = (Model *)info->currentModel;
 	MODEL *m = (MODEL *)info->currentMODEL;
-	int numlegs, vect, edge;
+	int numlegs, vect, edge, maxmom = 0;
 
 	newterm = term + *term;
 	for ( i = 1; i < info->diaoffset; i++ ) newterm[i] = term[i];
@@ -331,6 +331,8 @@ void ProcessDiagram(EGraph *eg, void *ti)
 			}
 			else { // Look up in set of internal momenta set
 				*fill++ = SetElements[Sets[info->internalset].first+(vect-eg->nExtern)];
+				// determine the number of momenta required from internalset:
+				maxmom = MaX(maxmom, vect-eg->nExtern);
 			}
 			*fill++ = 1; *fill++ = 1; *fill++ = 3;
 		}
@@ -365,6 +367,7 @@ void ProcessDiagram(EGraph *eg, void *ti)
 			}
 			else { // Look up in set of internal momenta set
 				*fill++ = SetElements[Sets[info->internalset].first+(i-eg->nExtern)];
+				maxmom = MaX(maxmom, i-eg->nExtern);
 			}
 			*fill++ = 1; *fill++ = 1; *fill++ = 3;
 //
@@ -415,6 +418,7 @@ void ProcessDiagram(EGraph *eg, void *ti)
 					}
 					else { // Look up in set of internal momenta set
 						*fill++ = SetElements[Sets[info->internalset].first+(vect-info->numextern)];
+						maxmom = MaX(maxmom, vect-info->numextern);
 					}
 				}
 				funfill[1] = fill-funfill;
@@ -473,6 +477,15 @@ void ProcessDiagram(EGraph *eg, void *ti)
 	}
 	if ( eg->extperm != 1 ) {
 		*fill++ = SNUMBER; *fill++ = 4; *fill++ = (WORD)eg->extperm; *fill++ = 1;
+	}
+//
+//	verify internalset has sufficient momenta:
+//
+	if ( maxmom >= Sets[info->internalset].last - Sets[info->internalset].first ) {
+		MLOCK(ErrorMessageLock);
+		MesPrint("&Insufficient internal momenta in diagrams_");
+		MUNLOCK(ErrorMessageLock);
+		Terminate(-1);
 	}
 //
 //	finish it off
@@ -548,7 +561,7 @@ Bool ProcessTopology(EGraph *eg, void *ti)
 	Model *model = (Model *)info->currentModel;
 	MODEL *m = (MODEL *)info->currentMODEL;
 	int i, j;
-	int numlegs, vect, edge;
+	int numlegs, vect, edge, maxmom = 0;
 
 	newterm = term + *term;
 	for ( i = 1; i < info->diaoffset; i++ ) newterm[i] = term[i];
@@ -598,6 +611,8 @@ Bool ProcessTopology(EGraph *eg, void *ti)
 			}
 			else { // Look up in set of internal momenta set
 				*fill++ = SetElements[Sets[info->internalset].first+(vect-info->numextern)];
+				// determine the number of momenta required from internalset:
+				maxmom = MaX(maxmom, vect-info->numextern);
 			}
 		}
 		startfill[1] = fill-startfill;
@@ -620,6 +635,7 @@ Bool ProcessTopology(EGraph *eg, void *ti)
 			}
 			else { // Look up in set of internal momenta set
 				*fill++ = SetElements[Sets[info->internalset].first+(i-eg->nExtern)];
+				maxmom = MaX(maxmom, i-eg->nExtern);
 			}
 //
 			*fill++ = -SNUMBER; *fill++ = n1+1; // number of the node from
@@ -672,6 +688,7 @@ Bool ProcessTopology(EGraph *eg, void *ti)
 					}
 					else { // Look up in set of internal momenta set
 						*fill++ = SetElements[Sets[info->internalset].first+(vect-info->numextern)];
+						maxmom = MaX(maxmom, vect-info->numextern);
 					}
 				}
 				funfill[1] = fill-funfill;
@@ -734,13 +751,13 @@ Bool ProcessTopology(EGraph *eg, void *ti)
 		*fill++ = 0; *fill++ = 1; *fill++ = 5;
 	}
 //
-//	Symmetry factors. We let Normalize do the multiplication.
+//	verify internalset has sufficient momenta:
 //
-	if ( eg->nsym != 1 ) {
-		*fill++ = SNUMBER; *fill++ = 4; *fill++ = (WORD)eg->nsym; *fill++ = -1;
-	}
-	if ( eg->esym != 1 ) {
-		*fill++ = SNUMBER; *fill++ = 4; *fill++ = (WORD)eg->esym; *fill++ = -1;
+	if ( maxmom >= Sets[info->internalset].last - Sets[info->internalset].first ) {
+		MLOCK(ErrorMessageLock);
+		MesPrint("&Insufficient internal momenta in diagrams_");
+		MUNLOCK(ErrorMessageLock);
+		Terminate(-1);
 	}
 //
 //	finish it off
@@ -877,6 +894,13 @@ int GenDiagrams(PHEAD WORD *term, WORD level)
 		info.legcouple[i+ninitl] = m->vertices[numParticle(m,x)]->couplings;
 	}
 	info.numextern = ninitl + nfinal;
+	// Check that we have sufficient external momenta in the set:
+	if ( info.numextern > Sets[info.externalset].last - Sets[info.externalset].first ) {
+		MLOCK(ErrorMessageLock);
+		MesPrint("&Insufficient external momenta in diagrams_");
+		MUNLOCK(ErrorMessageLock);
+		Terminate(-1);
+	}
 	for ( i = 2; i <= MAXLEGS; i++ ) {
 		if ( m->legcouple[i] == 1 ) {
 			for ( j = 0; j < info.numextern; j++ ) {
@@ -1006,114 +1030,4 @@ int processVertex(TOPOTYPE *TopoInf, int pointsremaining, int level)
 }
 
 //	#] processVertex : 
-//	#[ GenTopologies :
-
-#define TOPO_MAXVERT 10
-
-int GenTopologies(PHEAD WORD *term, WORD level)
-{
-	Options *opt = new Options;
-	int nlegs, nloops, i, identical;
-	TERMINFO info;
-	WORD *t, *t1, *tstop;
-	TOPOTYPE TopoInf;
-	SETS s;
-//
-	info.term = term;
-	info.level = level;
-	info.diaoffset = AR.funoffset;
-	info.flags = 0;
- 
-	t = term + info.diaoffset;  // the function
-	t1 = t + FUNHEAD;           // its arguments
-	tstop = t + t[1];
-
-	info.externalset = t1[7];
-	info.internalset = t1[9];
-
-	s = &(Sets[t1[5]]);
-	TopoInf.nvert = s->last - s->first;
-	TopoInf.vert  = &(SetElements[s->first]);
-
-	nloops = t1[1];
-	nlegs = t1[3];
-
-	info.numextern = nlegs;
-
-	for ( i = 0; i <= MAXLEGS; i++ ) { TopoInf.cmind[i] = TopoInf.cmaxd[i] = 0; }
-
-	t1 += 10;
-	if ( t1 < tstop && t1[0] == -SETSET ) {
-		TopoInf.vertmax = &(SetElements[Sets[t1[1]].first]);
-		t1 += 2;
-	}
-	else TopoInf.vertmax = NULL;
-
-	info.flags |= TOPOLOGIESONLY;  // this is the topologies_ function after all.
-	if ( t1 < tstop && t1[0] == -SNUMBER ) {
-		if ( ( t1[1] &   WITHOUTNODES ) ==   WITHOUTNODES ) info.flags |=   WITHOUTNODES;
-		if ( ( t1[1] & WITHEDGES ) == WITHEDGES ) info.flags |= WITHEDGES;
-		if ( ( t1[1] & WITHBLOCKS ) == WITHBLOCKS ) info.flags |= WITHBLOCKS;
-		if ( ( t1[1] & WITHONEPISETS ) == WITHONEPISETS ) info.flags |= WITHONEPISETS;
-		opt->values[GRCC_OPT_1PI] = ( t1[1] & ONEPARTI ) == ONEPARTI;
-//		opt->values[GRCC_OPT_NoTadpole] = ( t1[1] & NOTADPOLE ) == NOTADPOLE;
-		opt->values[GRCC_OPT_NoTadpole] = ( t1[1] & NOSNAIL ) == NOSNAIL;
-		opt->values[GRCC_OPT_No1PtBlock] = ( t1[1] & NOTADPOLE ) == NOTADPOLE;
-//		opt->values[GRCC_OPT_NoExtSelf] = ( t1[1] & NOEXTSELF ) == NOEXTSELF;
-
-//		if ( ( t1[1] & WITHINSERTIONS ) == WITHINSERTIONS ) {
-//			opt->values[GRCC_OPT_No2PtL1PI] = True;
-//			opt->values[GRCC_OPT_NoAdj2PtV] = True;
-//			opt->values[GRCC_OPT_No2PtL1PI] = True;
-//		}
-		opt->values[GRCC_OPT_SymmInitial] = ( t1[1] & WITHSYMMETRIZEI ) == WITHSYMMETRIZEI;
-		opt->values[GRCC_OPT_SymmFinal]   = ( t1[1] & WITHSYMMETRIZEF ) == WITHSYMMETRIZEF;
-	}
-
-	info.numdia = 0;
-	info.numtopo = 1;
-
-	opt->setOutAG(ProcessDiagram, &info);
-	opt->setOutMG(ProcessTopology, &info);
-//
-//	Now we should sum over all possible vertices and run MGraph for
-//	each combination. This is done by recursion in the processVertex routine
-//	First load up the relevant arrays.
-//
-
-//	First the external nodes.
-
-	if ( nlegs == -2 ) {
-		nlegs = 2;
-		identical = 1;
-	}
-	for ( i = 0; i < nlegs; i++ ) {
-		TopoInf.cldeg[i] = 1; TopoInf.clnum[i] = 1; TopoInf.clext[i] = -1;
-	}
-	int points = 2*nloops-2+nlegs;
-
-	if ( identical == 1 ) {	/* Only propagator topologies..... */
-		nlegs = 1;
-		TopoInf.clnum[0] = 2;
-	}
-	TopoInf.ncl = nlegs;
-	TopoInf.opt = opt;
-
-	if ( points >= MAXPOINTS ) {
-		MLOCK(ErrorMessageLock);
-		MesPrint("GenTopologies: %d loops and %d legs considered excessive",nloops,nlegs);
-		MUNLOCK(ErrorMessageLock);
-		Terminate(-1);
-	}
-	if ( processVertex(&TopoInf,points,0) != 0 ) {
-		MLOCK(ErrorMessageLock);
-		MesPrint("Called from GenTopologies with %d loops and %d legs",nloops,nlegs);
-		MUNLOCK(ErrorMessageLock);
-		Terminate(-1);
-	}
-	delete opt;
-	return(0);
-}
-
-//	#] GenTopologies : 
 

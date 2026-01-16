@@ -49,15 +49,15 @@
 
 #define GRCC_FRACERROR       (1.0e-10)
 
-/* error message */
-/*
-#define GRCC_Stderr          stderr
-*/
+/* Standard and error message destination */
+#define GRCC_Stdout          stdout
 #define GRCC_Stderr          stdout
-/*
-#define GRCC_ABORT()         exit(1)
-*/
-#define GRCC_ABORT()         abort()
+
+#ifndef NOFORM
+    #define GRCC_ABORT()      Terminate(-1);
+#else
+    #define GRCC_ABORT()      exit(1)
+#endif
 
 /*---------------------------------------------------------------
  * Constants

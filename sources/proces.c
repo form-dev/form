@@ -1183,28 +1183,9 @@ Important: we may not have enough spots here
 				}
 			}
 			else if ( *t == TOPOLOGIES ) {
-/*
-				Syntax:
-				topologies_(nloops,nlegs,setvertexsizes,setext,setint[,options])
-*/
-				t1 = t+FUNHEAD; t2 = t+t[1];
-				if ( *t1 == -SNUMBER && t1[1] >= 0 &&
-					t1[2] == -SNUMBER && ( t1[3] >= 0 || t1[3] == -2 ) &&
-					t1[4] == -SETSET && Sets[t1[5]].type == CNUMBER &&
-					t1[6] == -SETSET && Sets[t1[7]].type == CVECTOR &&
-					t1[8] == -SETSET && Sets[t1[9]].type == CVECTOR &&
-					t1+10 <= t2 ) {
-					if ( t1+10 == t2 || ( t1+12 <= t2 && ( t1[10] == -SNUMBER ||
-						( t1[10] == -SETSET &&
-							Sets[t1[5]].last-Sets[t1[5]].first ==
-							Sets[t1[11]].last-Sets[t1[11]].first ) ) ) ) {
-						AN.TeInFun = -15;
-						AN.TeSuOut = 0;
-						AR.TePos = -1;
-						AR.funoffset = t - term;
-						DONE(1)
-					}
-				}
+				MesPrint("&The topologies_ function was removed in FORM 5.0.");
+				MesPrint("&See the TopologiesOnly_ option of diagrams_.");
+				Terminate(-1);
 			}
 			else if ( *t == DIAGRAMS ) {
 /*
@@ -1220,8 +1201,10 @@ Important: we may not have enough spots here
 					|| ( Sets[t1[3]].type == ANYTYPE && ( Sets[t1[3]].first == Sets[t1[3]].last ) ) ) &&
 				  t1[4] == -SETSET && ( Sets[t1[5]].type == CFUNCTION
 					|| ( Sets[t1[5]].type == ANYTYPE && ( Sets[t1[5]].first == Sets[t1[5]].last ) ) ) &&
-				  t1[6] == -SETSET && Sets[t1[7]].type == CVECTOR &&
-				  t1[8] == -SETSET && Sets[t1[9]].type == CVECTOR &&
+				  t1[6] == -SETSET && ( Sets[t1[7]].type == CVECTOR
+					|| ( Sets[t1[7]].type == ANYTYPE && ( Sets[t1[7]].first == Sets[t1[7]].last ) ) ) &&
+				  t1[8] == -SETSET && ( Sets[t1[9]].type == CVECTOR
+					|| ( Sets[t1[9]].type == ANYTYPE && ( Sets[t1[9]].first == Sets[t1[9]].last ) ) ) &&
 				  t1+12 <= t2 ) {
 /*
 					Test that the sets of particles correspond to particles
@@ -1260,7 +1243,7 @@ Important: we may not have enough spots here
 								tt1 += 2;
 							}
 						}
-						AN.TeInFun = -16;
+						AN.TeInFun = -15;
 						AN.TeSuOut = 0;
 						AR.TePos = -1;
 						AR.funoffset = t - term;
@@ -1286,7 +1269,7 @@ Important: we may not have enough spots here
 								tt1 += 2;
 							}
 						}
-						AN.TeInFun = -16;
+						AN.TeInFun = -15;
 						AN.TeSuOut = 0;
 						AR.TePos = -1;
 						AR.funoffset = t - term;
@@ -4078,9 +4061,6 @@ AutoGen:	i = *AT.TMout;
 					if ( DIVfunction(BHEAD term,level,3) < 0 ) goto GenCall;
 					break;
 				case -15:
-					if ( GenTopologies(BHEAD term,level) < 0 ) goto GenCall;
-					break;
-				case -16:
 					if ( GenDiagrams(BHEAD term,level) < 0 ) goto GenCall;
 					break;
 			}
