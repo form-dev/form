@@ -459,6 +459,7 @@ int DoTail(int argc, UBYTE **argv)
 				case 'T': /* Print the total size used at end of job */
 							AM.PrintTotalSize = 1; break;
 				case 'v': /* Print version information */
+							AC.FinalStats = 0;
 							if ( s[1] == 'v' ) {  /* verbose version information */
 								PrintHeader(2);
 								return(1);
