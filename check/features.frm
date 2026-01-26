@@ -1507,11 +1507,11 @@ StrictRounding d5;
 StrictRounding 5 d;
 .end
 #pend_if wordsize == 2
-runtime_error?("Illegal attempt for strict rounding without activating floating point numbers.")
-runtime_error?("Forgotten #startfloat instruction?")
-runtime_error?("Illegal argument(s) in StrictRounding statement: ''")
-runtime_error?("Illegal argument(s) in StrictRounding statement: 'd5'")
-runtime_error?("Illegal argument(s) in StrictRounding statement: ',d'")
+assert runtime_error?("Illegal attempt for strict rounding without activating floating point numbers.")
+assert runtime_error?("Forgotten #startfloat instruction?")
+assert runtime_error?("Illegal argument(s) in StrictRounding statement: ''")
+assert runtime_error?("Illegal argument(s) in StrictRounding statement: 'd5'")
+assert runtime_error?("Illegal argument(s) in StrictRounding statement: ',d'")
 *--#] strictrounding_error :
 *--#[ chop :
 #StartFloat 15d
@@ -1658,10 +1658,10 @@ Transform {float_,f}, selectargs(1,2);
 Print;
 .end
 #pend_if wordsize == 2
-runtime_error?("Illegal use of a transform statement and float_")
-runtime_error?("Illegal use of a transform statement and float_")
-runtime_error?("Illegal use of a transform statement and float_")
-runtime_error?("Illegal use of a transform statement and float_")
+assert runtime_error?("Illegal use of a transform statement and float_")
+assert runtime_error?("Illegal use of a transform statement and float_")
+assert runtime_error?("Illegal use of a transform statement and float_")
+assert runtime_error?("Illegal use of a transform statement and float_")
 *--#] transform_float_error :
 *--#[ argument_float :
 #StartFloat 24d
@@ -2275,7 +2275,7 @@ EOF
 #Startfloat 100bd,MZV = 10
 .end
 #pend_if wordsize == 2
-runtime_error?("Illegal parameter in #StartFloat: 100bd,MZV = 10")
+assert runtime_error?("Illegal parameter in #StartFloat: 100bd,MZV = 10")
 *--#] startfloat_error :
 *--#[ mzv_error_1: 
 #StartFloat 10d, MZV=2
@@ -2284,8 +2284,8 @@ Evaluate mzv_;
 .end
 #pend_if wordsize == 2
 #pend_if mpi?
-runtime_error?("Error: Weight of Euler/MZV sum greater than 2.")
-runtime_error?("Please increase the maximum weight in #startfloat.")
+assert runtime_error?("Error: Weight of Euler/MZV sum greater than 2.")
+assert runtime_error?("Please increase the maximum weight in #startfloat.")
 *--#] mzv_error_1 :
 *--#[ mzv_error_2: 
 #StartFloat 10d, MZV=3
@@ -2294,7 +2294,7 @@ Evaluate mzv_;
 .end
 #pend_if wordsize == 2
 #pend_if mpi?
-runtime_error?("Divergent MZV in CalculateMZV")
+assert runtime_error?("Divergent MZV in CalculateMZV")
 *--#] mzv_error_2 :
 *--#[ mzv_error_3: 
 #StartFloat 10d, MZV=3
@@ -2303,7 +2303,7 @@ Evaluate mzv_;
 .end
 #pend_if wordsize == 2
 #pend_if mpi?
-runtime_error?("Illegal index[0] in CalculateMZV: -2")
+assert runtime_error?("Illegal index[0] in CalculateMZV: -2")
 *--#] mzv_error_3 :
 *--#[ mzv_error_4: 
 #StartFloat 10d, MZV=3
@@ -2312,7 +2312,7 @@ Evaluate mzvhalf_;
 .end
 #pend_if wordsize == 2
 #pend_if mpi?
-runtime_error?("Illegal index[1] in CalculateMZVhalf: -1")
+assert runtime_error?("Illegal index[1] in CalculateMZVhalf: -1")
 *--#] mzv_error_4 :
 *--#[ mzv_error_5: 
 #StartFloat 10d, MZV=3
@@ -2321,7 +2321,7 @@ Evaluate euler_;
 .end
 #pend_if wordsize == 2
 #pend_if mpi?
-runtime_error?("Divergent Euler sum in CalculateEuler")
+assert runtime_error?("Divergent Euler sum in CalculateEuler")
 *--#] mzv_error_5 :
 *--#[ humanstats :
 #-
