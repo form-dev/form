@@ -43,11 +43,11 @@ The reason may be
 Source distributions and some binaries can be found in:
 
   http://www.nikhef.nl/~form/maindir/binaries/binaries.html
-  https://github.com/vermaseren/form/releases
+  https://github.com/form-dev/form/releases
 
 The latest source code can be cloned by:
 
-  git clone https://github.com/vermaseren/form.git
+  git clone https://github.com/form-dev/form.git
 END
 			test -f .version && cat <<END >&2
 
@@ -77,7 +77,7 @@ m4_define([subdir_objects], [m4_esyscmd_s([
 ])])
 
 AC_PREREQ([2.59])
-AC_INIT([FORM], [FORM_VERSION], [https://github.com/vermaseren/form/issues])
+AC_INIT([FORM], [FORM_VERSION], [https://github.com/form-dev/form/issues])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([sources/form3.h])
 AC_CONFIG_HEADERS([config.h])

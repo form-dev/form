@@ -69,4 +69,4 @@ Information about copying and licensing of this software can be found in the fil
 
 Bugs and remarks
 ----------------
-For reporting bugs, asking questions, giving remarks and suggestions, we welcome you to use the [Issue Tracker](https://github.com/vermaseren/form/issues).
+For reporting bugs, asking questions, giving remarks and suggestions, we welcome you to use the [Issue Tracker](https://github.com/form-dev/form/issues) or [Discussion Forum](https://github.com/form-dev/form/discussions).

@@ -2139,7 +2139,7 @@ void PrintDeprecation(const char *feature, const char *issue) {
 	MesPrint("DeprecationWarning: We are considering deprecating %s.", feature);
 	MesPrint("If you want this support to continue, leave a comment at:");
 	MesPrint("");
-	MesPrint("    https://github.com/vermaseren/form/%s", issue);
+	MesPrint("    https://github.com/form-dev/form/%s", issue);
 	MesPrint("");
 	MesPrint("Otherwise, it will be discontinued in the future.");
 	MesPrint("To suppress this warning, use the -ignore-deprecation command line option or");

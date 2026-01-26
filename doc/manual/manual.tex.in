@@ -75,7 +75,7 @@
 \begin{titlepage}
 \title{\Huge FORM \\ \Large version \formversiondesc \\ \huge Reference manual}
 \date{\formdate}
-\author{J.A.M.~Vermaseren, T.~Kaneko, J.~Kuipers, B.~Ruijl, M.~Tentyukov, T.~Ueda and J.~Vollinga}
+\author{J.A.M.~Vermaseren, J.~Davies, T.~Kaneko, J.~Kuipers, C.~Marinissen, B.~Ruijl, \\M.~Tentyukov, T.~Ueda and J.~Vollinga}
 \end{titlepage}
 \maketitle
 %\clearemptydoublepage
