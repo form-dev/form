@@ -107,11 +107,50 @@
 */
 
 /**
+ * Prints build information.
+ *
+ * @note As a configure-time assumption, the C and C++ compilers are from
+ *       the same vendor and have the same version.
+ */
+static void PrintBuildInfo(void) {
+#if defined(__INTEL_LLVM_COMPILER)
+	MesPrint("Compiler: Intel LLVM oneAPI %d",__INTEL_LLVM_COMPILER);
+#elif defined(__INTEL_COMPILER)
+	MesPrint("Compiler: Intel Classic %d",__INTEL_COMPILER);
+#elif defined(__clang__) && defined(__apple_build_version__)
+	MesPrint("Compiler: Apple Clang %d.%d.%d (build %d)",__clang_major__,__clang_minor__,__clang_patchlevel__,__apple_build_version__);
+#elif defined(__clang__)
+	MesPrint("Compiler: Clang %d.%d.%d",__clang_major__,__clang_minor__,__clang_patchlevel__);
+#elif defined(__GNUC__)
+	MesPrint("Compiler: GCC %d.%d.%d",__GNUC__,__GNUC_MINOR__,__GNUC_PATCHLEVEL__);
+#elif defined(_MSC_VER)
+	MesPrint("Compiler: MSVC %d",_MSC_VER);
+#else
+	MesPrint("Compiler: Unknown");
+#endif
+
+#if defined(__x86_64__) || defined(_M_X64)
+	MesPrint("Architecture: x86_64");
+#elif defined(__i386__) || defined(_M_IX86)
+	MesPrint("Architecture: x86 (32-bit)");
+#elif defined(__aarch64__) || defined(_M_ARM64)
+	MesPrint("Architecture: arm64");
+#elif defined(__arm__) || defined(_M_ARM)
+	MesPrint("Architecture: arm (32-bit)");
+#else
+	MesPrint("Architecture: Unknown");
+#endif
+}
+
+/**
  * Prints the header line of the output.
  *
- * @param  with_full_info  True for printing also runtime information.
+ * @param  par  Controls the output mode
+ *              (0: default,
+ *               1: including runtime information,
+ *               2: including verbose version information).
  */
-static void PrintHeader(int with_full_info)
+static void PrintHeader(int par)
 {
 #ifdef WITHMPI
 	if ( PF.me == MASTER && !AM.silent ) {
@@ -147,7 +186,7 @@ static void PrintHeader(int with_full_info)
 		s += snprintf(s,250-(s-buffer1)," %d-bits",(WORD)(sizeof(WORD)*16));
 		*s = 0;
 */
-		if ( with_full_info ) {
+		if ( par == 1 ) {
 #if defined(WITHPTHREADS) || defined(WITHMPI)
 #if defined(WITHPTHREADS)
 			int nworkers = AM.totalnumberofthreads-1;
@@ -199,6 +238,11 @@ static void PrintHeader(int with_full_info)
 			AC.LineLength = length;
 			MesPrint("%s",buffer1);
 			AC.LineLength = oldLineLength;
+		}
+
+		if ( par == 2 ) {
+			PrintFeatureList();
+			PrintBuildInfo();
 		}
 	}
 #ifdef WINDOWS
@@ -414,12 +458,13 @@ int DoTail(int argc, UBYTE **argv)
 							break;
 				case 'T': /* Print the total size used at end of job */
 							AM.PrintTotalSize = 1; break;
-				case 'v':
+				case 'v': /* Print version information */
+							if ( s[1] == 'v' ) {  /* verbose version information */
+								PrintHeader(2);
+								return(1);
+							}
 printversion:;
-#ifdef WITHMPI
-							if ( PF.me == MASTER )
-#endif
-								PrintHeader(0);
+							PrintHeader(0);
 							if ( onlyversion ) return(1);
 							goto NoFile;
 				case 'y': /* Preprocessor dumps output. No compilation. */

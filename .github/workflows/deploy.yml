@@ -127,6 +127,7 @@ jobs:
               exit 1
             fi
           fi
+          ./sources/$binname -vv
 
       - name: Upload binary as artifact
         if: steps.check-portability.outcome == 'success' && steps.check-portability.conclusion == 'success'

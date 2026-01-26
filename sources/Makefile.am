@@ -15,6 +15,7 @@ SRCBASE = \
 	execute.c \
 	extcmd.c \
 	factor.c \
+	features.cc \
 	findpat.c \
 	form3.h \
 	fsizes.h \

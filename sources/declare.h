@@ -671,6 +671,7 @@ extern int    Product(UWORD *,WORD *,WORD);
 extern void   PrtLong(UWORD *,WORD,UBYTE *);
 extern void   PrtTerms(void);
 extern void   PrintDeprecation(const char *,const char *);
+extern void   PrintFeatureList(void);
 extern void   PrintRunningTime(void);
 extern LONG   GetRunningTime(void);
 extern int    PutBracket(PHEAD WORD *);
