@@ -397,11 +397,11 @@ AM_CONDITIONAL([WITHZSTD], [test "x$with_zstd" = xyes])
 # Ensure zstd/zlibWrapper
 AS_IF([test -f "$srcdir/extern/zstd/zlibWrapper/zstd_zlibwrapper.h"], [],
 	[AC_PATH_PROG([GIT], [git])
-		AS_IF([test -n "$GIT"], [(cd "$srcdir" && "$GIT" submodule update --init)])])
+		AS_IF([test -n "$GIT" && (cd "$srcdir" && "$GIT" rev-parse --is-inside-work-tree >/dev/null 2>&1)], [(cd "$srcdir" && "$GIT" submodule update --init)])])
 AS_IF([test -f "$srcdir/extern/zstd/zlibWrapper/zstd_zlibwrapper.h"], [],
-	[AS_IF([test -d "$srcdir/.git"],
+	[AS_IF([test -e "$srcdir/.git"],
 		[AC_MSG_FAILURE([$srcdir/extern/zstd/zlibWrapper does not exist. Run git submodule update --init in the repository directory])],
-		[AC_MSG_FAILURE([$srcdir/extern/zstd/zlibWrapper does not exist])])])
+		[AC_MSG_FAILURE([$srcdir/extern/zstd/zlibWrapper does not exist. Copy the zlibWrapper directory from upstream (https://github.com/facebook/zstd)])])])
 
 # Check for flint
 AC_ARG_WITH([flint],
