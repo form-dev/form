@@ -1416,6 +1416,7 @@ class FormConfig
           @head = form_version_line
         end
       else
+        system("#{@form_cmd} #{frmname}")
         fatal("failed to execute '#{@form_cmd}'")
       end
       if !@valgrind.nil?
