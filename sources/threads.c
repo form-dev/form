@@ -3543,9 +3543,9 @@ int PutToMaster(PHEAD WORD *term)
 	fill = AT.SB.MasterFill[i];     /* Where we are filling */
 	top = AT.SB.MasterStop[i];      /* End of the block */
 	while ( j > 0 ) {
-		while ( j > 0 && fill < top ) {
-			*fill++ = *t++; j--;
-		}
+		LONG copy = MiN(top - fill, j);
+		j -= copy;
+		NCOPY(fill, t, copy);
 		if ( j > 0 ) {
 /*
 			We reached the end of the block.

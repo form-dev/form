@@ -2220,11 +2220,10 @@ int InFunction(PHEAD WORD *term, WORD *termout)
 					AR.DeferFlag = 0;
 					v = t + *t;
 					t += ARGHEAD;		/* First term */
-					w = 0;	/* to appease the compilers warning devices */
-					while ( from < t ) {
-						if ( from == u ) w = m;
-						*m++ = *from++;
-					}
+					LONG copy = t - from;
+					const LONG size = t - u;
+					NCOPY(m, from, copy);
+					w = m - size;
 					to = m;
 					NewSort(BHEAD0);
 					if ( *u == AR.PolyFun && AR.PolyFunType == 2 ) {
@@ -2314,11 +2313,10 @@ int InFunction(PHEAD WORD *term, WORD *termout)
 						&& ( *u != AR.PolyFun ) ) { AN.ncmod = 0; }
 					AR.DeferFlag = 0;
 					v = t + 2;
-					w = 0;	/* to appease the compilers warning devices */
-					while ( from < t ) {
-						if ( from == u ) w = m;
-						*m++ = *from++;
-					}
+					LONG copy = t - from;
+					const LONG size = t - u;
+					NCOPY(m, from, copy);
+					w = m - size;
 					to = m;
 					switch ( d->type ) {
 						case DOLINDEX:
@@ -2481,11 +2479,10 @@ int InFunction(PHEAD WORD *term, WORD *termout)
 					u points at the start of the function
 					t points at the start of the argument
 */
-					w = 0;
-					while ( from < t ) {
-						if ( from == u ) w = m;
-						*m++ = *from++;
-					}
+					LONG copy = t - from;
+					const LONG size = t - u;
+					NCOPY(m, from, copy);
+					w = m - size;
 					if ( ( numterms & MAXPOSITIVE ) == numterms ) {
 						*m++ = -SNUMBER; *m++ =  numterms & MAXPOSITIVE;
 						w[1] += 1;
@@ -2548,11 +2545,11 @@ int InFunction(PHEAD WORD *term, WORD *termout)
 					if ( ( AN.ncmod != 0 )
 						&& ( ( AC.modmode & ALSOFUNARGS ) == 0 )
 						&& ( *u != AR.PolyFun ) ) { AN.ncmod = 0; }
-					m = termout; w = 0;
-					while ( from < t ) {
-						if ( from == u ) w = m;
-						*m++ = *from++;
-					}
+					m = termout;
+					LONG copy = t - from;
+					const LONG size = t - u;
+					NCOPY(m, from, copy);
+					w = m - size;
 					to = m;
 					switch ( d->type ) {
 						case DOLINDEX:
