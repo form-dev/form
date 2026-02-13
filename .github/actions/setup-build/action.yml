@@ -269,6 +269,11 @@ runs:
           echo "DISTNAME=form-$(./scripts/git-version-gen.sh -r | sed '2q;d' | sed 's/^v//')" >>"$GITHUB_ENV"
         fi
 
+        # Get cache key for the image ###
+
+        # See: https://github.com/actions/upload-artifact/issues/231
+        echo "image_key=$ImageOS-$ImageVersion" >>"$GITHUB_OUTPUT"
+
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux' && steps.setup.outputs.container == 'false'
       uses: awalsh128/cache-apt-pkgs-action@a605dbde2ac49a823c9c87ad58491b51848bf355  # for empty_packages_behavior
@@ -281,7 +286,9 @@ runs:
           ${{ steps.setup.outputs.mpfr == 'true' && 'libmpfr-dev' || '' }}
           ${{ steps.setup.outputs.zstd == 'true' && 'libzstd-dev' || '' }}
           ${{ steps.setup.outputs.valgrind == 'true' && 'valgrind' || '' }}
-        version: 1.0
+        # Include the runner image version in the cache key to avoid using stale cache.
+        # See: https://github.com/awalsh128/cache-apt-pkgs-action/issues/187
+        version: ${{ steps.setup.outputs.image_key }}-1.0
         empty_packages_behavior: ignore
 
     # awalsh128/cache-apt-pkgs-action does not work for MPI.
@@ -440,16 +447,6 @@ runs:
           ${{ steps.setup.outputs.zlib == 'true' && 'mingw-w64-clang-aarch64-zlib' || '' }}
           ${{ steps.setup.outputs.zstd == 'true' && 'mingw-w64-clang-aarch64-zstd' || '' }}
 
-    - name: Get cache key for the image
-      id: cache_key
-      if: steps.setup.outputs.build_flint == 'true'
-      shell: ${{ steps.setup.outputs.msys2 == 'true' && 'msys2 {0}' || 'bash' }}
-      run: |
-        ### Get cache key for the image ###
-
-        # See: https://github.com/actions/upload-artifact/issues/231
-        echo "image_key=$ImageOS-$ImageVersion" >>"$GITHUB_OUTPUT"
-
     - name: Cache FLINT
       id: cache-flint
       if: steps.setup.outputs.build_flint == 'true'
@@ -458,7 +455,7 @@ runs:
         path: lib/flint
         # Here, we set a conservative cache key so that the cache is not reused
         # when the version or environment changes even slightly.
-        key: flint-${{ inputs.flint_version }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.cache_key.outputs.image_key }}
+        key: flint-${{ inputs.flint_version }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.setup.outputs.image_key }}
 
     # Note that we always set --enable-static so that release and non-release
     # builds can share the same cache.
