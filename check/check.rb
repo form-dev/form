@@ -77,16 +77,20 @@ end
 # Get the total size of the physical memory available on the host machine.
 def total_physical_memory
   platform = RbConfig::CONFIG["host_os"].downcase
-  if platform.include?("linux")
-    mem_info = `free -b | grep Mem`
-    mem_info.split[1].to_i
-  elsif platform.include?("darwin")
-    mem_info = `sysctl -n hw.memsize`
-    mem_info.to_i
-  elsif platform.include?("mingw") || platform.include?("mswin")
-    mem_info = `wmic ComputerSystem get TotalPhysicalMemory`
-    mem_info.split[1].to_i
+
+  case
+  when platform.include?("linux")
+    File.foreach("/proc/meminfo") do |line|
+      m = line.match(/\bMemTotal\b\D+(\d+)/)
+      return m[1].to_i * 1024 if m
+    end
+  when platform.include?("darwin")
+    return `sysctl -n hw.memsize`.to_i
+  when platform.include?("mingw") || platform.include?("mswin")
+    return `powershell -NoProfile -Command "(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory"`.to_i
   end
+
+  nil
 end
 
 # The default prefix for the root temporary directory. See TempDir.root.
@@ -358,6 +362,9 @@ module FormTest
           @@cached_total_memory = -1
         else
           @@cached_total_memory = result
+        end
+        if result.nil? || result <= 0
+          warn("failed to determine total physical memory")
         end
       end
       @@cached_total_memory
