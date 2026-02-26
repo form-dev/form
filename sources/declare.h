@@ -69,11 +69,18 @@
 
 /* (n) is necessary here, since the macro is sometimes passed dereferenced pointers for n */
 #define NCOPY(s,t,n) { while ( (n)-- > 0 ) { *s++ = *t++; } }
-/*#define NCOPY(s,t,n) { memcpy(s,t,n*sizeof(WORD)); s+=n; t+=n; n = -1; }*/
 #define NCOPYI(s,t,n) { while ( (n)-- > 0 ) { *s++ = *t++; } }
 #define NCOPYB(s,t,n) { while ( (n)-- > 0 ) { *s++ = *t++; } }
 #define NCOPYI32(s,t,n) { while ( (n)-- > 0 ) { *s++ = *t++; } }
 #define WCOPY(s,t,n) { int nn=n; WORD *ss=(WORD *)s, *tt=(WORD *)t; while ( (nn)-- > 0 ) { *ss++ = *tt++; } }
+
+/* Use memmove not memcpy: we can't guarantee that s, t do not overlap */
+/* Using memmove produces no measurable performance improvement or regression. */
+/*#define NCOPY(s,t,n) { memmove(s,t,(n)*sizeof(*s)); s+=n; t+=n; n=0; }
+#define NCOPYI(s,t,n) { NCOPY(s,t,n); }
+#define NCOPYB(s,t,n) { NCOPY(s,t,n); }
+#define NCOPYI32(s,t,n) { NCOPY(s,t,n); }
+#define WCOPY(s,t,n) { int nn=n; WORD *ss=(WORD *)s, *tt=(WORD *)t; NCOPY(ss,tt,nn); }*/
 
 #define NeedNumber(x,s,err) { int sgn = 1;                               \
 		while ( *s == ' ' || *s == '\t' || *s == '-' || *s == '+' ) {      \
