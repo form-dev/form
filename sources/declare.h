@@ -1300,6 +1300,7 @@ extern void   SubsInAll(PHEAD0);
 extern void   TransferBuffer(int,int,int);
 extern int    TakeIDfunction(PHEAD WORD *);
 extern int    MakeSetupAllocs(void);
+extern NORMDATA *AllocNormData(void);
 extern int    TryFileSetups(void);
 extern void   ExchangeExpressions(int,int);
 extern void   ExchangeDollars(int,int);

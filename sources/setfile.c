@@ -1116,6 +1116,32 @@ int MakeSetupAllocs(void)
 
 /*
  		#] MakeSetupAllocs : 
+		#[ AllocNormData :
+
+	Allocate the arrays within the NORMDATA struct. These are dynamic,
+	such that valgrind can detect buffer overruns in these arrays.
+*/
+
+NORMDATA* AllocNormData(void)
+{
+	NORMDATA* tmp = Malloc1(sizeof(NORMDATA), "NormData struct");
+
+	tmp->psym = Malloc1(7*NORMSIZE*sizeof(*(tmp->psym)), "Normalize struct psym");
+	tmp->pvec = Malloc1(1*NORMSIZE*sizeof(*(tmp->pvec)), "Normalize struct pvec");
+	tmp->pdot = Malloc1(3*NORMSIZE*sizeof(*(tmp->pdot)), "Normalize struct pdot");
+	tmp->pdel = Malloc1(2*NORMSIZE*sizeof(*(tmp->pdel)), "Normalize struct pdel");
+	tmp->pind = Malloc1(1*NORMSIZE*sizeof(*(tmp->pind)), "Normalize struct pind");
+	tmp->peps = Malloc1(NORMSIZE/3*sizeof(*(tmp->peps)), "Normalize struct peps");
+	tmp->pden = Malloc1(NORMSIZE/3*sizeof(*(tmp->pden)), "Normalize struct pden");
+	tmp->pcom = Malloc1(1*NORMSIZE*sizeof(*(tmp->pcom)), "Normalize struct pcom");
+	tmp->pnco = Malloc1(1*NORMSIZE*sizeof(*(tmp->pnco)), "Normalize struct pnco");
+	tmp->pcon = Malloc1(2*NORMSIZE*sizeof(*(tmp->pcon)), "Normalize struct pcon");
+
+	return tmp;
+}
+
+/*
+		#] AllocNormData : 
  		#[ TryFileSetups :
 
 		Routine looks in the input file for a start of the type
