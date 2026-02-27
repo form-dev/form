@@ -394,14 +394,11 @@ NoChangeOne:;
 	}
 /*
 	Now the real evaluation.
-	In the case of threads and MODSUM this requires an immediate lock.
-	Otherwise the lock could be placed later.
+	We need to lock here before we work out the RHS, in case the RHS itself
+	depends on the dollar variable.
 */
 #ifdef WITHPTHREADS
-	if ( dtype == MODSUM ) {
-/*		LOCK(d->pthreadslockwrite); */
-		LOCK(d->pthreadslockread);
-	}
+	LOCK(d->pthreadslockread);
 #endif
 	CleanDollarFactors(d);
 /*
@@ -445,12 +442,7 @@ NoChangeOne:;
 		}
 		numterms = 0; t = ss; while ( *t ) { numterms++; t += *t; }
 	}
-#ifdef WITHPTHREADS
-	if ( dtype != MODSUM ) {
-/*		LOCK(d->pthreadslockwrite); */
-		LOCK(d->pthreadslockread);
-	}
-#endif
+
 	if ( numterms == 0 ) {
 /*
 		the new value evaluates to zero
