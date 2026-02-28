@@ -73,6 +73,8 @@ jobs:
           # We have to use "continue-on-error", instead.
           - {os: windows-2022, shell: msys2, bin: form}
           - {os: windows-2022, shell: msys2, bin: tform}
+          - {os: windows-11-arm, shell: msys2, bin: form}
+          - {os: windows-11-arm, shell: msys2, bin: tform}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -294,6 +296,7 @@ jobs:
           make_tar_gz x86_64-osx '*-macos-15-intel/*form'
           make_tar_gz arm64-osx '*-macos-14/*form'
           make_zip x86_64-windows '*-windows-2022/*form.exe'
+          make_zip arm64-windows '*-windows-11-arm/*form.exe'
 
       - name: Summarize the distributions
         run: |
