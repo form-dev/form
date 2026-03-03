@@ -529,7 +529,6 @@ See also & trace4 (\ref{substatrace}) and the chapter on gamma algebra
     \gamma_a\gamma_\mu\gamma_b \Tr[\gamma_\mu S] & = &
          2\gamma_a( S + S^R ) \gamma_b  \nonumber
 \end{eqnarray}
-\setcounter{equation}{2}
 in order to contract traces. $S$ is here a string of
 gamma\index{gamma matrices} matrices and $S^R$ is the reverse string. This 
 identity is particularly useful when the matrices $\gamma_6 = 1+\gamma_5$ 
@@ -4688,7 +4687,6 @@ will assume that $c = b-a$ and then make the substitutions
             c^ib^{n-m-i}
             \ \ \ \ \ \ \ \hfill m<n \nonumber
 \end{eqnarray}
-\setcounter{equation}{3}
 Of course, such substitutions can be made also by the user in a more 
 flexible way. This statement has however the advantage of the best speed.
 \vspace{4mm}
@@ -5364,16 +5362,14 @@ sign, the definition is
 \begin{eqnarray}
     \sum_{i=1}^N \sum_{i=1}^N & = & \sum_{i=1}^N \sum_{j=1}^{i-1}
         + \sum_{j=1}^N \sum_{i=1}^{j-1}
-        + \sum_{i=j=1}^N
+        + \sum_{i=j=1}^N \nonumber
 \end{eqnarray}
-\setcounter{equation}{4}
 while in the case of the minus the definition is
 \begin{eqnarray}
     \sum_{i=1}^N \sum_{i=1}^N & = & \sum_{i=1}^N \sum_{j=1}^{i}
         + \sum_{j=1}^N \sum_{i=1}^{j}
-        - \sum_{i=j=1}^N
+        - \sum_{i=j=1}^N \nonumber
 \end{eqnarray}
-\setcounter{equation}{5}
 It is assumed that we have harmonic sums\index{harmonic sum} (see the 
 summer library in the \FORM\ distribution). For such sums we expect 
 functions with lists of nonzero integer arguments. Example:
@@ -5966,9 +5962,8 @@ the contraction apparent. Then all these vectors with their indices are
 replaced by the specified tensor with all the indices of these vectors. To 
 make this clearer:
 \begin{eqnarray}
-    p^{\mu_1}p^{\mu_2}p^{\mu_3} \rightarrow t^{\mu_1\mu_2\mu_3} \nonumber
+    p^{\mu_1}p^{\mu_2}p^{\mu_3} & \rightarrow & t^{\mu_1\mu_2\mu_3} \nonumber
 \end{eqnarray}
-\setcounter{equation}{6}
 and hence
 % THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
 % WELL! (Sta_ToTensor_1)
@@ -6016,9 +6011,8 @@ Syntax & tovector {\tt<}tensor{\tt>} {\tt<}vector{\tt>}; \\
 statement. The tensor is replaced by a product of the given vectors, each 
 with one of the indices of the tensor as in:
 \begin{eqnarray}
-    t^{\mu_1\mu_2\mu_3} \rightarrow p^{\mu_1}p^{\mu_2}p^{\mu_3} \nonumber
+    t^{\mu_1\mu_2\mu_3} & \rightarrow & p^{\mu_1}p^{\mu_2}p^{\mu_3} \nonumber
 \end{eqnarray}\vspace{10mm}
-\setcounter{equation}{7}
 
 %--#] tovector : 
 %--#[ trace4 :
