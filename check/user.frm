@@ -736,6 +736,52 @@ Print check;
 .end
 assert result("check") =~ expr("0")
 *--#] jodavies_prf_1 :
+*--#[ jodavies_dollar_locks :
+#-
+
+#: TermsInSmall 2M
+
+* A larger version of this test can be used to easily demonstrate the
+* performance improvement due to max/min dollar locking changes in TFORM,
+* see PR 807.
+
+Symbol x,i;
+CFunction sum;
+
+#define N "{32*8}"
+*#define BLOCK "200000"
+#define BLOCK "20"
+
+Local test =
+	#do i = 0,{`N'-1}
+		+ sum(i,`i'*`BLOCK',{`i'+1}*`BLOCK'-1,x^i)
+	#enddo
+	;
+.sort
+Identify sum(?a) = sum_(?a);
+.sort
+
+#$min = `N'*`BLOCK';
+#$max = -1;
+
+If (Count(x,1) > $max) $max = count_(x,1);
+If (Count(x,1) < $min) $min = count_(x,1);
+
+ModuleOption maximum $max;
+ModuleOption minimum $min;
+.sort
+
+#message max: `$max'
+#message min: `$min'
+.end
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+~~~max: 5119
+EOF
+assert stdout =~ exact_pattern(<<'EOF')
+~~~min: 0
+EOF
+*--#] jodavies_dollar_locks :
 *--#[ tueda_prf_1 :
 #-
 Off Statistics;

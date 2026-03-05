@@ -71,7 +71,7 @@ int FactorIn(PHEAD WORD *term, WORD level)
 			}
 			if ( nummodopt < NumModOptdollars ) {
 				dtype = ModOptdollars[nummodopt].type;
-				if ( dtype == MODLOCAL ) {
+				if ( DollarLocalCopy(dtype) ) {
 					d = ModOptdollars[nummodopt].dstruct+AT.identity;
 				}
 			}

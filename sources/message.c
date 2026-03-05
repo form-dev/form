@@ -421,7 +421,7 @@ int MesPrint(const char *fmt, ... )
 						}
 						if ( nummodopt < NumModOptdollars ) {
 							dtype = ModOptdollars[nummodopt].type;
-							if ( dtype == MODLOCAL ) {
+							if ( DollarLocalCopy(dtype) ) {
 								d = ModOptdollars[nummodopt].dstruct+AT.identity;
 							}
 							else {
@@ -480,7 +480,7 @@ printterms:				first = 1;
 							AddToLine((UBYTE *)Out);
 							if ( WriteInnerTerm(term,first) ) {
 #ifdef WITHPTHREADS
-								if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
+								if ( dtype > 0 && ! DollarLocalCopy(dtype) ) { UNLOCK(d->pthreadslock); }
 #endif
 								Terminate(-1);
 							}
@@ -511,7 +511,7 @@ dosubterm:				if ( AC.LineLength > MAXLINELENGTH ) AC.LineLength = MAXLINELENGTH
 						AddToLine((UBYTE *)Out);
 						if ( WriteSubTerm(tt,1) ) {
 #ifdef WITHPTHREADS
-							if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
+							if ( dtype > 0 && ! DollarLocalCopy(dtype) ) { UNLOCK(d->pthreadslock); }
 #endif
 							Terminate(-1);
 						}
@@ -615,7 +615,7 @@ dollarzero:				*t++ = '0'; *t = 0;
 						}
 					}
 #ifdef WITHPTHREADS
-					if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
+					if ( dtype > 0 && ! DollarLocalCopy(dtype) ) { UNLOCK(d->pthreadslock); }
 #endif
 					AN.listinprint += 2;
 					while ( AN.listinprint[0] == DOLLAREXPR2 ) AN.listinprint += 2;

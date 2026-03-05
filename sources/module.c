@@ -693,7 +693,7 @@ UBYTE * DoModDollar(UBYTE *s, int type)
 			md->number = number;
 			md->type = type;
 #ifdef WITHPTHREADS
-			if ( type == MODLOCAL ) {
+			if ( DollarLocalCopy(type) ) {
 				int j, i;
 				DOLLARS dglobal, dlocal;
 				md->dstruct = (DOLLARS)Malloc1(
