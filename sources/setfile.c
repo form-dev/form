@@ -387,8 +387,17 @@ int RecalcSetups(void)
 	if ( AM.MaxTer > MAXPOSITIVE - 200*(LONG)(sizeof(WORD)) ) AM.MaxTer = MAXPOSITIVE - 200*(LONG)(sizeof(WORD));
 	AM.MaxTer /= sizeof(WORD);
 	AM.MaxTer *= sizeof(WORD);
-	minimumsize = (AM.totalnumberofthreads-1)*(AM.MaxTer+
-		NUMBEROFBLOCKSINSORT*MINIMUMNUMBEROFTERMS*AM.MaxTer);
+#ifdef WITHSORTBOTS
+	if ( AM.totalnumberofthreads-1 > 2 ) {
+		minimumsize = (2*(AM.totalnumberofthreads-1)-2)*(AM.MaxTer+
+			NUMBEROFBLOCKSINSORT*MINIMUMNUMBEROFTERMS/2*AM.MaxTer);
+	}
+	else
+#endif
+	{
+		minimumsize = (AM.totalnumberofthreads-1)*(AM.MaxTer+
+			NUMBEROFBLOCKSINSORT*MINIMUMNUMBEROFTERMS*AM.MaxTer);
+	}
 	if ( totalsize < minimumsize ) {
 		sp->value = minimumsize - sp1->value;
 	}
