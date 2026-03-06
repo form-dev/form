@@ -1374,6 +1374,26 @@ typedef struct {
 } TERMINFO;
 
 /*
+	Struct to hold temporary data in Normalize, so that it is not allocated
+	on the stack each function call. The sizes of these arrays introduces a
+	maximum complexity of terms which can be normalized. Each array is
+	allocated dynamically, by AllocNormData, such that valgrind can detect
+	errors if they are over-run.
+*/
+typedef struct NoRmDaTa {
+	WORD  *psym;
+	WORD  *pvec;
+	WORD  *pdot;
+	WORD  *pdel;
+	WORD  *pind;
+	WORD **peps;
+	WORD **pden;
+	WORD **pcom;
+	WORD **pnco;
+	WORD **pcon;
+} NORMDATA;
+
+/*
   	#] Varia : 
     #[ A :
  		#[ M : The M struct is for global settings at startup or .clear
@@ -2081,6 +2101,9 @@ struct T_const {
     void    *aux_;
     void    *auxr_;
 #endif
+    NORMDATA **NormData;
+    LONG    NormDataSize;
+    LONG    NormDepth;
     PARTI   partitions;
     LONG    sBer;                  /* (T) Size of the Bernoullis buffer */
     LONG    pWorkPointer;          /* (R) Offset-pointer in pWorkSpace */

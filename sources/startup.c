@@ -1232,6 +1232,11 @@ void StartVariables(void)
 	AR.wranfnpair1 = NPAIR1;
 	AR.wranfnpair2 = NPAIR2;
 	AR.wranfseed = 0;
+
+	AT.NormData = Malloc1(sizeof(*(AT.NormData)), "NormData pointers");
+	AT.NormDataSize = 1;
+	AT.NormData[0] = AllocNormData();
+	AT.NormDepth = 0;
 #endif
 	AM.atstartup = 1;
 	AM.oldnumextrasymbols = strDup1((UBYTE *)"OLDNUMEXTRASYMBOLS_","oldnumextrasymbols");
