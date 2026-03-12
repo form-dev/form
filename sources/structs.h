@@ -542,8 +542,7 @@ typedef struct DoLlArS {
 	WORD	*where;				/* A pointer(!) to the object */
 	FACDOLLAR *factors;			/* an array of factors. nfactors elements */
 #ifdef WITHPTHREADS
-	pthread_mutex_t	pthreadslockread;
-	pthread_mutex_t	pthreadslockwrite;
+	pthread_mutex_t	pthreadslock;
 #endif
 	LONG	size;				/* The number of words */
 	LONG	name;

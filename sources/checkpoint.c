@@ -2099,8 +2099,7 @@ int DoRecovery(int *moduletype)
 			R_COPY_B(d->where, size, void*);
 		}
 #ifdef WITHPTHREADS
-		d->pthreadslockread = dummylock;
-		d->pthreadslockwrite = dummylock;
+		d->pthreadslock = dummylock;
 #endif
 		if ( d->nfactors > 1 ) {
 			R_COPY_B(d->factors,sizeof(FACDOLLAR)*d->nfactors,FACDOLLAR*);
