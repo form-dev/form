@@ -1993,6 +1993,8 @@ void *RunSortBot(void *dummy)
 				AT.SB.FillBlock = 1;
 				AT.SB.MasterFill[1] = AT.SB.MasterStart[1];
 				SETBASEPOSITION(AN.theposition,0);
+				// Reset the sortbot comparison count
+				AT.SS->verbComparisons = 0;
 				break;
 /*
 			#] INISORTBOT : 
@@ -4058,10 +4060,21 @@ EndOfMerge:
 	fin->handle = -1;
 	position = S->SizeInFile[0];
 	MULPOS(position,sizeof(WORD));
+
+	// Collect global sort statistics information from the threads.
+	// The total GenTerms is the sum of the thread GenTerms.
+	// The total small/large buffer sort info is the sum of the thread info.
+	// The total comparison count is the sum of the thread counts.
 	S->GenTerms = 0;
 	for ( j = 1; j <= numberofworkers; j++ ) {
 		S->GenTerms += AB[j]->T.SS->GenTerms;
+		S->verbComparisons += AB[j]->T.SS->verbComparisons;
+		S->verbSBsortTerms += AB[j]->T.SS->verbSBsortTerms;
+		S->verbSBsortCap += AB[j]->T.SS->verbSBsortCap;
+		S->verbLBsortPatches += AB[j]->T.SS->verbLBsortPatches;
+		S->verbLBsortCap += AB[j]->T.SS->verbLBsortCap;
 	}
+
 	WriteStats(&position,STATSPOSTSORT,NOCHECKLOGTYPE);
 	Expressions[AR0.CurExpr].counter = S->TermsLeft;
 	Expressions[AR0.CurExpr].size = position;
@@ -4199,10 +4212,24 @@ int SortBotMasterMerge(void)
 	}
 	position = S->SizeInFile[0];
 	MULPOS(position,sizeof(WORD));
+
+	// Collect global sort statistics information from the threads.
+	// The total GenTerms is the sum of the thread GenTerms.
+	// The total small/large buffer sort info is the sum of the thread info.
+	// The total comparison count is the sum of the thread and sortbot counts.
 	S->GenTerms = 0;
 	for ( j = 1; j <= numberofworkers; j++ ) {
 		S->GenTerms += AB[j]->T.SS->GenTerms;
+		S->verbComparisons += AB[j]->T.SS->verbComparisons;
+		S->verbSBsortTerms += AB[j]->T.SS->verbSBsortTerms;
+		S->verbSBsortCap += AB[j]->T.SS->verbSBsortCap;
+		S->verbLBsortPatches += AB[j]->T.SS->verbLBsortPatches;
+		S->verbLBsortCap += AB[j]->T.SS->verbLBsortCap;
 	}
+	for ( j = numberofworkers+1; j <= numberofworkers+numberofsortbots; j++ ) {
+		S->verbComparisons += AB[j]->T.SS->verbComparisons;
+	}
+
 	S->TermsLeft = numberofterms;
 	WriteStats(&position,STATSPOSTSORT,NOCHECKLOGTYPE);
 	Expressions[AR.CurExpr].counter = S->TermsLeft;
