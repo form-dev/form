@@ -3203,9 +3203,9 @@ GetTb3:
 				AS.Oldvflags = buffer;
 
 				buffer = (WORD *)Malloc1(capacity * sizeof(WORD), "uflags pointers");
-				if (AS.Olduflags) {
-					WCOPY(buffer, AS.Olduflags, AS.NumOldNumFactors);
-					M_free(AS.Olduflags, "uflags pointers");
+				if (AS.Oldvflags) {
+					WCOPY(buffer, AS.Oldvflags, AS.NumOldNumFactors);
+					M_free(AS.Oldvflags, "uflags pointers");
 				}
 				AS.Oldvflags = buffer;
 
@@ -3246,7 +3246,7 @@ GetTb3:
 				AT.WorkPointer = oldwork;
 				return(0);
 			}
-			AS.Olduflags[expr] =
+			AS.Oldvflags[expr] =
 			Expressions[expr].uflags = *AT.WorkPointer;
 /*
 			MesPrint("--> uflags = %d",Expressions[expr].uflags);
