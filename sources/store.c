@@ -3207,7 +3207,7 @@ GetTb3:
 					WCOPY(buffer, AS.Olduflags, AS.NumOldNumFactors);
 					M_free(AS.Olduflags, "uflags pointers");
 				}
-				AS.Oldvflags = buffer;
+				AS.Olduflags = buffer;
 
 				AS.NumOldNumFactors = capacity;
 			}
