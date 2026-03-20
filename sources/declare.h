@@ -1277,6 +1277,7 @@ extern WORD   *MakeDollarInteger(PHEAD WORD *,WORD **);
 extern WORD   *MakeDollarMod(PHEAD WORD *,WORD **);
 extern int    GetDolNum(PHEAD WORD *, WORD *);
 extern void   AddPotModdollar(WORD);
+extern int    DollarLocalCopy(WORD);
  
 extern int    Optimize(WORD, int);
 extern int    ClearOptimize(void);

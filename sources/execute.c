@@ -904,9 +904,79 @@ int DoExecute(WORD par, WORD skip)
 #ifdef WITHPTHREADS
 	for ( j = 0; j < NumModOptdollars; j++ ) {
 		if ( ModOptdollars[j].dstruct ) {
-/*
-			First clean up dollar values.
-*/
+
+			//Here we must collect global maximum or minimum dollar values, for
+			//MODMAX and MODMIN cases, and put them in the global dollar variable.
+			//Then we clean up.
+
+			if ( ModOptdollars[j].type == MODMAX || ModOptdollars[j].type == MODMIN ) {
+				const WORD globalnumber = ModOptdollars[j].number;
+				const DOLLARS gd = Dollars + globalnumber;
+
+				// If the global dollar is DOLZERO, convert it into DOLNUMBER.
+				// Note that parts of the code rely on the trailing zero.
+				if ( gd->type == DOLZERO ) {
+					gd->type = DOLNUMBER;
+					gd->where[0] = 4;
+					gd->where[1] = 0;
+					gd->where[2] = 1;
+					gd->where[3] = 3;
+					gd->where[4] = 0;
+				}
+
+				for ( i = 0; i < AM.totalnumberofthreads; i++ ) {
+					const DOLLARS ld = &(ModOptdollars[j].dstruct[i]);
+					const WORD type = ld->type;
+
+					// This can happen when a thread doesn't obtain a dollar value,
+					// for instance if it did not process any terms.
+					if ( type == DOLUNDEFINED ) continue;
+
+					if ( type != DOLZERO && type != DOLNUMBER ) {
+						MLOCK(ErrorMessageLock);
+						MesPrint("Illegal dollar variable type in MODMIN/MODMAX case: %d", type);
+						MUNLOCK(ErrorMessageLock);
+						Terminate(-1);
+					}
+
+					// If the thread value is DOLZERO, convert it to DOLNUMBER:
+					if ( type == DOLZERO ) {
+						ld->where[0] = 4;
+						ld->where[1] = 0;
+						ld->where[2] = 1;
+						ld->where[3] = 3;
+						ld->where[4] = 0;
+					}
+
+					// MODMIN and MODMAX are supposed to work only for "short integers". Thus
+					// the term data should be "4 N 1 +-3". Use CompCoef to make the comparison:
+					const WORD cmp = CompCoef(gd->where, ld->where);
+					if ( ( ModOptdollars[j].type == MODMAX && cmp < 0 ) ||
+						( ModOptdollars[j].type == MODMIN && cmp > 0 ) ) {
+						// Update the global value:
+						for ( int v = 0; v < 5; v++ ) {
+							gd->where[v] = ld->where[v];
+						}
+						if ( gd->where[4] != 0 ) {
+							// The loop above should have put a trailing zero after the coeff
+							// size. If not, there is probably a bug somewhere else...
+							MLOCK(ErrorMessageLock);
+							MesPrint("Missing trailing zero in MODMIN/MODMAX global dollar %d",
+								globalnumber);
+							MUNLOCK(ErrorMessageLock);
+							Terminate(-1);
+						}
+					}
+				}
+
+				// If the global dollar is 0, convert it into DOLZERO:
+				if ( gd->where[1] == 0 ) {
+					gd->type = DOLZERO;
+					gd->where[0] = 0;
+				}
+			}
+
+			// Now clean up the thread-local variables
 			for ( i = 0; i < AM.totalnumberofthreads; i++ ) {
 				if ( ModOptdollars[j].dstruct[i].size > 0 ) {
 					CleanDollarFactors(&(ModOptdollars[j].dstruct[i]));

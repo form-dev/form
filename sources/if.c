@@ -316,7 +316,7 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 						}
 						if ( nummodopt < NumModOptdollars ) {
 							dtype = ModOptdollars[nummodopt].type;
-							if ( dtype == MODLOCAL ) {
+							if ( DollarLocalCopy(dtype) ) {
 								d = ModOptdollars[nummodopt].dstruct+AT.identity;
 							}
 						}
@@ -471,7 +471,7 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 						}
 						if ( nummodopt < NumModOptdollars ) {
 							dtype = ModOptdollars[nummodopt].type;
-							if ( dtype == MODLOCAL ) {
+							if ( DollarLocalCopy(dtype) ) {
 								d = ModOptdollars[nummodopt].dstruct+AT.identity;
 							}
 							else {
@@ -532,7 +532,9 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 						case DOLUNDEFINED:
 							if ( AC.UnsureDollarMode == 0 ) {
 #ifdef WITHPTHREADS
-								if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+								if ( dtype > 0 && ! DollarLocalCopy(dtype) ) { 
+									UNLOCK(d->pthreadslockread);
+								}
 #endif
 								MLOCK(ErrorMessageLock);
 								MesPrint("$%s is undefined",AC.dollarnames->namebuffer+d->name);
@@ -549,7 +551,9 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 							|| d->where[2] < 0 || d->where[2] >= AM.OffsetIndex ) {
 								if ( AC.UnsureDollarMode == 0 ) {
 #ifdef WITHPTHREADS
-									if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+									if ( dtype > 0 && ! DollarLocalCopy(dtype) ) { 
+										UNLOCK(d->pthreadslockread);
+									}
 #endif
 									MLOCK(ErrorMessageLock);
 									MesPrint("$%s is of wrong type",AC.dollarnames->namebuffer+d->name);
@@ -570,7 +574,9 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 							}
 							else if ( AC.UnsureDollarMode == 0 ) {
 #ifdef WITHPTHREADS
-								if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+								if ( dtype > 0 && ! DollarLocalCopy(dtype) ) {
+									UNLOCK(d->pthreadslockread);
+								}
 #endif
 								MLOCK(ErrorMessageLock);
 								MesPrint("$%s is of wrong type",AC.dollarnames->namebuffer+d->name);
@@ -586,7 +592,9 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 							) {
 								if ( AC.UnsureDollarMode == 0 ) {
 #ifdef WITHPTHREADS
-									if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+									if ( dtype > 0 && ! DollarLocalCopy(dtype) ) {
+										UNLOCK(d->pthreadslockread);
+									}
 #endif
 									MLOCK(ErrorMessageLock);
 									MesPrint("$%s is of wrong type",AC.dollarnames->namebuffer+d->name);
@@ -635,7 +643,9 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 							else {
 								if ( AC.UnsureDollarMode == 0 ) {
 #ifdef WITHPTHREADS
-									if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+									if ( dtype > 0 && ! DollarLocalCopy(dtype) ) {
+										UNLOCK(d->pthreadslockread);
+									}
 #endif
 									MLOCK(ErrorMessageLock);
 									MesPrint("$%s is of wrong type",AC.dollarnames->namebuffer+d->name);
@@ -661,7 +671,9 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 generic:;
 							if ( AC.UnsureDollarMode == 0 ) {
 #ifdef WITHPTHREADS
-								if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+								if ( dtype > 0 && ! DollarLocalCopy(dtype) ) {
+									UNLOCK(d->pthreadslockread);
+								}
 #endif
 								MLOCK(ErrorMessageLock);
 								MesPrint("$%s is of wrong type",AC.dollarnames->namebuffer+d->name);
@@ -673,7 +685,9 @@ generic:;
 					  }
 					}
 #ifdef WITHPTHREADS
-					if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+					if ( dtype > 0 && ! DollarLocalCopy(dtype) ) {
+						UNLOCK(d->pthreadslockread);
+					}
 #endif
 				}
 				break;
