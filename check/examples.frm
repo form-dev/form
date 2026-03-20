@@ -571,7 +571,45 @@ EOF
 	assert stdout =~ /~~~\$c = 2200/
 	assert stdout =~ /~~~\$max = 4/
 	assert stdout =~ /~~~\$min = 0/
-*--#] DolVarsParallel_1 : 
+*--#] DolVarsParallel_1 :
+*--#[ Sta_Also_1 :
+Symbols x,y,cosphi,sinphi;
+Local F = x+y;
+id x = cosphi*x-sinphi*y;
+also y = sinphi*x+cosphi*y;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("- y*sinphi + y*cosphi + x*sinphi + x*cosphi")
+*--#] Sta_Also_1 : 
+*--#[ Sta_Antibracket_1 :
+Symbols x, y;
+Local F = (1+x+x^2)*(1+y+y^2);
+AntiBracket y;
+Print;
+.end
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+   F =
+       + x * ( 1 + y + y^2 )
+
+       + x^2 * ( 1 + y + y^2 )
+
+       + 1 + y + y^2;
+EOF
+*--#] Sta_Antibracket_1 : 
+*--#[ Sta_Antiputinside_1 :
+Symbols x, y, z;
+Cfunction f;
+Local F = 10 + x + y^2 + y*z;
+Antiputinside f,x;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("
+      f(y*z) + f(y^2) + f(1)*x + f(10)
+")
+*--#] Sta_Antiputinside_1 : 
 *--#[ Sta_ArgImplode_1 :
     CF Z1, ..., Z4;
     S x, a, b;
@@ -587,9 +625,88 @@ EOF
     .end
 	assert succeeded?
 	assert result("s") =~ expr("0")
-*--#] Sta_ArgImplode_1 : 
+*--#] Sta_ArgImplode_1 :
+*--#[ Sta_Argtoextrasymbol_1 :
+Symbols x, y;
+Cfunction f;
+Local F = f(x + 1);
+Local F1 = f(y,x + 1);
+Argtoextrasymbol;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("f(Z1_)")
+assert result("F1") =~ expr("f(Z2_,Z1_)")
+*--#] Sta_Argtoextrasymbol_1 :
+*--#[ Sta_Argument_1 :
+Symbols x, y, z;
+CFunction f;
+Local F = f(x + 2*y + z^2);
+Argument;
+Identify y = x;
+Endargument;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("
+      f(z^2 + 3*x)
+")
+*--#] Sta_Argument_1 :
+*--#[ Sta_Argument_2 :
+Symbols x,y;
+CFunction f, f1, f2, f3;
+Local F = f(x,x,x,x) + f1(x,x,x,x) + f2(x,x) + f3(x);
+Argument 2,f,1,{f,f1},3,4;
+Identify x = y; 
+Endargument;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("
+f(y,y,y,y) + f1(x,y,y,y) + f2(x,y) + f3(x)
+")
+*--#] Sta_Argument_2 : 
+*--#[ Sta_Bracket_1 :
+Symbols x, y;
+Local F = (1+x+x^2)*(1+y+y^2);
+Bracket y;
+Print;
+.end
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+   F =
+       + y * ( 1 + x + x^2 )
+
+       + y^2 * ( 1 + x + x^2 )
+
+       + 1 + x + x^2;
+EOF
+*--#] Sta_Bracket_1 : 
+*--#[ Sta_Chainin_1 :
+Function f;
+Symbol x,y,z;
+Local F = f(x)*f(y)*f(z);
+ChainIn f;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("
+      f(x,y,z)
+")
+*--#] Sta_Chainin_1 : 
+*--#[ Sta_Chainout_1 :
+Function f;
+Symbol x,y,z;
+Local F = f(x,y,z);
+ChainOut f;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("
+      f(x)*f(y)*f(z)
+")
+*--#] Sta_Chainout_1 : 
 *--#[ Sta_Collect_1 :
-* TODO: change the result in the manual.
 S a,b,c;
 CF cfun;
 L  F =
@@ -624,6 +741,116 @@ assert result("G") =~ expr("
        A3(i5)*A3(i4)*g_(1,5_)
 ")
 *--#] Sta_CommuteInSet_1 : 
+*--#[ Sta_Commute_1 :
+    CFunction f,g;
+    Symbol x;
+    Local F = f(x)*g(x) + g(x)*f(x);
+    Print;
+    .end
+assert succeeded?
+assert result("F") =~ expr("
+       2*f(x)*g(x)
+")
+*--#] Sta_Commute_1 :
+*--#[ Sta_Denominators_1 :
+Symbols x, y;
+Cfunction rat, den;
+PolyRatFun rat;
+Local F = 1/(x+y); 
+Denominators den;
+Identify den(x?) = rat(1,x);
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("
+      rat(1,x + y)
+")
+*--#] Sta_Denominators_1 :
+*--#[ Sta_Discard_1 :
+Symbols x;
+Local F = x^3 + x^4 + x^5 + x^6;
+if ( count(x,1) > 5 ) Discard;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("
+       x^3 + x^4 + x^5
+")
+*--#] Sta_Discard_1 :
+*--#[ Sta_Do_1 :
+Symbol x,y;
+CFunction f;
+LocalFactorized F = (1+y)*(2+y)*(3+y)*(4+y)*(5+y);
+.sort
+#$nf = numfactors_(F);
+Local G = <x^1>+...+<x^`$nf'>;
+Do $i = 1,$nf;
+   Identify,only x^$i = f(F[factor_^$i]);
+Enddo;
+Print;
+ModuleOption local $i;
+.end
+assert succeeded?
+assert stdout =~ exact_pattern("
+   F =
+         ( 1 + y )
+       * ( 2 + y )
+       * ( 3 + y )
+       * ( 4 + y )
+       * ( 5 + y );
+")
+assert result("G") =~ expr("
+       f(1 + y) + f(2 + y) + f(3 + y) + f(4 + y) + f(5 + y)
+")
+*--#] Sta_Do_1 :
+*--#[ Sta_Drop_1 :
+Local F1 = 1;
+Local F2 = 2;
+Local F3 = 3;
+.sort
+Drop;
+Ndrop F1;
+Print;
+.end
+assert succeeded?
+assert result("F1") =~ expr("1")
+*--#] Sta_Drop_1 :
+*--#[ Sta_DropCoefficient_1 :
+Symbols x;
+Local F = 1 + 10*x + 20*x^2;
+DropCoefficient;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("
+       1 + x + x^2
+")
+*--#] Sta_DropCoefficient_1
+*--#[ Sta_DropCoefficient_2 :
+Symbols x;
+Cfunction f;
+Local F = f(1 + 5*x + 10*x^2);
+Argument;
+DropCoefficient;
+Endargument;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("
+       f(1 + x + x^2)
+")
+*--#] Sta_DropCoefficient_2  
+*--#[ Sta_DropSymbols_1 :
+Symbols x, y, z;
+Local F = 1 + x + x^2 + z^3 + 2^2*y^4;
+Dropsymbols;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("
+       8
+")
+*--#] Sta_Dropsymbols_1  
 *--#[ Sta_FactArg_1 :
 *TODO: OldFactArg is needed for the result in the manual.
     On OldFactArg;
@@ -644,7 +871,20 @@ assert result("G") =~ expr("
           f(a,b,-1,3) + f(a,b,3) + 2*f1(a*b) + f2(a*b,-1,3) + f2(a*b,3)
           + f3(a*b,-3) + f3(a*b,3)
         ")
-*--#] Sta_FactArg_1 : 
+*--#] Sta_FactArg_1 :
+*--#[ Sta_Factorize_1 :
+Symbols x;
+Local F = x^3 + 3*x^2 + 3*x + 1;
+Factorize;
+Print;
+.end
+	assert succeeded?
+	assert result("F") =~ expr("
+        ( 1 + x )
+       * ( 1 + x )
+       * ( 1 + x )
+        ")
+*--#] Sta_Factorize_1 :
 *--#[ Sta_Fill_1 :
     Table B(1:1);
     Local dummy = 1;
@@ -823,7 +1063,30 @@ assert result("G") =~ expr("
 	EOF
 	)
 	assert result("F") =~ expr("3*c + 5*b")
-*--#] Sta_Print_1 : 
+*--#] Sta_Print_1 :
+*--#[ Sta_Putinside_1 :
+Symbols x, y, z;
+Cfunction f;
+Local F = 1 + x + 2*x + y^2+ z^3;
+Putinside f,x;
+Print;
+.end
+	assert succeeded?
+	assert result("F") =~ expr("
+  f(2*x) + f(x) + f(1) + f(1)*z^3 + f(1)*y^2")
+*--#] Sta_Putinside_1 : 
+*--#[ Sta_Repeat_1 :
+Symbols x, y, z;
+CFunction f, g;
+Local F = f(x)*g(y)*g(z);
+Repeat;
+Identify f(?a)*g(?b) = f(?a,?b);
+Endrepeat;
+Print;
+.end
+	assert succeeded?
+	assert result("F") =~ expr("f(x,y,z)")
+*--#] Sta_Repeat_1 : 
 *--#[ Sta_ReplaceLoop_1 :
 *TODO: change the result in the manual.
     Functions f(antisymmetric),ff(cyclesymmetric);

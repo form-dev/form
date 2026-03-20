@@ -23,8 +23,25 @@ brackets are all other objects. In the antibracket statement the variables
 in the list are the only objects that are not placed outside the brackets. 
 For the rest of the syntax, see the bracket statement (section 
 \ref{substabracket}).
-\vspace{10mm}
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Antibracket_1)
+\noindent
+For example
+\begin{verbatim}
+   Symbols x, y;
+   Local F = (1+x+x^2)*(1+y+y^2);
+   AntiBracket y;
+   Print;
+   .end
 
+  F =
+      + x * ( 1 + y + y^2 )
+
+      + x^2 * ( 1 + y + y^2 )
+
+      + 1 + y + y^2;
+\end{verbatim}
+\vspace{10mm}
 %--#] abrackets : 
 %--#[ also :
  
@@ -45,9 +62,18 @@ pattern matching of the previous id statement (or also statement) and after
 possible matching patterns have been removed, but before the r.h.s. 
 expressions are inserted. It is identical to the idold statement (see 
 \ref{substaidold}). Example:
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Also_1)
 \begin{verbatim}
-    id    x = cosphi*x-sinphi*y;
-    also  y = sinphi*x+cosphi*y;
+   Symbols x,y,cosphi,sinphi;
+   Local F = x+y;
+   id x = cosphi*x-sinphi*y;
+   also y = sinphi*x+cosphi*y;
+   Print;
+   .end
+
+   F =
+       - y*sinphi + y*cosphi + x*sinphi + x*cosphi;
 \end{verbatim}
 
 \noindent The options are explained in the section on the id statement (see 
@@ -73,7 +99,20 @@ antibracket\index{antibracket} information should adhere to the syntax of
 the bracket statement (\ref{substabracket}, \ref{substaabrackets}) and all 
 occurrences of all variables with the exception of the antibracket 
 variables will be put inside the function. The coefficient will also be put 
-inside the function.
+inside the function. Example:
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Antiputinside_1)
+\begin{verbatim}
+   Symbols x, y, z;
+   Cfunction f;
+   Local F = 10 + x + y^2 + y*z;
+   Antiputinside f,x;
+   Print;
+   .end
+
+  F =
+     f(y*z) + f(y^2) + f(1)*x + f(10);
+\end{verbatim}
 \vspace{10mm}
 
 %--#] antiputinside : 
@@ -164,7 +203,20 @@ equivalent to the statement
 \begin{verbatim}
    repeat id Z(?a,0,x?!{0,0},?b) = Z(?a,x+sig_(x),?b);
 \end{verbatim}
-and takes one from the first notation to the second. The `ArgExplode,Z;' 
+and takes one from the first notation to the second. Example:
+\begin{verbatim}
+   CFunction Z;
+   Local F = Z(0,0,0,1,0,0,-1);
+   ArgImplode Z;
+   Print;
+   .end
+
+  F =
+     Z(4,-3);
+\end{verbatim}
+\vspace{4mm}
+
+\noindent The `ArgExplode,Z;' 
 statement\index{argexplode} is equivalent to the statement
 % THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
 % WELL! (Sta_ArgImplode_1)
@@ -173,7 +225,17 @@ statement\index{argexplode} is equivalent to the statement
 \end{verbatim}
 and takes one from the second notation to the first. The reason that these 
 statements have been built in lies in the fact that for many indices the 
-repeat statements started to become very time-consuming.
+repeat statements started to become very time-consuming. Example:
+\begin{verbatim}
+   CFunction Z;
+   Local F = Z(4,-3);
+   ArgExplode Z;
+   Print;
+   .end
+
+  F =
+     Z(0,0,0,1,0,0,-1);
+\end{verbatim}
 
 \noindent For the harmonic sums, the harmonic polylogarithms and the 
 multiple zeta values one can use the summer6 and the harmpol packages in 
@@ -213,7 +275,24 @@ The arguments that have been encountered before are replaced with the same
 extra symbols. 
 Unlike the \texttt{topolynomial} statement (\ref{substatopolynomial}), the 
 replacement occurs even for arguments consisting only of numbers and symbols 
-(including extra symbols). 
+(including extra symbols). Example:
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Argtoextrasymbol_1)
+\begin{verbatim}
+   Symbols x, y;
+   Cfunction f;
+   Local F = f(x + 1);
+   Local F1 = f(y,x + 1);
+   Argtoextrasymbol;
+   Print;
+   .end
+
+  F =
+     f(Z1_);
+
+  F1 =
+     f(Z2_,Z1_);
+\end{verbatim}
 \vspace{4mm}
 
 \noindent
@@ -244,7 +323,24 @@ See also & endargument (\ref{substaendargument})
 
 \noindent This statement starts an argument\index{argument} 
 environment\index{environment!argument}. Such an environment is terminated 
-by an endargument statement (see \ref{substaendargument}). The statements 
+by an endargument statement (see \ref{substaendargument}). Example:
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Argument_1)
+\begin{verbatim}
+   Symbols x, y, z;
+   CFunction f;
+   Local F = f(x + 2*y + z^2);
+   Argument;
+      Identify y = x;
+   Endargument;
+   Print;
+   .end
+
+  F =
+     f(z^2 + 3*x);
+\end{verbatim}
+\vspace{4mm}
+The statements 
 between the argument and the endargument\index{endargument} statements will 
 be applied only to the function arguments as specified by the remaining 
 information in the argument statement. This information is given by:
@@ -263,8 +359,20 @@ The combination of a function (or set) possibly followed by numbers of
 arguments, can occur as many times as needed. The generic numbers of 
 arguments that refer to all functions work in addition to the numbers 
 specified for individual functions. Example\vspace{1mm}
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Argument_2)
 \begin{verbatim}
+   Symbols x,y;
+   CFunction f, f1, f2, f3;
+   Local F = f(x,x,x,x) + f1(x,x,x,x) + f2(x,x) + f3(x);
    Argument 2,f,1,{f,f1},3,4;
+      Identify x = y; 
+   Endargument;
+   Print;
+   .end
+
+  F =
+     f(y,y,y,y) + f1(x,y,y,y) + f2(x,y) + f3(x);
 \end{verbatim}
 This specifies the second argument of all functions. In addition the first 
 argument of \verb:f: will be taken and then also the third and fourth 
@@ -383,7 +491,9 @@ save (see \ref{substasave}) and load (see \ref{substaload}) statements. The
 bracket information can be used by the collect (see \ref{substacollect}) 
 and keep (see \ref{substakeep}) statements, as well in r.h.s.\ expressions 
 when the contents of individual brackets of an expression can be picked up 
-(see \ref{brackets}). \vspace{4mm}
+(see \ref{brackets}). The usage of brackets may also impact sorting
+performance due to the reordering of terms in the expression (see 
+chapter \ref{brackets}). \vspace{4mm}
 
 \noindent The list of names can contain names of symbols, vectors, 
 functions, tensors and sets. In addition it can contain dotproducts. There 
@@ -407,6 +517,22 @@ default might be changed in a future version of {\FORM} (in which {\FORM}
 might for instance try to determine by itself what seems best. This option 
 exists for case that the user would like to overrule such a mechanism). 
 \vspace{4mm}
+
+\noindent For example
+\begin{verbatim}
+   Symbols x, y;
+   Local F = (1+x+x^2)*(1+y+y^2);
+   Bracket y;
+   Print;
+   .end
+
+  F =
+      + y * ( 1 + x + x^2 )
+
+      + y^2 * ( 1 + x + x^2 )
+
+      + 1 + x + x^2;
+\end{verbatim}
 
 \noindent See also the antibracket statement in \ref{substaabrackets}.
 \vspace{10mm}
@@ -464,14 +590,27 @@ after the next case statement or default statement.
 \noindent \begin{tabular}{ll}
 Type & Declaration statement\\
 Syntax & c[functions] {\tt<}list of functions to be declared{\tt>}; \\
-See also & functions (\ref{substafunctions}), nfunctions (\ref{substanfunctions})
+See also & functions (\ref{substafunctions}, \ref{sect-functions}), nfunctions (\ref{substanfunctions})
 \end{tabular} \vspace{4mm}
 
 \noindent This statement declares commuting\index{commuting} 
 functions\index{functions!commuting}. The name of a 
 function can be followed by some information that specifies additional 
 properties of the preceding function, which are the same as
-those for functions (see \ref{substafunctions}). \vspace{10mm}
+those for functions (see \ref{substafunctions}). Example:
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Commute_1)
+\begin{verbatim}
+   CFunction f,g;
+   Symbol x;
+   Local F = f(x)*g(x) + g(x)*f(x);
+   Print;
+   .end
+
+  F =
+     2*f(x)*g(x);
+\end{verbatim}
+\vspace{10mm}
 
 %--#] cfunctions : 
 %--#[ chainin :
@@ -490,7 +629,21 @@ Syntax & Chainin,name of function;
    repeat id f(?a)*f(?b) = f(?a,?b);
 \end{verbatim}
 if f is the name of the function specified. The chainin statement is just a 
-faster shortcut. \vspace{10mm}
+faster shortcut. Example:
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Chainin_1)
+\begin{verbatim}
+   Function f;
+   Symbol x,y,z;
+   Local F = f(x)*f(y)*f(z);
+   ChainIn f;
+   Print;
+   .end
+
+  F =
+     f(x,y,z);
+\end{verbatim}
+\vspace{10mm}
 
 %--#] chainin : 
 %--#[ chainout :
@@ -509,7 +662,21 @@ Syntax & Chainout,name of function;
    repeat id f(x1?,x2?,?a) = f(x1)*f(x2,?a);
 \end{verbatim}
 if f is the name of the function specified. The chainout statement is just a 
-much faster shortcut. \vspace{10mm}
+much faster shortcut. Example:
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Chainout_1)
+\begin{verbatim}
+   Function f;
+   Symbol x,y,z;
+   Local F = f(x,y,z);
+   ChainOut f;
+   Print;
+   .end
+
+  F =
+     f(x)*f(y)*f(z)
+\end{verbatim}
+\vspace{10mm}
 
 %--#] chainout : 
 %--#[ chisholm :
@@ -604,20 +771,21 @@ collected and put inside the argument of the named function. Hence if the
 expression \verb:F: is given by
 % THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
 % WELL! (Sta_Collect_1)
-% TODO: the term order has been changed.
 \begin{verbatim}
-   F =
-      a*(b^2+c)
-    + a^2*(b+6)
-    + b^3 + c*b + 12;
-\end{verbatim}
-the statement
-\begin{verbatim}
-   Collect cfun;
-\end{verbatim}
-will change \verb:F: into
-\begin{verbatim}
-   F = a*cfun(b^2+c)+a^2*cfun(b+6)+cfun(b^3+c*b+12);
+   S a,b,c;
+   CF cfun;
+   L  F =
+         a*(b^2+c)
+       + a^2*(b+6)
+       + b^3 + c*b + 12;
+   B a;
+   .sort
+  Collect cfun;
+  Print;
+  .end
+
+  F =
+     cfun(6 + b)*a^2 + cfun(12 + b*c + b^3) + cfun(c + b^2)*a;
 \end{verbatim}
 The major complication\index{complication} occurs if the content of a 
 bracket is so long that it will not fit inside a single term. The maximum 
@@ -721,7 +889,7 @@ to use the compress option of the on (see \ref{substaon}) or the off (see
 Type & Executable statement\\
 Syntax & contract [{\tt<}argument specifications{\tt>}];
 \end{tabular} \vspace{4mm}
-
+%TODO: add link to the example in form for pedestrians: Some FORM Examples/Levi-Civita
 \noindent Statement\index{contract} causes the contraction of pairs of 
 Levi-Civita\index{Levi-Civita} tensors\index{tensor!Levi-Civita} \verb:e_: 
 (see also \ref{functions}) into combinations of Kronecker\index{Kronecker} 
@@ -975,9 +1143,17 @@ that is given in the statement. This function will work well together with
 the PolyRatFun statement in which we define a PolyFun with two arguments of 
 which the second acts as a denominator and the first as a numerator:
 \begin{verbatim}
-   PolyRatFun,rat;
-   Denominators,den;
-   id den(x?) = rat(1,x);
+   Symbols x, y;
+   Cfunction rat, den;
+   PolyRatFun rat;
+   Local F = 1/(x+y); 
+   Denominators den;
+   Identify den(x?) = rat(1,x);
+   Print;
+   .end
+
+  F =
+     rat(1,x + y);
 \end{verbatim}
 For more about this one should consult the part on the 
 PolyRatFun\index{polyratfun} statement 
@@ -1053,8 +1229,17 @@ Syntax & dis[card];
 
 \noindent This statement discards\index{discard} the current term. It can 
 be very useful in statements of the type
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Discard_1)
 \begin{verbatim}
+   Symbols x;
+   Local F = x^3 + x^4 + x^5 + x^6;
    if ( count(x,1) > 5 ) Discard;
+   Print;
+   .end
+
+  F =
+     x^3 + x^4 + x^5;
 \end{verbatim}
 which eliminates all terms that have more than five powers of x. 
 \vspace{10mm}
@@ -1102,10 +1287,32 @@ constructions.
 repeat~(\ref{substarepeat}), if~(\ref{substaif}) and the pattern matcher can 
 basically do everything the do-loop can do. Sometimes however the do-loop 
 is easier to program and gives more readable code as shown here:
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Do_1)
+%TODO: this needs to be improved (also change in test file)
 \begin{verbatim}
-   do $i = 1,5;
-      id,only,x^$i = f(F[factor_^$i]);
-   enddo;
+   Symbol x,y;
+   CFunction f;
+   LocalFactorized F = (1+y)*(2+y)*(3+y)*(4+y)*(5+y);
+   .sort
+   #$nf = numfactors_(F);
+   Local G = <x^1>+...+<x^`$nf'>;
+   Do $i = 1,$nf;
+      Identify,only x^$i = f(F[factor_^$i]);
+   Enddo;
+   Print;
+   ModuleOption local $i;
+   .end
+
+   F =
+         ( 1 + y )
+       * ( 2 + y )
+       * ( 3 + y )
+       * ( 4 + y )
+       * ( 5 + y );
+
+   G =
+      f(1 + y) + f(2 + y) + f(3 + y) + f(4 + y) + f(5 + y);
 \end{verbatim}
 \noindent versus
 \begin{verbatim}
@@ -1154,7 +1361,21 @@ expressions that are to be dropped can still be used in the r.h.s.\ of other
 expressions inside the current module. Basically the expressions to be 
 dropped are not treated for execution and after the module has finished 
 completely they are removed. See also the ndrop 
-statement~\ref{substandrop}. \vspace{10mm}
+statement~\ref{substandrop}. Example:
+\begin{verbatim}
+   Local F1 = 1;
+   Local F2 = 2;
+   Local F3 = 3;
+   .sort
+   Drop;
+   Ndrop F1;
+   Print;
+   .end
+
+  F1 =
+     1;
+\end{verbatim}
+\vspace{10mm}
 
 %--#] drop : 
 %--#[ dropcoefficient :
@@ -1172,10 +1393,35 @@ one. In principle it has the same effect as
 \begin{verbatim}
    Multiply 1/coeff_;
 \end{verbatim}
-but there is always the philosophical issue what is the coefficient once 
-one enters function arguments. Inside an 
+Example:
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_DropCoefficient_1)
+\begin{verbatim}
+   Symbols x;
+   Local F = 1 + 10*x + 20*x^2;
+   DropCoefficient;
+   Print;
+   .end
+
+  F =
+     1 + x + x^2;
+\end{verbatim}
+Inside an 
 Argument/EndArgument\index{argument}\index{endargument} environment this 
-statement would drop the coefficient of the terms inside the argument.
+statement would drop the coefficient of the terms inside the argument. Example:
+\begin{verbatim}
+   Symbols x;
+   Cfunction f;
+   Local F = f(1 + 5*x + 10*x^2);
+   Argument;
+      DropCoefficient;
+   Endargument;
+   Print;
+   .end
+
+  F =
+     f(1 + x + x^2);
+\end{verbatim}
 \vspace{10mm}
 
 %--#] dropcoefficient : 
@@ -1189,7 +1435,18 @@ Type & Executable statement\\
 Syntax & DropSymbols;
 \end{tabular} \vspace{4mm}
 
-\noindent This statement removes all symbols from a term. 
+\noindent This statement removes all symbols from a term. Example:
+\begin{verbatim}
+   Symbols x, y, z;
+   Local F = 1 + x + x^2 + z^3 + 2^2*y^4;
+   Dropsymbols;
+   Print;
+   .end
+
+  F =
+     8;
+\end{verbatim}
+\vspace{4mm}
 It has the same effect as
 \begin{verbatim}
    id,many,x?^n? = 1;
@@ -1619,7 +1876,21 @@ Type & Output control statement\\
 Syntax & factorize \verb:{:{\tt<}name of expression(s){\tt>}\verb:}:;
 \\ See also & the chapter on polynomials~\ref{polynomials}.
 \end{tabular} \vspace{4mm}
+\noindent Example
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Factorize_1)
+\begin{verbatim}
+   Symbols x;
+   Local F = x^3 + 3*x^2 + 3*x + 1;
+   Factorize;
+   Print;
+   .end
 
+  F =
+        ( 1 + x )
+      * ( 1 + x )
+      * ( 1 + x );
+\end{verbatim}
 \noindent If no expressions are mentioned all expressions will be affected 
 by the action of this statement. One may exclude certain expressions with 
 the nfactorize statement (see \ref{substanfactorize}). If one or more 
@@ -4661,7 +4932,20 @@ or table which are special types of functions). If there is
 bracket\index{bracket} information, this information should adhere to the 
 syntax of the bracket statement (\ref{substaantiputinside}) and only 
 occurrences of the bracket variables will be put inside the function. The 
-coefficient will also be put inside the function.
+coefficient will also be put inside the function. Example:
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Putinside_1)
+\begin{verbatim}
+   Symbols x, y, z;
+   Cfunction f;
+   Local F = 1 + x + 2*x + y^2+ z^3;
+   Putinside f,x;
+   Print;
+   .end
+
+  F =
+     f(2*x) + f(x) + f(1) + f(1)*z^3 + f(1)*y^2;
+\end{verbatim}
 \vspace{10mm}
 
 %--#] putinside : 
@@ -4865,6 +5149,23 @@ is equivalent to
 \begin{verbatim}
    repeat single statement;
 \end{verbatim}
+\noindent Example:
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_Repeat_1)
+\begin{verbatim}
+   Symbols x, y, z;
+   CFunction f, g;
+   Local F = f(x)*g(y)*g(z);
+   Repeat;
+      Identify f(?a)*g(?b) = f(?a,?b);
+   Endrepeat;
+   Print;
+   .end
+
+  F =
+     f(x,y,z);
+\end{verbatim}
+\vspace{4mm}
 Particular attention should be given to avoid infinite\index{infinite loop} 
 loops\index{loop!infinite} as in
 \begin{verbatim}
