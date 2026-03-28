@@ -2612,7 +2612,7 @@ int AddDollar(UBYTE *name, WORD type, WORD *start, LONG size)
 	dol->zero = 0;
 	dol->numdummies = 0;
 #ifdef WITHPTHREADS
-	dol->pthreadslock = dummylock;
+	INIRECLOCK(dol->pthreadslock);
 #endif
 	dol->nfactors = 0;
 	dol->factors = 0;

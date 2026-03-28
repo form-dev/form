@@ -35,8 +35,6 @@
 
 #include "form3.h"
 
-/* EXTERNLOCK(dummylock) */
-
 static UBYTE underscore[2] = {'_',0};
 
 /*
@@ -1566,7 +1564,7 @@ ShortArgument:
 	newd->size = size;
 	newd->numdummies = d->numdummies;
 #ifdef WITHPTHREADS
-	newd->pthreadslock  = dummylock;
+	INIRECLOCK(newd->pthreadslock);
 #endif
 	size++;
 	NCOPY(t,w,size);

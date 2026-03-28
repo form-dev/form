@@ -2476,6 +2476,48 @@ P;
 assert succeeded?
 assert result("F") =~ expr("9999")
 *--#] Issue268_2 :
+*--#[ Issue271 : 
+#-
+#define N "16"
+Symbol x,n;
+Local test = -{`N'*(`N'+1)/2} + <x^1>+...+<x^`N'>;
+.sort
+#$split = 0;
+Identify x^n?pos_ = n;
+$split = $split + term_;
+ModuleOption sum $split;
+.sort
+#message split = `$split'
+Print;
+.end
+assert succeeded?
+assert stdout =~ exact_pattern(<<EOF)
+~~~split = 0
+EOF
+assert result("test") =~ expr("0")
+*--#] Issue271 : 
+*--#[ Issue271b : 
+#-
+#define N "16"
+Symbol x,n;
+Local test = -{`N'*(`N'+1)/2} + <x^1>+...+<x^`N'>;
+.sort
+#$split = 0;
+$split = $split + term_;
+ModuleOption sum $split;
+.sort
+#message split = `$split'
+Print;
+.end
+# This symbolic sum doesn't work in TFORM, but does work in ParFORM:
+#pend_if threaded?
+assert succeeded?
+assert stdout =~ exact_pattern(<<EOF)
+~~~split = -136+x+x^2+x^3+x^4+x^5+x^6+x^7+x^8+x^9+x^10+x^11+x^12+x^13+x^14+x^15
++x^16
+EOF
+assert result("test") =~ expr("- 136 + x + x^2 + x^3 + x^4 + x^5 + x^6 + x^7 + x^8 + x^9 + x^10 + x^11 + x^12 + x^13 + x^14 + x^15 + x^16")
+*--#] Issue271b : 
 *--#[ Issue277 :
 * A question about addargs
 CFunction f,g,h;
@@ -4448,6 +4490,53 @@ assert warning?("Excess information in symmetric properties")
 assert warning?("Illegal information in number of arguments properties")
 assert warning?("Undefined $-variable")
 *--#] Issue766 : 
+*--#[ Issue796 : 
+* Regression: the fix for 796 deadlocks here:
+Symbol x;
+Local test = <x^1>+...+<x^128>;
+#$maxpow = 0;
+$maxpow = max_($maxpow,count_(x,1));
+ModuleOption maximum $maxpow;
+.sort
+#message maxpow: `$maxpow'
+.end
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+maxpow: 128
+EOF
+*--#] Issue796 : 
+*--#[ Issue796b : 
+* Regression: the fix for 796 deadlocks here:
+Symbol x;
+Local test = <x^1>+...+<x^128>;
+#$minpow = 129;
+$minpow = min_($minpow,count_(x,1));
+ModuleOption minimum $minpow;
+.sort
+#message minpow: `$minpow'
+.end
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+minpow: 1
+EOF
+*--#] Issue796b : 
+*--#[ Issue796c : 
+* This case has always deadlocked:
+Symbol x;
+Local test = <x^1>+...+<x^128>;
+#$sumpow = 129;
+$sumpow = max_($sumpow,count_(x,1));
+ModuleOption sum $sumpow;
+.sort
+#message sumpow: `$sumpow'
+.end
+# ParFORM does not pass this test
+#pend_if mpi?
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+sumpow: 129
+EOF
+*--#] Issue796c : 
 *--#[ PullReq535 :
 * This test requires more than the specified 50K workspace.
 #:maxtermsize 200

@@ -718,7 +718,7 @@ UBYTE * DoModDollar(UBYTE *s, int type)
 							dlocal->where[i] = dglobal->where[i];
 						dlocal->where[dlocal->size] = 0;
 					}
-					dlocal->pthreadslock = dummylock;
+					INIRECLOCK(dlocal->pthreadslock);
 					dlocal->nfactors = dglobal->nfactors;
 					if ( dglobal->nfactors > 1 ) {
 						int nsize;
