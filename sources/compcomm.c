@@ -143,6 +143,7 @@ static KEYWORDV onoffoptions[] = {
 	,{"humanstats",	&(AC.HumanStatsFlag), 1, 0}
 	,{"humanstatistics",	&(AC.HumanStatsFlag), 1, 0}
 	,{"grccverbose", &(AC.GrccVerbose), 1, 0}
+	,{"sortverbose", &(AC.SortVerbose), 1, 0}
 };
 
 static WORD one = 1;

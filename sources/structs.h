@@ -1156,6 +1156,12 @@ typedef struct sOrT {
     LONG SpaceLeft;             /* Space needed for still existing terms */
     LONG putinsize;             /* Size of buffer in putin */
     LONG ninterms;              /* Which input term ? */
+    LONG verbComparisons;       /* Counters for "On SortVerbose;" statistics */
+    LONG verbSBsortTerms;
+    LONG verbSBsortCap;
+    LONG verbLBsortPatches;
+    LONG verbLBsortCap;
+    LONG verbUnsortedSize;
     int MaxPatches;             /* Maximum number of patches in large buffer */
     int MaxFpatches;            /* Maximum number of patches in one filesort */
     int type;                   /* Main, function or sub(routine) */
@@ -1846,6 +1852,7 @@ struct C_const {
     int    FlintPolyFlag;          /* Use Flint for polynomial arithmetic */
     int     HumanStatsFlag;        /* Print human-readable stats in the stats print? */
     int     GrccVerbose;           /* Enable extra print statements in grcc? */
+    int     SortVerbose;           /* Enable extra sort stats information? */
 	int     doloopstacksize;
 	int     dolooplevel;
     int     CheckpointFlag;        /**< Tells preprocessor whether checkpoint code must executed.
