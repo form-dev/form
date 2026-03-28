@@ -35,8 +35,6 @@
 
 #include "form3.h"
 
-/* EXTERNLOCK(dummylock) */
-
 static UBYTE underscore[2] = {'_',0};
 
 /*
@@ -252,8 +250,7 @@ int AssignDollar(PHEAD WORD *term, WORD level)
 */
 #ifdef WITHPTHREADS
 		if ( dtype > 0 ) {
-/*			LOCK(d->pthreadslockwrite); */
-			LOCK(d->pthreadslockread);
+			LOCK(d->pthreadslock);
 NewValIsZero:;
 			switch ( d->type ) {
 				case DOLZERO: goto NoChangeZero;
@@ -278,8 +275,7 @@ NewValIsZero:;
 			cbuf[AM.dbufnum].NumTerms[numdollar] = 0;
 NoChangeZero:;
 			CleanDollarFactors(d);
-/*			UNLOCK(d->pthreadslockwrite); */
-			UNLOCK(d->pthreadslockread);
+			UNLOCK(d->pthreadslock);
 			AN.ncmod = oldncmod;
 			return(0);
 		}
@@ -301,8 +297,7 @@ NoChangeZero:;
 */
 #ifdef WITHPTHREADS
 		if ( dtype > 0 ) {
-/*			LOCK(d->pthreadslockwrite); */
-			LOCK(d->pthreadslockread);
+			LOCK(d->pthreadslock);
 			if ( d->size < MINALLOC ) {
 				WORD oldsize, *oldwhere, i;
 				oldsize = d->size; oldwhere = d->where;
@@ -365,8 +360,7 @@ HandleDolZero:;
 			cbuf[AM.dbufnum].NumTerms[numdollar] = 1;
 NoChangeOne:;
 			CleanDollarFactors(d);
-/*			UNLOCK(d->pthreadslockwrite); */
-			UNLOCK(d->pthreadslockread);
+			UNLOCK(d->pthreadslock);
 			AN.ncmod = oldncmod;
 			return(0);
 		}
@@ -398,7 +392,7 @@ NoChangeOne:;
 	depends on the dollar variable.
 */
 #ifdef WITHPTHREADS
-	LOCK(d->pthreadslockread);
+	LOCK(d->pthreadslock);
 #endif
 	CleanDollarFactors(d);
 /*
@@ -566,8 +560,7 @@ HandleDolZero1:;
 	}
 #ifdef WITHPTHREADS
 NoChange:;
-/*	UNLOCK(d->pthreadslockwrite); */
-	UNLOCK(d->pthreadslockread);
+	UNLOCK(d->pthreadslock);
 #endif
 	AN.ncmod = oldncmod;
 	return(0);
@@ -1088,7 +1081,7 @@ WORD DolToTensor(PHEAD WORD numdollar)
 				d = ModOptdollars[nummodopt].dstruct+AT.identity;
 			}
 			else {
-				LOCK(d->pthreadslockread);
+				LOCK(d->pthreadslock);
 			}
 		}
 	}
@@ -1122,7 +1115,7 @@ WORD DolToTensor(PHEAD WORD numdollar)
 		retval = 0;
 	}
 #ifdef WITHPTHREADS
-	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
 #endif
 	return(retval);
 }
@@ -1149,7 +1142,7 @@ WORD DolToFunction(PHEAD WORD numdollar)
 				d = ModOptdollars[nummodopt].dstruct+AT.identity;
 			}
 			else {
-				LOCK(d->pthreadslockread);
+				LOCK(d->pthreadslock);
 			}
 		}
 	}
@@ -1179,7 +1172,7 @@ WORD DolToFunction(PHEAD WORD numdollar)
 		retval = 0;
 	}
 #ifdef WITHPTHREADS
-	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
 #endif
 	return(retval);
 }
@@ -1206,7 +1199,7 @@ WORD DolToVector(PHEAD WORD numdollar)
 				d = ModOptdollars[nummodopt].dstruct+AT.identity;
 			}
 			else {
-				LOCK(d->pthreadslockread);
+				LOCK(d->pthreadslock);
 			}
 		}
 	}
@@ -1243,7 +1236,7 @@ WORD DolToVector(PHEAD WORD numdollar)
 		retval = 0;
 	}
 #ifdef WITHPTHREADS
-	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
 #endif
 	return(retval);
 }
@@ -1329,7 +1322,7 @@ WORD DolToSymbol(PHEAD WORD numdollar)
 				d = ModOptdollars[nummodopt].dstruct+AT.identity;
 			}
 			else {
-				LOCK(d->pthreadslockread);
+				LOCK(d->pthreadslock);
 			}
 		}
 	}
@@ -1356,7 +1349,7 @@ WORD DolToSymbol(PHEAD WORD numdollar)
 		retval = -1;
 	}
 #ifdef WITHPTHREADS
-	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
 #endif
 	return(retval);
 }
@@ -1383,7 +1376,7 @@ WORD DolToIndex(PHEAD WORD numdollar)
 				d = ModOptdollars[nummodopt].dstruct+AT.identity;
 			}
 			else {
-				LOCK(d->pthreadslockread);
+				LOCK(d->pthreadslock);
 			}
 		}
 	}
@@ -1432,7 +1425,7 @@ WORD DolToIndex(PHEAD WORD numdollar)
 		retval = 0;
 	}
 #ifdef WITHPTHREADS
-	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
 #endif
 	return(retval);
 }
@@ -1571,8 +1564,7 @@ ShortArgument:
 	newd->size = size;
 	newd->numdummies = d->numdummies;
 #ifdef WITHPTHREADS
-	newd->pthreadslockread  = dummylock;
-	newd->pthreadslockwrite = dummylock;
+	INIRECLOCK(newd->pthreadslock);
 #endif
 	size++;
 	NCOPY(t,w,size);
@@ -1763,8 +1755,7 @@ int InsideDollar(PHEAD WORD *ll, WORD level)
 					d = ModOptdollars[nummodopt].dstruct+AT.identity;
 				}
 				else {
-/*					LOCK(d->pthreadslockwrite); */
-					LOCK(d->pthreadslockread);
+					LOCK(d->pthreadslock);
 				}
 			}
 		}
@@ -1817,8 +1808,7 @@ int InsideDollar(PHEAD WORD *ll, WORD level)
 */
 #ifdef WITHPTHREADS
 		if ( dtype > 0 && dtype != MODLOCAL ) {
-/*			UNLOCK(d->pthreadslockwrite); */
-			UNLOCK(d->pthreadslockread);
+			UNLOCK(d->pthreadslock);
 		}
 #endif
 		if ( newd->factors ) M_free(newd->factors,"Dollar factors");
@@ -1874,7 +1864,7 @@ LONG TermsInDollar(WORD num)
 				d = ModOptdollars[nummodopt].dstruct+AT.identity;
 			}
 			else {
-				LOCK(d->pthreadslockread);
+				LOCK(d->pthreadslock);
 			}
 		}
 	}
@@ -1895,7 +1885,7 @@ LONG TermsInDollar(WORD num)
 	else if ( d->type == DOLZERO ) n = 0;
 	else n = 1;
 #ifdef WITHPTHREADS
-	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
 #endif
 	return(n);
 }
@@ -1923,7 +1913,7 @@ LONG SizeOfDollar(WORD num)
 				d = ModOptdollars[nummodopt].dstruct+AT.identity;
 			}
 			else {
-				LOCK(d->pthreadslockread);
+				LOCK(d->pthreadslock);
 			}
 		}
 	}
@@ -1947,7 +1937,7 @@ LONG SizeOfDollar(WORD num)
 	else if ( d->type == DOLZERO ) n = 0;
 	else n = 1;
 #ifdef WITHPTHREADS
-	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
 #endif
 	return(n);
 }
@@ -2974,14 +2964,14 @@ int DollarFactorize(PHEAD WORD numdollar)
 				d = ModOptdollars[nummodopt].dstruct+AT.identity;
 			}
 			else {
-				LOCK(d->pthreadslockread);
+				LOCK(d->pthreadslock);
 			}
 		}
 	}
 #endif
 	CleanDollarFactors(d);
 #ifdef WITHPTHREADS
-	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
 #endif
 	if ( d->type != DOLTERMS ) {	/* only one term */
 		if ( d->type != DOLZERO ) d->nfactors = 1;
@@ -3231,13 +3221,13 @@ getout:
 		        Be careful: there should be more than one factor now.
 */
 #ifdef WITHPTHREADS
-	if ( dtype > 0 && dtype != MODLOCAL ) { LOCK(d->pthreadslockread); }
+	if ( dtype > 0 && dtype != MODLOCAL ) { LOCK(d->pthreadslock); }
 #endif
 	if ( nfactors ==  1 && extrafactor == 0 ) {	/* we can use the buf1 contents */
 		if ( factorsincontent == 0 ) {
 			d->nfactors = 1;
 #ifdef WITHPTHREADS
-			if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+			if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
 #endif
 /*
 			We used here (before 3-sep-2015) the original and did not make
@@ -3289,7 +3279,7 @@ getout2:			AR.SortType = oldsorttype;
 					M_free(d->factors,"factors in dollar");
 					d->factors = 0;
 #ifdef WITHPTHREADS
-					if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+					if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
 #endif
 					M_free(buf3,"DollarFactorize-4");
 					if ( buf2 != buf1 && buf2 ) M_free(buf2,"DollarFactorize-4");
@@ -3533,7 +3523,7 @@ nextj:;
  		#] Step 8: 
 */
 #ifdef WITHPTHREADS
-	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+	if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
 #endif
 	return(0);
 }

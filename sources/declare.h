@@ -462,6 +462,12 @@ static inline LONG ULongToLong(ULONG x)
 #define INILOCK(x)    pthread_mutex_t x = PTHREAD_MUTEX_INITIALIZER;
 #define EXTERNRWLOCK(x) extern pthread_rwlock_t x;
 #define INIRWLOCK(x)    pthread_rwlock_t x = PTHREAD_RWLOCK_INITIALIZER;
+#define INIRECLOCK(x) do { pthread_mutexattr_t attrib; \
+	pthread_mutexattr_init(&attrib); \
+	pthread_mutexattr_settype(&attrib, PTHREAD_MUTEX_RECURSIVE); \
+	pthread_mutex_init(&(x), &attrib); \
+	pthread_mutexattr_destroy(&attrib); \
+	} while(0)
 #ifdef DEBUGGINGLOCKS
 #include <asm/errno.h>
 #define LOCK(x)       while ( pthread_mutex_trylock(&(x)) == EBUSY ) {}

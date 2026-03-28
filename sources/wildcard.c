@@ -1405,7 +1405,7 @@ int ResolveSet(PHEAD WORD *from, WORD *to, WORD *subs)
 						d = ModOptdollars[nummodopt].dstruct+AT.identity;
 					}
 					else {
-						LOCK(d->pthreadslockread);
+						LOCK(d->pthreadslock);
 					}
 				}
 			}
@@ -1440,7 +1440,7 @@ int ResolveSet(PHEAD WORD *from, WORD *to, WORD *subs)
 				}
 			}
 #ifdef WITHPTHREADS
-			if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+			if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
 #endif
 			MLOCK(ErrorMessageLock);
 			MesPrint("Unusable type of variable $%s in set substitution",
@@ -1450,7 +1450,7 @@ int ResolveSet(PHEAD WORD *from, WORD *to, WORD *subs)
 		}
 GotOne:;
 #ifdef WITHPTHREADS
-		if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslockread); }
+		if ( dtype > 0 && dtype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
 #endif
 		ii = m[*w];
 		if ( ii >= 2*MAXPOWER ) i3 = ii - 2*MAXPOWER;
