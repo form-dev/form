@@ -72,14 +72,6 @@ extern LONG nummallocs;
 extern LONG numfrees;
 #endif
 
-//#define COUNTCOMPARES
-#ifdef COUNTCOMPARES
-	// This needs to be large enough for the number of threads.
-	// It is hardcoded here, but 1024 should be enough.
-	// Enabling this has a performance impact.
-	LONG numcompares[1024];
-#endif
-
 /*
   	#] Includes : 
 	#[ SortUtilities :
@@ -164,10 +156,14 @@ void WriteStats(POSITION *plspace, WORD par, WORD checkLogType)
 		char humanGenTermsText[HUMANSTRLEN] = "";
 		char humanTermsLeftText[HUMANSTRLEN] = "";
 		char humanBytesText[HUMANSTRLEN] = "";
+		char humanUnsortedBytesText[HUMANSTRLEN] = "";
+		char humanComparisonsText[HUMANSTRLEN] = "";
 		if ( AC.HumanStatsFlag ) {
 			HumanString(humanGenTermsText, (float)(S->GenTerms), humanTermsSuffix);
 			HumanString(humanTermsLeftText, (float)(S->TermsLeft), humanTermsSuffix);
 			HumanString(humanBytesText, (float)(BASEPOSITION(*plspace)), humanBytesSuffix);
+			HumanString(humanUnsortedBytesText, (float)(S->verbUnsortedSize), humanBytesSuffix);
+			HumanString(humanComparisonsText, (float)(S->verbComparisons), humanTermsSuffix);
 		}
 
 		MLOCK(ErrorMessageLock);
@@ -315,6 +311,23 @@ void WriteStats(POSITION *plspace, WORD par, WORD checkLogType)
 			MesPrint("%s", buf);
 		}
 
+		if ( par == STATSPOSTSORT ) {
+			if ( AC.SortVerbose ) {
+				snprintf(buf, sizeof(buf), "%24s Unsorted bytes  =%11ld%s",
+					"",S->verbUnsortedSize,humanUnsortedBytesText);
+				MesPrint("%s", buf);
+				snprintf(buf, sizeof(buf), "%24s Small Buffer    =%5ld,%5ld",
+					"",S->verbSBsortTerms,S->verbSBsortCap);
+				MesPrint("%s", buf);
+				snprintf(buf, sizeof(buf), "%24s Large Buffer    =%5ld,%5ld",
+					"",S->verbLBsortPatches,S->verbLBsortCap);
+				MesPrint("%s", buf);
+				snprintf(buf, sizeof(buf), "%24s Comparisons     =%11ld%s",
+					"",S->verbComparisons,humanComparisonsText);
+				MesPrint("%s", buf);
+			}
+		}
+
 #ifdef WITHSTATS
 		MesPrint("Total number of writes: %l, reads: %l, seeks, %l"
 			,numwrites,numreads,numseeks);
@@ -362,14 +375,6 @@ int NewSort(PHEAD0)
 	}
 	if ( AR.sLevel == 0 ) {
 
-#ifdef COUNTCOMPARES
-#ifdef WITHPTHREADS
-		numcompares[AT.identity] = 0;
-#else
-		numcompares[0] = 0;
-#endif
-#endif
-
 		AN.FunSorts[0] = AT.S0;
 		if ( AR.PolyFun == 0 ) { AT.S0->PolyFlag = 0; }
 		else if ( AR.PolyFunType == 1 ) { AT.S0->PolyFlag = 1; }
@@ -408,6 +413,13 @@ int NewSort(PHEAD0)
 
 	PUTZERO(AN.OldPosOut);
 */
+	// Zero the SortVerbose counters:
+	S->verbComparisons = 0;
+	S->verbSBsortTerms = 0;
+	S->verbSBsortCap = 0;
+	S->verbLBsortPatches = 0;
+	S->verbLBsortCap = 0;
+	S->verbUnsortedSize = 0;
 	return(0);
 }
 
@@ -621,6 +633,10 @@ LONG EndSort(PHEAD WORD *buffer, int par)
 /*
 			The large buffer is too full. Merge and write it
 */
+			// Update SortVerbose counters
+			if ( S->lPatch >= S->MaxPatches ) S->verbLBsortPatches++;
+			else S->verbLBsortCap++;
+
 #ifdef GZIPDEBUG
 			MLOCK(ErrorMessageLock);
 			MesPrint("%w EndSort: lPatch = %d, MaxPatches = %d,lFill = %x, sSpace = %ld, MaxTer = %d, lTop = %x"
@@ -976,18 +992,6 @@ RetRetval:
 			newout = 0;
 		}
 	}
-
-#ifdef COUNTCOMPARES
-	if ( AR.sLevel < 0 ) {
-#ifdef WITHPTHREADS
-		MLOCK(ErrorMessageLock);
-		MesPrint(">>>number of calls to Compare: %l (tid %d)", numcompares[AT.identity], AT.identity);
-		MUNLOCK(ErrorMessageLock);
-#else
-		MesPrint(">>>number of calls to Compare: %l", numcompares[0]);
-#endif
-	}
-#endif
 
 	return(retval);
 WorkSpaceError:
@@ -2344,15 +2348,8 @@ WORD Compare1(PHEAD WORD *term1, WORD *term2, WORD level)
 	WORD prevorder;
 	WORD count = -1, localPoly, polyhit = -1;
 
-#ifdef COUNTCOMPARES
-	if ( AR.sLevel == 0 ) {
-#ifdef WITHPTHREADS
-		numcompares[AT.identity]++;
-#else
-		numcompares[0]++;
-#endif
-	}
-#endif
+	// Update SortVerbose counter
+	S->verbComparisons++;
 
 	if ( S->PolyFlag ) {
 /*
@@ -4252,6 +4249,9 @@ int StoreTerm(PHEAD WORD *term)
 	POSITION pp;
 	LONG lSpace, sSpace, RetCode, over, tover;
 
+	// Update SortVerbose counters
+	S->verbUnsortedSize += *term * sizeof(*term);
+
 	if ( ( ( AP.PreDebug & DUMPTOSORT ) == DUMPTOSORT ) && AR.sLevel == 0 ) {
 #ifdef WITHPTHREADS
 		snprintf((char *)(THRbuf),100,"StoreTerm(%d)",AT.identity);
@@ -4266,6 +4266,10 @@ int StoreTerm(PHEAD WORD *term)
 /*
 	The small buffer is full. It has to be sorted and written.
 */
+		// Update SortVerbose counters
+		if ( S->sTerms >= S->TermsInSmall ) S->verbSBsortTerms++;
+		else S->verbSBsortCap++;
+
 		tover = over = S->sTerms;
 		ss = S->sPointer;
 		ss[over] = 0;
@@ -4298,6 +4302,10 @@ int StoreTerm(PHEAD WORD *term)
 /*
 			The large buffer is too full. Merge and write it
 */
+			// Update SortVerbose counters
+			if ( S->lPatch >= S->MaxPatches ) S->verbLBsortPatches++;
+			else S->verbLBsortCap++;
+
 			if ( MergePatches(1) ) goto StoreCall;
 /*
 			pp = S->SizeInFile[1];

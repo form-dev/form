@@ -214,6 +214,25 @@ will be used.
 
 The sizes of buffers involved can all be tuned to a given hardware. How 
 this is done is explained in the chapter on the setup\index{setup} \ref{setup}.
+By specifying \texttt{On SortVerbose;}\index{on!sortverbose} (see
+\ref{substaon}), more information is printed in the final sorting statistics of
+each expression, which take the form:
+\begin{verbatim}
+Time =       0.00 sec    Generated terms =         64
+           test1         Terms in output =         64
+                         Bytes used      =       4888
+                         Unsorted bytes  =       6144
+                         Small Buffer    =    0,    0
+                         Large Buffer    =    0,    0
+                         Comparisons     =         63
+\end{verbatim}
+The additional information includes the total size of the generated terms
+before cancellations, merging or compression, the number of times the small
+buffer was sorted due to reaching TermsInSmall, or SmallSize, the number of
+times the large buffer was sorted due to reaching LargePatches, or LargeSize,
+and the total number of term comparisons made during the sort. In particular,
+the information on why the small and large buffers were sorted helps when
+configuring their sizes, as described in \ref{setup}.
 
 When \FORM\ is dealing with the arguments\index{arguments of functions} of 
 functions and if an argument is a multiterm subexpression, also such 
