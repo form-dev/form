@@ -1167,7 +1167,6 @@ WORD *GCDfunction3(PHEAD WORD *in1, WORD *in2)
 	AR.SortType = SORTHIGHFIRST;
 	term1 = TermMalloc("GCDfunction3-a");
 	term2 = TermMalloc("GCDfunction3-b");
-
 	confree1 = TakeContent(BHEAD in1,term1);
 	tryterm1 = AN.tryterm; AN.tryterm = 0;
 	confree2 = TakeContent(BHEAD in2,term2);
@@ -1333,7 +1332,8 @@ WORD *MultiplyWithTerm(PHEAD WORD *in, WORD *term, WORD par)
 		length = INCLENG(length);
 		tt += ABS(length); tt[-1] = length;
 		*termout = tt - termout;
-		SymbolNormalize(termout);
+		// in or term can contain non-symbols: we call this in TakeContent
+		Normalize(BHEAD termout);
 		StoreTerm(BHEAD termout);
 		in += *in;
 	}
@@ -1409,18 +1409,20 @@ WORD *TakeContent(PHEAD WORD *in, WORD *term)
 				while ( m < tout ) {
 					for ( i = 2; i < r[1]; i++ ) {
 						if ( *m == r[i] ) break;
-						if ( *m > r[i] ) continue;
+					}
+					if ( i == r[1] ) { // index at m was not found, scratch from list
 						mm = m+1;
 						while ( mm < tout ) { mm[-1] = mm[0]; mm++; }
 						tout--; tstore[1]--; m--;
-						break;
 					}
 					m++;
 				}
+				r += r[1];
 			}
-			if ( r >= rstop || tout <= tstore+2 ) {
+			if ( tout <= tstore+2 ) {
 				tout = tstore; break;
 			}
+			t = tnext;
 		}
 		if ( tout > tstore+2 ) { /* Now we have to take out what is in tstore */
 			t = in; w = in;
@@ -1452,66 +1454,68 @@ noindices:
 */
 	code[0] = VECTOR; code[1] = DELTA;
 	for ( k = 0; k < 2; k++ ) {
-	  t = in;
-	  tnext = t + *t;
-	  tstop = tnext-ABS(tnext[-1]);
-	  t++;
-	  while ( t < tstop ) {
-		if ( *t == code[k] ) {
-			i = t[1]; NCOPY(tout,t,i); break;
-		}
-		else t += t[1];
-	  }
-	  if ( tout > tstore ) { /* There are vectors in the first term */
-		t = tnext;
-		while ( *t ) {
-			tnext = t + *t;
-			rstop = tnext - ABS(tnext[-1]);
-			r = t+1;
-			if ( r == rstop ) { tstore = tout; goto novectors; }
-			while ( r < rstop ) {
-				if ( *r != code[k] ) { r += r[1]; continue; }
-				m = tstore+2;
-				while ( m < tout ) {
-					for ( i = 2; i < r[1]; i += 2 ) {
-						if ( *m == r[i] && m[1] == r[i+1] ) break;
-						if ( *m > r[i] || ( *m == r[i] && m[1] > r[i+1] ) ) continue;
-						mm = m+2;
-						while ( mm < tout ) { mm[-2] = mm[0]; mm[-1] = mm[1]; mm += 2; }
-						tout -= 2; tstore[1] -= 2; m -= 2;
-						break;
-					}
-					m += 2;
-				}
+		t = in;
+		tnext = t + *t;
+		tstop = tnext-ABS(tnext[-1]);
+		t++;
+		while ( t < tstop ) {
+			if ( *t == code[k] ) {
+				i = t[1]; NCOPY(tout,t,i); break;
 			}
-			if ( r >= rstop || tout <= tstore+2 ) {
-				tout = tstore; break;
-			}
+			else t += t[1];
 		}
-		if ( tout > tstore+2 ) { /* Now we have to take out what is in tstore */
-			t = in; w = in;
+		if ( tout > tstore ) { /* There are vectors in the first term */
+			t = tnext;
 			while ( *t ) {
-				wterm = w;
-				tnext = t + *t; t++; w++;
-				while ( *t != code[k] ) { i = t[1]; NCOPY(w,t,i); }
-				tt = t + t[1]; t += 2; r = tstore+2; ww = w; *w++ = code[k]; w++;
-				while ( r < tout && t < tt ) {
-					if ( ( *r > *t ) || ( *r == *t && r[1] > t[1] ) )
-						{ *w++ = *t++; *w++ = *t++; }
-					else if ( *r == *t && r[1] == t[1] ) { r += 2; t += 2; }
-					else goto CalledFrom;
+				tnext = t + *t;
+				rstop = tnext - ABS(tnext[-1]);
+				r = t+1;
+				if ( r == rstop ) { tstore = tout; goto novectors; }
+				while ( r < rstop ) {
+					if ( *r != code[k] ) { r += r[1]; continue; }
+					m = tstore+2;
+					while ( m < tout ) {
+						for ( i = 2; i < r[1]; i += 2 ) {
+							if ( *m == r[i] && m[1] == r[i+1] ) break;
+						}
+						if ( i == r[1] ) { // object was not found, scratch from list
+							mm = m+2;
+							while ( mm < tout ) { mm[-2] = mm[0]; mm[-1] = mm[1]; mm += 2; }
+							tout -= 2; tstore[1] -= 2; m -= 2;
+						}
+						m += 2;
+					}
+					r += r[1];
 				}
-				if ( r < tout ) goto CalledFrom;
-				while (  t < tt ) *w++ = *t++;
-				ww[1] = w - ww;
-				if ( ww[1] == 2 ) w = ww;
-				while ( t < tnext ) *w++ = *t++;
-				*wterm = w - wterm;
+				if ( tout <= tstore+2 ) {
+					tout = tstore; break;
+				}
+				t = tnext;
 			}
-			*w = 0;
+			if ( tout > tstore+2 ) { /* Now we have to take out what is in tstore */
+				t = in; w = in;
+				while ( *t ) {
+					wterm = w;
+					tnext = t + *t; t++; w++;
+					while ( *t != code[k] ) { i = t[1]; NCOPY(w,t,i); }
+					tt = t + t[1]; t += 2; r = tstore+2; ww = w; *w++ = code[k]; w++;
+					while ( r < tout && t < tt ) {
+						if ( ( *r > *t ) || ( *r == *t && r[1] > t[1] ) )
+							{ *w++ = *t++; *w++ = *t++; }
+						else if ( *r == *t && r[1] == t[1] ) { r += 2; t += 2; }
+						else goto CalledFrom;
+					}
+					if ( r < tout ) goto CalledFrom;
+					while (  t < tt ) *w++ = *t++;
+					ww[1] = w - ww;
+					if ( ww[1] == 2 ) w = ww;
+					while ( t < tnext ) *w++ = *t++;
+					*wterm = w - wterm;
+				}
+				*w = 0;
+			}
+			tstore = tout;
 		}
-		tstore = tout;
-	  }
 	}
 novectors:;
 /*
@@ -1526,23 +1530,23 @@ novectors:;
 	while ( t < tstop ) {
 		if ( *t >= FUNCTION ) {
 			if ( functions[*t-FUNCTION].commute ) {
-				if ( tcom == 0 ) { tcom = tstore; }
+				if ( tcom == 0 ) { tcom = tout; }
 				else {
 					for ( i = 0; i < t[1]; i++ ) {
 						if ( t[i] != tcom[i] ) {
 							MLOCK(ErrorMessageLock);
-							MesPrint("GCD or factorization of more than one noncommuting object not allowed");
+							MesPrint("&GCD or factorization of more than one noncommuting object not allowed");
 							MUNLOCK(ErrorMessageLock);
 							goto CalledFrom;
 						}
 					}
 				}
 			}
-			i = t[1]; NCOPY(tstore,t,i);
+			i = t[1]; NCOPY(tout,t,i);
 		}
 		else t += t[1];
 	}
-	if ( tout > tstore ) {
+	if ( tout > tstore ) { /* There are functions in the first term */
 		t = tnext;
 		while ( *t ) {
 			tnext = t + *t; tstop = tnext - ABS(tnext[-1]); t++;
@@ -1555,6 +1559,7 @@ novectors:;
 						if ( r[i] != tt[i] ) break;
 					}
 					if ( i == r[1] ) { r += r[1]; goto nextr1; }
+					tt += tt[1];
 				}
 /*
 				Not encountered in this term. Scratch from list
@@ -1565,7 +1570,7 @@ novectors:;
 nextr1:;
 			}
 			if ( tout <= tstore ) break;
-			t += *t;
+			t = tnext;
 		}
 	}
 	if ( tout > tstore ) {
@@ -1575,21 +1580,23 @@ nextr1:;
 */
 		r = tstore;
 		while ( r < tout ) {
-			t = in; ww = in; w = ww+1;
+			t = in; ww = w = in;
 			while ( *t ) {
+				ww = w; // store the location of the term size
+				w += 1; // term data copied here, following the size
 				tnext = t + *t;
 				t++;
 				for(;;) {
-					for ( i = 0; i < r[1]; i++ ) {
+					for ( i = 0; i < r[1]; i++ ) { // search for the current tstore object
 						if ( t[i] != r[i] ) {
 							j = t[1]; NCOPY(w,t,j);
 							break;
 						}
 					}
-					if ( i == r[1] ) {
-						t += t[1];
-						while ( t < tnext ) *w++ = *t++;
-						*ww = w - ww;
+					if ( i == r[1] ) { // we found the current tstore object at t
+						t += t[1]; // skip over it
+						while ( t < tnext ) *w++ = *t++; // copy the rest of the term
+						*ww = w - ww; // update the size
 						break;
 					}
 				}
@@ -1659,6 +1666,15 @@ nofunctions:
 */
 	tout[0] = DOTPRODUCT; tout[1] = 2;
 	t = in;
+	tnext = t + *t; tstop = tnext - ABS(tnext[-1]); t++;
+	while ( t < tstop ) {
+		if ( *t == DOTPRODUCT ) {
+			for ( i = 0; i < t[1]; i++ ) tout[i] = t[i];
+			break;
+		}
+		t += t[1];
+	}
+	t = tnext;
 	while ( *t ) {
 		tnext = t + *t; tstop = tnext - ABS(tnext[-1]); t++;
 		if ( t == tstop ) {
@@ -1811,7 +1827,7 @@ int MergeSymbolLists(PHEAD WORD *old, WORD *extra, int par)
 	WORD *new = TermMalloc("MergeSymbolLists");
 	WORD *t1, *t2, *fill;
 	int i1,i2;
-	fill = new + 2; *new = SYMBOL;
+	fill = new + 2;
 	i1 = old[1] - 2; i2 = extra[1] - 2;
 	t1 = old + 2; t2 = extra + 2;
 	switch ( par ) {
@@ -1906,6 +1922,7 @@ int MergeSymbolLists(PHEAD WORD *old, WORD *extra, int par)
 			for ( ; i2 > 0; i2-- ) *fill++ = *t2++;
 			break;
 	}
+	new[0] = SYMBOL;
 	i1 = new[1] = fill - new;
 	t2 = new; t1 = old; NCOPY(t1,t2,i1);
 	TermFree(new,"MergeSymbolLists");
@@ -1939,17 +1956,29 @@ int MergeDotproductLists(PHEAD WORD *old, WORD *extra, int par)
 				if ( ( *t1 > *t2 ) || ( *t1 == *t2 && t1[1] > t2[1] ) ) {
 					if ( t2[2] < 0 ) { *fill++ = *t2++; *fill++ = *t2++; *fill++ = *t2++; }
 					else t2 += 3;
+					i2 -= 3;
 				}
 				else if ( ( *t1 < *t2 ) || ( *t1 == *t2 && t1[1] < t2[1] ) ) {
 					if ( t1[2] < 0 ) { *fill++ = *t1++; *fill++ = *t1++; *fill++ = *t1++; }
 					else t1 += 3;
+					i1 -= 3;
 				}
 				else if ( t1[2] < t2[2] ) {
 					*fill++ = *t1++; *fill++ = *t1++; *fill++ = *t1++; t2 += 3;
+					i1 -= 3; i2 -= 3;
 				}
 				else {
 					*fill++ = *t2++; *fill++ = *t2++; *fill++ = *t2++; t1 += 3;
+					i2 -= 3; i1 -= 3;
 				}
+			}
+			for ( ; i1 > 0; i1 -= 3 ) {
+				if ( t1[2] < 0 ) { *fill++ = *t1++; *fill++ = *t1++; *fill++ = *t1++; }
+				else t1 += 3;
+			}
+			for ( ; i2 > 0; i2 -= 3 ) {
+				if ( t2[2] < 0 ) { *fill++ = *t2++; *fill++ = *t2++; *fill++ = *t2++; }
+				else t2 += 3;
 			}
 			break;
 		case 1:
@@ -1957,48 +1986,70 @@ int MergeDotproductLists(PHEAD WORD *old, WORD *extra, int par)
 				if ( ( *t1 > *t2 ) || ( *t1 == *t2 && t1[1] > t2[1] ) ) {
 					if ( t2[2] > 0 ) { *fill++ = *t2++; *fill++ = *t2++; *fill++ = *t2++; }
 					else t2 += 3;
+					i2 -= 3;
 				}
 				else if ( ( *t1 < *t2 ) || ( *t1 == *t2 && t1[1] < t2[1] ) ) {
 					if ( t1[2] > 0 ) { *fill++ = *t1++; *fill++ = *t1++; *fill++ = *t1++; }
 					else t1 += 3;
+					i1 -= 3;
 				}
 				else if ( t1[2] > t2[2] ) {
 					*fill++ = *t1++; *fill++ = *t1++; *fill++ = *t1++; t2 += 3;
+					i1 -= 3; i2 -= 3;
 				}
 				else {
 					*fill++ = *t2++; *fill++ = *t2++; *fill++ = *t2++; t1 += 3;
+					i2 -= 3; i1 -= 3;
 				}
+			}
+			for ( ; i1 > 0; i1 -= 3 ) {
+				if ( t1[2] > 0 ) { *fill++ = *t1++; *fill++ = *t1++; *fill++ = *t1++; }
+				else t1 += 3;
+			}
+			for ( ; i2 > 0; i2 -= 3 ) {
+				if ( t2[2] > 0 ) { *fill++ = *t2++; *fill++ = *t2++; *fill++ = *t2++; }
+				else t2 += 3;
 			}
 			break;
 		case 0:
 			while ( i1 > 0 && i2 > 0 ) {
 				if ( ( *t1 > *t2 ) || ( *t1 == *t2 && t1[1] > t2[1] ) ) {
 					t2 += 3;
+					i2 -= 3;
 				}
 				else if ( ( *t1 < *t2 ) || ( *t1 == *t2 && t1[1] < t2[1] ) ) {
 					t1 += 3;
+					i1 -= 3;
 				}
-				else if ( ( t1[2] > 0 ) && ( t2[2] < 0 ) ) { t1 += 3; t2 += 3; }
-				else if ( ( t1[2] < 0 ) && ( t2[2] > 0 ) ) { t1 += 3; t2 += 3; }
+				else if ( ( t1[2] > 0 ) && ( t2[2] < 0 ) ) { t1 += 3; t2 += 3; i1 -= 3; i2 -= 3; }
+				else if ( ( t1[2] < 0 ) && ( t2[2] > 0 ) ) { t1 += 3; t2 += 3; i1 -= 3; i2 -= 3; }
 				else if ( t1[2] > 0 ) {
 					if ( t1[2] < t2[2] ) {
 						*fill++ = *t1++; *fill++ = *t1++; *fill++ = *t1++; t2 += 3;
+						i1 -= 3; i2 -= 3;
 					}
 					else {
 						*fill++ = *t2++; *fill++ = *t2++; *fill++ = *t2++; t1 += 3;
+						i2 -= 3; i1 -= 3;
+
 					}
 				}
 				else {
 					if ( t2[2] < t1[2] ) {
 						*fill++ = *t2++; *fill++ = *t2++; *fill++ = *t2++; t1 += 3;
+						i2 -= 3; i1 -= 3;
 					}
 					else {
 						*fill++ = *t1++; *fill++ = *t1++; *fill++ = *t1++; t2 += 3;
+						i1 -= 3; i2 -= 3;
 					}
 				}
 			}
+			for ( ; i1 > 0; i1-- ) *fill++ = *t1++;
+			for ( ; i2 > 0; i2-- ) *fill++ = *t2++;
 			break;
 	}
+	new[0] = DOTPRODUCT;
 	i1 = new[1] = fill - new;
 	t2 = new; t1 = old; NCOPY(t1,t2,i1);
 	TermFree(new,"MergeDotproductLists");

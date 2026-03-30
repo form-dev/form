@@ -4448,6 +4448,42 @@ assert warning?("Excess information in symmetric properties")
 assert warning?("Illegal information in number of arguments properties")
 assert warning?("Undefined $-variable")
 *--#] Issue766 : 
+*--#[ Issue790 :
+#-
+CFunction cfx,cfy;
+Function fx,fy;
+Index ix,iy;
+Index jx,jy;
+Vector vx,vy;
+Symbol sx,sy;
+Local Fcf = gcd_(cfx+cfx*cfy, cfx-cfx*cfy);
+Local Ff  = gcd_(fx+fx*fy, fx-fx*fy);
+Local Fi  = gcd_(ix+ix*iy, ix-ix*iy);
+Local Fv  = gcd_(vx+vx*vy, vx-vx*vy);
+Local Fvi = gcd_(vx(ix)+vx(ix)*vy(iy), vx(ix)-vx(ix)*vy(iy));
+Local Fdp = gcd_(vx.vx+vx.vx*vy.vy, vx.vx-vx.vx*vy.vy);
+Local Fs  = gcd_(sx+sx*sy, sx-sx*sy);
+* For now, this fails in PutExtraSymbols, though TakeContent works
+*Local Fdel = gcd_(d_(ix,jx)+d_(ix,jx)*d_(iy,jy), d_(ix,jx)-d_(ix,jx)*d_(iy,jy));
+Print;
+.end
+assert succeeded?
+assert result("Fcf") =~ expr("cfx")
+assert result("Ff") =~ expr("fx")
+assert result("Fi") =~ expr("ix")
+assert result("Fv") =~ expr("vx")
+assert result("Fvi") =~ expr("vx(ix)")
+assert result("Fdp") =~ expr("vx.vx")
+assert result("Fs") =~ expr("sx")
+*--#] Issue790 : 
+*--#[ Issue790b :
+#-
+Function fx,fy,fz;
+Local Ff = gcd_(fx*fz+fx*fy, fx*fz-fx*fy);
+Print;
+.end
+assert compile_error?("GCD or factorization of more than one noncommuting object not allowed")
+*--#] Issue790b : 
 *--#[ PullReq535 :
 * This test requires more than the specified 50K workspace.
 #:maxtermsize 200
