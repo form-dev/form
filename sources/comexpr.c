@@ -112,7 +112,8 @@ int DoExpr(UBYTE *inp, int type, int par)
 		else p++;
 	}
 	if ( *p ) {		/* Variety with the = sign */
-		if ( ( q = SkipAName(inp) ) == 0 || q[-1] == '_' ) {
+		q = SkipAName(inp);
+		if ( *inp == '$' || q == 0 || q[-1] == '_' ) {
 			MesPrint("&Illegal name for expression");
 			error = 1;
 			if ( q[-1] == '_' ) {
