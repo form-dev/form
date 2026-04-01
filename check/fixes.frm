@@ -4437,6 +4437,13 @@ assert result("testCF1") =~ expr("putfirst_(f,2,mu1)*putfirst_(e,2,mu1)*putfirst
 assert result("testCF2") =~ expr("d(mu2,mu1)*e(mu2,mu1)*f(mu2,mu1)")
 assert result("testCF3") =~ expr("d(mu2,mu1,mu3)*e(mu2,mu1,mu3)*f(mu2,mu1,mu3)")
 *--#] Issue750 :
+*--#[ Issue760 : 
+ModuleOption foo;
+ModuleOption parallel,foo;
+ModuleOption foo,parallel;
+.end
+assert preprocess_error?("Unrecognized module option: foo")
+*--#] Issue760 : 
 *--#[ Issue766 :
 * Unintended "&" in some warning messages
 CF f(s,s);
