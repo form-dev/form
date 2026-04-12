@@ -42,6 +42,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <mpi.h>
+#if defined(MPIDEBUGGING_DELAY_US) && MPIDEBUGGING_DELAY_US > 0
+#include <unistd.h>  // for usleep()
+#endif
+
+#define MPIDBG_LINESIZE 1024
+#define MPIDBG_BUFSIZE 128
 
 /*
   	#] Includes : 
@@ -60,11 +66,11 @@ static inline int MPIDBG_Get_rank(void) {
 */
 
 static inline void MPIDBG_Out(const char *file, int line, const char *func, const char *fmt, ...) {
-	char buf[1024];  /* Enough. */
+	char buf[MPIDBG_LINESIZE];
 	va_list ap;
 	va_start(ap, fmt);
-	snprintf(buf,1024, "*** [%d] %10s %4d @ %-16s: ", MPIDBG_RANK, file, line, func);
-	vsnprintf(buf + strlen(buf),1024-strlen(buf), fmt, ap);
+	snprintf(buf,MPIDBG_LINESIZE, "*** [%d] %10s %4d @ %-16s: ", MPIDBG_RANK, file, line, func);
+	vsnprintf(buf + strlen(buf),MPIDBG_LINESIZE-strlen(buf), fmt, ap);
 	va_end(ap);
 	/* Assume fprintf with a line will work well even in multi-processes. */
 	fprintf(stderr, "%s\n", buf);
@@ -73,6 +79,18 @@ static inline void MPIDBG_Out(const char *file, int line, const char *func, cons
 
 /*
  		#] MPIDBG_Out : 
+ 		#[ MPIDBG_insert_delay :
+*/
+
+static inline void MPIDBG_insert_delay(void)
+{
+#if defined(MPIDEBUGGING_DELAY_US) && MPIDEBUGGING_DELAY_US > 0
+	usleep(MPIDEBUGGING_DELAY_US);
+#endif
+}
+
+/*
+ 		#] MPIDBG_insert_delay : 
  		#[ MPIDBG_sprint_requests :
 */
 
@@ -139,6 +157,43 @@ static inline void MPIDBG_sprint_statuses(char *buf, int count, const MPI_Reques
 #define MPIDBG_EXTARG const char *file, int line, const char *func
 
 /*
+ 		#[ MPI_Init :
+*/
+
+static inline int MPIDBG_Init(int* argc, char*** argv, MPIDBG_EXTARG)
+{
+	int ret = MPI_Init(argc, argv);
+	if ( ret == MPI_SUCCESS ) {
+		MPIDBG_Out("MPI_Init: OK");
+	}
+	else {
+		MPIDBG_Out("MPI_Init: Failed");
+	}
+	return ret;
+}
+#define MPI_Init(...) MPIDBG_Init(__VA_ARGS__, __FILE__, __LINE__, __func__)
+
+/*
+ 		#] MPI_Init : 
+ 		#[ MPI_Finalize :
+*/
+
+static inline int MPIDBG_Finalize(MPIDBG_EXTARG)
+{
+	MPIDBG_Out("MPI_Finalize");
+	int ret = MPI_Finalize();
+	if ( ret == MPI_SUCCESS ) {
+		MPIDBG_Out("MPI_Finalize: OK");
+	}
+	else {
+		MPIDBG_Out("MPI_Finalize: Failed");
+	}
+	return ret;
+}
+#define MPI_Finalize() MPIDBG_Finalize(__FILE__, __LINE__, __func__)
+
+/*
+ 		#] MPI_Finalize : 
  		#[ MPI_Send :
 */
 
@@ -147,10 +202,10 @@ static inline int MPIDBG_Send(void *buf, int count, MPI_Datatype datatype, int d
 	MPIDBG_Out("MPI_Send: src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	int ret = MPI_Send(buf, count, datatype, dest, tag, comm);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_Out("MPI_Send: OK");
+		MPIDBG_Out("MPI_Send: OK src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	else {
-		MPIDBG_Out("MPI_Send: Failed");
+		MPIDBG_Out("MPI_Send: Failed src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	return ret;
 }
@@ -163,6 +218,8 @@ static inline int MPIDBG_Send(void *buf, int count, MPI_Datatype datatype, int d
 
 static inline int MPIDBG_Recv(void* buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status, MPIDBG_EXTARG)
 {
+	MPI_Status st;
+	if ( status == MPI_STATUS_IGNORE ) status = &st;
 	MPIDBG_Out("MPI_Recv: src=%d dest=%d tag=%d", source, MPIDBG_RANK, tag);
 	int ret = MPI_Recv(buf, count, datatype, source, tag, comm, status);
 	if ( ret == MPI_SUCCESS ) {
@@ -171,7 +228,7 @@ static inline int MPIDBG_Recv(void* buf, int count, MPI_Datatype datatype, int s
 		MPIDBG_Out("MPI_Recv: OK src=%d dest=%d tag=%d count=%d", status->MPI_SOURCE, MPIDBG_RANK, status->MPI_TAG, ret_count);
 	}
 	else {
-		MPIDBG_Out("MPI_Recv: Failed");
+		MPIDBG_Out("MPI_Recv: Failed src=%d dest=%d tag=%d", source, MPIDBG_RANK, tag);
 	}
 	return ret;
 }
@@ -187,10 +244,10 @@ static inline int MPIDBG_Bsend(void* buf, int count, MPI_Datatype datatype, int 
 	MPIDBG_Out("MPI_Bsend: src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	int ret = MPI_Bsend(buf, count, datatype, dest, tag, comm);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_Out("MPI_Bsend: OK");
+		MPIDBG_Out("MPI_Bsend: OK src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	else {
-		MPIDBG_Out("MPI_Bsend: Failed");
+		MPIDBG_Out("MPI_Bsend: Failed src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	return ret;
 }
@@ -206,10 +263,10 @@ static inline int MPIDBG_Ssend(void* buf, int count, MPI_Datatype datatype, int 
 	MPIDBG_Out("MPI_Ssend: src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	int ret = MPI_Ssend(buf, count, datatype, dest, tag, comm);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_Out("MPI_Ssend: OK");
+		MPIDBG_Out("MPI_Ssend: OK src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	else {
-		MPIDBG_Out("MPI_Ssend: Failed");
+		MPIDBG_Out("MPI_Ssend: Failed src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	return ret;
 }
@@ -225,10 +282,10 @@ static inline int MPIDBG_Rsend(void* buf, int count, MPI_Datatype datatype, int 
 	MPIDBG_Out("MPI_Rsend: src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	int ret = MPI_Rsend(buf, count, datatype, dest, tag, comm);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_Out("MPI_Rsend: OK");
+		MPIDBG_Out("MPI_Rsend: OK src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	else {
-		MPIDBG_Out("MPI_Rsend: Failed");
+		MPIDBG_Out("MPI_Rsend: Failed src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	return ret;
 }
@@ -239,15 +296,15 @@ static inline int MPIDBG_Rsend(void* buf, int count, MPI_Datatype datatype, int 
  		#[ MPI_Isend :
 */
 
-static inline int MPIDBG_Isend(void* buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request, MPIDBG_EXTARG)
+static inline int MPIDBG_Isend(const void* buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request, MPIDBG_EXTARG)
 {
 	MPIDBG_Out("MPI_Isend: src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	int ret = MPI_Isend(buf, count, datatype, dest, tag, comm, request);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_Out("MPI_Isend: OK");
+		MPIDBG_Out("MPI_Isend: OK src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	else {
-		MPIDBG_Out("MPI_Isend: Failed");
+		MPIDBG_Out("MPI_Isend: Failed src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	return ret;
 }
@@ -263,10 +320,10 @@ static inline int MPIDBG_Ibsend(void* buf, int count, MPI_Datatype datatype, int
 	MPIDBG_Out("MPI_Ibsend: src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	int ret = MPI_Ibsend(buf, count, datatype, dest, tag, comm, request);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_Out("MPI_Ibsend: OK");
+		MPIDBG_Out("MPI_Ibsend: OK src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	else {
-		MPIDBG_Out("MPI_Ibsend: Failed");
+		MPIDBG_Out("MPI_Ibsend: Failed src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	return ret;
 }
@@ -282,10 +339,10 @@ static inline int MPIDBG_Issend(void* buf, int count, MPI_Datatype datatype, int
 	MPIDBG_Out("MPI_Issend: src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	int ret = MPI_Issend(buf, count, datatype, dest, tag, comm, request);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_Out("MPI_Issend: OK");
+		MPIDBG_Out("MPI_Issend: OK src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	else {
-		MPIDBG_Out("MPI_Issend: Failed");
+		MPIDBG_Out("MPI_Issend: Failed src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	return ret;
 }
@@ -301,10 +358,10 @@ static inline int MPIDBG_Irsend(void* buf, int count, MPI_Datatype datatype, int
 	MPIDBG_Out("MPI_Irsend: src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	int ret = MPI_Irsend(buf, count, datatype, dest, tag, comm, request);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_Out("MPI_Irsend: OK");
+		MPIDBG_Out("MPI_Irsend: OK src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	else {
-		MPIDBG_Out("MPI_Irsend: Failed");
+		MPIDBG_Out("MPI_Irsend: Failed src=%d dest=%d tag=%d count=%d", MPIDBG_RANK, dest, tag, count);
 	}
 	return ret;
 }
@@ -320,10 +377,10 @@ static inline int MPIDBG_Irecv(void* buf, int count, MPI_Datatype datatype, int 
 	MPIDBG_Out("MPI_Irecv: src=%d dest=%d tag=%d", source, MPIDBG_RANK, tag);
 	int ret = MPI_Irecv(buf, count, datatype, source, tag, comm, request);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_Out("MPI_Irecv: OK dest=%d", MPIDBG_RANK);
+		MPIDBG_Out("MPI_Irecv: OK src=%d dest=%d tag=%d", source, MPIDBG_RANK, tag);
 	}
 	else {
-		MPIDBG_Out("MPI_Irecv: Failed");
+		MPIDBG_Out("MPI_Irecv: Failed src=%d dest=%d tag=%d", source, MPIDBG_RANK, tag);
 	}
 	return ret;
 }
@@ -336,17 +393,19 @@ static inline int MPIDBG_Irecv(void* buf, int count, MPI_Datatype datatype, int 
 
 static inline int MPIDBG_Wait(MPI_Request *request, MPI_Status *status, MPIDBG_EXTARG)
 {
-	char buf[256 * 1];  /* Enough. */
+	MPI_Status st;
+	if ( status == MPI_STATUS_IGNORE ) status = &st;
+	char buf1[MPIDBG_BUFSIZE * 1], buf2[MPIDBG_BUFSIZE * 1];
 	MPI_Request old_request = *request;
-	MPIDBG_sprint_requests(buf, 1, request);
-	MPIDBG_Out("MPI_Wait: rank=%d request=%s", MPIDBG_RANK, buf);
+	MPIDBG_sprint_requests(buf1, 1, request);
+	MPIDBG_Out("MPI_Wait: rank=%d request=%s", MPIDBG_RANK, buf1);
 	int ret = MPI_Wait(request, status);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_sprint_statuses(buf, 1, request, &old_request, status);
-		MPIDBG_Out("MPI_Wait: OK rank=%d result=%s", MPIDBG_RANK, buf);
+		MPIDBG_sprint_statuses(buf2, 1, request, &old_request, status);
+		MPIDBG_Out("MPI_Wait: OK rank=%d request=%s result=%s", MPIDBG_RANK, buf1, buf2);
 	}
 	else {
-		MPIDBG_Out("MPI_Wait: Failed");
+		MPIDBG_Out("MPI_Wait: Failed rank=%d request=%s", MPIDBG_RANK, buf1);
 	}
 	return ret;
 }
@@ -359,22 +418,24 @@ static inline int MPIDBG_Wait(MPI_Request *request, MPI_Status *status, MPIDBG_E
 
 static inline int MPIDBG_Test(MPI_Request *request, int *flag, MPI_Status *status, MPIDBG_EXTARG)
 {
-	char buf[256 * 1];  /* Enough. */
+	MPI_Status st;
+	if ( status == MPI_STATUS_IGNORE ) status = &st;
+	char buf1[MPIDBG_BUFSIZE * 1], buf2[MPIDBG_BUFSIZE * 1];
 	MPI_Request old_request = *request;
-	MPIDBG_sprint_requests(buf, 1, request);
-	MPIDBG_Out("MPI_Test: rank=%d request=%s", MPIDBG_RANK, buf);
+	MPIDBG_sprint_requests(buf1, 1, request);
+	MPIDBG_Out("MPI_Test: rank=%d request=%s", MPIDBG_RANK, buf1);
 	int ret = MPI_Test(request, flag, status);
 	if ( ret == MPI_SUCCESS ) {
 		if ( *flag ) {
-			MPIDBG_sprint_statuses(buf, 1, request, &old_request, status);
-			MPIDBG_Out("MPI_Test: OK rank=%d result=%s", MPIDBG_RANK, buf);
+			MPIDBG_sprint_statuses(buf2, 1, request, &old_request, status);
+			MPIDBG_Out("MPI_Test: OK rank=%d request=%s result=%s", MPIDBG_RANK, buf1, buf2);
 		}
 		else {
-			MPIDBG_Out("MPI_Test: OK flag=false");
+			MPIDBG_Out("MPI_Test: OK rank=%d request=%s flag=false", MPIDBG_RANK, buf1);
 		}
 	}
 	else {
-		MPIDBG_Out("MPI_Test: Failed");
+		MPIDBG_Out("MPI_Test: Failed rank=%d request=%s", MPIDBG_RANK, buf1);
 	}
 	return ret;
 }
@@ -387,20 +448,22 @@ static inline int MPIDBG_Test(MPI_Request *request, int *flag, MPI_Status *statu
 
 static inline int MPIDBG_Waitany(int count, MPI_Request *array_of_requests, int *index, MPI_Status *status, MPIDBG_EXTARG)
 {
-	char buf[256];  /* Enough. */
+	MPI_Status st;
+	if ( status == MPI_STATUS_IGNORE ) status = &st;
+	char buf1[MPIDBG_BUFSIZE * 1], buf2[MPIDBG_BUFSIZE * 1];
 	MPI_Request old_requests[count];
 	memcpy(old_requests, array_of_requests, sizeof(MPI_Request) * count);
-	MPIDBG_sprint_requests(buf, count, array_of_requests);
-	MPIDBG_Out("MPI_Waitany: rank=%d request=%s", MPIDBG_RANK, buf);
+	MPIDBG_sprint_requests(buf1, count, array_of_requests);
+	MPIDBG_Out("MPI_Waitany: rank=%d request=%s", MPIDBG_RANK, buf1);
 	int ret = MPI_Waitany(count, array_of_requests, index, status);
 	if ( ret == MPI_SUCCESS ) {
 		MPI_Status statuses[count];
 		statuses[*index] = *status;
-		MPIDBG_sprint_statuses(buf, count, old_requests, array_of_requests, statuses);
-		MPIDBG_Out("MPI_Waitany: OK rank=%d result=%s", MPIDBG_RANK, buf);
+		MPIDBG_sprint_statuses(buf2, count, old_requests, array_of_requests, statuses);
+		MPIDBG_Out("MPI_Waitany: OK rank=%d request=%s result=%s", MPIDBG_RANK, buf1, buf2);
 	}
 	else {
-		MPIDBG_Out("MPI_Waitany: Failed");
+		MPIDBG_Out("MPI_Waitany: Failed rank=%d request=%s", MPIDBG_RANK, buf1);
 	}
 	return ret;
 }
@@ -413,25 +476,27 @@ static inline int MPIDBG_Waitany(int count, MPI_Request *array_of_requests, int 
 
 static inline int MPIDBG_Testany(int count, MPI_Request *array_of_requests, int *index, int *flag, MPI_Status *status, MPIDBG_EXTARG)
 {
-	char buf[256];  /* Enough. */
+	MPI_Status st;
+	if ( status == MPI_STATUS_IGNORE ) status = &st;
+	char buf1[MPIDBG_BUFSIZE * 1], buf2[MPIDBG_BUFSIZE * 1];
 	MPI_Request old_requests[count];
 	memcpy(old_requests, array_of_requests, sizeof(MPI_Request) * count);
-	MPIDBG_sprint_requests(buf, count, array_of_requests);
-	MPIDBG_Out("MPI_Testany: rank=%d request=%s", MPIDBG_RANK, buf);
+	MPIDBG_sprint_requests(buf1, count, array_of_requests);
+	MPIDBG_Out("MPI_Testany: rank=%d request=%s", MPIDBG_RANK, buf1);
 	int ret = MPI_Testany(count, array_of_requests, index, flag, status);
 	if ( ret == MPI_SUCCESS ) {
 		if ( *flag ) {
 			MPI_Status statuses[count];
 			statuses[*index] = *status;
-			MPIDBG_sprint_statuses(buf, count, old_requests, array_of_requests, statuses);
-			MPIDBG_Out("MPI_Testany: OK rank=%d result=%s", MPIDBG_RANK, buf);
+			MPIDBG_sprint_statuses(buf2, count, old_requests, array_of_requests, statuses);
+			MPIDBG_Out("MPI_Testany: OK rank=%d request=%s result=%s", MPIDBG_RANK, buf1, buf2);
 		}
 		else {
-			MPIDBG_Out("MPI_Testany: OK flag=false");
+			MPIDBG_Out("MPI_Testany: OK rank=%d request=%s flag=false", MPIDBG_RANK, buf1);
 		}
 	}
 	else {
-		MPIDBG_Out("MPI_Testany: Failed");
+		MPIDBG_Out("MPI_Testany: Failed rank=%d request=%s", MPIDBG_RANK, buf1);
 	}
 	return ret;
 }
@@ -444,18 +509,20 @@ static inline int MPIDBG_Testany(int count, MPI_Request *array_of_requests, int 
 
 static inline int MPIDBG_Waitall(int count, MPI_Request *array_of_requests, MPI_Status *array_of_statuses, MPIDBG_EXTARG)
 {
-	char buf[256 * count];  /* Enough. */
+	MPI_Status st[count];
+	if ( array_of_statuses == MPI_STATUSES_IGNORE ) array_of_statuses = st;
+	char buf1[MPIDBG_BUFSIZE * count], buf2[MPIDBG_BUFSIZE * count];
 	MPI_Request old_requests[count];
 	memcpy(old_requests, array_of_requests, sizeof(MPI_Request) * count);
-	MPIDBG_sprint_requests(buf, count, array_of_requests);
-	MPIDBG_Out("MPI_Waitall: rank=%d request=%s", MPIDBG_RANK, buf);
+	MPIDBG_sprint_requests(buf1, count, array_of_requests);
+	MPIDBG_Out("MPI_Waitall: rank=%d request=%s", MPIDBG_RANK, buf1);
 	int ret = MPI_Waitall(count, array_of_requests, array_of_statuses);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_sprint_statuses(buf, count, old_requests, array_of_requests, array_of_statuses);
-		MPIDBG_Out("MPI_Waitall: OK rank=%d result=%s", MPIDBG_RANK, buf);
+		MPIDBG_sprint_statuses(buf2, count, old_requests, array_of_requests, array_of_statuses);
+		MPIDBG_Out("MPI_Waitall: OK rank=%d request=%s result=%s", MPIDBG_RANK, buf1, buf2);
 	}
 	else {
-		MPIDBG_Out("MPI_Waitall: Failed");
+		MPIDBG_Out("MPI_Waitall: Failed rank=%d request=%s", MPIDBG_RANK, buf1);
 	}
 	return ret;
 }
@@ -468,23 +535,25 @@ static inline int MPIDBG_Waitall(int count, MPI_Request *array_of_requests, MPI_
 
 static inline int MPIDBG_Testall(int count, MPI_Request *array_of_requests, int *flag, MPI_Status *array_of_statuses, MPIDBG_EXTARG)
 {
-	char buf[256 * count];  /* Enough. */
+	MPI_Status st[count];
+	if ( array_of_statuses == MPI_STATUSES_IGNORE ) array_of_statuses = st;
+	char buf1[MPIDBG_BUFSIZE * count], buf2[MPIDBG_BUFSIZE * count];
 	MPI_Request old_requests[count];
 	memcpy(old_requests, array_of_requests, sizeof(MPI_Request) * count);
-	MPIDBG_sprint_requests(buf, count, array_of_requests);
-	MPIDBG_Out("MPI_Testall: rank=%d request=%s", MPIDBG_RANK, buf);
+	MPIDBG_sprint_requests(buf1, count, array_of_requests);
+	MPIDBG_Out("MPI_Testall: rank=%d request=%s", MPIDBG_RANK, buf1);
 	int ret = MPI_Testall(count, array_of_requests, flag, array_of_statuses);
 	if ( ret == MPI_SUCCESS ) {
 		if ( *flag ) {
-			MPIDBG_sprint_statuses(buf, count, old_requests, array_of_requests, array_of_statuses);
-			MPIDBG_Out("MPI_Testall: OK rank=%d result=%s", MPIDBG_RANK, buf);
+			MPIDBG_sprint_statuses(buf2, count, old_requests, array_of_requests, array_of_statuses);
+			MPIDBG_Out("MPI_Testall: OK rank=%d request=%s result=%s", MPIDBG_RANK, buf1, buf2);
 		}
 		else {
-			MPIDBG_Out("MPI_Testall: OK flag=false");
+			MPIDBG_Out("MPI_Testall: OK rank=%d request=%s flag=false", MPIDBG_RANK, buf1);
 		}
 	}
 	else {
-		MPIDBG_Out("MPI_Testall: Failed");
+		MPIDBG_Out("MPI_Testall: Failed rank=%d request=%s", MPIDBG_RANK, buf1);
 	}
 	return ret;
 }
@@ -497,18 +566,20 @@ static inline int MPIDBG_Testall(int count, MPI_Request *array_of_requests, int 
 
 static inline int MPIDBG_Waitsome(int incount, MPI_Request *array_of_requests, int *outcount, int *array_of_indices, MPI_Status *array_of_statuses, MPIDBG_EXTARG)
 {
-	char buf[256 * incount];  /* Enough. */
+	MPI_Status st[incount];
+	if ( array_of_statuses == MPI_STATUSES_IGNORE ) array_of_statuses = st;
+	char buf1[MPIDBG_BUFSIZE * incount], buf2[MPIDBG_BUFSIZE * incount];
 	MPI_Request old_requests[incount];
 	memcpy(old_requests, array_of_requests, sizeof(MPI_Request) * incount);
-	MPIDBG_sprint_requests(buf, incount, array_of_requests);
-	MPIDBG_Out("MPI_Waitsome: rank=%d request=%s", MPIDBG_RANK, buf);
+	MPIDBG_sprint_requests(buf1, incount, array_of_requests);
+	MPIDBG_Out("MPI_Waitsome: rank=%d request=%s", MPIDBG_RANK, buf1);
 	int ret = MPI_Waitsome(incount, array_of_requests, outcount, array_of_indices, array_of_statuses);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_sprint_statuses(buf, incount, old_requests, array_of_requests, array_of_statuses);
-		MPIDBG_Out("MPI_Waitsome: OK rank=%d result=%s", MPIDBG_RANK, buf);
+		MPIDBG_sprint_statuses(buf2, incount, old_requests, array_of_requests, array_of_statuses);
+		MPIDBG_Out("MPI_Waitsome: OK rank=%d request=%s result=%s", MPIDBG_RANK, buf1, buf2);
 	}
 	else {
-		MPIDBG_Out("MPI_Waitsome: Failed");
+		MPIDBG_Out("MPI_Waitsome: Failed rank=%d request=%s", MPIDBG_RANK, buf1);
 	}
 	return ret;
 }
@@ -521,18 +592,20 @@ static inline int MPIDBG_Waitsome(int incount, MPI_Request *array_of_requests, i
 
 static inline int MPIDBG_Testsome(int incount, MPI_Request *array_of_requests, int *outcount, int *array_of_indices, MPI_Status *array_of_statuses, MPIDBG_EXTARG)
 {
-	char buf[256 * incount];  /* Enough. */
+	MPI_Status st[incount];
+	if ( array_of_statuses == MPI_STATUSES_IGNORE ) array_of_statuses = st;
+	char buf1[MPIDBG_BUFSIZE * incount], buf2[MPIDBG_BUFSIZE * incount];
 	MPI_Request old_requests[incount];
 	memcpy(old_requests, array_of_requests, sizeof(MPI_Request) * incount);
-	MPIDBG_sprint_requests(buf, incount, array_of_requests);
-	MPIDBG_Out("MPI_Testsome: rank=%d request=%s", MPIDBG_RANK, buf);
+	MPIDBG_sprint_requests(buf1, incount, array_of_requests);
+	MPIDBG_Out("MPI_Testsome: rank=%d request=%s", MPIDBG_RANK, buf1);
 	int ret = MPI_Testsome(incount, array_of_requests, outcount, array_of_indices, array_of_statuses);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_sprint_statuses(buf, incount, old_requests, array_of_requests, array_of_statuses);
-		MPIDBG_Out("MPI_Testsome: OK rank=%d result=%s", MPIDBG_RANK, buf);
+		MPIDBG_sprint_statuses(buf2, incount, old_requests, array_of_requests, array_of_statuses);
+		MPIDBG_Out("MPI_Testsome: OK rank=%d request=%s result=%s", MPIDBG_RANK, buf1, buf2);
 	}
 	else {
-		MPIDBG_Out("MPI_Testsome: Failed");
+		MPIDBG_Out("MPI_Testsome: Failed rank=%d request=%s", MPIDBG_RANK, buf1);
 	}
 	return ret;
 }
@@ -545,7 +618,10 @@ static inline int MPIDBG_Testsome(int incount, MPI_Request *array_of_requests, i
 
 static inline int MPIDBG_Iprobe(int source, int tag, MPI_Comm comm, int *flag, MPI_Status *status, MPIDBG_EXTARG)
 {
+	MPI_Status st;
+	if ( status == MPI_STATUS_IGNORE ) status = &st;
 	MPIDBG_Out("MPI_Iprobe: src=%d dest=%d tag=%d", source, MPIDBG_RANK, tag);
+	MPIDBG_insert_delay();
 	int ret = MPI_Iprobe(source, tag, comm, flag, status);
 	if ( ret == MPI_SUCCESS ) {
 		if ( *flag ) {
@@ -554,11 +630,11 @@ static inline int MPIDBG_Iprobe(int source, int tag, MPI_Comm comm, int *flag, M
 			MPIDBG_Out("MPI_Iprobe: OK src=%d dest=%d tag=%d size=%d", status->MPI_SOURCE, MPIDBG_RANK, status->MPI_TAG, ret_size);
 		}
 		else {
-			MPIDBG_Out("MPI_Iprobe: OK flag=false");
+			MPIDBG_Out("MPI_Iprobe: OK src=%d dest=%d tag=%d flag=false", source, MPIDBG_RANK, tag);
 		}
 	}
 	else {
-		MPIDBG_Out("MPI_Iprobe: Failed");
+		MPIDBG_Out("MPI_Iprobe: Failed src=%d dest=%d tag=%d", source, MPIDBG_RANK, tag);
 	}
 	return ret;
 }
@@ -571,6 +647,8 @@ static inline int MPIDBG_Iprobe(int source, int tag, MPI_Comm comm, int *flag, M
 
 static inline int MPIDBG_Probe(int source, int tag, MPI_Comm comm, MPI_Status *status, MPIDBG_EXTARG)
 {
+	MPI_Status st;
+	if ( status == MPI_STATUS_IGNORE ) status = &st;
 	MPIDBG_Out("MPI_Probe: src=%d dest=%d tag=%d", source, MPIDBG_RANK, tag);
 	int ret = MPI_Probe(source, tag, comm, status);
 	if ( ret == MPI_SUCCESS ) {
@@ -579,7 +657,7 @@ static inline int MPIDBG_Probe(int source, int tag, MPI_Comm comm, MPI_Status *s
 		MPIDBG_Out("MPI_Probe: OK src=%d dest=%d tag=%d size=%d", status->MPI_SOURCE, MPIDBG_RANK, status->MPI_TAG, ret_size);
 	}
 	else {
-		MPIDBG_Out("MPI_Probe: Failed");
+		MPIDBG_Out("MPI_Probe: Failed src=%d dest=%d tag=%d", source, MPIDBG_RANK, tag);
 	}
 	return ret;
 }
@@ -592,7 +670,7 @@ static inline int MPIDBG_Probe(int source, int tag, MPI_Comm comm, MPI_Status *s
 
 static inline int MPIDBG_Cancel(MPI_Request *request, MPIDBG_EXTARG)
 {
-	MPIDBG_Out("MPI_Cancel: rank=%d", MPIDBG_RANK);
+	MPIDBG_Out("MPI_Cancel", MPIDBG_RANK);
 	int ret = MPI_Cancel(request);
 	if ( ret == MPI_SUCCESS ) {
 		MPIDBG_Out("MPI_Cancel: OK");
@@ -611,7 +689,7 @@ static inline int MPIDBG_Cancel(MPI_Request *request, MPIDBG_EXTARG)
 
 static inline int MPIDBG_Test_cancelled(MPI_Status *status, int *flag, MPIDBG_EXTARG)
 {
-	MPIDBG_Out("MPI_Test_cancelled: rank=%d", MPIDBG_RANK);
+	MPIDBG_Out("MPI_Test_cancelled", MPIDBG_RANK);
 	int ret = MPI_Test_cancelled(status, flag);
 	if ( ret == MPI_SUCCESS ) {
 		if ( *flag ) {
@@ -635,7 +713,7 @@ static inline int MPIDBG_Test_cancelled(MPI_Status *status, int *flag, MPIDBG_EX
 
 static inline int MPIDBG_Barrier(MPI_Comm comm, MPIDBG_EXTARG)
 {
-	MPIDBG_Out("MPI_Barrier: rank=%d", MPIDBG_RANK);
+	MPIDBG_Out("MPI_Barrier");
 	int ret = MPI_Barrier(comm);
 	if ( ret == MPI_SUCCESS ) {
 		MPIDBG_Out("MPI_Barrier: OK");
@@ -657,10 +735,10 @@ static inline int MPIDBG_Bcast(void* buffer, int count, MPI_Datatype datatype, i
 	MPIDBG_Out("MPI_Bcast: root=%d count=%d", root, count);
 	int ret = MPI_Bcast(buffer, count, datatype, root, comm);
 	if ( ret == MPI_SUCCESS ) {
-		MPIDBG_Out("MPI_Bcast: OK");
+		MPIDBG_Out("MPI_Bcast: OK root=%d count=%d", root, count);
 	}
 	else {
-		MPIDBG_Out("MPI_Bcast: Failed");
+		MPIDBG_Out("MPI_Bcast: Failed root=%d count=%d", root, count);
 	}
 	return ret;
 }
@@ -668,6 +746,25 @@ static inline int MPIDBG_Bcast(void* buffer, int count, MPI_Datatype datatype, i
 
 /*
  		#] MPI_Bcast : 
+ 		#[ MPI_Reduce :
+*/
+
+static inline int MPIDBG_Reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm, MPIDBG_EXTARG)
+{
+	MPIDBG_Out("MPI_Reduce: root=%d count=%d", root, count);
+	int ret = MPI_Reduce(sendbuf, recvbuf, count, datatype, op, root, comm);
+	if ( ret == MPI_SUCCESS ) {
+		MPIDBG_Out("MPI_Reduce: OK root=%d count=%d", root, count);
+	}
+	else {
+		MPIDBG_Out("MPI_Reduce: Failed root=%d count=%d", root, count);
+	}
+	return ret;
+}
+#define MPI_Reduce(...) MPIDBG_Reduce(__VA_ARGS__, __FILE__, __LINE__, __func__)
+
+/*
+ 		#] MPI_Reduce : 
   	#] MPI APIs : 
 */
 

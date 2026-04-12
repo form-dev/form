@@ -36,6 +36,11 @@
   	#[ Includes and variables :
 */
 
+/*
+#define MPIDEBUGGING
+#define MPIDEBUGGING_DELAY_US 10000
+*/
+
 #include <limits.h>
 #include "form3.h"
 
