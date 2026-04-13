@@ -2077,7 +2077,8 @@ LONG PF_GetSlaveTimes(void)
 {
 	LONG slavetimes = 0;
 	LONG t = PF.me == MASTER ? 0 : AM.SumTime + TimeCPU(1);
-	MPI_Reduce(&t, &slavetimes, 1, PF_LONG, MPI_SUM, MASTER, PF_COMM);
+	int ret = PF_Reduce(&t, &slavetimes, 1, PF_LONG, MPI_SUM, MASTER);
+	CHECK(ret == 0);
 	return slavetimes;
 }
 

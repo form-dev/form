@@ -451,6 +451,29 @@ int PF_Bcast(void *buffer, int count)
 
 /*
   	#] PF_Bcast : 
+  	#[ PF_Reduce :
+*/
+
+/**
+ * Performs a reduce operation across all processes.
+ *
+ * @param[in]  sendbuf  the buffer containing the data to be reduced.
+ * @param[out] recvbuf  the buffer to store the reduced result (only for the root process).
+ * @param      count    the number of elements in the buffers.
+ * @param      type     the datatype of the elements.
+ * @param      op       the operation to apply.
+ * @param      root     the root process number.
+ * @return              0 if OK, nonzero on error.
+ */
+int PF_Reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI_Op op, int root)
+{
+	if ( MPI_Reduce(sendbuf,recvbuf,count,type,op,root,PF_COMM) != MPI_SUCCESS )
+		return(-1);
+	return(0);
+}
+
+/*
+  	#] PF_Reduce : 
   	#[ PF_RawSend :
 */
 
