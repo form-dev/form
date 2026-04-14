@@ -4170,7 +4170,6 @@ ModuleOption inparallel;
 
 Print;
 .end
-#pend_if mpi?
 assert succeeded?
 assert result("diff1") =~ expr("0")
 assert result("diff2") =~ expr("0")
