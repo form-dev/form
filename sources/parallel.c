@@ -3677,6 +3677,7 @@ int PF_InParallelProcessor(void)
 			}
 		}
 	}
+	PF_processing = 1;
 	if(PF.me == MASTER){
 		if ( PF.numtasks >= 3 ) {
 			partodoexr = (WORD*)Malloc1(sizeof(WORD)*(PF.numtasks+1),"PF_InParallelProcessor");
@@ -3726,6 +3727,7 @@ int PF_InParallelProcessor(void)
 				Expressions[i].partodo = 0;
 			}
 		}
+		PF_PostEndSortBarrier();
 		return(0);
 	}/*if(PF.me == MASTER)*/
 	/*Slave:*/
@@ -3758,6 +3760,7 @@ int PF_InParallelProcessor(void)
 		}/*if(tag == PF_DATA_MSGTAG)*/
 	}while(tag!=PF_EMPTY_MSGTAG);
 	PF.exprtodo=-1;
+	PF_PostEndSortBarrier();
 	return(0);
 }/*PF_InParallelProcessor*/
 
@@ -4014,6 +4017,8 @@ static int PF_Slave2MasterIP(int src)/*both master and slave*/
 	/*partodoexr[src] is the number of expression.*/
 	e = Expressions +partodoexr[src];
 	/*Get metadata:*/
+	i = PF_ANY_MSGTAG;
+	PF_CatchErrorMessages(&src, &i);
 	if (PF_RawRecv(&src, &exprData,sizeof(bufIPstruct_t),&i)!= sizeof(bufIPstruct_t))
 		return(-1);
 	/*Fill in the expression data:*/
@@ -4106,6 +4111,8 @@ static int PF_ReadMaster(void)/*reads directly to its scratch!*/
 	LONG ll=0;
 	int l;
 	/*Get metadata:*/
+	tag = PF_ANY_MSGTAG;
+	PF_CatchErrorMessages(&m, &tag);
 	if (PF_RawRecv(&m, &exprData,sizeof(bufIPstruct_t),&tag)!= sizeof(bufIPstruct_t))
 		return(-1);
 
