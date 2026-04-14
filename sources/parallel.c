@@ -3837,7 +3837,8 @@ static int PF_DoOneExpr(void)/*the processor*/
 				}
 
 				position = AS.OldOnFile[i];
-				if ( e->status == HIDDENLEXPRESSION || e->status == HIDDENGEXPRESSION ) {
+				if ( e->status == HIDDENLEXPRESSION || e->status == HIDDENGEXPRESSION
+					|| e->status == UNHIDELEXPRESSION || e->status == UNHIDEGEXPRESSION ) {
 					AR.GetFile = 2; fi = AR.hidefile;
 				}
 				else {
@@ -4077,7 +4078,8 @@ static int PF_Master2SlaveIP(int dest, EXPRESSIONS e)
 	}
 	if(PF_RawSend(dest,&exprData,sizeof(bufIPstruct_t),PF_DATA_MSGTAG))
 		return(-1);
-	if ( e->status == HIDDENLEXPRESSION || e->status == HIDDENGEXPRESSION )
+	if ( e->status == HIDDENLEXPRESSION || e->status == HIDDENGEXPRESSION
+		|| e->status == UNHIDELEXPRESSION || e->status == UNHIDEGEXPRESSION )
 		fi = AR.hidefile;
 	else
 		fi = AR.infile;
@@ -4124,7 +4126,8 @@ static int PF_ReadMaster(void)/*reads directly to its scratch!*/
 	e=Expressions + PF.exprtodo;
 	/*Fill in the expression data:*/
 /*	memcpy(e, &(exprData.e), sizeof(struct ExPrEsSiOn)); */
-	if ( e->status == HIDDENLEXPRESSION || e->status == HIDDENGEXPRESSION )
+	if ( e->status == HIDDENLEXPRESSION || e->status == HIDDENGEXPRESSION
+		|| e->status == UNHIDELEXPRESSION || e->status == UNHIDEGEXPRESSION )
 		fi = AR.hidefile;
 	else
 		fi = AR.infile;
