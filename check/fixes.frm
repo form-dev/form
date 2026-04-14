@@ -389,8 +389,6 @@ PolyRatFun rat;
 L F = rat(a.a,1);
 P;
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?
 *--#] Issue39 : 
 *--#[ Issue41 :
@@ -1004,7 +1002,6 @@ L F6 = f(1000*g5_);
 L F7 = f(10000*g5_);
 .end
 # Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?
 *--#] Issue94 : 
 *--#[ Issue95 :
@@ -1809,8 +1806,6 @@ L F = f(<x1+x2+x3+x4>,...,<x6+x7+x8+x9>);
 transform f,mulargs(1,last);  * silent crash
 P;
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?("Term too complex during normalization")
 *--#] Issue183 :
 *--#[ Issue185 :
@@ -2144,8 +2139,6 @@ Print;
 # For now it fails because
 #   "Currently Stage 4 sorts are not allowed for function arguments or $ variables."
 assert runtime_error?
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 #assert succeeded?
 #assert result("test1") =~ expr("0")
 #assert result("test2") =~ expr("g(0)")
@@ -2385,16 +2378,12 @@ assert result("F40") =~ expr("0")
 L F11 = div_(1,0);
 P;
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?
 *--#] Issue261_2 : 
 *--#[ Issue261_3 :
 L F23 = rem_(0,0);
 P;
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?
 *--#] Issue261_3 : 
 *--#[ Issue261_4 :
@@ -2404,8 +2393,6 @@ S x;
 L F34 = inverse_($x,$z);
 P;
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?
 *--#] Issue261_4 : 
 *--#[ Issue261_5 :
@@ -2413,8 +2400,6 @@ assert runtime_error?
 L F16 = div_($z,$z);
 P;
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?
 *--#] Issue261_5 : 
 *--#[ Issue261_6 :
@@ -2423,8 +2408,6 @@ S x;
 L F27 = rem_($x,0);
 P;
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?
 *--#] Issue261_6 : 
 *--#[ Issue261_7 :
@@ -2432,8 +2415,6 @@ assert runtime_error?
 L F39 = inverse_(1,$z);
 P;
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?
 *--#] Issue261_7 : 
 *--#[ Issue267 :
@@ -3068,7 +3049,7 @@ Identify f(x?) = prf(n-x,n+x);
 .end
 # Fails due to polynomial size on 32bit builds
 #require wordsize >= 4
-# Runtime errors may freeze ParFORM.
+# This set of buffer sizes does not cause the error in ParFORM.
 #pend_if mpi?
 assert runtime_error?("Please increase SmallExtension setup parameter.")
 *--#] Issue512_1 :
@@ -3097,8 +3078,6 @@ EndTerm;
 .end
 # Fails due to polynomial size on 32bit builds
 #require wordsize >= 4
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?("Please increase SubSmallExtension setup parameter.")
 *--#] Issue512_2 :
 *--#[ Issue512_3 :
@@ -3709,8 +3688,6 @@ Vector v;
 PolyRatFun rat;
 Local F = rat(v,1);
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?("ERROR: polynomials and polyratfuns must contain symbols only")
 *--#] Issue567_1 :
 *--#[ Issue567_2 :
@@ -3719,8 +3696,6 @@ Index i;
 PolyRatFun rat;
 Local F = rat(i,1);
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?("ERROR: polynomials and polyratfuns must contain symbols only")
 *--#] Issue567_2 :
 *--#[ Issue567_3a :
@@ -3729,8 +3704,6 @@ Function f;
 PolyRatFun rat;
 Local F = rat(f,1);
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?("ERROR: polynomials and polyratfuns must contain symbols only")
 *--#] Issue567_3a :
 *--#[ Issue567_3b :
@@ -3739,8 +3712,6 @@ CFunction f;
 PolyRatFun rat;
 Local F = rat(f,1);
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?("ERROR: polynomials and polyratfuns must contain symbols only")
 *--#] Issue567_3b :
 *--#[ Issue567_3c :
@@ -3749,8 +3720,6 @@ Table f(1);
 PolyRatFun rat;
 Local F = rat(f,1);
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?("ERROR: polynomials and polyratfuns must contain symbols only")
 *--#] Issue567_3c :
 *--#[ Issue567_3d :
@@ -3759,8 +3728,6 @@ CTable f(1);
 PolyRatFun rat;
 Local F = rat(f,1);
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?("ERROR: polynomials and polyratfuns must contain symbols only")
 *--#] Issue567_3d :
 *--#[ Issue567_3e :
@@ -3769,8 +3736,6 @@ Tensor f;
 PolyRatFun rat;
 Local F = rat(f,1);
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?("ERROR: polynomials and polyratfuns must contain symbols only")
 *--#] Issue567_3e :
 *--#[ Issue567_3f :
@@ -3779,8 +3744,6 @@ CTensor f;
 PolyRatFun rat;
 Local F = rat(f,1);
 .end
-# Runtime errors may freeze ParFORM.
-#pend_if mpi?
 assert runtime_error?("ERROR: polynomials and polyratfuns must contain symbols only")
 *--#] Issue567_3f :
 *--#[ Issue577_1 :
@@ -3829,7 +3792,7 @@ Multiply 2;
 print;
 .end
 # ParFORM has valgrind errors with this. See discussion in PR 586.
-#pend_if mpi?
+#pend_if valgrind? && mpi?
 assert succeeded?
 assert result("test2") =~ expr("4")
 assert result("test3") =~ expr("6")
@@ -3858,7 +3821,7 @@ Local test3 = 3;
 #endif
 .end
 # ParFORM has valgrind errors with this. See discussion in PR 586.
-#pend_if mpi?
+#pend_if valgrind? && mpi?
 assert runtime_error?("isnumerical: expression is not yet defined!")
 *--#] Issue577_2 :
 *--#[ Issue599 :
@@ -4474,7 +4437,7 @@ Local expr = 1;
 .sort
 $a = 1;
 .end
-#require threaded?
+#require threaded? || mpi?
 assert warning?("This module is forced to run in sequential mode due to $-variable: $a")
 *--#] PullReq649_1 :
 *--#[ PullReq649_2 :
@@ -4483,7 +4446,7 @@ Local expr = 1;
 .sort
 $n1MdWu6rNU1d29yW3ukhzV7YuY = 1;
 .end
-#require threaded?
+#require threaded? || mpi?
 assert warning?("This module is forced to run in sequential mode due to $-variable: $n1MdWu6rNU1d29yW3ukhzV7YuY")
 *--#] PullReq649_2 :
 *--#[ PullReq649_3 :
@@ -4501,7 +4464,7 @@ Local expr = 1;
 Symbol x;
 id x?$a = x;
 .end
-#require threaded?
+#require threaded? || mpi?
 assert warning?("This module is forced to run in sequential mode due to $-variable: $a")
 *--#] PullReq649_4 :
 *--#[ PullReq649_5 :
@@ -4545,7 +4508,7 @@ Local expr = 1;
 $a = 1;
 moduleoption local $b;
 .end
-#require threaded?
+#require threaded? || mpi?
 assert warning?("This module is forced to run in sequential mode due to $-variable: $a")
 *--#] PullReq649_9 :
 *--#[ PullReq652 :

@@ -307,9 +307,6 @@ assert succeeded?
 # assert anything. We only test whether this hits the test suite timeout limit,
 # or not. TODO in principle this can be considered to be a bug, to be looked at
 # in the future.
-# For parform, there is no attempt to ensure the master process recieves SIGALRM
-# and not the workers.
-#pend_if mpi?
 *--#] TimeoutAfter_2 :
 *--#[ dedup :
 * Test deduplication
@@ -2350,7 +2347,6 @@ Local F = mzv_(2,1);
 Evaluate mzv_;
 .end
 #pend_if wordsize == 2
-#pend_if mpi?
 assert runtime_error?("Error: Weight of Euler/MZV sum greater than 2.")
 assert runtime_error?("Please increase the maximum weight in #startfloat.")
 *--#] mzv_error_1 :
@@ -2360,7 +2356,6 @@ Local F = mzv_(1,2);
 Evaluate mzv_;
 .end
 #pend_if wordsize == 2
-#pend_if mpi?
 assert runtime_error?("Divergent MZV in CalculateMZV")
 *--#] mzv_error_2 :
 *--#[ mzv_error_3: 
@@ -2369,7 +2364,6 @@ Local F = mzv_(-2,1);
 Evaluate mzv_;
 .end
 #pend_if wordsize == 2
-#pend_if mpi?
 assert runtime_error?("Illegal index[0] in CalculateMZV: -2")
 *--#] mzv_error_3 :
 *--#[ mzv_error_4: 
@@ -2378,7 +2372,6 @@ Local F = mzvhalf_(2,-1);
 Evaluate mzvhalf_;
 .end
 #pend_if wordsize == 2
-#pend_if mpi?
 assert runtime_error?("Illegal index[1] in CalculateMZVhalf: -1")
 *--#] mzv_error_4 :
 *--#[ mzv_error_5: 
@@ -2387,7 +2380,6 @@ Local F = euler_(1,-2);
 Evaluate euler_;
 .end
 #pend_if wordsize == 2
-#pend_if mpi?
 assert runtime_error?("Divergent Euler sum in CalculateEuler")
 *--#] mzv_error_5 :
 *--#[ humanstats :
@@ -3227,7 +3219,6 @@ Model PHI3;
 	Vertex phi,phi,phi:1;
 EndModel;
 .end
-#pend_if mpi?
 assert runtime_error?('Invalid coupling constant in vertex statement.')
 *--#] diagrams_err_1 :
 *--#[ diagrams_err_2 :
@@ -3236,7 +3227,6 @@ Model PHI3;
 	Vertex phi,phi,phi:g^-1;
 EndModel;
 .end
-#pend_if mpi?
 assert runtime_error?('Invalid negative power of coupling constant.')
 *--#] diagrams_err_2 :
 *--#[ diagrams_err_3 :
@@ -3247,7 +3237,6 @@ Model PHI3;
 EndModel;
 Local test = diagrams_(PHI3,{phi},{phi},{},{p1,p2},1,0);
 .end
-#pend_if mpi?
 assert runtime_error?('Insufficient external momenta in diagrams_')
 *--#] diagrams_err_3 :
 *--#[ diagrams_err_4 :
@@ -3258,7 +3247,6 @@ Model PHI3;
 EndModel;
 Local test = diagrams_(PHI3,{phi},{phi},{q1,q2},{},1,0);
 .end
-#pend_if mpi?
 assert runtime_error?('Insufficient internal momenta in diagrams_')
 *--#] diagrams_err_4 :
 *--#[ diagrams_err_5 :
@@ -3269,7 +3257,6 @@ Model PHI3;
 EndModel;
 Local test = diagrams_(PHI3,{phi},{phi},{q1,-q2},{p1,p2},1,0);
 .end
-#pend_if mpi?
 assert runtime_error?('Invalid negative external momentum in diagrams_: -q2')
 *--#] diagrams_err_5 :
 *--#[ diagrams_err_6 :
@@ -3280,7 +3267,6 @@ Model PHI3;
 EndModel;
 Local test = diagrams_(PHI3,{phi},{phi},{q1,q2},{-p1,p2},1,0);
 .end
-#pend_if mpi?
 assert runtime_error?('Invalid negative internal momentum in diagrams_: -p1')
 *--#] diagrams_err_6 :
 *--#[ diagrams_err_7 :
@@ -3291,7 +3277,6 @@ Model PHI3;
 EndModel;
 Local test = diagrams_(PHI3,{phi},{phi},{q1,q1},{p1,p2},1,0);
 .end
-#pend_if mpi?
 assert runtime_error?('Invalid repeated momentum in diagrams_: q1')
 *--#] diagrams_err_7 :
 *--#[ diagrams_err_8 :
@@ -3302,6 +3287,5 @@ Model PHI3;
 EndModel;
 Local test = diagrams_(PHI3,{phi},{phi},{q1,q2},{q1,p2},1,0);
 .end
-#pend_if mpi?
 assert runtime_error?('Invalid repeated momentum in diagrams_: q1')
 *--#] diagrams_err_8 :
