@@ -40,6 +40,8 @@
 #include "form3.h"
 #include "vector.h"
 
+#include <assert.h>  // must come after form3.h
+
 /*
 #define PF_DEBUG_BCAST_LONG
 #define PF_DEBUG_BCAST_BUF
@@ -63,6 +65,9 @@ int PF_WaitRbuf(PF_BUFFER *,int,LONG *);
 int PF_RawSend(int dest, void *buf, LONG l, int tag);
 LONG PF_RawRecv(int *src,void *buf,LONG thesize,int *tag);
 int PF_RawProbe(int *src, int *tag, int *bytesize);
+int PF_RawIsend(int dest, const void *buf, int count, MPI_Datatype type, int tag, MPI_Request *request);
+int PF_RawWaitAll(int count, MPI_Request *request, MPI_Status *status);
+int PF_Discard(int *src, int *tag);
 
 /* Private functions */
 
@@ -85,6 +90,10 @@ static void PF_CatchErrorMessages(int *src, int *tag);
 static void PF_CatchErrorMessagesForAll(void);
 static int PF_ProbeWithCatchingErrorMessages(int *src);
 
+static void PF_RaiseRuntimeError(void);
+static void PF_BroadcastRuntimeError(void);
+static void PF_PostEndSortBarrier(void);
+
 /* Variables */
 
 PARALLELVARS PF;
@@ -92,6 +101,7 @@ PARALLELVARS PF;
  WORD *PF_shared_buff;
 #endif
 
+static int      PF_processing; /* Flag indicating that parallel processing of terms is in progress */
 static LONG     PF_goutterms;  /* (master) Total out terms at PF_EndSort(), used in PF_Statistics(). */
 static POSITION PF_exprsize;   /* (master) The size of the expression at PF_EndSort(), used in PF_Processor(). */
 
@@ -540,6 +550,9 @@ static WORD *PF_PutIn(int src)
 			very first term from this src
 */
 		tag = PF_WaitRbuf(rbuf,a,&size);
+		if ( tag == PF_RUNTIME_ERROR_MSGTAG ) {
+			PF_ReceiveRuntimeError();
+		}
 		rbuf->full[a] += size;
 		if ( tag == PF_ENDBUFFER_MSGTAG ) *rbuf->full[a]++ = 0;
 		else if ( rbuf->numbufs > 1 ) {
@@ -1005,12 +1018,11 @@ static  WORD *PF_CurrentBracket;
  */
 static WORD PF_GetTerm(WORD *term)
 {
+	assert(PF.me != MASTER);
 	GETIDENTITY
 	FILEHANDLE *fi = AC.RhsExprInModuleFlag && PF.rhsInParallel ? &PF.slavebuf : AR.infile;
 	WORD i;
 	WORD *next, *np, *last, *lp = 0, *nextstop, *tp=term;
-
-	/* Only on the slaves. */
 
 	AN.deferskipped = 0;
 	if ( fi->POfill >= fi->POfull || fi->POfull == fi->PObuffer ) {
@@ -1571,6 +1583,8 @@ int PF_Processor(EXPRESSIONS e, WORD i, WORD LastExpression)
 
 	if ( AC.mparallelflag != PARALLELFLAG ) return(0);
 
+	PF_processing = 1;
+
 	if ( PF.me == MASTER ) {
 /*
  		#[ Master:
@@ -1754,6 +1768,8 @@ int PF_Processor(EXPRESSIONS e, WORD i, WORD LastExpression)
 			#] Clean up & EndSort: 
 			#[ Collect (stats,prepro,...):
 */
+		PF_PostEndSortBarrier();
+
 		DBGOUT_NINTERMS(1, ("PF.me=%d AN.ninterms=%d ENDSORT\n", (int)PF.me, (int)AN.ninterms));
 		PF_CatchErrorMessagesForAll();
 		e->numdummies = 0;
@@ -1870,8 +1886,8 @@ int PF_Processor(EXPRESSIONS e, WORD i, WORD LastExpression)
 				PolyFunClean(BHEAD term);
 			}
 			if ( Generator(BHEAD term,0) ) {
-				MesPrint("[%d] PF_Processor: Error in Generator",PF.me);
-				LowerSortLevel(); return(-1);
+				LowerSortLevel();
+				Terminate(-1);
 			}
 			PF_linterms += dd; AN.ninterms += dd;
 		}
@@ -1907,6 +1923,8 @@ int PF_Processor(EXPRESSIONS e, WORD i, WORD LastExpression)
 			#] Generator Loop & EndSort : 
 			#[ Collect (stats,prepro...) :
 */
+		PF_PostEndSortBarrier();
+
 		DBGOUT_NINTERMS(1, ("PF.me=%d AN.ninterms=%d PF_linterms=%d ENDSORT\n", (int)PF.me, (int)AN.ninterms, (int)PF_linterms));
 		PF_PrepareLongSinglePack();
 		cpu = TimeCPU(1);
@@ -2047,15 +2065,34 @@ int PF_Init(int *argc, char ***argv)
 }
 /*
  		#] PF_Init : 
- 		#[ PF_Terminate :
+ 		#[ PF_PreTerminate :
+*/
+
+/**
+ * Prepares for termination.
+ * Called by Terminate().
+ *
+ * @param  errorcode  an error code.
+ */
+void PF_PreTerminate(int errorcode)
+{
+	if ( errorcode != 0 && PF_processing ) {
+		PF_processing = 0;
+		PF_RaiseRuntimeError();
+	}
+}
+
+/*
+ 		#] PF_PreTerminate : 
+		#[ PF_Terminate :
 */
 
 /**
  * Performs the finalization of ParFORM.
  * To be called by Terminate().
  *
- * @param  error  an error code.
- * @return        0 if OK, nonzero on error.
+ * @param  errorcode  an error code.
+ * @return            0 if OK, nonzero on error.
  */
 int PF_Terminate(int errorcode)
 {
@@ -4341,7 +4378,7 @@ static Vector(UBYTE, logBuffer);     /* (slaves) The buffer for AC.LogHandle. */
  */
 void PF_MLock(void)
 {
-	/* Only on slaves. */
+	assert(PF.me != MASTER);
 	if ( errorMessageLock++ > 0 ) return;
 	VectorClear(stdoutBuffer);
 	VectorClear(logBuffer);
@@ -4357,7 +4394,7 @@ void PF_MLock(void)
  */
 void PF_MUnlock(void)
 {
-	/* Only on slaves. */
+	assert(PF.me != MASTER);
 	if ( --errorMessageLock > 0 ) return;
 	if ( !VectorEmpty(stdoutBuffer) ) {
 		PF_RawSend(MASTER, VectorPtr(stdoutBuffer), VectorSize(stdoutBuffer), PF_STDOUT_MSGTAG);
@@ -4503,7 +4540,7 @@ void PF_FlushStdOutBuffer(void)
  */
 static void PF_ReceiveErrorMessage(int src, int tag)
 {
-	/* Only on the master. */
+	assert(PF.me == MASTER);
 	int size;
 	int ret = PF_RawProbe(&src, &tag, &size);
 	CHECK(ret == 0);
@@ -4534,21 +4571,25 @@ static void PF_ReceiveErrorMessage(int src, int tag)
  * Processes all incoming messages whose tag is PF_STDOUT_MSGTAG
  * or PF_LOG_MSGTAG. It ensures that the next PF_Receive(src, tag, ...)
  * will not receive the message with PF_STDOUT_MSGTAG or PF_LOG_MSGTAG.
+ * This function also handles PF_RUNTIME_ERROR_MSGTAG.
  *
  * @param[in,out]  src  the source process.
  * @param[in,out]  tag  the tag value.
  */
 static void PF_CatchErrorMessages(int *src, int *tag)
 {
-	/* Only on the master. */
 	for (;;) {
 		int asrc = *src;
 		int atag = *tag;
 		int ret = PF_RawProbe(&asrc, &atag, NULL);
 		CHECK(ret == 0);
 		if ( atag == PF_STDOUT_MSGTAG || atag == PF_LOG_MSGTAG ) {
+			assert(PF.me == MASTER);
 			PF_ReceiveErrorMessage(asrc, atag);
 			continue;
+		}
+		if ( atag == PF_RUNTIME_ERROR_MSGTAG ) {
+			PF_ReceiveRuntimeError();
 		}
 		*src = asrc;
 		*tag = atag;
@@ -4567,7 +4608,7 @@ static void PF_CatchErrorMessages(int *src, int *tag)
  */
 static void PF_CatchErrorMessagesForAll(void)
 {
-	/* Only on the master. */
+	assert(PF.me == MASTER);
 	int i;
 	for ( i = 1; i < PF.numtasks; i++ ) {
 		int src = i;
@@ -4584,6 +4625,7 @@ static void PF_CatchErrorMessagesForAll(void)
 /**
  * Same as PF_Probe() except processing incoming messages with PF_STDOUT_MSGTAG
  * and PF_LOG_MSGTAG.
+ * This function also handles PF_RUNTIME_ERROR_MSGTAG.
  *
  * @param[in,out]  src  the source process. The output value is that of the actual found message.
  * @return              the tag value of the next incoming message if found,
@@ -4596,10 +4638,14 @@ static int PF_ProbeWithCatchingErrorMessages(int *src)
 		int newsrc = *src;
 		int tag = PF_Probe(&newsrc);
 		if ( tag == PF_STDOUT_MSGTAG || tag == PF_LOG_MSGTAG ) {
+			assert(PF.me == MASTER);
 			PF_ReceiveErrorMessage(newsrc, tag);
 			continue;
 		}
-		if ( tag > 0 ) *src = newsrc;
+		if ( tag == PF_RUNTIME_ERROR_MSGTAG ) {
+			PF_ReceiveRuntimeError();
+		}
+		*src = newsrc;
 		return tag;
 	}
 }
@@ -4623,4 +4669,200 @@ void PF_FreeErrorMessageBuffers(void)
 /*
  		#] PF_FreeErrorMessageBuffers : 
   	#] Synchronised output : 
+  	#[ Handling runtime errors :
+ 		#[ PF_RaiseRuntimeError :
+*/
+
+/**
+ * Sends a runtime error message to the master if called on a slave,
+ * or broadcasts it to the slaves if called on the master.
+ * Called via PF_PreTerminate() when Terminate() is called with a negative value.
+ */
+static void PF_RaiseRuntimeError(void)
+{
+	if ( PF.me == MASTER ) {
+		PF_BroadcastRuntimeError();
+	}
+	else {
+		int ret, dummy;
+		ret = PF_RawSend(MASTER, &dummy, 0, PF_RUNTIME_ERROR_MSGTAG);
+		CHECK(ret == 0);
+		int src = MASTER;
+		int tag = PF_RUNTIME_ERROR_MSGTAG;
+		ret = PF_RawRecv(&src, &dummy, 0, &tag);
+		CHECK(ret == 0);
+	}
+}
+
+/*
+ 		#] PF_RaiseRuntimeError : 
+ 		#[ PF_BroadcastRuntimeError :
+*/
+
+/**
+ * Broadcasts a runtime error message from the master to all slaves
+ * and collects one reply from each slave.
+ */
+static void PF_BroadcastRuntimeError(void)
+{
+	assert(PF.me == MASTER);
+
+	int ret, dummy;
+	MPI_Request requests[PF.numtasks - 1];
+
+	/*
+	 * Notify all slaves of program termination by sending PF_RUNTIME_ERROR_MSGTAG.
+	 * This must be non-blocking to avoid deadlock if some slaves have already
+	 * performed a blocking send.
+	 */
+	for ( int i = 1; i < PF.numtasks; i++ ) {
+		ret = PF_RawIsend(i, &dummy, 0, PF_BYTE, PF_RUNTIME_ERROR_MSGTAG, &requests[i - 1]);
+		CHECK(ret == 0);
+	}
+
+	/*
+	 * Receive exactly one PF_RUNTIME_SYNC_MSGTAG or PF_RUNTIME_ERROR_MSGTAG
+	 * message from each slave.
+	 */
+	for ( int i = 1; i < PF.numtasks; i++ ) {
+retry:
+		int asrc = PF_ANY_SOURCE;  // blocking probe
+		int tag = PF_Probe(&asrc);
+		CHECK(tag >= 0);
+		assert(1 <= asrc && asrc < PF.numtasks);
+		switch ( tag ) {
+			case PF_STDOUT_MSGTAG:
+			case PF_LOG_MSGTAG:
+				PF_ReceiveErrorMessage(asrc, tag);
+				goto retry;
+			case PF_RUNTIME_ERROR_MSGTAG:
+			case PF_RUNTIME_SYNC_MSGTAG:
+				ret = PF_RawRecv(&asrc, &dummy, 0, &tag);
+				CHECK(ret == 0);
+				break;
+			default:
+				ret = PF_Discard(&asrc, &tag);
+				CHECK(ret == 0);
+				goto retry;
+		}
+	}
+
+	ret = PF_RawWaitAll(PF.numtasks - 1, requests, MPI_STATUSES_IGNORE);
+	CHECK(ret == 0);
+}
+
+/*
+ 		#] PF_BroadcastRuntimeError : 
+ 		#[ PF_PostEndSortBarrier :
+*/
+
+/**
+ * Synchronization after EndSort().
+ * Ensures that all processes have completed without runtime errors.
+ */
+void PF_PostEndSortBarrier(void)
+{
+	assert(PF_processing);
+	PF_processing = 0;
+
+	int ret, dummy;
+
+	/*
+	 * Each slave reports either PF_RUNTIME_SYNC_MSGTAG (completed without errors)
+	 * or PF_RUNTIME_ERROR_MSGTAG (see PF_RaiseRuntimeError())
+	 * to the master. After collecting one message from each slave, the master sends
+	 * PF_RUNTIME_SYNC_MSGTAG to all slaves on success,
+	 * or PF_RUNTIME_ERROR_MSGTAG otherwise.
+	 *
+	 * This matches the behaviour of PF_RaiseRuntimeError() and
+	 * PF_ReceiveRuntimeError(). In all cases, each slave sends exactly one
+	 * PF_RUNTIME_SYNC_MSGTAG or PF_RUNTIME_ERROR_MSGTAG message to the master,
+	 * and the master sends exactly one such message to each slave.
+	 */
+	if ( PF.me == MASTER ) {
+		int error = 0;
+		for ( int i = 1; i < PF.numtasks; i++ ) {
+retry:
+			int asrc = PF_ANY_SOURCE;  // blocking probe
+			int tag = PF_Probe(&asrc);
+			CHECK(tag >= 0);
+			assert(1 <= asrc && asrc < PF.numtasks);
+			switch ( tag ) {
+				case PF_STDOUT_MSGTAG:
+				case PF_LOG_MSGTAG:
+					PF_ReceiveErrorMessage(asrc, tag);
+					goto retry;
+				case PF_RUNTIME_ERROR_MSGTAG:
+					error = 1;
+					ret = PF_RawRecv(&asrc, &dummy, 0, &tag);
+					CHECK(ret == 0);
+					break;
+				case PF_RUNTIME_SYNC_MSGTAG:
+					ret = PF_RawRecv(&asrc, &dummy, 0, &tag);
+					CHECK(ret == 0);
+					break;
+				default:
+					MesPrint("!!!Unexpected MPI message src=%d tag=%d.", asrc, tag);
+					ret = PF_Discard(&asrc, &tag);
+					CHECK(ret == 0);
+					goto retry;
+			}
+		}
+		for ( int i = 1; i < PF.numtasks; i++ ) {
+			ret = PF_RawSend(i, &dummy, 0, error ? PF_RUNTIME_ERROR_MSGTAG : PF_RUNTIME_SYNC_MSGTAG);
+			CHECK(ret == 0);
+		}
+	}
+	else {
+		int tag;
+		ret = PF_RawSend(MASTER, &dummy, 0, PF_RUNTIME_SYNC_MSGTAG);
+		CHECK(ret == 0);
+		int src = MASTER;
+		ret = PF_RawRecv(&src, &dummy, 0, &tag);
+		CHECK(ret == 0);
+		switch ( tag ) {
+			case PF_RUNTIME_SYNC_MSGTAG:
+				break;
+			case PF_RUNTIME_ERROR_MSGTAG:
+				PF.notMyFault = 1;
+				Terminate(-1);
+				break;
+			default:
+				MesPrint("!!!Unexpected MPI message src=%d tag=%d.", src, tag);
+				break;
+		}
+	}
+}
+
+/*
+ 		#] PF_PostEndSortBarrier : 
+ 		#[ PF_ReceiveRuntimeError :
+*/
+
+/**
+ * Handles a runtime error message received from another process.
+ * It ultimately calls Terminate(-1).
+ */
+void PF_ReceiveRuntimeError(void)
+{
+	PF_processing = 0;
+	PF.notMyFault = 1;
+	if ( PF.me == MASTER ) {
+		PF_BroadcastRuntimeError();
+	}
+	else {
+		int ret, dummy;
+		int src = MASTER;
+		int tag = PF_RUNTIME_ERROR_MSGTAG;
+		ret = PF_RawRecv(&src, &dummy, 0, &tag);
+		CHECK(ret == 0);
+		ret = PF_RawSend(MASTER, &dummy, 0, PF_RUNTIME_ERROR_MSGTAG);
+		CHECK(ret == 0);
+	}
+	Terminate(-1);
+}
+
+/*
+ 		#] PF_ReceiveRuntimeError : 
+  	#] Handling runtime errors : 
 */

@@ -1921,7 +1921,11 @@ static int firstterminate = 1;
 
 void TerminateImpl(int errorcode, const char* file, int line, const char* function)
 {
+#ifdef WITHMPI
+	if ( errorcode && firstterminate && !PF.notMyFault ) {
+#else
 	if ( errorcode && firstterminate ) {
+#endif
 		firstterminate = 0;
 
 		MLOCK(ErrorMessageLock);
@@ -2047,6 +2051,9 @@ backtrace_fallback: ;
 
 		MUNLOCK(ErrorMessageLock);
 
+#ifdef WITHMPI
+		PF_PreTerminate(errorcode);
+#endif
 		Crash();
 	}
 #ifdef TRAPSIGNALS
