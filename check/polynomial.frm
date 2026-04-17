@@ -580,7 +580,7 @@ Drop;
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testijaik(gcd,2,`NPOLYS',2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("gcd: OK")
 *--#] polynomial_gcd_nvar_1 :
@@ -596,7 +596,7 @@ assert stdout =~ exact_pattern("gcd: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testijaik(gcd,2,`NPOLYS',2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("gcd: OK")
 *--#] polynomial_gcd_nvar_2 :
@@ -612,7 +612,7 @@ assert stdout =~ exact_pattern("gcd: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testijaik(gcd,2,`NPOLYS',2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("gcd: OK")
 *--#] polynomial_gcd_nvar_5 :
@@ -628,7 +628,7 @@ assert stdout =~ exact_pattern("gcd: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testiaj(mul,2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("mul: OK")
 *--#] polynomial_mul_nvar_1 :
@@ -644,7 +644,7 @@ assert stdout =~ exact_pattern("mul: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testiaj(mul,2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("mul: OK")
 *--#] polynomial_mul_nvar_2 :
@@ -660,7 +660,7 @@ assert stdout =~ exact_pattern("mul: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testiaj(mul,2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("mul: OK")
 *--#] polynomial_mul_nvar_5 :
@@ -676,7 +676,7 @@ assert stdout =~ exact_pattern("mul: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testijaj(div,2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("div: OK")
 *--#] polynomial_div_nvar_1 :
@@ -692,7 +692,7 @@ assert stdout =~ exact_pattern("div: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testijaj(div,2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("div: OK")
 *--#] polynomial_div_nvar_2 :
@@ -708,7 +708,7 @@ assert stdout =~ exact_pattern("div: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testijaj(div,2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("div: OK")
 *--#] polynomial_div_nvar_5 :
@@ -724,7 +724,7 @@ assert stdout =~ exact_pattern("div: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testijak(rem,2,`NPOLYS',2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("rem: OK")
 *--#] polynomial_rem_nvar_1 :
@@ -740,7 +740,7 @@ assert stdout =~ exact_pattern("rem: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testijak(rem,2,`NPOLYS',2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("rem: OK")
 *--#] polynomial_rem_nvar_2 :
@@ -756,7 +756,7 @@ assert stdout =~ exact_pattern("rem: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testijak(rem,2,`NPOLYS',2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("rem: OK")
 *--#] polynomial_rem_nvar_5 :
@@ -772,7 +772,7 @@ assert stdout =~ exact_pattern("rem: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testfactij(2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 # This takes too long when running without FLINT under lcov. Skip if valgrind, and hence lcov.
 #pend_if valgrind?
 # This needs longer if running without flint.
@@ -792,7 +792,7 @@ assert stdout =~ exact_pattern("factarg: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testfactij(2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 # This takes too long when running without FLINT under lcov. Skip if valgrind, and hence lcov.
 #pend_if valgrind?
 # This needs longer if running without flint.
@@ -812,7 +812,7 @@ assert stdout =~ exact_pattern("factarg: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testfactij(2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 # This takes too long when running without FLINT under lcov. Skip if valgrind, and hence lcov.
 # This one is not valgrind clean for flint < 3.2.1 !
 #pend_if valgrind?
@@ -833,7 +833,7 @@ assert stdout =~ exact_pattern("factarg: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testfactdolij(2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 # This takes too long when running without FLINT under lcov. Skip if valgrind, and hence lcov.
 #pend_if valgrind?
 # This needs longer if running without flint.
@@ -853,7 +853,7 @@ assert stdout =~ exact_pattern("factdollar: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testfactdolij(2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 # This takes too long when running without FLINT under lcov. Skip if valgrind, and hence lcov.
 #pend_if valgrind?
 # This needs longer if running without flint.
@@ -873,7 +873,7 @@ assert stdout =~ exact_pattern("factdollar: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testfactdolij(2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 # This takes too long when running without FLINT under lcov. Skip if valgrind, and hence lcov.
 #pend_if valgrind?
 # This needs longer if running without flint.
@@ -893,7 +893,7 @@ assert stdout =~ exact_pattern("factdollar: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testprf(norm,2,`NPOLYS',2,`NPOLYS',2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("prf norm: OK")
 *--#] polynomial_prf_norm_nvar_1 :
@@ -909,7 +909,7 @@ assert stdout =~ exact_pattern("prf norm: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testprf(norm,2,`NPOLYS',2,`NPOLYS',2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("prf norm: OK")
 *--#] polynomial_prf_norm_nvar_2 :
@@ -925,7 +925,7 @@ assert stdout =~ exact_pattern("prf norm: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testprf(norm,2,`NPOLYS',2,`NPOLYS',2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("prf norm: OK")
 *--#] polynomial_prf_norm_nvar_5 :
@@ -941,7 +941,7 @@ assert stdout =~ exact_pattern("prf norm: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testprf(add,2,`NPOLYS',2,`NPOLYS',2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("prf add: OK")
 *--#] polynomial_prf_add_nvar_1 :
@@ -957,7 +957,7 @@ assert stdout =~ exact_pattern("prf add: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testprf(add,2,`NPOLYS',2,`NPOLYS',2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("prf add: OK")
 *--#] polynomial_prf_add_nvar_2 :
@@ -973,7 +973,7 @@ assert stdout =~ exact_pattern("prf add: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testprf(add,2,`NPOLYS',2,`NPOLYS',2,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("prf add: OK")
 *--#] polynomial_prf_add_nvar_5 :
@@ -989,7 +989,7 @@ assert stdout =~ exact_pattern("prf add: OK")
 #call genpoly(`NPOLYS',`NVARS',`NEGPOW',`MAXPOW',`MAXCOEFF',`NTERMS')
 #call testinv(1,`NPOLYS',2,`NPOLYS')
 .end
-#pend_if wordsize == 2 || mpi?
+#pend_if wordsize == 2
 assert succeeded? || warning?("FORM was not built with FLINT support.")
 assert stdout =~ exact_pattern("inv: OK")
 *--#] polynomial_inverse_nvar_1 :
@@ -1031,7 +1031,6 @@ PolyRatFun prf;
 
 Print;
 .end
-#pend_if mpi?
 assert succeeded?
 assert result("test1")  =~ expr("prf(x*y + x*z + 1,w*x)")
 assert result("test2")  =~ expr("prf(x^2 + x + 1,x^2)")
@@ -1052,7 +1051,6 @@ CFunction f,prf;
 PolyRatFun prf;
 Local test = prf(f(1),1);
 .end
-#pend_if mpi?
 assert runtime_error?
 assert stdout =~ exact_pattern("ERROR: polynomials and polyratfuns must contain symbols only")
 *--#] polynomial_error_1 :
@@ -1062,7 +1060,6 @@ PolyRatFun prf;
 * Fast notation version
 Local test = prf(f,1);
 .end
-#pend_if mpi?
 assert runtime_error?
 assert stdout =~ exact_pattern("ERROR: polynomials and polyratfuns must contain symbols only")
 *--#] polynomial_error_2 :
@@ -1070,7 +1067,6 @@ assert stdout =~ exact_pattern("ERROR: polynomials and polyratfuns must contain 
 Symbol x;
 Local test = inverse_(x+1,x+1);
 .end
-#pend_if mpi?
 assert runtime_error?
 assert stdout =~ exact_pattern("flint::inverse_poly error: inverse does not exist") || stdout =~ exact_pattern("ERROR: polynomial inverse does not exist")
 *--#] polynomial_error_3 :
@@ -1079,7 +1075,6 @@ CFunction prf;
 PolyRatFun prf;
 Local test = prf;
 .end
-#pend_if mpi?
 assert runtime_error?
 assert stdout =~ exact_pattern("ERROR: PolyRatFun cannot have zero arguments")
 *--#] polynomial_error_4 :
@@ -1089,7 +1084,6 @@ PolyRatFun prf;
 Local test = prf(1,2,3);
 Print;
 .end
-#pend_if mpi?
 assert runtime_error?
 assert stdout =~ exact_pattern("ERROR: PolyRatFun cannot have more than two arguments")
 *--#] polynomial_error_5 :
@@ -1100,7 +1094,6 @@ PolyRatFun prf;
 Local test = prf(x,y,3);
 Print;
 .end
-#pend_if mpi?
 assert runtime_error?
 assert stdout =~ exact_pattern("ERROR: PolyRatFun cannot have more than two arguments")
 *--#] polynomial_error_6 :
@@ -1115,7 +1108,6 @@ PolyRatFun prf;
 Local test = prf((x+1)^`N',(x+2)^`N')*prf((x^`N'-1)^`N',(x^`N'-2)^`N');
 Print;
 .end
-#pend_if mpi?
 assert runtime_error?
 assert stdout =~ exact_pattern("flint::ratfun_normalize: output exceeds MaxTermSize") || stdout =~ exact_pattern("ERROR: PolyRatFun doesn't fit in a term")
 *--#] polynomial_error_7 :
@@ -1128,7 +1120,6 @@ PolyRatFun prf;
 Local test = prf((x+1)^`N',(x+2)^`N')*prf((x^`N'-1)^`N',(x^`N'-2)^`N');
 Print;
 .end
-#pend_if mpi?
 assert runtime_error?
 assert stdout =~ exact_pattern("flint::to_argument_poly: output exceeds MaxTermSize") || stdout =~ exact_pattern("ERROR: PolyRatFun doesn't fit in a term")
 *--#] polynomial_error_8 :
@@ -1142,7 +1133,6 @@ PolyRatFun prf;
 Local test = prf((x+1)^`N',(x+2)^`N')*prf((x^`N'-1)^`N',(x^`N'-2)^`N');
 Print;
 .end
-#pend_if mpi?
 assert runtime_error?
 assert stdout =~ exact_pattern("flint::to_argument_poly: output exceeds MaxTermSize") || stdout =~ exact_pattern("ERROR: PolyRatFun doesn't fit in a term")
 *--#] polynomial_error_9 :
@@ -1156,7 +1146,6 @@ PolyRatFun prf;
 Local test = prf((x+y)^`N',(x+2*y)^`N')*prf((x^`N'-y)^`N',(x^`N'-2*y)^`N');
 Print;
 .end
-#pend_if mpi?
 assert runtime_error?
 assert stdout =~ exact_pattern("flint::ratfun_normalize: output exceeds MaxTermSize") || stdout =~ exact_pattern("ERROR: PolyRatFun doesn't fit in a term")
 *--#] polynomial_error_10 :
@@ -1169,7 +1158,6 @@ PolyRatFun prf;
 Local test = prf((x+y)^`N',(x+2*y)^`N')*prf((x^`N'-y)^`N',(x^`N'-2*y)^`N');
 Print;
 .end
-#pend_if mpi?
 assert runtime_error?
 assert stdout =~ exact_pattern("flint::to_argument_mpoly: output exceeds MaxTermSize") || stdout =~ exact_pattern("ERROR: PolyRatFun doesn't fit in a term")
 *--#] polynomial_error_11 :
@@ -1183,7 +1171,6 @@ PolyRatFun prf;
 Local test = prf((x+y+z)^`N',(x+2*y)^`N')*prf((x^`N'-y-z)^`N',(x^`N'-2*y)^`N');
 Print;
 .end
-#pend_if mpi?
 assert runtime_error?
 assert stdout =~ exact_pattern("flint::to_argument_mpoly: output exceeds MaxTermSize") || stdout =~ exact_pattern("ERROR: PolyRatFun doesn't fit in a term")
 *--#] polynomial_error_12 :

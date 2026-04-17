@@ -36,6 +36,11 @@
   	#[ Includes and variables :
 */
 
+/*
+#define MPIDEBUGGING
+#define MPIDEBUGGING_DELAY_US 10000
+*/
+
 #include <limits.h>
 #include "form3.h"
 
@@ -338,7 +343,14 @@ int PF_RecvWbuf(WORD *b, LONG *s, int *src)
 {
 	int i, r = 0;
 
-	r = MPI_Recv(b,(int)*s,PF_WORD,*src,PF_ANY_MSGTAG,PF_COMM,&PF_status);
+	for (;;) {
+		r = MPI_Probe(*src,PF_ANY_MSGTAG,PF_COMM,&PF_status);
+		if ( r != MPI_SUCCESS ) { if ( r > 0 ) r *= -1; return(r); }
+		if ( PF_status.MPI_TAG != PF_RUNTIME_ERROR_MSGTAG ) break;
+		PF_ReceiveRuntimeError();
+	}
+
+	r = MPI_Recv(b,(int)*s,PF_WORD,PF_status.MPI_SOURCE,PF_status.MPI_TAG,PF_COMM,&PF_status);
 	if ( r != MPI_SUCCESS ) { if ( r > 0 ) r *= -1; return(r); }
 
 	r = MPI_Get_count(&PF_status,PF_WORD,&i);
@@ -446,6 +458,29 @@ int PF_Bcast(void *buffer, int count)
 
 /*
   	#] PF_Bcast : 
+  	#[ PF_Reduce :
+*/
+
+/**
+ * Performs a reduce operation across all processes.
+ *
+ * @param[in]  sendbuf  the buffer containing the data to be reduced.
+ * @param[out] recvbuf  the buffer to store the reduced result (only for the root process).
+ * @param      count    the number of elements in the buffers.
+ * @param      type     the datatype of the elements.
+ * @param      op       the operation to apply.
+ * @param      root     the root process number.
+ * @return              0 if OK, nonzero on error.
+ */
+int PF_Reduce(const void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI_Op op, int root)
+{
+	if ( MPI_Reduce(sendbuf,recvbuf,count,type,op,root,PF_COMM) != MPI_SUCCESS )
+		return(-1);
+	return(0);
+}
+
+/*
+  	#] PF_Reduce : 
   	#[ PF_RawSend :
 */
 
@@ -459,7 +494,6 @@ int PF_Bcast(void *buffer, int count)
  * @param  tag   the message tag.
  * @return       0 if OK, nonzero on error.
  */
-
 int PF_RawSend(int dest, void *buf, LONG l, int tag)
 {
 	int ret=MPI_Ssend(buf,(int)l,MPI_BYTE,dest,tag,PF_COMM);
@@ -523,6 +557,85 @@ int PF_RawProbe(int *src, int *tag, int *bytesize)
 
 /*
   	#] PF_RawProbe : 
+  	#[ PF_RawIsend :
+*/
+
+/**
+ * Performs a nonblocking send.
+ *
+ * @param       dest     the destination process number.
+ * @param[in]   buf      the send buffer.
+ * @param       count    the number of elements in the send buffer.
+ * @param       type     the datatype of the data in the send buffer.
+ * @param       tag      the message tag.
+ * @param[out]  request  the request handle for the nonblocking operation.
+ * @return               0 if OK, nonzero on error.
+ */
+int PF_RawIsend(int dest, const void *buf, int count, MPI_Datatype type, int tag, MPI_Request *request)
+{
+	int ret = MPI_Isend(buf, count, type, dest, tag, PF_COMM, request);
+	if ( ret != MPI_SUCCESS ) return(-1);
+	return(0);
+}
+
+/*
+  	#] PF_RawIsend : 
+  	#[ PF_RawWaitAll :
+*/
+
+/**
+ * Waits for all the given requests to complete.
+ *
+ * @param          count    the number of requests.
+ * @param[in,out]  request  the array of request handles.
+ * @param[out]     status   the array of status objects to store the status of each completed request.
+ * @return                  0 if OK, nonzero on error.
+ */
+int PF_RawWaitAll(int count, MPI_Request *request, MPI_Status *status)
+{
+	int ret = MPI_Waitall(count, request, status);
+	if ( ret != MPI_SUCCESS ) return(-1);
+	return(0);
+}
+
+/*
+  	#] PF_RawWaitAll : 
+	#[ PF_Discard :
+*/
+
+/**
+ * Discards an incoming message.
+ *
+ * @param[in,out]  src  the source process number.
+ *                      On output, that of the actual received message.
+ * @param[in,out]  tag  the message tag.
+ *                      On output, that of the actual received message.
+ * @return              0 if OK, nonzero on error.
+ */
+int PF_Discard(int *src, int *tag)
+{
+	enum { DEFAULT_BUF_SIZE = 1024 };
+	MPI_Status stat;
+	int count;
+	void *buf;
+	char default_buf[DEFAULT_BUF_SIZE];
+	int srcval = src != NULL ? *src : PF_ANY_SOURCE;
+	int tagval = tag != NULL ? *tag : PF_ANY_MSGTAG;
+	int ret = MPI_Probe(srcval, tagval, PF_COMM, &stat);
+	if ( ret != MPI_SUCCESS ) return -1;
+	if ( src != NULL ) *src = stat.MPI_SOURCE;
+	if ( tag != NULL ) *tag = stat.MPI_TAG;
+	ret = MPI_Get_count(&stat, MPI_BYTE, &count);
+	if ( ret != MPI_SUCCESS ) return -1;
+	buf = count <= DEFAULT_BUF_SIZE ? default_buf : Malloc1(count, "PF_Discard");
+	ret = MPI_Recv(buf, count, MPI_BYTE, stat.MPI_SOURCE, stat.MPI_TAG, PF_COMM, MPI_STATUS_IGNORE);
+	if ( buf != default_buf ) M_free(buf, "PF_Discard");
+	if ( ret != MPI_SUCCESS ) return -1;
+	return 0;
+}
+
+/*
+  	#] PF_Discard : 
   	#[ The pack buffer :
  		#[ Variables :
 */
@@ -620,7 +733,6 @@ int PF_PrintPackBuf(char *s, int size)
  *
  * @return  0  if OK, nonzero on error.
  */
-
 int PF_PreparePack(void)
 {
 	return PF_InitPackBuf();
@@ -818,7 +930,6 @@ int PF_UnpackString(UBYTE *str)
  * @param  tag  the message tag.
  * @return      0 if OK, nonzero on error.
  */
-
 int PF_Send(int to, int tag)
 {
 	int err;
@@ -1447,7 +1558,6 @@ static inline int PF_longMultiReset(int is_sender)
  *
  * @return  0  if OK, nonzero on error.
  */
-
 int PF_PrepareLongSinglePack(void)
 {
 	return PF_longSingleReset(1);
@@ -1639,7 +1749,6 @@ int PF_LongSingleReceive(int src, int tag, int *psrc, int *ptag)
  *
  * @return  0  if OK, nonzero on error.
  */
-
 int PF_PrepareLongMultiPack(void)
 {
 	return PF_longMultiReset(1);
