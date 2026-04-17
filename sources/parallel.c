@@ -97,9 +97,6 @@ static void PF_PostEndSortBarrier(void);
 /* Variables */
 
 PARALLELVARS PF;
-#ifdef MPI2
- WORD *PF_shared_buff;
-#endif
 
 static int      PF_processing; /* Flag indicating that parallel processing of terms is in progress */
 static LONG     PF_goutterms;  /* (master) Total out terms at PF_EndSort(), used in PF_Statistics(). */
@@ -287,7 +284,7 @@ typedef struct NoDe {
 static  NODE *PF_root;			/* root of tree of losers */
 static  WORD PF_loser;			/* this is the last loser */
 static  WORD **PF_term;			/* these point to the active terms */
-static  WORD **PF_newcpos;		/* new coeffs of merged terms */
+static  WORD **PF_newcpos;		/* new coefficients of merged terms */
 static  WORD *PF_newclen;		/* length of new coefficients */
 
 /*
@@ -1062,22 +1059,6 @@ ReceiveNew:
 		}
 
 		size = fi->POstop - fi->PObuffer - 1;
-#ifdef AbsolutelyExtra
-		PF_Receive(MASTER,PF_ANY_MSGTAG,&src,&tag);
-#ifdef MPI2
-		if ( tag == PF_TERM_MSGTAG ) {
-			PF_Unpack(&size, 1, PF_LONG);
-			if ( PF_Put_target(src) == 0 ) {
-				printf("PF_Put_target error ...\n");
-			}
-		}
-		else {
-			PF_RecvWbuf(fi->PObuffer,&size,&src);
-		}
-#else
-		PF_RecvWbuf(fi->PObuffer,&size,&src);
-#endif
-#endif
 		tag=PF_RecvWbuf(fi->PObuffer,&size,&src);
 
 		fi->POfill = fi->PObuffer;
@@ -1561,15 +1542,6 @@ int PF_Processor(EXPRESSIONS e, WORD i, WORD LastExpression)
 	int k, src, tag;
 	FILEHANDLE *oldoutfile = AR.outfile;
 
-#ifdef MPI2
-	if ( PF_shared_buff == NULL ) {
-		if ( PF_SMWin_Init() == 0 ) {
-			MesPrint("PF_SMWin_Init error");
-			exit(-1);
-		}
-	}
-#endif
-
 	if ( ( (WORD *)(((UBYTE *)(AT.WorkPointer)) + AM.MaxTer ) ) > AT.WorkTop ) {
 		MesWork();
 	}
@@ -1695,13 +1667,8 @@ int PF_Processor(EXPRESSIONS e, WORD i, WORD LastExpression)
 				sb->fill[0] = sb->full[0] = sb->buff[0];
 				sb->active = next;
 
-#ifdef MPI2
-				if ( PF_Put_origin(next) == 0 ) {
-					printf("PF_Put_origin error...\n");
-				}
-#else
 				PF_ISendSbuf(next,PF_TERM_MSGTAG);
-#endif
+
 				/* Initialize the next bucket. */
 				termsinbucket = 0;
 				PACK_LONG(sb->fill[0], AN.ninterms);
@@ -1851,9 +1818,6 @@ int PF_Processor(EXPRESSIONS e, WORD i, WORD LastExpression)
 		AN.ninterms = 0;
 		PF_linterms = 0;
 		PF.parallel = 1;
-#ifdef MPI2
-		AR.infile->POfull = AR.infile->POfill = AR.infile->PObuffer = PF_shared_buff;
-#endif
 		{
 			FILEHANDLE *fi = AC.RhsExprInModuleFlag && PF.rhsInParallel ? &PF.slavebuf : AR.infile;
 			fi->POfull = fi->POfill = fi->PObuffer;
@@ -4121,7 +4085,7 @@ static int PF_ReadMaster(void)/*reads directly to its scratch!*/
 	if(tag == PF_EMPTY_MSGTAG)/*No data, no job*/
 		return(tag);
 
-	/*data expected, tag must be == PF_DATA_MSTAG!*/
+	/*data expected, tag must be == PF_DATA_MSGTAG!*/
 	PF.exprtodo=exprData.i;
 	e=Expressions + PF.exprtodo;
 	/*Fill in the expression data:*/

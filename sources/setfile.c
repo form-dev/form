@@ -553,7 +553,7 @@ int AllocSetups(void)
 	sp = GetSetupPar((UBYTE *)"threadsortfilesynch");
 	AC.ThreadSortFileSynch = AM.gThreadSortFileSynch = AM.ggThreadSortFileSynch = sp->value;
 /*
-     The size for shared memory window for oneside MPI2 communications
+     The size for shared memory window for oneside MPI2 communications (unused)
 */
 	sp = GetSetupPar((UBYTE *)"shmwinsize");
 	AM.shmWinSize = sp->value/sizeof(WORD);
