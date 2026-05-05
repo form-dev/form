@@ -560,7 +560,7 @@ typedef struct DoLlArS {
 
 typedef struct MoDoPtDoLlArS {
 #ifdef WITHPTHREADS
-	DOLLARS	dstruct;	/* If local dollar: list of DOLLARS for each thread */
+	DOLLARS	dstruct;	/* If local,min,max dollar: list of DOLLARS for each thread */
 #endif
 	WORD	number;
 	WORD	type;

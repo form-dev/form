@@ -557,7 +557,7 @@ NextSymbol:;
 					}
 					if ( nummodopt < NumModOptdollars ) {
 						ptype = ModOptdollars[nummodopt].type;
-						if ( ptype == MODLOCAL ) {
+						if ( DollarLocalCopy(ptype) ) {
 							d = ModOptdollars[nummodopt].dstruct+AT.identity;
 						}
 						else {
@@ -568,7 +568,7 @@ NextSymbol:;
 #endif
 				if ( d->type == DOLZERO ) {
 #ifdef WITHPTHREADS
-					if ( ptype > 0 && ptype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
+					if ( ptype > 0 && ! DollarLocalCopy(ptype) ) { UNLOCK(d->pthreadslock); }
 #endif
 					if ( t[3] == 0 ) goto NormZZ;
 					if ( t[3] < 0 ) goto NormInf;
@@ -584,7 +584,7 @@ NextSymbol:;
 					}
 					if ( nnum == 0 || ( nnum == 1 && lnum[0] == 0 ) ) {
 #ifdef WITHPTHREADS
-						if ( ptype > 0 && ptype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
+						if ( ptype > 0 && ! DollarLocalCopy(ptype) ) { UNLOCK(d->pthreadslock); }
 #endif
 						if ( t[3] < 0 ) goto NormInf;
 						else if ( t[3] == 0 ) goto NormZZ;
@@ -595,7 +595,7 @@ NextSymbol:;
 					if ( t[3] < 0 ) {
 						if ( Divvy(BHEAD (UWORD *)n_coef,&ncoef,(UWORD *)lnum,nnum) ) {
 #ifdef WITHPTHREADS
-							if ( ptype > 0 && ptype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
+							if ( ptype > 0 && ! DollarLocalCopy(ptype) ) { UNLOCK(d->pthreadslock); }
 #endif
 							goto FromNorm;
 						}
@@ -603,7 +603,7 @@ NextSymbol:;
 					else if ( t[3] > 0 ) {
 						if ( Mully(BHEAD (UWORD *)n_coef,&ncoef,(UWORD *)lnum,nnum) ) {
 #ifdef WITHPTHREADS
-							if ( ptype > 0 && ptype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
+							if ( ptype > 0 && ! DollarLocalCopy(ptype) ) { UNLOCK(d->pthreadslock); }
 #endif
 							goto FromNorm;
 						}
@@ -613,7 +613,7 @@ NextSymbol:;
 				else if ( d->type == DOLINDEX ) {
 					if ( d->index == 0 ) {
 #ifdef WITHPTHREADS
-						if ( ptype > 0 && ptype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
+						if ( ptype > 0 && ! DollarLocalCopy(ptype) ) { UNLOCK(d->pthreadslock); }
 #endif
 						goto NormZero;
 					}
@@ -684,7 +684,7 @@ IllDollarExp:
 					t[4] = AM.dbufnum;
 					if ( t[3] == 0 ) {
 #ifdef WITHPTHREADS
-						if ( ptype > 0 && ptype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
+						if ( ptype > 0 && ! DollarLocalCopy(ptype) ) { UNLOCK(d->pthreadslock); }
 #endif
 						break;
 					}
@@ -693,7 +693,7 @@ IllDollarExp:
 					while ( t < m ) {
 						if ( *t == DOLLAREXPRESSION ) {
 #ifdef WITHPTHREADS
-							if ( ptype > 0 && ptype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
+							if ( ptype > 0 && ! DollarLocalCopy(ptype) ) { UNLOCK(d->pthreadslock); }
 #endif
 							d = Dollars + t[2];
 #ifdef WITHPTHREADS
@@ -703,7 +703,7 @@ IllDollarExp:
 								}
 								if ( nummodopt < NumModOptdollars ) {
 									ptype = ModOptdollars[nummodopt].type;
-									if ( ptype == MODLOCAL ) {
+									if ( DollarLocalCopy(ptype) ) {
 										d = ModOptdollars[nummodopt].dstruct+AT.identity;
 									}
 									else {
@@ -720,13 +720,13 @@ IllDollarExp:
 						t += t[1];
 					}
 #ifdef WITHPTHREADS
-					if ( ptype > 0 && ptype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
+					if ( ptype > 0 && ! DollarLocalCopy(ptype) ) { UNLOCK(d->pthreadslock); }
 #endif
 					goto RegEnd;
 				}
 				else {
 #ifdef WITHPTHREADS
-					if ( ptype > 0 && ptype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
+					if ( ptype > 0 && ! DollarLocalCopy(ptype) ) { UNLOCK(d->pthreadslock); }
 #endif
 					MLOCK(ErrorMessageLock);
 					MesPrint("!!!This $ variation has not been implemented yet!!!");
@@ -734,7 +734,7 @@ IllDollarExp:
 					goto NormMin;
 				}
 #ifdef WITHPTHREADS
-				if ( ptype > 0 && ptype != MODLOCAL ) { UNLOCK(d->pthreadslock); }
+				if ( ptype > 0 && ! DollarLocalCopy(ptype) ) { UNLOCK(d->pthreadslock); }
 #endif
 				}
 				else {
@@ -1123,7 +1123,7 @@ PasteIn:;
 						}
 						if ( nummodopt < NumModOptdollars ) {
 							dtype = ModOptdollars[nummodopt].type;
-							if ( dtype == MODLOCAL ) {
+							if ( DollarLocalCopy(dtype) ) {
 								d = ModOptdollars[nummodopt].dstruct+AT.identity;
 							}
 						}
@@ -4592,7 +4592,7 @@ WORD DetCommu(WORD *terms)
 			else if ( *t == DOLLAREXPRESSION ) {
 /*
 				Technically this is not correct. We have to test first
-				whether this is MODLOCAL (in TFORM) and if so, use the
+				whether this is DollarLocalCopy (in TFORM) and if so, use the
 				local version. Anyway, this should be rare to never
 				occurring because dollars should be replaced.
 */

@@ -3164,30 +3164,36 @@ module.}
 \leftvitem{3.5cm}{local\index{moduleoption!local}}
 \rightvitem{13cm}{Should be followed by a list of \$-variables. Indicates 
 that the contents of the indicated \$-variables\index{\$-variable} are not 
-relevant once the module has been finished and neither is the term by term 
-order in which the \$-variables obtain their value. In practise each 
+relevant once the module has been finished, and neither is the term by term 
+order in which the \$-variables obtain their value. In practice each 
 processor\index{processor}/thread\index{thread} will work with its own copy 
 of this variable.}
 
 \leftvitem{3.5cm}{maximum\index{moduleoption!maximum}}
-\rightvitem{13cm}{Should be followed by a list of 
-\$-variables\index{\$-variable}. Indicates that of the contents of the 
-indicated \$-variables the maximum is the only thing that is relevant once 
-the module has been finished. The term by term order in which the 
-\$-variables obtain their value is not relevant.}
+\rightvitem{13cm}{Should be followed by a list of \$-variables\index{\$-variable}.
+Indicates that only the maximum value of the \$-variables is relevant once the
+module has finished. The term-by-term order in which the \$-variables obtain
+their value is not relevant. In practice each processor\index{processor}/thread
+\index{thread} will work with its own copy of the variable, and the
+maximal value is kept at the end of term processing. The variables should
+contain numbers only.}
 
 \leftvitem{3.5cm}{minimum\index{moduleoption!minimum}}
-\rightvitem{13cm}{Should be followed by a list of 
-\$-variables\index{\$-variable}. Indicates that of the contents of the 
-indicated \$-variables the minimum is the only thing that is relevant once 
-the module has been finished. The term by term order in which the 
-\$-variables obtain their value is not relevant.}
+\rightvitem{13cm}{Should be followed by a list of \$-variables\index{\$-variable}.
+Indicates that only the minimum value of the \$-variables is relevant once the
+module has finished. The term-by-term order in which the \$-variables obtain
+their value is not relevant. In practice each processor\index{processor}/thread
+\index{thread} will work with its own copy of the variable, and the
+minimal value is kept at the end of term processing. The variables should contain
+numbers only.}
 
 \leftvitem{3.5cm}{sum\index{moduleoption!sum}}
-\rightvitem{13cm}{Should be followed by a list of 
-\$-variables\index{\$-variable}. Indicates that the indicated \$-variables 
-are representing a sum. The term by term order in which the \$-variables 
-obtain their value is not relevant.}
+\rightvitem{13cm}{Should be followed by a list of \$-variables\index{\$-variable}.
+Indicates that the specified \$-variables represent a sum. The term-by-term
+order in which the \$-variables obtain their value is not relevant.
+In practice, this is a global dollar variable for which all parallel read and
+write accesses are protected by locks. The variables should contain numbers
+only.}
 
 \noindent The options `local', `maximum', `minimum' and `sum' are for 
 parallel versions of \FORM\@. The presence of \$-variables can be a problem 
