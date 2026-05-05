@@ -170,6 +170,7 @@ int CoModuleOption(UBYTE *s)
 			SKIPBLANKS(t)
 			if ( (option->func)(t) ) error = 1;
 		}
+		if ( error ) return(error);
 		if ( StrCmp((UBYTE *)(option->name),(UBYTE *)("polyfun")) == 0
 		 || StrCmp((UBYTE *)(option->name),(UBYTE *)("polyratfun")) == 0 ) {
 			polyflag = 1;
