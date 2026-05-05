@@ -276,7 +276,7 @@ runs:
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux' && steps.setup.outputs.container == 'false'
-      uses: awalsh128/cache-apt-pkgs-action@a605dbde2ac49a823c9c87ad58491b51848bf355  # for empty_packages_behavior
+      uses: awalsh128/cache-apt-pkgs-action@v1.6.0  # for empty_packages_behavior
       with:
         # We assume libgmp-dev and zlib1g-dev are always installed.
         packages: >-
@@ -450,7 +450,7 @@ runs:
     - name: Cache FLINT
       id: cache-flint
       if: steps.setup.outputs.build_flint == 'true'
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: lib/flint
         # Here, we set a conservative cache key so that the cache is not reused
@@ -509,7 +509,7 @@ runs:
     - name: Cache FORM library
       id: cache-formlib
       if: steps.setup.outputs.formlib == 'true'
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: formlib
         key: ${{ steps.setup.outputs.formlib_key }}

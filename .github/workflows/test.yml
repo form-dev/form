@@ -33,7 +33,7 @@ jobs:
           - {bin: tform,   test: extra,   timeout: 60, nthreads: 2, flint: no}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0  # ensures a reachable tag
 
@@ -61,7 +61,7 @@ jobs:
           - {bin: parform, test: default, timeout: 15}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0  # ensures a reachable tag
 
@@ -120,7 +120,7 @@ jobs:
           - {bin: tvorm, test: extra,   nthreads: 2, group: 1/1}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0  # ensures a reachable tag
 
@@ -163,7 +163,7 @@ jobs:
           - {bin: tvorm, test: extra,   timeout: 60, nthreads: 2, flint: no}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0  # ensures a reachable tag
 
