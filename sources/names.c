@@ -3261,6 +3261,7 @@ int TestName(UBYTE *name)
 	}
 	while ( *name ) {
 		if ( *name == '_' ) return(-1);
+		if ( *name == '$' ) return(-1);
 		name++;
 	}
 	return(0);

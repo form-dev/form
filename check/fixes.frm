@@ -4452,6 +4452,21 @@ assert warning?("Excess information in symmetric properties")
 assert warning?("Illegal information in number of arguments properties")
 assert warning?("Undefined $-variable")
 *--#] Issue766 : 
+*--#[ Issue782 : 
+S $s;
+V $v;
+I $i;
+F $f;
+Set $ss;
+Local $test = 1;
+.end
+assert compile_error?("Illegally formed name in symbol statement")
+assert compile_error?("Illegally formed name in vector statement")
+assert compile_error?("Illegally formed name in index statement")
+assert compile_error?("Illegally formed function/tensor name")
+assert compile_error?("Illegal name for set")
+assert compile_error?("Illegal name for expression")
+*--#] Issue782 : 
 *--#[ Issue796 : 
 * Regression: the fix for 796 deadlocks here:
 Symbol x;
