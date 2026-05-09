@@ -1,11 +1,3 @@
-# m4_esyscmd_s implementation for autoconf < 2.64.
-# (Taken from m4sugar.m4 in autoconf 2.69.)
-m4_ifndef([m4_esyscmd_s], [m4_define([m4_esyscmd_s],
-[m4_chomp_all(m4_esyscmd([$1]))])])
-m4_ifndef([m4_chomp_all], [m4_define([m4_chomp_all],
-[m4_format([[%.*s]], m4_bregexp(m4_translit([[$1]], [
-/], [/ ]), [/*$]), [$1])])])
-
 # Get the version from
 # (1) .version file available in a tarball, or
 # (2) the latest tag in the repository.
@@ -76,7 +68,7 @@ m4_define([subdir_objects], [m4_esyscmd_s([
 	awk '{split ($NF,a,"."); if (a[1] >= 2 || (a[1] == 1 && a[2] >= 14)) { print "subdir-objects" }}'
 ])])
 
-AC_PREREQ([2.59])
+AC_PREREQ([2.69])
 AC_INIT([FORM], [FORM_VERSION], [https://github.com/form-dev/form/issues])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([sources/form3.h])
