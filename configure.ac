@@ -74,21 +74,10 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([sources/form3.h])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([1.7 foreign -Wall dist-bzip2] serial_tests subdir_objects)
+AM_INIT_AUTOMAKE([1.11 foreign -Wall dist-bzip2] serial_tests subdir_objects)
 
 # Check for .version file
 AM_CONDITIONAL([FIXED_VERSION], [test -f $srcdir/.version])
-
-# Check for automake >= 1.10
-flag=false
-case $am__api_version in
-	1.6|1.7|1.8|1.9)
-		;;
-	*)
-		flag=:
-		;;
-esac
-AM_CONDITIONAL([AUTOMAKE_GE_110], [$flag])
 
 # Check for programs
 : ${CFLAGS=''}  # avoid autoconf's default CFLAGS/CXXFLAGS

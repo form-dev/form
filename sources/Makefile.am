@@ -158,10 +158,6 @@ DISTHOOK_VERSION_H = \
 
 endif
 
-# NOTE: maude_CXXFLAGS is not used while linking maude by default
-#       in automake < 1.10. A workaround is to define maude_LINK
-#       explicitly in all cases. (TU 22 Sep 2011)
-
 bin_PROGRAMS =
 
 if BUILD_FORM
@@ -172,11 +168,6 @@ form_CFLAGS = $(COMPILEFLAGS)
 form_CXXFLAGS = $(COMPILEFLAGS)
 form_LDFLAGS = $(LINKFLAGS) $(STATIC_LDFLAGS)
 form_LDADD = $(TOOL_LIBS)
-if AUTOMAKE_GE_110
-form_LINK = $(CXXLD) $(form_CXXFLAGS) $(CXXFLAGS) $(form_LDFLAGS) $(LDFLAGS) -o $@
-else
-form_LINK = $(CXXLD) $(form_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
-endif
 endif
 
 if BUILD_VORM
@@ -187,11 +178,6 @@ vorm_CFLAGS = $(DEBUGCOMPILEFLAGS)
 vorm_CXXFLAGS = $(DEBUGCOMPILEFLAGS)
 vorm_LDFLAGS = $(DEBUGLINKFLAGS)
 vorm_LDADD = $(DEBUGTOOL_LIBS)
-if AUTOMAKE_GE_110
-vorm_LINK = $(CXXLD) $(vorm_CXXFLAGS) $(CXXFLAGS) $(vorm_LDFLAGS) $(LDFLAGS) -o $@
-else
-vorm_LINK = $(CXXLD) $(vorm_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
-endif
 endif
 
 if BUILD_TFORM
@@ -202,11 +188,6 @@ tform_CFLAGS = $(COMPILEFLAGS) $(PTHREAD_CFLAGS)
 tform_CXXFLAGS = $(COMPILEFLAGS) $(PTHREAD_CFLAGS)
 tform_LDFLAGS = $(LINKFLAGS) $(STATIC_LDFLAGS)
 tform_LDADD = $(PTHREAD_LIBS) $(TOOL_LIBS)
-if AUTOMAKE_GE_110
-tform_LINK = $(CXXLD) $(tform_CXXFLAGS) $(CXXFLAGS) $(tform_LDFLAGS) $(LDFLAGS) -o $@
-else
-tform_LINK = $(CXXLD) $(tform_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
-endif
 endif
 
 if BUILD_TVORM
@@ -217,11 +198,6 @@ tvorm_CFLAGS = $(DEBUGCOMPILEFLAGS) $(PTHREAD_CFLAGS)
 tvorm_CXXFLAGS = $(DEBUGCOMPILEFLAGS) $(PTHREAD_CFLAGS)
 tvorm_LDFLAGS = $(DEBUGLINKFLAGS)
 tvorm_LDADD = $(PTHREAD_LIBS) $(DEBUGTOOL_LIBS)
-if AUTOMAKE_GE_110
-tvorm_LINK = $(CXXLD) $(tvorm_CXXFLAGS) $(CXXFLAGS) $(tvorm_LDFLAGS) $(LDFLAGS) -o $@
-else
-tvorm_LINK = $(CXXLD) $(tvorm_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
-endif
 endif
 
 if BUILD_PARFORM
@@ -232,11 +208,7 @@ parform_CFLAGS = $(COMPILEFLAGS) $(MPI_CFLAGS)
 parform_CXXFLAGS = $(COMPILEFLAGS) $(MPI_CXXFLAGS)
 parform_LDFLAGS = $(LINKFLAGS) $(MPI_STATIC_LDFLAGS)
 parform_LDADD = $(TOOL_LIBS)
-if AUTOMAKE_GE_110
 parform_LINK = $(MPICXX) $(parform_CXXFLAGS) $(CXXFLAGS) $(parform_LDFLAGS) $(LDFLAGS) -o $@
-else
-parform_LINK = $(MPICXX) $(parform_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
-endif
 endif
 
 if BUILD_PARVORM
@@ -247,9 +219,5 @@ parvorm_CFLAGS = $(DEBUGCOMPILEFLAGS) $(MPI_CFLAGS)
 parvorm_CXXFLAGS = $(DEBUGCOMPILEFLAGS) $(MPI_CXXFLAGS)
 parvorm_LDFLAGS = $(DEBUGLINKFLAGS)
 parvorm_LDADD = $(DEBUGTOOL_LIBS)
-if AUTOMAKE_GE_110
 parvorm_LINK = $(MPICXX) $(parvorm_CXXFLAGS) $(CXXFLAGS) $(parvorm_LDFLAGS) $(LDFLAGS) -o $@
-else
-parvorm_LINK = $(MPICXX) $(parvorm_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
-endif
 endif

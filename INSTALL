@@ -19,7 +19,7 @@ Prerequisites
 
 In case you need to (re-)generate the script "configure" (see next section), you
 have to have the GNU autoconf/automake programs installed on your system. You
-should have at least autoconf version >= 2.69 and automake version >= 1.7.
+should have at least autoconf version >= 2.69 and automake version >= 1.11.
 For generating the configure script from a GIT repository, you also need Git.
 
 To compile the sources you need reasonably modern C and C++ compilers, like for
