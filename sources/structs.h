@@ -1220,6 +1220,7 @@ typedef struct ThReAdBuCkEt {
     WORD *threadbuffer;         /* Here are the (primary) terms */
     WORD *compressbuffer;       /* For keep brackets we need the compressbuffer */
     LONG threadbuffersize;      /* Number of words in threadbuffer */
+    LONG compressbuffersize;    /* Number of words in compressbuffer */
     LONG ddterms;               /* Number of primary+secondary terms represented */
     LONG firstterm;             /* The number of the first term in the bucket */
     LONG firstbracket;          /* When doing complete brackets */

@@ -929,13 +929,15 @@ int MakeThreadBuckets(int number, int par)
 	if ( par == 0 ) {
 		numthreadbuckets = 2*(number-1);
 		threadbuckets = (THREADBUCKET **)Malloc1(numthreadbuckets*sizeof(THREADBUCKET *),"threadbuckets");
-		freebuckets = (THREADBUCKET **)Malloc1(numthreadbuckets*sizeof(THREADBUCKET *),"threadbuckets");
+		freebuckets   = (THREADBUCKET **)Malloc1(numthreadbuckets*sizeof(THREADBUCKET *),"freebuckets");
 	}
 	if ( par > 0 ) {
 		if ( sizethreadbuckets <= threadbuckets[0]->threadbuffersize ) return(0);
 		for ( i = 0; i < numthreadbuckets; i++ ) {
 			thr = threadbuckets[i];
 			M_free(thr->deferbuffer,"deferbuffer");
+			M_free(thr->threadbuffer,"threadbuffer");
+			M_free(thr->compressbuffer,"compressbuffer");
 		}
 	}
 	else {
@@ -947,11 +949,13 @@ int MakeThreadBuckets(int number, int par)
 	for ( i = 0; i < numthreadbuckets; i++ ) {
 		thr = threadbuckets[i];
 		thr->threadbuffersize = sizethreadbuckets;
+		// This buffer does not need to be so large, start it at MaxTer.
+		// We'll double it if necessary.
+		thr->compressbuffersize = AM.MaxTer/sizeof(WORD);
 		thr->free = BUCKETFREE;
-		thr->deferbuffer = (POSITION *)Malloc1(2*sizethreadbuckets*sizeof(WORD)
-					+(AC.ThreadBucketSize+1)*sizeof(POSITION),"deferbuffer");
-		thr->threadbuffer = (WORD *)(thr->deferbuffer+AC.ThreadBucketSize+1);
-		thr->compressbuffer = (WORD *)(thr->threadbuffer+sizethreadbuckets);
+		thr->deferbuffer = (POSITION *)Malloc1((AC.ThreadBucketSize+1)*sizeof(POSITION),"deferbuffer");
+		thr->threadbuffer   = (WORD *)Malloc1(sizethreadbuckets*sizeof(WORD),"threadbuffer");
+		thr->compressbuffer = (WORD *)Malloc1(thr->compressbuffersize*sizeof(WORD),"compressbuffer");
 		thr->busy = BUCKETPREPARINGTERM;
 		thr->usenum = thr->totnum = 0;
 		thr->type = BUCKETDOINGTERMS;
@@ -2827,6 +2831,17 @@ Found2:;
 			defcount = 0;
 			thr->deferbuffer[defcount++] = AR0.DefPosition;
 			ttco = thr->compressbuffer; t1 = AR0.CompressBuffer; j = *t1;
+			while ( thr->compressbuffersize <= j ) {
+				// the compressbuffer is not large enough!
+				WORD *top = thr->compressbuffer+thr->compressbuffersize;
+				DoubleBuffer((void**)&(thr->compressbuffer),(void**)&(top),
+					sizeof(*(thr->compressbuffer)), "double compressbuffer");
+				ttco = thr->compressbuffer;
+				thr->compressbuffersize *= 2;
+				MLOCK(ErrorMessageLock);
+				MesPrint("double compressbuffer 1");
+				MUNLOCK(ErrorMessageLock);
+			}
 			NCOPY(ttco,t1,j);
 		}
 		else if ( first && ( AC.CollectFun == 0 ) ) { /* Brackets ? */
@@ -2891,6 +2906,18 @@ Found2:;
 			if ( AR0.DeferFlag ) {
 				thr->deferbuffer[defcount++] = AR0.DefPosition;
 				t1 = AR0.CompressBuffer; j = *t1;
+				while ( thr->compressbuffer+thr->compressbuffersize-ttco <= j ) {
+					// the compressbuffer is not large enough!
+					const ptrdiff_t oldoffset = ttco - thr->compressbuffer;
+					WORD *top = thr->compressbuffer+thr->compressbuffersize;
+					DoubleBuffer((void**)&(thr->compressbuffer),(void**)&(top),
+						sizeof(*(thr->compressbuffer)), "double compressbuffer");
+					ttco = thr->compressbuffer + oldoffset;
+					thr->compressbuffersize *= 2;
+					MLOCK(ErrorMessageLock);
+					MesPrint("double compressbuffer 2");
+					MUNLOCK(ErrorMessageLock);
+				}
 				NCOPY(ttco,t1,j);
 			}
 			if ( AC.CollectFun && *tt < (AM.MaxTer/((LONG)sizeof(WORD))-10) ) {
