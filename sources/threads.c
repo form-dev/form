@@ -62,6 +62,7 @@
 */
 
 #include "form3.h"
+#include <math.h>
 
 #ifdef WITH_ALARM
 // This is only required if we are blocking SIG_ALRM in the worker threads.
@@ -888,7 +889,9 @@ void TerminateAllThreads(void)
  *	Creates 2*number thread buckets. We want double the number because
  *	we want to prepare number of them while another number are occupied.
  *
- *	Each bucket should have about AC.ThreadBucketSize*AM.MaxTerm words.
+ *	Each bucket should have about AC.ThreadBucketSize/4*AM.MaxTer words,
+ *	for default values of these parameters. Particlularly for large
+ *	AM.MaxTer we need to be more restrictive.
  *
  *	When loading a thread we only have to pass the address of a full bucket.
  *	This gives more overlap between the master and the workers and hence
@@ -900,8 +903,6 @@ void TerminateAllThreads(void)
  *	buckets while the workers are processing the contents of the buckets
  *	they have been assigned. In practise often the processing can go faster
  *	than that the master can fill the buckets for all workers.
- *	It should be possible to improve this bucket system, but the trivial
- *	idea 
  *
  *	@param number The number of workers
  *	@param par    par = 0: First allocation
@@ -914,17 +915,23 @@ int MakeThreadBuckets(int number, int par)
 	int i;
 	LONG sizethreadbuckets;
 	THREADBUCKET *thr;
-/*
-	First we need a decent estimate. Not all terms should be maximal.
-	Note that AM.MaxTer is in bytes!!!
-	Maybe we should try to limit the size here a bit more effectively.
-	This is a great consumer of memory.
-*/
-	sizethreadbuckets = ( AC.ThreadBucketSize + 1 ) * AM.MaxTer + 2*sizeof(WORD);
-	if ( AC.ThreadBucketSize >= 250 )      sizethreadbuckets /= 4;
-	else if ( AC.ThreadBucketSize >= 90 )  sizethreadbuckets /= 3;
-	else if ( AC.ThreadBucketSize >= 40 )  sizethreadbuckets /= 2;
-	sizethreadbuckets /= sizeof(WORD);
+
+	// Here we divide by 4, which has been the behaviour with the default
+	// AC.ThreadBucketSize for a long time.
+	// MAXTER is the default value of AM.MaxTer, in units of sizeof(WORD).
+	sizethreadbuckets = (AC.ThreadBucketSize*MAXTER)/4;
+	// Now we scale up the buffer logarithmically with the user AM.MaxTer.
+	// If we scale linearly, we end up with really enormous buffers here
+	// when AM.MaxTer is of the order of millions of WORDs.
+	float scale = 1.0;
+	if ( AM.MaxTer/sizeof(WORD) > MAXTER ) {
+		scale += log(((float)AM.MaxTer/sizeof(WORD))/MAXTER);
+	}
+	sizethreadbuckets = (LONG)((float)sizethreadbuckets*scale);
+	// Nonetheless, we must fit at least BUCKETMINTERMS terms in each bucket!
+	// So the buffer will eventually scale linearly with MaxTer anyway, but
+	// much less aggressively than the old code.
+	sizethreadbuckets = MaX((ULONG)sizethreadbuckets, BUCKETMINTERMS*AM.MaxTer/sizeof(WORD));
 	
 	if ( par == 0 ) {
 		numthreadbuckets = 2*(number-1);
@@ -2838,9 +2845,6 @@ Found2:;
 					sizeof(*(thr->compressbuffer)), "double compressbuffer");
 				ttco = thr->compressbuffer;
 				thr->compressbuffersize *= 2;
-				MLOCK(ErrorMessageLock);
-				MesPrint("double compressbuffer 1");
-				MUNLOCK(ErrorMessageLock);
 			}
 			NCOPY(ttco,t1,j);
 		}
@@ -2914,9 +2918,6 @@ Found2:;
 						sizeof(*(thr->compressbuffer)), "double compressbuffer");
 					ttco = thr->compressbuffer + oldoffset;
 					thr->compressbuffersize *= 2;
-					MLOCK(ErrorMessageLock);
-					MesPrint("double compressbuffer 2");
-					MUNLOCK(ErrorMessageLock);
 				}
 				NCOPY(ttco,t1,j);
 			}
