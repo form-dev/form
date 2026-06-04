@@ -378,7 +378,7 @@ int UnpackFloat(mpf_t outfloat,WORD *fun)
 		MesPrint("Illegal attempt at using a float_ function without proper startup.");
 		MesPrint("Please use %#StartFloat <options> first.");
 		MUNLOCK(ErrorMessageLock);
-		Terminate(-1);
+		return 0;
 	}
 /*
 	Check first the number and types of the arguments
