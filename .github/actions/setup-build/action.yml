@@ -270,13 +270,20 @@ runs:
           echo "CONFIG_ARGS=$args" >>"$GITHUB_ENV"
         fi
 
+        # Fix dubious ownership in containers for Git operations.
+        # See: https://github.com/actions/runner/issues/2033#issuecomment-1204205989
+
+        if $feat_container; then
+          chown -R "$(id -u):$(id -g)" "$PWD"
+        fi
+
         # Determine DISTNAME if possible.
 
         if [ -f ./scripts/git-version-gen.sh ] && command -v git >/dev/null 2>&1; then
           echo "DISTNAME=form-$(./scripts/git-version-gen.sh -r | sed '2q;d' | sed 's/^v//')" >>"$GITHUB_ENV"
         fi
 
-        # Get cache key for the image ###
+        # Get cache key for the image.
 
         # See: https://github.com/actions/upload-artifact/issues/231
         echo "image_key=$ImageOS-$ImageVersion" >>"$GITHUB_OUTPUT"
@@ -584,16 +591,6 @@ runs:
       if: steps.setup.outputs.hyperform == 'true'
       shell: ${{ steps.setup.outputs.msys2 == 'true' && 'msys2 {0}' || 'bash' }}
       run: cp formlib/hyperform.frm check/extra/
-
-    # Fix dubious ownership in containers for Git operations.
-    # See: https://github.com/actions/runner/issues/2033#issuecomment-1204205989
-    - name: Fix dubious ownership
-      if: steps.setup.outputs.container == 'true'
-      shell: bash
-      run: |
-        ### Fix dubious ownership
-
-        chown -R $(id -u):$(id -g) $PWD
 
     - name: Uncompress tarball
       if: steps.setup.outputs.untar == 'true'

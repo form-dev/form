@@ -249,15 +249,27 @@ jobs:
           - {bin: tform}
           - {bin: tform, nthreads: 2}
     steps:
-      # We have to use v1.
-      # See https://github.com/actions/checkout/issues/334
+      # 32-bit containers lack the amd64 libstdc++ runtime library needed by
+      # the runner-provided Node.js runtime.
+      # See: https://github.com/EliahKagan/gitoxide/pull/5
+      #
+      # Install Git so that actions/checkout can create a local Git repository
+      # instead of downloading the files through the GitHub REST API.
+      - name: Prerequisites for 32-bit containers
+        run: |
+          dpkg --add-architecture amd64
+          apt-get update
+          apt-get install --no-install-recommends -y ca-certificates git libstdc++6:amd64
+
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # ensures a reachable tag
 
       - name: Set up build
         uses: ./.github/actions/setup-build
         with:
-          features: ${{ matrix.bin }} noflint  # actions/cache@v4 doesn't work
+          features: ${{ matrix.bin }} noflint  # The FLINT interface currently assumes a 64-bit environment.
 
       - name: Build
         run: make -C sources -j 4 ${{ matrix.bin }}
