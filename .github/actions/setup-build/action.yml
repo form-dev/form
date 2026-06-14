@@ -283,7 +283,7 @@ runs:
 
     - name: Install dependencies (Ubuntu)
       if: runner.os == 'Linux' && steps.setup.outputs.container == 'false'
-      uses: awalsh128/cache-apt-pkgs-action@v1.6.0  # for empty_packages_behavior
+      uses: awalsh128/cache-apt-pkgs-action@v1.6.1
       with:
         # We assume libgmp-dev and zlib1g-dev are always installed.
         packages: >-
