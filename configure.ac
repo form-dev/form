@@ -387,7 +387,7 @@ AS_IF([test -f "$srcdir/extern/zstd/zlibWrapper/zstd_zlibwrapper.h"], [],
 # Check for flint
 AC_ARG_WITH([flint],
 	[AS_HELP_STRING([--with-flint@<:@=DIR@:>@],
-		[use flint for polynomial arithmetic (installed in prefix DIR) @<:@default=check@:>@])],
+		[use flint for polynomial arithmetic and p-adics (installed in prefix DIR) @<:@default=check@:>@])],
 	[AS_IF([test "x$withval" != xyes && test "x$withval" != xno && test "x$withval" != xcheck],
 		[with_flint=yes
 		CPPFLAGS="$CPPFLAGS -I$withval/include"
@@ -417,7 +417,7 @@ AS_IF([test "x$with_flint" != xno],
 				[MATH_LIBS="$ac_cv_search_pow"])])])
 	AS_IF([$flag], [AC_CHECK_LIB([flint], [fmpz_mpoly_init], [LIBS="-lflint $MATH_LIBS $LIBS"], [flag=false], [$MATH_LIBS])])
 	AS_IF([$flag],
-		[AC_DEFINE(WITHFLINT, [], [Define to use flint for polynomial arithmetic.])
+		[AC_DEFINE(WITHFLINT, [], [Define to use flint for polynomial arithmetic and p-adics.])
 		with_flint=yes],
 		[AS_IF([test "x$with_flint" = xyes],
 			[AC_MSG_FAILURE([test for flint failed. Give --without-flint if you want to compile without flint])])
