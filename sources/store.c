@@ -1990,6 +1990,9 @@ Tensors:
 					term++;
 				}
 			}
+#ifdef WITHFLINT
+			else if ( *term == PADICLIMBS ) term = t;
+#endif
 			else if ( *term == HAAKJE ) term = t;
 			else {
 				if ( *term > MAXBUILTINFUNCTION )
@@ -2511,6 +2514,9 @@ static LONG ctrap=0;
 /*!!!
 ctrap++;
   !!!*/
+#ifdef WITHFLINT
+		if ( *term == PADICLIMBS ) { term += term[1]; continue; }
+#endif
 		if ( *term == SYMBOL ) {
 			t = term + term[1];
 			term += 2;
@@ -4909,6 +4915,32 @@ ReadSaveTerm32(UBYTE *bin, UBYTE *binend, UBYTE **bout, UBYTE *boutend, UBYTE *t
 		newsubtermp = out;
 		++out; ++r;
 
+#ifdef WITHFLINT
+		if ( id == PADICLIMBS ) {
+			int32_t *object = newsubtermp-1, *converted;
+			LONG oldsize = *newsubtermp, delta, limit = AM.MaxTer/sizeof(WORD);
+			int newsize;
+			if ( oldsize < PADICLIMBHEAD+1 || oldsize > coeff-object ) return(NULL);
+			newsize = ConvertPadicLimbs32(NULL,AM.MaxTal+PADICLIMBHEAD,object,
+				8*AO.SaveHeader.lenWORD,BITSINWORD);
+			if ( newsize < 0 ) return(NULL);
+			delta = newsize-oldsize;
+			if ( end-newtermsize+delta > limit
+			 || end-newtermsize+delta > WORD_MAX_VALUE ) return(NULL);
+			if ( (UBYTE *)(end+delta) > top ) return(bin);
+			converted = Malloc1((size_t)newsize*sizeof(int32_t),"LoadPadicLimbs");
+			ConvertPadicLimbs32(converted,newsize,object,
+				8*AO.SaveHeader.lenWORD,BITSINWORD);
+			r += oldsize-2;
+			out = object+newsize;
+			/* The caller moves the enclosing tail after a recursive resize. */
+			memmove(out,r,(size_t)(end-t)*sizeof(int32_t));
+			memcpy(object,converted,(size_t)newsize*sizeof(int32_t));
+			M_free(converted,"LoadPadicLimbs");
+			coeff += delta; end += delta; t += delta;
+		}
+		else
+#endif
 		if ( id == SYMBOL ) {
 			while ( out < t ) {
 				++out; ++r; /* symbol number */
@@ -5031,7 +5063,12 @@ ReadSaveTerm32(UBYTE *bin, UBYTE *binend, UBYTE **bout, UBYTE *boutend, UBYTE *t
 			r += t - out;
 			out = t;
 		}
-		else if ( id == GAMMA || id == LEVICIVITA || (id >= FUNCTION && AO.tensorList[id]) ) {
+		else if ( id == GAMMA || id == LEVICIVITA
+		 || (id >= FUNCTION
+#ifdef WITHFLINT
+		 && id != PADICFUN
+#endif
+		 && AO.tensorList[id]) ) {
 /*			int32_t vectoroffset = -2 * *((int32_t *)AO.SaveHeader.wildoffset); */
 			void *dummy = (void *)AO.SaveHeader.wildoffset;  /* to remove a warning about strict-aliasing rules in gcc */
 			int32_t vectoroffset = -2 * *((int32_t *)dummy);
@@ -5132,6 +5169,9 @@ ReadSaveTerm32(UBYTE *bin, UBYTE *binend, UBYTE **bout, UBYTE *boutend, UBYTE *t
 						int32_t **ppp = &out; /* to avoid a compiler warning */
 						/* recursion */
 						newbin = ReadSaveTerm32((UBYTE *)r, binend, (UBYTE **)ppp, (UBYTE *)rend, top, 1);
+#ifdef WITHFLINT
+						if ( newbin == NULL ) return(NULL);
+#endif
 						r += lenbuf;
 						if ( newbin == (UBYTE *)r ) {
 							return ( (UBYTE *)in );
@@ -5282,6 +5322,9 @@ LONG ReadSaveExpression(UBYTE *buffer, UBYTE *top, LONG *size, LONG *outsize)
 				outend = out+*size;
 				if ( outend > top ) outend = top;
 				p = ReadSaveTerm32(in, end, &out, outend, top, 0);
+#ifdef WITHFLINT
+				if ( p == NULL ) return(-1);
+#endif
 				if ( p == in ) break;
 				in = p;
 			} while ( in <= end - lenW );
@@ -5311,6 +5354,9 @@ LONG ReadSaveExpression(UBYTE *buffer, UBYTE *top, LONG *size, LONG *outsize)
 			/* then renumber */
 			do {
 				p = ReadSaveTerm32(in, end, &out,  buffer+half, buffer+half, 0);
+#ifdef WITHFLINT
+				if ( p == NULL ) return(-1);
+#endif
 				if ( p == in ) break;
 				in = p;
 			} while ( in <= end - sizeof(WORD) );

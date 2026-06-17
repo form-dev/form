@@ -5613,3 +5613,531 @@ Print;
 assert succeeded?
 assert result("test") =~ expr("0")
 *--#] PullReq860_3 :
+*--#[ padic_unit_expansion_encodings :
+Format 255;
+Format PadicPrint off;
+CFunctions f,g;
+* The low limb of this ordinary integer equals the PADICLIMBS type number.
+Local ORDINARY = padic_(7,0,100,2^32+13);
+Local NEGATIVE = padic_(7,0,100,-(2^32+13));
+Local SHORT = padic_(7,0,100,-2147483648);
+Local ZERO = padic_(7,0,100,0);
+Local NONINTEGER = padic_(7,0,100,1/2);
+FromPadic,f;
+Print;
+.sort
+#StartPadic 7,100
+Local COMPACT = 2^64+13;
+ToPadic;
+.sort
+#EndPadic
+Local ARGUMENT = g(COMPACT);
+FromPadic,f;
+Print COMPACT,ARGUMENT;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("ORDINARY", 0) =~ expr("f(7,0,100,4294967309)")
+assert result("NEGATIVE", 0) =~ expr("f(7,0,100,-4294967309)")
+assert result("SHORT", 0) =~ expr("f(7,0,100,-2147483648)")
+assert result("ZERO", 0) =~ expr("f(7,0,100,0)")
+assert result("NONINTEGER", 0) =~ expr("padic_(7,0,100,1/2)")
+assert result("COMPACT") =~ expr("f(7,0,100,18446744073709551629)")
+assert result("ARGUMENT") =~ expr("g(padic_(7,0,100,18446744073709551629))")
+*--#] padic_unit_expansion_encodings :
+*--#[ padic_mixed_function_addition :
+#StartPadic 7,100
+Off Statistics;
+Format 255;
+Format PadicPrint off;
+Symbols x;
+Local BOTH = padic_(0,10)*(padic_(7,0,100,1)+padic_(7,0,100,2));
+Local RIGHT = padic_(0,10)*(1+padic_(7,0,100,2));
+Local LEFT = padic_(0,10)*(padic_(7,0,100,2)+1);
+Local SYMBOLIC = padic_(7,0,10,x)*(padic_(7,0,100,1)+padic_(7,0,100,2));
+Local BARE = padic_*(padic_(7,0,100,1)+padic_(7,0,100,2));
+Local LARGE = padic_(0,10)*(padic_(7,0,100,2^130+13)+padic_(7,0,100,2^130+17));
+Print;
+.end
+#require flint?
+assert succeeded?
+assert result("BOTH") =~ expr("padic_(0,10)*padic_(7,0,100,3)")
+assert result("RIGHT") =~ expr("padic_(0,10)*padic_(7,0,100,3)")
+assert result("LEFT") =~ expr("padic_(0,10)*padic_(7,0,100,3)")
+assert result("SYMBOLIC") =~ expr("padic_(7,0,10,x)*padic_(7,0,100,3)")
+assert result("BARE") =~ expr("padic_*padic_(7,0,100,3)")
+assert result("LARGE") =~ expr("padic_(0,10)*padic_(7,0,100,#{2**131+30})")
+*--#] padic_mixed_function_addition :
+*--#[ padic_mixed_function_merge :
+#: termsinsmall 16
+On fewerstats 1;
+#StartPadic 7,100
+Format 255;
+Format PadicPrint off;
+Symbols x1,...,x16;
+Local F = padic_(0,10)*(x1+...+x16)^4*padic_(7,0,100,3);
+Local MIX = padic_(0,10)*(x1+x2)^8*(1+padic_(7,0,100,2));
+Local LARGE = padic_(0,10)*(x1+...+x16)^4*padic_(7,0,100,2^130+13);
+#do i=1,16
+    id x`i' = 1;
+#enddo
+Print;
+.end
+#require flint?
+assert succeeded?
+assert result("F") =~ expr("padic_(0,10)*padic_(7,0,100,196608)")
+assert result("MIX") =~ expr("padic_(0,10)*padic_(7,0,100,768)")
+assert result("LARGE") =~ expr("padic_(0,10)*padic_(7,0,100,#{16**4*(2**130+13)})")
+*--#] padic_mixed_function_merge :
+*--#[ padic_mixed_coefficient_sort_order :
+#StartPadic 7,5
+Off Statistics;
+On LowFirst;
+Symbols a;
+Local F = 1/2*a+1;
+ToPadic;
+.sort
+Local FORWARD = F-1/2*a-1;
+Local REVERSE = -1-1/2*a+F;
+Local NEGATED = 1+1/2*a-F;
+Print FORWARD,REVERSE,NEGATED;
+.end
+#require flint?
+assert succeeded?
+assert result("FORWARD") =~ expr("0")
+assert result("REVERSE") =~ expr("0")
+assert result("NEGATED") =~ expr("0")
+*--#] padic_mixed_coefficient_sort_order :
+*--#[ padic_mixed_coefficient_sort_objects :
+#StartPadic 7,100
+Off Statistics;
+On LowFirst;
+Symbols a,b;
+Vectors p,q;
+CFunctions f;
+Local F = (2^130+13)*a+1;
+Local FUN = 1/2*f(a)+1;
+Local DOT = 1/3*p.q+1;
+Local POWER = 1/5/a+1;
+Local MONOMIAL = 1/2*a*b+1;
+ToPadic;
+.sort
+Local LARGE = F-(2^130+13)*a-1;
+Local FUNCTION = FUN-1/2*f(a)-1;
+Local DOTPRODUCT = DOT-1/3*p.q-1;
+Local NEGPOWER = POWER-1/5/a-1;
+Local PRODUCT = MONOMIAL-1/2*a*b-1;
+Print LARGE,FUNCTION,DOTPRODUCT,NEGPOWER,PRODUCT;
+.sort
+On HighFirst;
+Local HIGH = F-(2^130+13)*a-1;
+Print HIGH;
+.end
+#require flint?
+assert succeeded?
+assert result("LARGE") =~ expr("0")
+assert result("FUNCTION") =~ expr("0")
+assert result("DOTPRODUCT") =~ expr("0")
+assert result("NEGPOWER") =~ expr("0")
+assert result("PRODUCT") =~ expr("0")
+assert result("HIGH") =~ expr("0")
+*--#] padic_mixed_coefficient_sort_objects :
+*--#[ padic_mixed_coefficient_patch_merge :
+#: termsinsmall 16
+#StartPadic 7,100
+Off Statistics;
+On LowFirst;
+Symbols a,b1,...,b8;
+Local F = (1/2*a+1)*(1+b1+...+b8)^3;
+ToPadic;
+.sort
+Local ZERO = F-(1/2*a+1)*(1+b1+...+b8)^3;
+Print ZERO;
+.end
+#require flint?
+assert succeeded?
+assert result("ZERO") =~ expr("0")
+*--#] padic_mixed_coefficient_patch_merge :
+*--#[ padic_small_rational_staged_precision :
+#StartPadic 7,3
+Format PadicPrint off;
+Local UNIT = padic_(7,0,3,3);
+Local POS = padic_(7,1,3,3);
+Local NEG = padic_(7,-2,3,3);
+Local LOW = padic_(7,1,2,3);
+Local HIGH = padic_(7,1,12,3);
+Local ZERO = padic_(7,0,3,0);
+Local ABOVE = padic_(7,4,12,3);
+.sort
+Local U = UNIT/2;
+Local UM = -UNIT/2;
+Local P = POS/2;
+Local N = NEG/2;
+Local NM = -NEG/2;
+Local L = LOW/2;
+Local H = HIGH/2;
+Local Z = ZERO/2;
+Local A = ABOVE/2;
+Local NUM = 7*UNIT/2;
+Local DEN = UNIT/7;
+Local OUTSIDE = UNIT/8;
+Local CANONICAL = 2*POS/4;
+Print U,UM,P,N,NM,L,H,Z,A,NUM,DEN,OUTSIDE,CANONICAL;
+.end
+#require flint?
+assert succeeded?
+expected = {
+  "U" => "padic_(7,0,3,173)",
+  "UM" => "padic_(7,0,3,170)",
+  "P" => "padic_(7,1,3,26)",
+  "N" => "padic_(7,-2,3,516)",
+  "NM" => "padic_(7,-2,3,513)",
+  "L" => "padic_(7,1,3,26)",
+  "H" => "padic_(7,1,3,26)",
+  "Z" => "0",
+  "A" => "0",
+  "NUM" => "padic_(7,1,3,26)",
+  "DEN" => "padic_(7,-1,3,3)",
+  "OUTSIDE" => "padic_(7,0,3,129)",
+  "CANONICAL" => "padic_(7,1,3,26)"
+}
+expected.each do |name, value|
+  assert result(name) =~ expr(value)
+end
+*--#] padic_small_rational_staged_precision :
+*--#[ padic_small_rational_word_boundary :
+#StartPadic 2305843009213693951,1
+Format PadicPrint off;
+Local SMALL = 1/2147483647;
+Local LARGE = 1/2147483648;
+Local NEGATIVE = -1/2147483647;
+Local NUMERATOR = 2305843009213693950/2147483647;
+ToPadic;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("SMALL") =~ expr("padic_(2305843009213693951,0,1,2147483649)")
+assert result("LARGE") =~ expr("padic_(2305843009213693951,0,1,1073741824)")
+assert result("NEGATIVE") =~ expr("padic_(2305843009213693951,0,1,2305843007066210302)")
+assert result("NUMERATOR") =~ expr("padic_(2305843009213693951,0,1,2305843007066210302)")
+*--#] padic_small_rational_word_boundary :
+*--#[ padic_small_rational_negative_cache_boundary :
+#StartPadic 7,3
+Format PadicPrint off;
+Local EDGE = padic_(7,-3,3,117648);
+Local OUTSIDE = padic_(7,-4,3,823542);
+Local LOW = padic_(7,-3,1,2400);
+Local EXACT = padic_(7,-3,3,2);
+.sort
+Local E = EDGE/2;
+Local M = -EDGE/2;
+Local O = OUTSIDE/2;
+Local L = LOW/2;
+Local X = EXACT/2;
+Print E,M,O,L,X;
+.end
+#require flint?
+assert succeeded?
+assert result("E") =~ expr("padic_(7,-3,3,117477)")
+assert result("M") =~ expr("padic_(7,-3,3,117478)")
+assert result("O") =~ expr("padic_(7,-4,3,823371)")
+assert result("L") =~ expr("padic_(7,-3,3,59853)")
+assert result("X") =~ expr("padic_(7,-3,3,344)")
+*--#] padic_small_rational_negative_cache_boundary :
+*--#[ padic_cached_arithmetic_precision :
+#StartPadic 7,3
+Format PadicPrint off;
+Local HIGH = padic_(7,0,4,2000);
+Local HIGHNEG = padic_(7,-1,4,10000);
+Local UNIT = padic_(7,-2,3,3);
+.sort
+Local H = HIGH/2;
+Local N = HIGHNEG/2;
+Local Z = 343*UNIT;
+Local M = -UNIT;
+Local CANCEL = padic_(7,-1,3,1200)+padic_(7,-1,3,1201);
+Local WRAP = padic_(7,-1,3,1200)+padic_(7,-1,3,1202);
+Local DIVISIBLE = padic_(7,-1,3,12)+padic_(7,-1,3,37);
+Local MIXED = padic_(7,-1,2,10)+padic_(7,-1,3,10);
+Print H,N,Z,M,CANCEL,WRAP,DIVISIBLE,MIXED;
+.end
+#require flint?
+assert succeeded?
+expected = {
+  "H" => "padic_(7,0,3,314)",
+  "N" => "padic_(7,-1,3,884)",
+  "Z" => "0",
+  "M" => "padic_(7,-2,3,1026)",
+  "CANCEL" => "0",
+  "WRAP" => "padic_(7,-1,3,1)",
+  "DIVISIBLE" => "padic_(7,1,3,1)",
+  "MIXED" => "padic_(7,-1,3,20)"
+}
+expected.each do |name, value|
+  assert result(name) =~ expr(value)
+end
+*--#] padic_cached_arithmetic_precision :
+*--#[ padic_minus_one_staged_precision :
+#StartPadic 7,3
+Format PadicPrint off;
+Local UNIT = padic_(7,0,3,3);
+Local POS = padic_(7,1,3,3);
+Local NEG = padic_(7,-2,3,3);
+Local EDGE = padic_(7,-3,3,117648);
+Local LOW = padic_(7,-3,1,2400);
+Local HIGH = padic_(7,-2,4,100000);
+Local OUTSIDE = padic_(7,-4,3,823542);
+Local SIGNED = padic_(7,-2,3,-3);
+Local DIVISIBLE = padic_(7,-2,3,21);
+.sort
+Local U = -UNIT;
+Local P = -POS;
+Local N = -NEG;
+Local E = -EDGE;
+Local L = -LOW;
+Local H = -HIGH;
+Local O = -OUTSIDE;
+Local S = -SIGNED;
+Local D = -DIVISIBLE;
+Print U,P,N,E,L,H,O,S,D;
+.end
+#require flint?
+assert succeeded?
+expected = {
+  "U" => "padic_(7,0,3,340)",
+  "P" => "padic_(7,1,3,46)",
+  "N" => "padic_(7,-2,3,1026)",
+  "E" => "padic_(7,-3,3,117307)",
+  "L" => "padic_(7,-3,3,114906)",
+  "H" => "padic_(7,-2,3,14562)",
+  "O" => "padic_(7,-4,3,823201)",
+  "S" => "padic_(7,-2,3,15781)",
+  "D" => "padic_(7,-1,3,1026)"
+}
+expected.each do |name, value|
+  assert result(name) =~ expr(value)
+end
+*--#] padic_minus_one_staged_precision :
+*--#[ padic_signed_native_integer_staging :
+#StartPadic 7,2
+Format PadicPrint off;
+Local UNIT = padic_(7,-1,2,1);
+Local POS = padic_(7,1,2,1);
+Local EDGE = padic_(7,-2,2,48);
+Local LOW = padic_(7,-1,1,1);
+Local HIGH = padic_(7,-1,3,342);
+Local OUTSIDE = padic_(7,-3,2,1);
+.sort
+Local P = 2*UNIT;
+Local N = -2*UNIT;
+Local F = -8*UNIT;
+Local V = -2*POS;
+Local E = -2*EDGE;
+Local L = -2*LOW;
+Local H = -2*HIGH;
+Local O = -2*OUTSIDE;
+Local D = 7*UNIT;
+Local I = LOW;
+Local Z = 0*UNIT;
+Print P,N,F,V,E,L,H,O,D,I,Z;
+.end
+#require flint?
+assert succeeded?
+expected = {
+  "P" => "padic_(7,-1,2,2)",
+  "N" => "padic_(7,-1,2,47)",
+  "F" => "padic_(7,-1,2,41)",
+  "V" => "padic_(7,1,2,5)",
+  "E" => "padic_(7,-2,2,2256)",
+  "L" => "padic_(7,-1,2,47)",
+  "H" => "padic_(7,-1,2,296)",
+  "O" => "padic_(7,-3,2,47)",
+  "D" => "padic_(7,0,2,1)",
+  "I" => "padic_(7,-1,1,1)",
+  "Z" => "0"
+}
+expected.each do |name, value|
+  assert result(name) =~ expr(value)
+end
+*--#] padic_signed_native_integer_staging :
+*--#[ padic_unequal_valuation_cached_addition :
+#StartPadic 7,3
+Format PadicPrint off;
+Local A = padic_(7,-2,3,1)+padic_(7,-1,3,2);
+Local B = padic_(7,-1,3,2)+padic_(7,-2,3,1);
+Local C = padic_(7,0,3,342)+padic_(7,1,3,48);
+Local E = padic_(7,-2,3,16806)+padic_(7,-1,3,2400);
+Local SHIFT = padic_(7,-2,3,1)+padic_(7,1,3,1);
+Local MISS = padic_(7,-2,3,1)+padic_(7,2,3,1);
+Local OUTSIDE = padic_(7,-4,3,1)+padic_(7,-3,3,1);
+Local LOW = padic_(7,-2,1,1)+padic_(7,-1,3,2);
+Local HIGH = padic_(7,-2,4,100000)+padic_(7,-1,3,2);
+Local Z = padic_(7,0,3,0)+padic_(7,-1,3,2);
+Local CANCEL = padic_(7,-1,3,1)+padic_(7,-1,3,2400);
+Local RAISE = padic_(7,-1,3,1)+padic_(7,-1,3,6);
+Print;
+.end
+#require flint?
+assert succeeded?
+expected = {
+  "A" => "padic_(7,-2,3,15)",
+  "B" => "padic_(7,-2,3,15)",
+  "C" => "padic_(7,0,3,335)",
+  "E" => "padic_(7,-2,3,16799)",
+  "SHIFT" => "padic_(7,-2,3,344)",
+  "MISS" => "padic_(7,-2,3,2402)",
+  "OUTSIDE" => "padic_(7,-4,3,8)",
+  "LOW" => "padic_(7,-2,3,15)",
+  "HIGH" => "padic_(7,-2,3,15979)",
+  "Z" => "padic_(7,-1,3,2)",
+  "CANCEL" => "0",
+  "RAISE" => "padic_(7,0,3,1)"
+}
+expected.each do |name, value|
+  assert result(name) =~ expr(value)
+end
+*--#] padic_unequal_valuation_cached_addition :
+*--#[ padic_large_integer_transfer :
+#: MaxTermSize 8000
+#StartPadic 2147483647,540
+Format 255;
+Format PadicPrint off;
+* Odd and even word counts below, at and above 128 FLINT limbs.
+Local ODDLOW = 2^8064+17;
+Local EVENLOW = 2^8096+17;
+Local ODDLIMIT = 2^8128+17;
+Local EVENLIMIT = 2^8160+17;
+Local ODDHIGH = 2^8192+17;
+Local EVENHIGH = 2^8224+17;
+Local LARGE = 2^16384+17;
+Local NEGODD = padic_(2147483647,0,540,-(2^8128+17));
+Local NEGEVEN = padic_(2147483647,0,540,-(2^8160+17));
+Local NEGHIGH = padic_(2147483647,0,540,-(2^8192+17));
+ToPadic;
+.sort
+Multiply 3;
+.sort
+Local COMBINED = ODDLIMIT+EVENLIMIT;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+prime = 2147483647
+precision = 540
+expected = {
+  "ODDLOW" => 3*(2**8064+17),
+  "EVENLOW" => 3*(2**8096+17),
+  "ODDLIMIT" => 3*(2**8128+17),
+  "EVENLIMIT" => 3*(2**8160+17),
+  "ODDHIGH" => 3*(2**8192+17),
+  "EVENHIGH" => 3*(2**8224+17),
+  "LARGE" => 3*(2**16384+17),
+  "NEGODD" => prime**precision-3*(2**8128+17),
+  "NEGEVEN" => prime**precision-3*(2**8160+17),
+  "NEGHIGH" => prime**precision-3*(2**8192+17),
+  "COMBINED" => 3*(2**8128+2**8160+34)
+}
+expected.each do |name, unit|
+  # Join continuation lines in the long decimal integers.
+  assert result(name).delete("\\") =~ expr("padic_(#{prime},0,#{precision},#{unit})")
+end
+*--#] padic_large_integer_transfer :
+*--#[ padic_large_rational_transfer :
+#StartPadic 7,100
+Format 255;
+Format PadicPrint off;
+* Numerator and denominator imports, including unequal padded lengths.
+Local NUM = (2^130+17)/3;
+Local DEN = 3/(2^130+17);
+Local BOTH = (2^132+17)/(2^130+3);
+Local NEGATIVE = -(2^132+17)/(2^130+3);
+ToPadic;
+.sort
+Local PRODUCT = BOTH*(2^130+3);
+Local MIXED = BOTH+(2^132+17)/(2^130+3);
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+modulus = 7**100
+expected = {
+  "NUM" => [2**130+17, 3],
+  "DEN" => [3, 2**130+17],
+  "BOTH" => [2**132+17, 2**130+3],
+  "NEGATIVE" => [-(2**132+17), 2**130+3],
+  "PRODUCT" => [2**132+17, 1],
+  "MIXED" => [2*(2**132+17), 2**130+3]
+}
+expected.each do |name, fraction|
+  # Compute the denominator inverse independently with Euclid's algorithm.
+  a, b = modulus, fraction[1]
+  x, y = 0, 1
+  until b == 0
+    quotient = a/b
+    a, b = b, a-quotient*b
+    x, y = y, x-quotient*y
+  end
+  assert_equal 1, a
+  unit = fraction[0]*x % modulus
+  assert result(name) =~ expr("padic_(7,0,100,#{unit})")
+end
+*--#] padic_large_rational_transfer :
+*--#[ padic_normalized_sign_addition :
+#StartPadic 7,3
+Format PadicPrint off;
+Local POSITIVE = padic_(7,0,3,5)+padic_(7,0,3,3);
+Local LEFT = -padic_(7,0,3,5)+padic_(7,0,3,3);
+Local RIGHT = padic_(7,0,3,5)-padic_(7,0,3,3);
+Local BOTH = -padic_(7,0,3,5)-padic_(7,0,3,3);
+Local CANCEL = padic_(7,0,3,5)-padic_(7,0,3,5);
+Local MIXED = -padic_(7,0,3,5)+1/2;
+Local REVERSE = 1/2-padic_(7,0,3,5);
+Local NEGATIVE = -1/2-padic_(7,0,3,5);
+Local WRAP = padic_(7,-1,3,1200)+padic_(7,-1,3,1202);
+Print;
+.end
+#require flint?
+assert succeeded?
+expected = {
+  "POSITIVE" => "padic_(7,0,3,8)",
+  "LEFT" => "padic_(7,0,3,341)",
+  "RIGHT" => "padic_(7,0,3,2)",
+  "BOTH" => "padic_(7,0,3,335)",
+  "CANCEL" => "0",
+  "MIXED" => "padic_(7,0,3,167)",
+  "REVERSE" => "padic_(7,0,3,167)",
+  "NEGATIVE" => "padic_(7,0,3,166)",
+  "WRAP" => "padic_(7,-1,3,1)"
+}
+expected.each do |name, value|
+  assert result(name) =~ expr(value)
+end
+*--#] padic_normalized_sign_addition :
+*--#[ padic_normalized_sign_patch_merge :
+#: termsinsmall 16
+#StartPadic 7,3
+Format PadicPrint off;
+Symbols x,b1,...,b8;
+Local F = (padic_(7,0,3,5)*x+padic_(7,0,3,3))*(1+b1+...+b8)^3;
+.sort
+Local MIXED = F-(5*x+3)*(1+b1+...+b8)^3;
+Local CANCEL = F+(-padic_(7,0,3,5)*x-padic_(7,0,3,3))*(1+b1+...+b8)^3;
+Local NEGATIVE = -F;
+id x = 1;
+#do i=1,8
+  id b`i' = 1;
+#enddo
+Print;
+.end
+#require flint?
+assert succeeded?
+assert result("F") =~ expr("padic_(7,0,3,1)")
+assert result("MIXED") =~ expr("0")
+assert result("CANCEL") =~ expr("0")
+assert result("NEGATIVE") =~ expr("padic_(7,0,3,342)")
+*--#] padic_normalized_sign_patch_merge :
