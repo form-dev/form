@@ -310,6 +310,10 @@ module FormTest
     FormTest.cfg.mpi?
   end
 
+  def flint?
+    FormTest.cfg.flint?
+  end
+
   def valgrind?
     if FormTest.cfg.fake_valgrind.nil?
       !FormTest.cfg.valgrind.nil?
@@ -1249,6 +1253,7 @@ class FormConfig
     @is_serial   = nil
     @is_threaded = nil
     @is_mpi      = nil
+    @has_flint   = nil
     @wordsize    = wordsize
     @form_cmd    = nil
   end
@@ -1266,6 +1271,10 @@ class FormConfig
 
   def mpi?
     @is_mpi
+  end
+
+  def flint?
+    @has_flint
   end
 
   def check_bin(name, bin)
@@ -1325,6 +1334,17 @@ class FormConfig
       else
         system("#{form_bin} #{frmname}")
         fatal("failed to get the version of '#{@form}'")
+      end
+      # Check if Flint is available.
+      # Use form -vv which contains either "+flint=VERSION" or "-flint".
+      feature_out, _status = Open3.capture2e(@form_bin, "-vv")
+      if feature_out =~ /(?:^|\s)\+flint(?:=|\s|$)/
+        @has_flint = true
+      elsif feature_out =~ /(?:^|\s)-flint(?:\s|$)/
+        @has_flint = false
+      else
+        warn("failed to determine FLINT support of '#{@form}'")
+        @has_flint = false
       end
       # Check the wordsize.
       # Method 1: from the output header.

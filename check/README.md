@@ -210,6 +210,8 @@ The following methods are available in Ruby test programs.
   `true` if FORM is the multithreaded version (TFORM), otherwise `false`.
 - `mpi? → bool`  
   `true` if FORM is the MPI version (ParFORM), otherwise `false`.
+- `flint? → bool`  
+  `true` if FORM was built with FLINT support, otherwise `false`.
 - `valgrind? → bool`  
   `true` if FORM is running under Valgrind, otherwise `false`.
 - `wordsize → integer`  
