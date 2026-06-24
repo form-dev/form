@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.3
         with:
           fetch-depth: 0  # ensures a reachable tag
 
@@ -75,7 +75,7 @@ jobs:
           - {os: windows-2022, shell: msys2, bin: tform}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.3
         with:
           sparse-checkout: .github/actions
           sparse-checkout-cone-mode: false
@@ -146,7 +146,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.3
         with:
           sparse-checkout: .github/actions
           sparse-checkout-cone-mode: false
@@ -188,7 +188,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.3
         with:
           sparse-checkout: .github/actions
           sparse-checkout-cone-mode: false
