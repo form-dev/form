@@ -85,6 +85,9 @@ for a in "$@"; do
     -t|--tex)
       mode=tex
       ;;
+    -m|--man)
+      mode=man
+      ;;
     -s|--shell)
       mode=shell
       ;;
@@ -211,6 +214,11 @@ END
 \def\repominorversion{$minor_version}
 \def\repopatchversion{$patch_version}
 \def\repoversionsuffix{$version_suffix}
+END
+      ;;
+    man)
+      cat <<END
+.TH FORM 1 "$date" "Version $version"
 END
       ;;
     shell)
