@@ -4681,7 +4681,7 @@ static void PF_BroadcastRuntimeError(void)
 {
 	assert(PF.me == MASTER);
 
-	int ret, dummy;
+	int ret, dummy = 0;
 	MPI_Request requests[PF.numtasks - 1];
 
 	/*

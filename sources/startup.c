@@ -290,7 +290,7 @@ int DoTail(int argc, UBYTE **argv)
 	AM.LogType = -1;
 	AM.HoldFlag = AM.qError = AM.Interact = AM.FileOnlyFlag = 0;
 	AM.InputFileName = AM.LogFileName = AM.IncDir = AM.TempDir = AM.TempSortDir =
-	AM.SetupDir = AM.SetupFile = AM.Path = 0;
+	AM.SetupDir = AM.SetupFile = AM.Path = NULL;
 	AM.FromStdin = 0;
 	/* Always use MultiRun, "-M" option is now ignored. */
 	AM.MultiRun = 1;
@@ -538,7 +538,7 @@ IllegalOption:
 			while ( *s ) *t++ = *s++;
 			*t++ = '.'; *t++ = 'f'; *t++ = 'r'; *t++ = 'm'; *t = 0;
 		}
-		if ( AM.LogType >= 0 && AM.LogFileName == 0 ) {
+		if ( AM.LogType >= 0 && AM.LogFileName == NULL ) {
 			AM.LogFileName = strDup1(AM.InputFileName,"name of logfile");
 			s = AM.LogFileName;
 			while ( *s ) s++;
@@ -567,7 +567,7 @@ NoFile:
 		printf("No filename specified in call of FORM\n");
 		errorflag++;
 	}
-	if ( AM.Path == 0 ) AM.Path = (UBYTE *)getenv("FORMPATH");
+	if ( AM.Path == NULL ) AM.Path = (UBYTE *)getenv("FORMPATH");
 	if ( AM.Path ) {
 		/*
 		 * AM.Path is taken from argv or getenv. Reallocate it to avoid invalid
@@ -718,22 +718,22 @@ void ReserveTempFiles(int par)
 	int i = 0;
 	WORD j;
 	if ( par == 0 || par == 1 ) {
-	if ( AM.TempDir == 0 ) {
+	if ( AM.TempDir == NULL ) {
 		sp = GetSetupPar((UBYTE *)"tempdir");
 		if ( ( sp->flags & USEDFLAG ) != USEDFLAG ) {
 			AM.TempDir = (UBYTE *)getenv("FORMTMP");
-			if ( AM.TempDir == 0 ) AM.TempDir = emptystring;
+			if ( AM.TempDir == NULL ) AM.TempDir = emptystring;
 		}
 		else AM.TempDir = (UBYTE *)(sp->value);
 	}
-	if ( AM.TempSortDir == 0 ) {
+	if ( AM.TempSortDir == NULL ) {
 		if ( AM.havesortdir ) {
 			sp = GetSetupPar((UBYTE *)"tempsortdir");
 			AM.TempSortDir = (UBYTE *)(sp->value);
 		}
 		else {
 			AM.TempSortDir = (UBYTE *)getenv("FORMTMPSORT");
-			if ( AM.TempSortDir == 0 ) AM.TempSortDir = AM.TempDir;
+			if ( AM.TempSortDir == NULL ) AM.TempSortDir = AM.TempDir;
 		}
 	}
 /*

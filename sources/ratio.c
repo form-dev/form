@@ -3108,14 +3108,15 @@ char *TheErrorMessage[] = {
 	,"Irregular code in PolyRatFun encountered in ExpandRat."
 	,"Called from ExpandRat."
 	,"WorkSpace overflow. Change parameter WorkSpace in setup file?"
+	,"Illegal term in expanded polyratfun."
 	};
 
 int ExpandRat(PHEAD WORD *fun)
 {
-	WORD *r, *rr, *rrr, *tt, *tnext, *arg1, *arg2, *rmin = 0, *rmininv;
+	WORD *r, *rr, *rrr, *tt, *tnext, *arg1, *arg2, *rmin = NULL, *rmininv;
 	WORD *rcoef, rsize, rcopy, *ow = AT.WorkPointer;
 	WORD *numerator, *denominator, *rnext;
-	WORD *thecopy, *rc, ncoef, newcoef, *m, *mm, nco, *outarg = 0;
+	WORD *thecopy, *rc, ncoef, newcoef, *m, *mm, nco, *outarg = NULL;
 	UWORD co[2], co1[2], co2[2];
 	WORD OldPolyFunPow = AR.PolyFunPow;
 	int i, j, minpow = 0, eppow, first, error = 0, ipoly;
@@ -3127,7 +3128,7 @@ int ExpandRat(PHEAD WORD *fun)
 		We have to normalize the argument. This could make it shorter.
 */
 NormArg:;
-		if ( outarg == 0 ) outarg = TermMalloc("ExpandRat")+ARGHEAD;
+		if ( outarg == NULL ) outarg = TermMalloc("ExpandRat")+ARGHEAD;
 		AT.TrimPower = 1;
 		NewSort(BHEAD0);
 		r = fun+FUNHEAD+ARGHEAD;
@@ -3145,10 +3146,7 @@ NormArg:;
 					if ( rrm[1] == SYMBOL && rrm[2] == 4 && rrm[3] == AR.PolyFunVar ) {
 						if ( rrm[4] < minpow2 ) minpow2 = rrm[4];
 					}
-					else {
-						MesPrint("Illegal term in expanded polyratfun.");
-						goto onerror;
-					}
+					else { error = 5; goto onerror; }
 				}
 				rrm += *rrm;
 			}
@@ -3185,15 +3183,15 @@ NormArg:;
 	First test whether we have only AR.PolyFunVar in the denominator
 */
 	tt = fun + FUNHEAD;
-	arg1 = arg2 = 0;
+	arg1 = arg2 = NULL;
 	if ( tt < tnext ) {
 		arg1 = tt; NEXTARG(tt);
 		if ( tt < tnext ) {
 			arg2 = tt; NEXTARG(tt);
-			if ( tt != tnext ) { arg1 = arg2 = 0; } /* more than two arguments */
+			if ( tt != tnext ) { arg1 = arg2 = NULL; } /* more than two arguments */
 		}
-	}
-	if ( arg2 == 0 ) {
+	} else { error = 5; goto onerror; }
+	if ( arg2 == NULL ) {
 		if ( *arg1 < 0 ) { fun[2] = CLEANFLAG; goto done; }
 		if ( fun[2] == CLEANFLAG ) goto done;
 		goto NormArg;   /* Note: should not come here */
@@ -3201,7 +3199,7 @@ NormArg:;
 /*
 	Produce the output argument in outarg
 */
-	if ( outarg == 0 ) outarg = TermMalloc("ExpandRat")+ARGHEAD;
+	if ( outarg == NULL ) outarg = TermMalloc("ExpandRat")+ARGHEAD;
 
 	if ( *arg2 <= 0 ) {
 /*
@@ -3256,10 +3254,7 @@ NormArg:;
 							if ( rrm[1] == SYMBOL && rrm[2] == 4 && rrm[3] == AR.PolyFunVar ) {
 								if ( rrm[4] < minpow2 ) minpow2 = rrm[4];
 							}
-							else {
-								MesPrint("Illegal term in expanded polyratfun.");
-								goto onerror;
-							}
+							else { error = 5; goto onerror; }
 						}
 						rrm += *rrm;
 					}
@@ -3336,10 +3331,7 @@ NormArg:;
 							if ( rrm[1] == SYMBOL && rrm[2] == 4 && rrm[3] == AR.PolyFunVar ) {
 								if ( rrm[4] < minpow2 ) minpow2 = rrm[4];
 							}
-							else {
-								MesPrint("Illegal term in expanded polyratfun.");
-								goto onerror;
-							}
+							else { error = 5; goto onerror; }
 						}
 						rrm += *rrm;
 					}

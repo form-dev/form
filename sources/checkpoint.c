@@ -1420,10 +1420,16 @@ int DoRecovery(int *moduletype)
 	if ( !(fd = fopen(recoveryfile, "r")) ) return(__LINE__);
 
 	/* load the complete recovery file into a buffer */
-	if ( fread(&pos, sizeof(POSITION), 1, fd) != 1 ) return(__LINE__);
+	if ( fread(&pos, sizeof(POSITION), 1, fd) != 1 ) {
+		fclose(fd);
+		return(__LINE__);
+	}
 	size = BASEPOSITION(pos) - sizeof(POSITION);
 	buf = Malloc1(size, "recovery buffer");
-	if ( fread(buf, size, 1, fd) != 1 ) return(__LINE__);
+	if ( fread(buf, size, 1, fd) != 1 ) {
+		fclose(fd);
+		return(__LINE__);
+	}
 
 	/* pointer p will go through the buffer in the following */
 	p = buf;
@@ -2478,7 +2484,7 @@ static int DoSnapshot(int moduletype)
 {
 	GETIDENTITY
 	FILE *fd;
-	POSITION pos;
+	POSITION pos = {0};
 	int i, j;
 	LONG l;
 	WORD *w;
@@ -2495,10 +2501,16 @@ static int DoSnapshot(int moduletype)
 	if ( !(fd = fopen(intermedfile, "wb")) ) return(__LINE__);
 
 	/* reserve space in the file for a length field */
-	if ( fwrite(&pos, 1, sizeof(POSITION), fd) != sizeof(POSITION) ) return(__LINE__);
+	if ( fwrite(&pos, 1, sizeof(POSITION), fd) != sizeof(POSITION) ) {
+		fclose(fd);
+		return(__LINE__);
+	}
 
 	/* write moduletype */
-	if ( fwrite(&moduletype, 1, sizeof(int), fd) != sizeof(int) ) return(__LINE__);
+	if ( fwrite(&moduletype, 1, sizeof(int), fd) != sizeof(int) ) {
+		fclose(fd);
+		return(__LINE__);
+	}
 
 	/*#[ AM :*/
 

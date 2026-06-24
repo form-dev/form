@@ -1123,6 +1123,7 @@ int CopyFile(char *source, char *dest)
 	}
 	out = fopen(dest, "wb");
 	if ( out == NULL ) {
+		fclose(in);
 		perror("CopyFile: ");
 		return(2);
 	}

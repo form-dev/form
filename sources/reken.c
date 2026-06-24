@@ -1246,7 +1246,7 @@ int RaisPow(PHEAD UWORD *a, WORD *na, UWORD b)
 		c /= 2;
 	}
 	i--;
-	c = 1 << i;
+	c = 1u << i;
 	while ( --i >= 0 ) {
 		c /= 2;
 		if(MulLong(is,ns,is,ns,it,&nt)) goto RaisOvl;

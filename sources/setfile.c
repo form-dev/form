@@ -278,11 +278,11 @@ restart:;
 				break;
 			case PATHVALUE:
 				if ( StrICmp(s1,(UBYTE *)"incdir") == 0 ) {
-					AM.IncDir = 0;
+					AM.IncDir = NULL;
 				}
 				else if ( StrICmp(s1,(UBYTE *)"path") == 0 ) {
 					if ( AM.Path ) M_free(AM.Path,"path");
-					AM.Path = 0;
+					AM.Path = NULL;
 				}
 				else {
 					MesPrint("Setups: %s not yet implemented",s1);
@@ -775,16 +775,16 @@ int AllocSetups(void)
 /*
 	And now some order sensitive things
 */
-	if ( AM.Path == 0 ) {
+	if ( AM.Path == NULL ) {
 		sp = GetSetupPar((UBYTE *)"path");
 		AM.Path = strDup1((UBYTE *)(sp->value),"path");
 	}
-	if ( AM.IncDir == 0 ) {
+	if ( AM.IncDir == NULL ) {
 		sp = GetSetupPar((UBYTE *)"incdir");
 		AM.IncDir = strDup1((UBYTE *)(sp->value),"incdir");
 	}
 /*
-	if ( AM.TempDir == 0 ) {
+	if ( AM.TempDir == NULL ) {
 		sp = GetSetupPar((UBYTE *)"tempdir");
 		AM.TempDir = strDup1((UBYTE *)(sp->value),"tempdir");
 	}

@@ -622,6 +622,7 @@ DBASE *NewDbase(char *name,MLONG number)
 	if ( ( d->iblocks = (INDEXBLOCK **)Malloc1(numblocks*sizeof(INDEXBLOCK *),
 	"new database") ) == 0 ) {
 		NumTableBases--;
+		fclose(f);
 		return(0);
 	}
 	d->tablenames = 0;
@@ -635,6 +636,7 @@ DBASE *NewDbase(char *name,MLONG number)
 	"new database") ) == 0 ) {
 		M_free(d->iblocks,"new database");
 		NumTableBases--;
+		fclose(f);
 		return(0);
 	}
 	if ( ( f = fopen(name,"w+b") ) == 0 ) {
