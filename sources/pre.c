@@ -7317,7 +7317,7 @@ int DoTimeOutAfter(UBYTE *s)
 			Names of preprocessor variables are excluded!
 			Names of built in objects are excluded! (like sum_, d_ etc.)
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int DoNamespace(UBYTE *s)
 {
 	UBYTE *s1, *s2, c;
@@ -7360,12 +7360,12 @@ int DoNamespace(UBYTE *s)
 	*s1 = c;
 	return(0);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] DoNamespace : 
  		#[ DoEndNamespace :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int DoEndNamespace(UBYTE *s)
 {
 	NAMESPACE *namespace;
@@ -7383,7 +7383,7 @@ int DoEndNamespace(UBYTE *s)
 	M_free(namespace,"namespace");
 	return(0);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] DoEndNamespace : 
  		#[ SkipName :
@@ -7580,7 +7580,7 @@ UBYTE *ConstructName(UBYTE *s,UBYTE type)
 		The names are stored in a balanced tree. Each namespace may have
 		its own tree. The toplevel (no namespace) does not allow a #use.
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int DoUse(UBYTE *s)
 {
 	NAMESPACE *namespace;
@@ -7612,7 +7612,7 @@ int DoUse(UBYTE *s)
 	}
 	return(0);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] DoUse : 
  		#[ UserFlags :
@@ -7628,7 +7628,7 @@ int DoUse(UBYTE *s)
 		#SetFlag
 		par == 0: Clear, par == 1: Set.
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int UserFlags(UBYTE *s,int par)
 {
 	int mask = 0, error = 0, i;
@@ -7730,27 +7730,27 @@ syntax:
 	MesPrint("@Illegal name in #...Flag instruction.");
 	return(1);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] UserFlags : 
  		#[ DoClearUserFlag :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int DoClearUserFlag(UBYTE *s)
 {
 	return(UserFlags(s,0));
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] DoClearUserFlag : 
  		#[ DoSetUserFlag :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int DoSetUserFlag(UBYTE *s)
 {
 	return(UserFlags(s,1));
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] DoSetUserFlag : 
  		#[ DoStartFloat :
