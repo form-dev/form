@@ -31,7 +31,7 @@
 /*
   	#[ Includes : diagrams.c
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 #include "form3.h"
  
 static WORD one = 1;
@@ -661,3 +661,5 @@ MesPrint("partitions = %a",2*nvert,partitions);
 /*
   	#] DoShattering : 
 */
+
+/* UNFINISHED_FEATURE_EXCL_STOP */
