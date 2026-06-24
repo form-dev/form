@@ -995,6 +995,9 @@ typedef int (*TFUN1)(UBYTE *,int);
 // before potentially yielding the block to a waiting reading thread.
 #define MINWRITENUMBEROFTERMS 1
 
+// The minimum number of terms which should fit in a bucket
+#define BUCKETMINTERMS 1
+
 #endif
 
 /*
