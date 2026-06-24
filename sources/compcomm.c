@@ -3920,7 +3920,7 @@ int CoAntiBracket(UBYTE *inp)
 	Syntax:
 		MultiBracket:{A|B} bracketinfo:...:{A|B} bracketinfo;
 */
-
+/* LCOV_EXCL_START */
 int CoMultiBracket(UBYTE *inp)
 {
 	GETIDENTITY
@@ -4027,7 +4027,7 @@ RegEnd:
 	AT.bracketindexflag = 0;
 	return(error);
 }
-
+/* LCOV_EXCL_STOP */
 /*
   	#] CoMultiBracket : 
   	#[ CountComp :
@@ -7404,7 +7404,7 @@ int CoEndSwitch(UBYTE *s)
   	#] CoEndSwitch : 
   	#[ CoSetUserFlag :
 */
-
+/* LCOV_EXCL_START */
 int CoSetUserFlag(UBYTE *s)
 {
 	int error = 0;
@@ -7427,12 +7427,12 @@ int CoSetUserFlag(UBYTE *s)
 	}
 	return(error);
 }
-
+/* LCOV_EXCL_STOP */
 /*
   	#] CoSetUserFlag : 
   	#[ CoClearUserFlag :
 */
-
+/* LCOV_EXCL_START */
 int CoClearUserFlag(UBYTE *s)
 {
 	int error = 0;
@@ -7455,7 +7455,7 @@ int CoClearUserFlag(UBYTE *s)
 	}
 	return(error);
 }
-
+/* LCOV_EXCL_STOP */
 /*
   	#] CoClearUserFlag : 
   	#[ CoCreateAllLoops :

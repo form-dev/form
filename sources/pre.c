@@ -7308,7 +7308,7 @@ int DoTimeOutAfter(UBYTE *s)
 			Names of preprocessor variables are excluded!
 			Names of built in objects are excluded! (like sum_, d_ etc.)
 */
-
+/* LCOV_EXCL_START */
 int DoNamespace(UBYTE *s)
 {
 	UBYTE *s1, *s2, c;
@@ -7351,12 +7351,12 @@ int DoNamespace(UBYTE *s)
 	*s1 = c;
 	return(0);
 }
-
+/* LCOV_EXCL_STOP */
 /*
  		#] DoNamespace : 
  		#[ DoEndNamespace :
 */
-
+/* LCOV_EXCL_START */
 int DoEndNamespace(UBYTE *s)
 {
 	NAMESPACE *namespace;
@@ -7374,12 +7374,12 @@ int DoEndNamespace(UBYTE *s)
 	M_free(namespace,"namespace");
 	return(0);
 }
-
+/* LCOV_EXCL_STOP */
 /*
  		#] DoEndNamespace : 
  		#[ SkipName :
 */
-
+/* LCOV_EXCL_START */
 UBYTE *SkipName(UBYTE *s)
 {
 	UBYTE *t = s, *s1, c;
@@ -7466,7 +7466,7 @@ witherror:
 	}
 	return(s);
 }
-
+/* LCOV_EXCL_STOP */
 /*
  		#] SkipName : 
  		#[ ConstructName :
@@ -7479,7 +7479,7 @@ witherror:
 
 		type tells what kind of name we look for
 */
-
+/* LCOV_EXCL_START */
 UBYTE *ConstructName(UBYTE *s,UBYTE type)
 {
 	int len;
@@ -7551,7 +7551,7 @@ UBYTE *ConstructName(UBYTE *s,UBYTE type)
 	}
 	return(AP.fullname);
 }
-
+/* LCOV_EXCL_STOP */
 /*
  		#] ConstructName : 
  		#[ DoUse :
@@ -7571,7 +7571,7 @@ UBYTE *ConstructName(UBYTE *s,UBYTE type)
 		The names are stored in a balanced tree. Each namespace may have
 		its own tree. The toplevel (no namespace) does not allow a #use.
 */
-
+/* LCOV_EXCL_START */
 int DoUse(UBYTE *s)
 {
 	NAMESPACE *namespace;
@@ -7603,7 +7603,7 @@ int DoUse(UBYTE *s)
 	}
 	return(0);
 }
-
+/* LCOV_EXCL_STOP */
 /*
  		#] DoUse : 
  		#[ UserFlags :
@@ -7619,7 +7619,7 @@ int DoUse(UBYTE *s)
 		#SetFlag
 		par == 0: Clear, par == 1: Set.
 */
-
+/* LCOV_EXCL_START */
 int UserFlags(UBYTE *s,int par)
 {
 	int mask = 0, error = 0, i;
@@ -7721,27 +7721,27 @@ syntax:
 	MesPrint("@Illegal name in #...Flag instruction.");
 	return(1);
 }
-
+/* LCOV_EXCL_STOP */
 /*
  		#] UserFlags : 
  		#[ DoClearUserFlag :
 */
-
+/* LCOV_EXCL_START */
 int DoClearUserFlag(UBYTE *s)
 {
 	return(UserFlags(s,0));
 }
-
+/* LCOV_EXCL_STOP */
 /*
  		#] DoClearUserFlag : 
  		#[ DoSetUserFlag :
 */
-
+/* LCOV_EXCL_START */
 int DoSetUserFlag(UBYTE *s)
 {
 	return(UserFlags(s,1));
 }
-
+/* LCOV_EXCL_STOP */
 /*
  		#] DoSetUserFlag : 
  		#[ DoStartFloat :

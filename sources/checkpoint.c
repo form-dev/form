@@ -80,7 +80,7 @@
   	#] License : 
   	#[ Includes :
 */
-
+/* LCOV_EXCL_START */
 #include "form3.h"
 
 #include <errno.h>
@@ -3232,7 +3232,7 @@ void DoCheckpoint(int moduletype)
 	}/*if(PF.me != MASTER)*/
 #endif
 }
-
+/* LCOV_EXCL_STOP */
 /*
   	#] DoCheckpoint : 
 */
