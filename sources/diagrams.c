@@ -31,7 +31,7 @@
 /*
   	#[ Includes : diagrams.c
 */
-
+/* LCOV_EXCL_START */
 #include "form3.h"
  
 static WORD one = 1;
@@ -661,3 +661,5 @@ MesPrint("partitions = %a",2*nvert,partitions);
 /*
   	#] DoShattering : 
 */
+
+/* LCOV_EXCL_STOP */
