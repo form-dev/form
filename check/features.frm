@@ -2382,6 +2382,157 @@ Evaluate euler_;
 #pend_if wordsize == 2
 assert runtime_error?("Divergent Euler sum in CalculateEuler")
 *--#] mzv_error_5 :
+*--#[ padic_1 :
+#StartPadic 7,10
+Local F = 101/7;
+Local G = 7/13;
+ToPadic;
+.sort
+
+Local MUL = (10+F)*G;
+Local DIV = (10+F)/G;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("(3*7^-1 + 2*7^1)")
+assert result("G") =~ expr("(6*7^1 + 4*7^2 + 2*7^3 + 5*7^4 + 3*7^5 + 1*7^7 + 2*7^8 + 4*7^9)")
+assert result("MUL") =~ expr("(4 + 4*7^1 + 5*7^2 + 3*7^3 + 1*7^5 + 2*7^6 + 4*7^7 + 1*7^8)")
+assert result("DIV") =~ expr("(4*7^-2 + 2*7^-1 + 3 + 6*7^1 + 3*7^7 + 1*7^9)")
+*--#] padic_1 :
+*--#[ padic_2 :
+#-
+Off Statistics;
+#StartPadic 7,10
+Symbol a,x1,...,x4;
+Function A1,A2;
+CFunction f1,f2;
+Vector p1,p2,q;
+Local F = 31*x1*x2*f2*f1*q*p1.p2*A1*A2*cos_(3*pi_)*mzv_(2,1)*mzv_*cos_*mzv_(2)*cos_(pi_);
+ToPadic;
+.sort
+
+* Notice that the padic_ function is the last element in the term. 
+* See normalize.c for the order of the terms:
+* 1. Non-commuting functions
+* 2. Commuting functions
+* 3. LEVICIVITA tensors.
+* 4. DELTA.
+* 5. loose INDEX.
+* 6. VECTOR.
+* 7. DOTPRODUCT.
+* 8. SYMBOL.
+* 9. optional float_ / padic_ coefficient functions, if enabled.
+* 10. rational coefficient at the very end.
+* Notice that functions are first ordered according to their function number, 
+* see ftypes.h for the predefined functions, and then according to their arguments. 
+Format PadicPrint off;
+Print;
+.sort
+
+#EndPadic
+* padic_ should now not be placed at the very end of the term, 
+* but together with the other non-commuting functions.
+* At the moment, padic_ is the last predefined function, but it's number
+* is of course lower than that of the first user defined function. 
+Local G = F;
+Print G;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("A1*A2*cos_*cos_(pi_)*cos_(3*pi_)*mzv_*mzv_(2)*mzv_(2,1)*f1*f2*q*p1.p2*x1
+      *x2*padic_(0,10,31)")
+assert result("G") =~ expr("A1*A2*cos_*cos_(pi_)*cos_(3*pi_)*mzv_*mzv_(2)*mzv_(2,1)*padic_(0,10,31)*
+      f1*f2*q*p1.p2*x1*x2")
+*--#] padic_2 :
+*--#[ AddWithPadic :
+#-
+Off Statistics;
+#StartPadic 7,10
+Symbol x1,...,x4;
+
+Local F = (x1+padic_(0,10,1)*x2+x3+padic_(0,10,1)*x4)^5;
+id x1 = 1-x2-x3-x4;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("1")
+*--#] AddWithPadic :
+*--#[ MergeWithPadic :
+#: termsinsmall 16
+On fewerstats 1;
+#StartPadic 7,10
+Format PadicPrint off;
+Symbol x1,...,x16;
+
+Local F = (x1+padic_(0,10,1)*x2+x3+padic_(0,10,1)*x4)^5;
+id x1 = 1-x2-x3-x4;
+.sort
+
+Local CORNER = x1+...+x15+padic_(0,10,1)*x16+2^80*x16;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("1")
+assert result("CORNER") =~ expr("x16*padic_(0,10,188220513) + x15 + x14 + x13 + x12 + x11 + x10 + x9 + x8
+       + x7 + x6 + x5 + x4 + x3 + x2 + x1")
+*--#] MergeWithPadic :
+*--#[ padic_reconstruct_1 :
+Symbol x,j;
+#StartPadic 7,5
+Local F = 101/13*sum_(j,-5,5,x^j*7^j);
+ToPadic;
+.sort
+
+PadicToRat;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("101/13 + 101/218491*x^-5 + 101/31213*x^-4 + 101/4459*x^-3 + 101/637*x^-2
+       + 101/91*x^-1 - 42/23*x - 833/8*x^2 + 1372*x^3 + 2401/2*x^4")
+*--#] padic_reconstruct_1 :
+*--#[ padic_reconstruct_2 :
+#-
+#$prime = 175519;
+#define EP "`$prime'"
+
+Off Statistics;
+Symbol eps,x1,x2,v,N;
+CFunction padic,rat,coeff;
+Table ep();
+Fill ep = `EP';
+
+#StartPadic `$prime',5
+Local F = rat(70944*ep^5 - 20088*ep^4 - 5580*ep^3 + 1489*ep^2 + 126
+      *ep - 31,32000*ep^5 - 3280*ep^3 + 80*ep);
+id rat(x1?,x2?) = x1/x2;
+ToPadic;
+.sort
+
+#do i=0,5
+    FromPadic, padic;
+    id padic(?x1) = padic(?x1)+padic_(?x1);
+    Transform decode(13,3):base=`$prime';
+    id padic(v?,N?,x1?,?x2) = coeff(v,x1)-makerational_(x1,$prime)*`EP'^v;
+    .sort
+#enddo
+id coeff(v?,x1?) = makerational_(x1,$prime)*eps^v;
+.sort
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("63/40 - 31/80*eps^-1 + 109/40*eps - 207/40*eps^2 + 125/8*eps^3 + 357/8*eps^4")
+*--#] padic_reconstruct_2 : 
 *--#[ humanstats :
 #-
 On humanstats;

@@ -58,6 +58,9 @@ static KEYWORD formatoptions[] = {
 	,{"mathematica",	(TFUN)0,	MATHEMATICAMODE,	0}
 	,{"normal",			(TFUN)0,	NORMALFORMAT,		1}
 	,{"nospaces",		(TFUN)0,	NOSPACEFORMAT,		3}
+#ifdef WITHFLINT
+	,{"padicprint",		(TFUN)0,	0,					6}
+#endif
 	,{"pfortran",		(TFUN)0,	PFORTRANMODE,		0}
 	,{"quadfortran",	(TFUN)0,	QUADRUPLEFORTRANMODE,	0}
 	,{"quadruplefortran",	(TFUN)0,	QUADRUPLEFORTRANMODE,	0}
@@ -407,6 +410,39 @@ int CoFormat(UBYTE *s)
 				}
 				else {
 WrongOption:		MesPrint("&Illegal option in Format FloatPrecision: %s",s);
+					error = 1;
+				}
+			}
+#endif
+#ifdef WITHFLINT
+			else if ( key->flags == 6 ) {
+/*
+				Syntax: Format PadicPrint [on];
+				        Format PadicPrint off;
+*/
+				while ( FG.cTable[*s] == 0 ) s++;
+				while ( *s == ' ' || *s == '\t' || *s == ',' ) s++;
+				if ( *s == 0 ) {
+					AO.PadicPrint = 1;
+				}
+				else if ( tolower(*s) == 'o' && tolower(s[1]) == 'n' ) {
+					ss = s;
+					s += 2;
+					while ( *s == ' ' || *s == '\t' || *s == ',' ) s++;
+					if ( *s ) { s = ss; goto WrongPadicOption; }
+					AO.PadicPrint = 1;
+				}
+				else if ( tolower(*s) == 'o' && tolower(s[1]) == 'f'
+				&& tolower(s[2]) == 'f' ) {
+					ss = s;
+					s += 3;
+					while ( *s == ' ' || *s == '\t' || *s == ',' ) s++;
+					if ( *s ) { s = ss; goto WrongPadicOption; }
+					AO.PadicPrint = 0;
+				}
+				else {
+WrongPadicOption:
+					MesPrint("&Illegal option in Format PadicPrint: %s",s);
 					error = 1;
 				}
 			}
@@ -2068,12 +2104,31 @@ doset:					if ( Sets[number].type != CFUNCTION ) goto nofun;
 							}
 						}
 #endif
+#ifdef WITHFLINT
+						{
+							WORD *r1, *r2;
+							r1 = SetElements + Sets[number].first;
+							r2 = SetElements + Sets[number].last;
+							while ( r1 < r2 ) {
+								if ( *r1++ == PADICFUN ) {
+									MesPrint("&Illegal use of argument environment and padic_.");
+									error = 1;
+								}
+							}
+						}
+#endif
 						*w++ = CSET; *w++ = number;
 					}
 					else if ( type == CFUNCTION ) {
 #ifdef WITHFLOAT
 						if ( (number + FUNCTION) == FLOATFUN ) {
 							MesPrint("&Illegal use of argument environment and float_.");
+							error = 1;
+						}
+#endif
+#ifdef WITHFLINT
+						if ( (number + FUNCTION) == PADICFUN ) {
+							MesPrint("&Illegal use of argument environment and padic_.");
 							error = 1;
 						}
 #endif
@@ -3597,6 +3652,12 @@ SwitchOff:
 #ifdef WITHFLOAT
 	if ( AT.aux_ != 0 ) {
 		MesPrint("&Simultaneous use of floating point and modulus arithmetic makes no sense.");
+		Retval = 1;
+	}
+#endif
+#ifdef WITHFLINT
+	if ( AC.activePadic ) {
+		MesPrint("&Simultaneous use of p-adic and modulus arithmetic makes no sense.");
 		Retval = 1;
 	}
 #endif
@@ -5389,6 +5450,12 @@ int CoPolyFun(UBYTE *s)
 		error = 1;
 	}
 #endif
+#ifdef WITHFLINT
+	if ( AC.activePadic ) {
+		MesPrint("&Simultaneous use of PolyFun and padic_ is not allowed.");
+		error = 1;
+	}
+#endif
 	return(error);
 }
 
@@ -5418,6 +5485,12 @@ int CoPolyRatFun(UBYTE *s)
 #ifdef WITHFLOAT
 	if ( mpfaux_ != 0 ) {
 		MesPrint("&Simultaneous use of PolyFun and float_ is not allowed.");
+		error = 1;
+	}
+#endif
+#ifdef WITHFLINT
+	if ( AC.activePadic ) {
+		MesPrint("&Simultaneous use of PolyFun and padic_ is not allowed.");
 		error = 1;
 	}
 #endif
