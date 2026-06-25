@@ -1,0 +1,29 @@
+name: Close stale issues
+on:
+  schedule:
+    - cron: '30 0 * * *'  # daily
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  issues: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/stale@v10
+        with:
+          days-before-issue-stale: 90
+          days-before-issue-close: 30
+          stale-issue-message: >
+            This issue has been marked as stale after 90 days of inactivity.
+            It will be closed automatically in 30 days unless there is any further activity.
+            If this issue is still relevant, please leave a comment to keep it open.
+          stale-issue-label: stale
+          exempt-issue-labels: bug,documentation,enhancement,help wanted,needs decision
+          exempt-all-issue-milestones: true
+          days-before-pr-stale: -1  # Do not touch PRs.
+          days-before-pr-close: -1
+          remove-pr-stale-when-updated: false
+          operations-per-run: 15  # Keep stale operations low for now.
