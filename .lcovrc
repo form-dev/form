@@ -1,0 +1,8 @@
+# FORM-specific LCOV exclusion markers:
+# 
+# - INTERNAL_ERROR_EXCL_...: exclude internal errors from the coverage statistics
+# - UNFINISHED_FEATURE_EXCL_...: exclude unfinished features code.
+# 
+lcov_excl_start = (INTERNAL_ERROR_EXCL_START|UNFINISHED_FEATURE_EXCL_START)
+lcov_excl_stop = (INTERNAL_ERROR_EXCL_STOP|UNFINISHED_FEATURE_EXCL_STOP)
+lcov_excl_line = (INTERNAL_ERROR_EXCL_LINE|UNFINISHED_FEATURE_EXCL_LINE)

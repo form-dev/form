@@ -100,16 +100,20 @@ WORD* flint::divmod_mpoly(PHEAD const WORD *a, const WORD *b, const bool return_
 	// The input won't have any symbols with negative powers, but there may be rational
 	// coefficients. Verify this:
 	if ( fmpz_mpoly_is_fmpz(denpa.d, ctx.d) != 1 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::divmod_mpoly: error: denpa is non-constant");
+		MesPrint("!>flint::divmod_mpoly: error: denpa is non-constant");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 	if ( fmpz_mpoly_is_fmpz(denpb.d, ctx.d) != 1 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::divmod_mpoly: error: denpb is non-constant");
+		MesPrint("!>flint::divmod_mpoly: error: denpb is non-constant");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 
 
@@ -169,16 +173,20 @@ WORD* flint::divmod_poly(PHEAD const WORD *a, const WORD *b, const bool return_r
 	// The input won't have any symbols with negative powers, but there may be rational
 	// coefficients. Verify this:
 	if ( fmpz_poly_length(denpa.d) != 1 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::divmod_poly: error: denpa is non-constant");
+		MesPrint("!>flint::divmod_poly: error: denpa is non-constant");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 	if ( fmpz_poly_length(denpb.d) != 1 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::divmod_poly: error: denpb is non-constant");
+		MesPrint("!>flint::divmod_poly: error: denpb is non-constant");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 
 	flint::fmpz scale;
@@ -241,10 +249,12 @@ WORD* flint::factorize_mpoly(PHEAD const WORD *argin, WORD *argout, const bool w
 	flint::from_argument_mpoly(arg.d, den.d, argin, with_arghead, var_map, ctx.d);
 	// The denominator must be 1:
 	if ( fmpz_mpoly_is_one(den.d, ctx.d) != 1 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::factorize_mpoly error: den != 1");
+		MesPrint("!>flint::factorize_mpoly error: den != 1");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 
 
@@ -258,10 +268,12 @@ WORD* flint::factorize_mpoly(PHEAD const WORD *argin, WORD *argout, const bool w
 	// FORM should always have taken the overall constant out in the content. Thus this overall
 	// constant factor should be +- 1 here. Verify this:
 	if ( ! ( fmpz_equal_si(overall_constant.d, 1) || fmpz_equal_si(overall_constant.d, -1) ) ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::factorize_mpoly error: overall constant factor != +-1");
+		MesPrint("!>flint::factorize_mpoly error: overall constant factor != +-1");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 
 	// Construct the output. If argout is not NULL, we write the result there.
@@ -389,10 +401,12 @@ WORD* flint::factorize_poly(PHEAD const WORD *argin, WORD *argout, const bool wi
 	flint::from_argument_poly(arg.d, den.d, argin, with_arghead);
 	// The denominator must be 1:
 	if ( fmpz_poly_is_one(den.d) != 1 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::factorize_poly error: den != 1");
+		MesPrint("!>flint::factorize_poly error: den != 1");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 
 
@@ -512,11 +526,13 @@ void flint::form_sort(PHEAD WORD *terms) {
 
 	// Check the final size
 	if ( in_size != out_size  ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::form_sort: error: unexpected sorted arg length change %d->%d", in_size,
+		MesPrint("!>flint::form_sort: error: unexpected sorted arg length change %d->%d", in_size,
 			out_size);
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 
 	AR.SortType = oldsorttype;
@@ -949,16 +965,20 @@ WORD* flint::gcd_mpoly(PHEAD const WORD *a, const WORD *b, const WORD must_fit_t
 
 	// denpa, denpb must be 1:
 	if ( fmpz_mpoly_is_one(denpa.d, ctx.d) != 1 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::gcd_mpoly: error: denpa != 1");
+		MesPrint("!>flint::gcd_mpoly: error: denpa != 1");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 	if ( fmpz_mpoly_is_one(denpb.d, ctx.d) != 1 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::gcd_mpoly: error: denpb != 1");
+		MesPrint("!>flint::gcd_mpoly: error: denpb != 1");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 
 	// poly returns pa if pa == pb, regardless of the lcoeff sign
@@ -973,17 +993,21 @@ WORD* flint::gcd_mpoly(PHEAD const WORD *a, const WORD *b, const WORD must_fit_t
 		flint::mpoly tmp(ctx.d);
 		fmpz_mpoly_term_content(tmp.d, pa.d, ctx.d);
 		if ( fmpz_mpoly_is_one(tmp.d, ctx.d) != 1 ) {
+			// INTERNAL_ERROR_EXCL_START
 			MLOCK(ErrorMessageLock);
-			MesPrint("flint::gcd_mpoly: error: content of 1st arg != 1");
+			MesPrint("!>flint::gcd_mpoly: error: content of 1st arg != 1");
 			MUNLOCK(ErrorMessageLock);
 			Terminate(-1);
+			// INTERNAL_ERROR_EXCL_STOP
 		}
 		fmpz_mpoly_term_content(tmp.d, pb.d, ctx.d);
 		if ( fmpz_mpoly_is_one(tmp.d, ctx.d) != 1 ) {
+			// INTERNAL_ERROR_EXCL_START
 			MLOCK(ErrorMessageLock);
-			MesPrint("flint::gcd_mpoly: error: content of 2nd arg != 1");
+			MesPrint("!>flint::gcd_mpoly: error: content of 2nd arg != 1");
 			MUNLOCK(ErrorMessageLock);
 			Terminate(-1);
+			// INTERNAL_ERROR_EXCL_STOP
 		}
 
 		// The poly class now divides the content out of a,b so that they have a positive lcoeff.
@@ -1044,16 +1068,20 @@ WORD* flint::gcd_poly(PHEAD const WORD *a, const WORD *b, const WORD must_fit_te
 
 	// denpa, denpb must be 1:
 	if ( fmpz_poly_is_one(denpa.d) != 1 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::gcd_poly: error: denpa != 1");
+		MesPrint("!>flint::gcd_poly: error: denpa != 1");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 	if ( fmpz_poly_is_one(denpb.d) != 1 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::gcd_poly: error: denpb != 1");
+		MesPrint("!>flint::gcd_poly: error: denpb != 1");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 
 	// poly returns pa if pa == pb, regardless of the lcoeff sign
@@ -1067,17 +1095,21 @@ WORD* flint::gcd_poly(PHEAD const WORD *a, const WORD *b, const WORD must_fit_te
 		flint::fmpz tmp;
 		fmpz_poly_content(tmp.d, pa.d);
 		if ( fmpz_is_one(tmp.d) != 1 ) {
+			// INTERNAL_ERROR_EXCL_START
 			MLOCK(ErrorMessageLock);
-			MesPrint("flint::gcd_poly: error: content of 1st arg != 1");
+			MesPrint("!>flint::gcd_poly: error: content of 1st arg != 1");
 			MUNLOCK(ErrorMessageLock);
 			Terminate(-1);
+			// INTERNAL_ERROR_EXCL_STOP
 		}
 		fmpz_poly_content(tmp.d, pb.d);
 		if ( fmpz_is_one(tmp.d) != 1 ) {
+			// INTERNAL_ERROR_EXCL_START
 			MLOCK(ErrorMessageLock);
-			MesPrint("flint::gcd_poly: error: content of 2nd arg != 1");
+			MesPrint("!>flint::gcd_poly: error: content of 2nd arg != 1");
 			MUNLOCK(ErrorMessageLock);
 			Terminate(-1);
+			// INTERNAL_ERROR_EXCL_STOP
 		}
 
 		fmpz_poly_gcd(gcd.d, pa.d, pb.d);
@@ -1325,16 +1357,20 @@ WORD* flint::mul_mpoly(PHEAD const WORD *a, const WORD *b, const var_map_t &var_
 
 	// denpa, denpb must be integers. Negative symbol powers have been converted to extra symbols.
 	if ( fmpz_mpoly_is_fmpz(denpa.d, ctx.d) != 1 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::mul_mpoly: error: denpa is non-constant");
+		MesPrint("!>flint::mul_mpoly: error: denpa is non-constant");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 	if ( fmpz_mpoly_is_fmpz(denpb.d, ctx.d) != 1 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::mul_mpoly: error: denpb is non-constant");
+		MesPrint("!>flint::mul_mpoly: error: denpb is non-constant");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 
 	// Multiply numerators, store result in pa
@@ -1376,16 +1412,20 @@ WORD* flint::mul_poly(PHEAD const WORD *a, const WORD *b, const var_map_t &var_m
 
 	// denpa, denpb must be integers. Negative symbol powers have been converted to extra symbols.
 	if ( fmpz_poly_degree(denpa.d) != 0 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::mul_poly: error: denpa is non-constant");
+		MesPrint("!>flint::mul_poly: error: denpa is non-constant");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 	if ( fmpz_poly_degree(denpb.d) != 0 ) {
+		// INTERNAL_ERROR_EXCL_START
 		MLOCK(ErrorMessageLock);
-		MesPrint("flint::mul_poly: error: denpb is non-constant");
+		MesPrint("!>flint::mul_poly: error: denpb is non-constant");
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+		// INTERNAL_ERROR_EXCL_STOP
 	}
 
 	// Multiply numerators, store result in pa

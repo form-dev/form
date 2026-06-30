@@ -216,7 +216,7 @@ jobs:
 
       - name: Generate LCOV coverage data
         run: |
-          lcov -d . -c -o coverage.lcov
+          lcov --config-file .lcovrc -d . -c -o coverage.lcov
           lcov -r coverage.lcov '*/usr/include/*' '*/extern/*'${{ matrix.flint != 'no' && ' ''*/lib/*''' || '' }} -o coverage.lcov
 
       - name: Coveralls Parallel
