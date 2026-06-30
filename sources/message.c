@@ -124,6 +124,7 @@ NORETURN void MesWork(void)
 	#   " ==> "
 	@   " ==> "   Preprocessor error
 	&   ' --> '   Regular compiler error
+	!>  ' ~~> '   Internal error
 	Each call is terminated with a new line.
 	Put a % at the end of the string to suppress the new line.
 
@@ -172,7 +173,7 @@ int MesPrint(const char *fmt, ... )
 	t = Out;
 	stopper = Out + AC.LineLength;
 	while ( *s ) {
-		if ( ( ( *s == '&' && AO.ErrorBlock == 0 ) || *s == '@' || *s == '#' ) && AC.CurrentStream != 0 ) {
+		if ( ( *s == '&' || *s == '@' || *s == '#' || ( *s == '!' && s[1] == '>' ) ) && AO.ErrorBlock == 0 && AC.CurrentStream != 0 ) {
 			u = (char *)AC.CurrentStream->name;
 			while ( *u ) {
 				*t++ = *u++;
@@ -199,8 +200,23 @@ int MesPrint(const char *fmt, ... )
 		if ( ( *s == '&' && AO.ErrorBlock == 0 ) ) {
 			*t++ = ' '; *t++ = '-'; *t++ = '-'; *t++ = '>'; *t++ = ' '; s++;
 		}
-		else if ( *s == '@' || *s == '#' ) {
+		else if ( ( *s == '@' || *s == '#' ) && AO.ErrorBlock == 0 ) {
 			*t++ = ' '; *t++ = '='; *t++ = '='; *t++ = '>'; *t++ = ' '; s++;
+		}
+		else if ( *s == '!' && s[1] == '>' && AO.ErrorBlock == 0 ) {
+			const char *m = " ~~> Internal error, please report with the following message:";
+			while ( *m ) {
+				*t++ = *m++;
+				if ( t >= stopper ) {
+					num = t - Out;
+					WriteString(ERROROUT,(UBYTE *)Out,num);
+					num = 0; t = Out;
+				}
+			}
+			num = t - Out;
+			WriteString(ERROROUT,(UBYTE *)Out,num);
+			num = 0; t = Out;
+			s += 2;
 		}
 /*
 		else if ( *s == '&' && AO.ErrorBlock == 1 ) {
