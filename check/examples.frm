@@ -850,7 +850,7 @@ assert succeeded?
 assert result("F") =~ expr("
        8
 ")
-*--#] Sta_Dropsymbols_1  
+*--#] Sta_DropSymbols_1  
 *--#[ Sta_FactArg_1 :
 *TODO: OldFactArg is needed for the result in the manual.
     On OldFactArg;

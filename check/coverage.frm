@@ -464,6 +464,21 @@ Print;
 assert succeeded?
 assert result("G") =~ expr("1048576 + p.q + p(mu) + e_(p,q) + g(2) + T(q) + T(mu) + f(1)")
 *--#] cov_saveload :
+*--#[ cov_saveload_err :
+Symbol x;
+Global F = x;
+.store
+Save test.sav F;
+.end
+Load test.sav F1;
+.end
+assert runtime_error?
+assert stdout =~ exact_pattern(<<'EOF')
+    Load test.sav F1;
+Cannot find expression F1
+ F1 not found
+EOF
+*--#] cov_saveload_err :
 *--#[ cov_symm :
 * pattern matching of functions with symmtry properties
 Indices x1,x2,x3,x4,x5;
