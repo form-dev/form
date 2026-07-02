@@ -3235,7 +3235,11 @@ are loaded and possible other expressions are ignored. If a specified
 expression is not present, an error will result. If one does not know 
 exactly what expressions are present in a file one could load the file 
 without a list of expressions, because \FORM\ will list all expressions that 
-it encountered. \vspace{10mm}
+it encountered. When using multiple loaded expressions on the right-hand side
+of definitions or statements, which each depend on a subset of a larger set of
+definitions, the final variable ordering may not be what is expected. If the
+ordering is important, one should manually define all variables in the required
+order before using loaded expressions from the storage file. \vspace{10mm}
 
 %--#] load : 
 %--#[ local :
