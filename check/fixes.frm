@@ -4594,6 +4594,123 @@ assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxyzaaaaaaab Terms in outp
 assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxyzaaaa Terms in output=262144  (262 K  )")
 assert stdout =~ exact_pattern("abcdefghijklmnopqr       Terms in output =     262144  (262 K  )")
 *--#] Issue833_2 : 
+*--#[ Issue856 : 
+#-
+Off Statistics;
+CFunction f,g,h;
+
+#define MODE "1"
+#define MAX "4"
+
+* Each expression is a different size:
+#do i = 1,`MAX'
+	Local test`i' = f(`i')^`i';
+	Local htest`i' = g(`i')^{`i'+`MAX'};
+	Local ihtest`i' = h(`i')^{`i'+2*`MAX'};
+#enddo
+.sort
+
+* Start with "htest" expr hidden
+Hide htest1,...,htest`MAX';
+.sort
+
+#do i = 1,`MAX'
+	UnHide htest`i';
+	.sort
+	IntoHide ihtest`i';
+	#if `MODE' == 1
+		InParallel;
+	#endif
+	Multiply 2;
+	.sort
+	Hide htest`i';
+#enddo
+.sort
+
+* UnHide all, mixture of InParallel and regular:
+InParallel htest1,...,htest`MAX';
+UnHide;
+.sort
+
+
+* Reset
+Hide htest1,...,htest`MAX';
+.sort
+
+* Same again, with UnHide in the inparallel module
+#do i = 1,`MAX'
+	UnHide htest`i';
+	IntoHide ihtest`i';
+	#if `MODE' == 1
+		InParallel;
+	#endif
+	Multiply 2;
+	.sort
+	Hide htest`i';
+#enddo
+.sort
+
+UnHide;
+.sort
+
+
+* Reset
+Hide htest1,...,htest`MAX';
+.sort
+
+* Same again, leave the first expression in the Hide file
+#do i = 2,`MAX'
+	UnHide htest`i';
+	.sort
+	IntoHide ihtest`i';
+	#if `MODE' == 1
+		InParallel;
+	#endif
+	Multiply 2;
+	.sort
+	Hide htest`i';
+#enddo
+.sort
+
+UnHide;
+.sort
+
+
+* Reset
+Hide htest1,...,htest`MAX';
+.sort
+
+* Same again, leave the first expression in the Hide file, but take from the end
+#do i = `MAX',2,-1
+	UnHide htest`i';
+	.sort
+	IntoHide ihtest`i';
+	#if `MODE' == 1
+		InParallel;
+	#endif
+	Multiply 2;
+	.sort
+	Hide htest`i';
+#enddo
+.sort
+
+UnHide;
+Print;
+.end
+assert succeeded?
+assert result("test1") =~ expr("16384*f(1)")
+assert result("htest1") =~ expr("4*g(1)^5")
+assert result("ihtest1") =~ expr("256*h(1)^9")
+assert result("test2") =~ expr("16384*f(2)^2")
+assert result("htest2") =~ expr("16*g(2)^6")
+assert result("ihtest2") =~ expr("256*h(2)^10")
+assert result("test3") =~ expr("16384*f(3)^3")
+assert result("htest3") =~ expr("16*g(3)^7")
+assert result("ihtest3") =~ expr("1024*h(3)^11")
+assert result("test4") =~ expr("16384*f(4)^4")
+assert result("htest4") =~ expr("16*g(4)^8")
+assert result("ihtest4") =~ expr("4096*h(4)^12")
+*--#] Issue856 : 
 *--#[ PullReq535 :
 * This test requires more than the specified 50K workspace.
 #:maxtermsize 200
