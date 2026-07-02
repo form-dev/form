@@ -111,6 +111,9 @@ int Processor(void)
 	AN.PolyFunTodo = 0;
 #ifdef HIDEDEBUG
 	MesPrint("Status at the start of Processor (HideLevel = %d)",AC.HideLevel);
+	MesPrint("File %s POfill %l POfull %l POsize %l", AR.infile->name   ,AR.infile->POfill  -AR.infile->PObuffer  ,AR.infile->POfull  -AR.infile->PObuffer  ,AR.infile->POsize/sizeof(WORD)  );
+	MesPrint("File %s POfill %l POfull %l POsize %l", AR.outfile->name  ,AR.outfile->POfill -AR.outfile->PObuffer ,AR.outfile->POfull -AR.outfile->PObuffer ,AR.outfile->POsize/sizeof(WORD) );
+	MesPrint("File %s POfill %l POfull %l POsize %l", AR.hidefile->name ,AR.hidefile->POfill-AR.hidefile->PObuffer,AR.hidefile->POfull-AR.hidefile->PObuffer,AR.hidefile->POsize/sizeof(WORD));
 	for ( i = 0; i < NumExpressions; i++ ) {
 		e = Expressions+i;
 		ExprStatus(e);
@@ -644,6 +647,9 @@ commonread:;
 	AT.WorkPointer = term;
 #ifdef HIDEDEBUG
 	MesPrint("Status at the end of Processor (HideLevel = %d)",AC.HideLevel);
+	MesPrint("File %s POfill %l POfull %l POsize %l", AR.infile->name   ,AR.infile->POfill  -AR.infile->PObuffer  ,AR.infile->POfull  -AR.infile->PObuffer  ,AR.infile->POsize/sizeof(WORD)  );
+	MesPrint("File %s POfill %l POfull %l POsize %l", AR.outfile->name  ,AR.outfile->POfill -AR.outfile->PObuffer ,AR.outfile->POfull -AR.outfile->PObuffer ,AR.outfile->POsize/sizeof(WORD) );
+	MesPrint("File %s POfill %l POfull %l POsize %l", AR.hidefile->name ,AR.hidefile->POfill-AR.hidefile->PObuffer,AR.hidefile->POfull-AR.hidefile->PObuffer,AR.hidefile->POsize/sizeof(WORD));
 	for ( i = 0; i < NumExpressions; i++ ) {
 		e = Expressions+i;
 		ExprStatus(e);
