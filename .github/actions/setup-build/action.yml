@@ -31,7 +31,7 @@ runs:
           automake=false diffutils=false gcc=true git=false ruby=true wget=false
           latex=false latex2html=false
           formlib=false color=false forcer=false mincer=false series=false hyperform=false fmft=false
-          mzv=false
+          mzv=false formapart=false
         # NOTE: Some features and OS image combinations are not implemented.
       shell: bash
       run: |
@@ -138,9 +138,10 @@ runs:
           feat_hyperform=true
           feat_fmft=true
           feat_mzv=true
+          feat_formapart=true
         fi
 
-        if $feat_color || $feat_forcer || $feat_mincer || $feat_series || $feat_hyperform || $feat_fmft || $feat_mzv; then
+        if $feat_color || $feat_forcer || $feat_mincer || $feat_series || $feat_hyperform || $feat_fmft || $feat_mzv || $feat_formapart; then
           feat_formlib=true
           items=''
           $feat_color && items="$items-color-1.0.0"
@@ -150,6 +151,7 @@ runs:
           $feat_hyperform && items="$items-hyperform-1.0.0"
           $feat_fmft && items="$items-fmft-1.0.0"
           $feat_mzv && items="$items-mzv-1.0.0"
+          $feat_formapart && items="$items-formapart-1.0.0"
           echo "formlib_key=formlib$items" >>"$GITHUB_OUTPUT"
           echo "formlib_restore_keys=formlib-" >>"$GITHUB_OUTPUT"
           echo "FORMPATH=${{ github.workspace }}/formlib" >>"$GITHUB_ENV"
@@ -590,11 +592,26 @@ runs:
           wget https://raw.githubusercontent.com/form-dev/form-bench/refs/heads/main/tests/mzv-dm/hexall.h -P formlib
           touch formlib/mzv-1.0.0
         fi
+        if ${{ steps.setup.outputs.formapart }} && [ ! -f formlib/formapart-1.0.0 ]; then
+          rm -f formlib/{declare-formapart.h,formapart.h}
+          git clone https://github.com/adamkardos/LinApart.git
+          git -C LinApart checkout 3f768dd8e6f414b2bfd537eb17e8d582d84d35c7
+          mv LinApart/form/src/{declare-formapart.h,formapart.h} formlib/
+          # this file needs to be copied to check/extra when running the tests
+          cat LinApart/form/check/*.frm | sed 's/\*{{{/*--#[/' | sed 's/\*}}}/*--#]/' | sed 's/..\/src\/formapart/formapart/g' > formlib/formapart.frm
+          rm -f formlib/formapart-*
+          touch formlib/formapart-1.0.0
+        fi
 
-    - name: Copy test files from cache
+    - name: Copy hyperform test file from cache
       if: steps.setup.outputs.hyperform == 'true'
       shell: ${{ steps.setup.outputs.msys2 == 'true' && 'msys2 {0}' || 'bash' }}
       run: cp formlib/hyperform.frm check/extra/
+
+    - name: Copy formapart test file from cache
+      if: steps.setup.outputs.formapart == 'true'
+      shell: ${{ steps.setup.outputs.msys2 == 'true' && 'msys2 {0}' || 'bash' }}
+      run: cp formlib/formapart.frm check/extra/
 
     - name: Uncompress tarball
       if: steps.setup.outputs.untar == 'true'
