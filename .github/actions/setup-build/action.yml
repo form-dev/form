@@ -464,7 +464,7 @@ runs:
     - name: Cache FLINT
       id: cache-flint
       if: steps.setup.outputs.build_flint == 'true'
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: lib/flint
         # Here, we set a conservative cache key so that the cache is not reused
@@ -523,7 +523,7 @@ runs:
     - name: Cache FORM library
       id: cache-formlib
       if: steps.setup.outputs.formlib == 'true'
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: formlib
         key: ${{ steps.setup.outputs.formlib_key }}
