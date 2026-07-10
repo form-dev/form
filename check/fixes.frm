@@ -4525,6 +4525,75 @@ assert stdout =~ exact_pattern(<<'EOF')
 sumpow: 129
 EOF
 *--#] Issue796c : 
+*--#[ Issue833_1 : 
+#-
+#: TermsInSmall 1024
+On fewerstats 256;
+On humanstats;
+Symbol x;
+Local abcdefghijklmno   = <x^1>+...+<x^15>;
+Local abcdefghijklmnop  = <x^1>+...+<x^16>;
+Local abcdefghijklmnopq = <x^1>+...+<x^17>;
+Local abcdefghijklmnopqrstuvwx = <x^1>+...+<x^24>;
+Local abcdefghijklmnopqrstuvwxy = <x^1>+...+<x^25>;
+Local abcdefghijklmnopqrstuvwxyz = <x^1>+...+<x^26>;
+Local abcdefghijklmnopqrstuvwxyz = <x^1>+...+<x^26>;
+Local abcdefghijklmnopqrstuvwxyzaaaaaaaa = <x^1>+...+<x^34>;
+Local abcdefghijklmnopqrstuvwxyzaaaaaaab = <x^1>+...+<x^340>;
+Local abcdefghijklmnopqrstuvwxyzaaaa = <x^1>+...+<x^262144>;
+Local abcdefghijklmnopqr = <x^1>+...+<x^262144>;
+.sort
+.end
+#require wordsize == 4
+#pend_if mpi? || threaded?
+assert succeeded?
+assert stdout =~ exact_pattern(" abcdefghijklmno         Terms in output =         15  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnop         Terms in output =         16  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopq        Terms in output =         17  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwx Terms in output =         24  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxy Terms in output=         25  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxyz Terms in output=        26  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxyzaaaaaaaa Terms in output=34  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxyzaaaaaaab Terms in output=340  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxyzaaaa Terms in output=262144  (262 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqr       Terms in output =     262144  (262 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxyzaaaa 1 Terms left=   262144  (262 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxyzaaaa 262144 Terms left=262144  (262 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqr     1 Terms left      =     262144  (262 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqr 262144 Terms left     =     262144  (262 K  )")
+*--#] Issue833_1 : 
+*--#[ Issue833_2 : 
+#-
+#: TermsInSmall 1024
+On fewerstats 256;
+On humanstats;
+Symbol x;
+Local abcdefghijklmno   = <x^1>+...+<x^15>;
+Local abcdefghijklmnop  = <x^1>+...+<x^16>;
+Local abcdefghijklmnopq = <x^1>+...+<x^17>;
+Local abcdefghijklmnopqrstuvwx = <x^1>+...+<x^24>;
+Local abcdefghijklmnopqrstuvwxy = <x^1>+...+<x^25>;
+Local abcdefghijklmnopqrstuvwxyz = <x^1>+...+<x^26>;
+Local abcdefghijklmnopqrstuvwxyz = <x^1>+...+<x^26>;
+Local abcdefghijklmnopqrstuvwxyzaaaaaaaa = <x^1>+...+<x^34>;
+Local abcdefghijklmnopqrstuvwxyzaaaaaaab = <x^1>+...+<x^340>;
+Local abcdefghijklmnopqrstuvwxyzaaaa = <x^1>+...+<x^262144>;
+Local abcdefghijklmnopqr = <x^1>+...+<x^262144>;
+.sort
+.end
+#require threaded? && wordsize == 4
+assert succeeded?
+assert stdout =~ exact_pattern(" abcdefghijklmno         Terms in output =         15  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnop         Terms in output =         16  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopq        Terms in output =         17  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwx Terms in output =         24  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxy Terms in output=         25  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxyz Terms in output=        26  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxyzaaaaaaaa Terms in output=34  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxyzaaaaaaab Terms in output=340  ( <1 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqrstuvwxyzaaaa Terms in output=262144  (262 K  )")
+assert stdout =~ exact_pattern("abcdefghijklmnopqr       Terms in output =     262144  (262 K  )")
+*--#] Issue833_2 : 
 *--#[ PullReq535 :
 * This test requires more than the specified 50K workspace.
 #:maxtermsize 200

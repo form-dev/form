@@ -84,8 +84,8 @@ FIXEDGLOBALS FG = {
 		,{" Functions"
 		," Commuting Functions"}
 
-		,{"left     "
-		,"active   "
+		,{"left"
+		,"active"
 		,"in output"}
 
 	,(char *)0
