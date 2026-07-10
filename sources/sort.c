@@ -100,6 +100,11 @@ void HumanString(char* string, float input, const char suffix[HUMANSUFFLEN][4]) 
 	}
 }
 
+#define COL_EXP 16
+#define COL_SPA 8
+#define COL_EQU 42
+#define COL_VAL 53
+
 WORD DigitsIn(LONG x) {
 	if ( x < 0 ) x = -x;
 	WORD dig = 1;
@@ -265,65 +270,89 @@ void WriteStats(POSITION *plspace, WORD par, WORD checkLogType)
 			}
 			else {
 				snprintf(buf, sizeof(buf),
-					"%sTime = %7ld.%02u sec   %sGenerated terms = %10ld%s",
-					wpref,millitime,timepart,wspac,S->GenTerms,humanGenTermsText);
+					"%sTime = %7ld.%02u sec   %sGenerated terms =%11ld%s",
+					wpref, millitime, timepart, wspac, S->GenTerms, humanGenTermsText);
 				MesPrint("%s", buf);
 			}
 
+			const int exprlen = strlen((char*)EXPRNAME(AR.CurExpr));
+			const int overflow = MaX(0, exprlen - COL_EXP);
 			if ( par == STATSSPLITMERGE ) {
-				snprintf(buf, sizeof(buf),
-					"%16s%8ld Terms %s = %10ld%s",
-					EXPRNAME(AR.CurExpr),AN.ninterms,FG.swmes[par],S->TermsLeft,
-					humanTermsLeftText);
+				int width = snprintf(buf, sizeof(buf),
+					"%*s %*ld Terms %s",
+					COL_EXP, EXPRNAME(AR.CurExpr),
+					MaX(0,COL_SPA-1-overflow), AN.ninterms, FG.swmes[par]);
+				width += snprintf(buf+width, sizeof(buf)-width,
+					"%*s=",
+					MaX(0,COL_EQU-1-width), "");
+				snprintf(buf+width, sizeof(buf)-width,
+					"%*ld%s",
+					MaX(0,COL_VAL-width), S->TermsLeft, humanTermsLeftText);
 				MesPrint("%s", buf);
 			}
 			else {
 #ifdef WITHPTHREADS
 				if ( identity > 0 && par == STATSPOSTSORT ) {
-					snprintf(buf, sizeof(buf),
-						"%16s         Terms in thread = %10ld%s",
-						EXPRNAME(AR.CurExpr),S->TermsLeft,humanTermsLeftText);
+					int width = snprintf(buf, sizeof(buf),
+						"%*s%*s Terms in thread",
+						COL_EXP, EXPRNAME(AR.CurExpr), MaX(0,COL_SPA-overflow), "");
+					width += snprintf(buf+width, sizeof(buf)-width,
+						"%*s=",
+						MaX(0,COL_EQU-1-width), "");
+					snprintf(buf+width, sizeof(buf)-width,
+						"%*ld%s",
+						MaX(0,COL_VAL-width), S->TermsLeft, humanTermsLeftText);
 					MesPrint("%s", buf);
 				}
 				else
 #elif defined(WITHMPI)
 				if ( PF.me != MASTER && par == STATSPOSTSORT ) {
-					snprintf(buf, sizeof(buf),
-						"%16s         Terms in process= %10ld%s",
-						EXPRNAME(AR.CurExpr),S->TermsLeft,humanTermsLeftText);
+					int width = snprintf(buf, sizeof(buf),
+						"%*s%*s Terms in process=",
+						COL_EXP, EXPRNAME(AR.CurExpr), MaX(0,COL_SPA-overflow), "");
+					snprintf(buf+width, sizeof(buf)-width,
+						"%*ld%s",
+						MaX(0,COL_VAL-width), S->TermsLeft, humanTermsLeftText);
 					MesPrint("%s", buf);
 				}
 				else
 #endif
 				{
-					snprintf(buf, sizeof(buf),
-						"%16s         Terms %s = %10ld%s",
-						EXPRNAME(AR.CurExpr),FG.swmes[par],S->TermsLeft,
-						humanTermsLeftText);
+					int width = snprintf(buf, sizeof(buf),
+						"%*s%*s Terms %s",
+						COL_EXP, EXPRNAME(AR.CurExpr), MaX(0,COL_SPA-overflow), "",
+						FG.swmes[par]);
+					width += snprintf(buf+width, sizeof(buf)-width,
+						"%*s=",
+						MaX(0,COL_EQU-1-width), "");
+					snprintf(buf+width, sizeof(buf)-width,
+						"%*ld%s",
+						MaX(0,COL_VAL-width), S->TermsLeft, humanTermsLeftText);
 					MesPrint("%s", buf);
 				}
 			}
 
 			const WORD dig = DigitsIn(BASEPOSITION(*plspace));
-			snprintf(buf, sizeof(buf), "%24s Bytes used%*s=%11ld%s",
-				AC.Commercial,MiN(6,17-dig),"",BASEPOSITION(*plspace),
-				humanBytesText);
+			snprintf(buf, sizeof(buf),
+				"%*s Bytes used%*s=%11ld%s",
+				COL_EXP+COL_SPA, AC.Commercial, MiN(6,17-dig), "",
+				BASEPOSITION(*plspace), humanBytesText);
 			MesPrint("%s", buf);
 		}
 
 		if ( par == STATSPOSTSORT ) {
 			if ( AC.SortVerbose ) {
-				snprintf(buf, sizeof(buf), "%24s Unsorted bytes  =%11ld%s",
-					"",S->verbUnsortedSize,humanUnsortedBytesText);
+				snprintf(buf, sizeof(buf), "%*s Unsorted bytes  =%11ld%s",
+					COL_EXP+COL_SPA, "", S->verbUnsortedSize, humanUnsortedBytesText);
 				MesPrint("%s", buf);
-				snprintf(buf, sizeof(buf), "%24s Small Buffer    =%5ld,%5ld",
-					"",S->verbSBsortTerms,S->verbSBsortCap);
+				snprintf(buf, sizeof(buf), "%*s Small Buffer    =%5ld,%5ld",
+					COL_EXP+COL_SPA, "", S->verbSBsortTerms, S->verbSBsortCap);
 				MesPrint("%s", buf);
-				snprintf(buf, sizeof(buf), "%24s Large Buffer    =%5ld,%5ld",
-					"",S->verbLBsortPatches,S->verbLBsortCap);
+				snprintf(buf, sizeof(buf), "%*s Large Buffer    =%5ld,%5ld",
+					COL_EXP+COL_SPA, "", S->verbLBsortPatches, S->verbLBsortCap);
 				MesPrint("%s", buf);
-				snprintf(buf, sizeof(buf), "%24s Comparisons     =%11ld%s",
-					"",S->verbComparisons,humanComparisonsText);
+				snprintf(buf, sizeof(buf), "%*s Comparisons     =%11ld%s",
+					COL_EXP+COL_SPA, "", S->verbComparisons, humanComparisonsText);
 				MesPrint("%s", buf);
 			}
 		}
