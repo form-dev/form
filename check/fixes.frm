@@ -2863,6 +2863,16 @@ Print;
 assert succeeded?
 assert result("F") =~ expr("f(x**2) + f(x)**2")
 *--#] Issue359 : 
+*--#[ Issue367 :
+* replace_ corruption in nested multi-argument functions
+Function f,I;
+S s1,s2,s3;
+L F = I(f(s1+2,s2,s3))*replace_(s1,0);
+P;
+.end
+assert succeeded?
+assert result("F") =~ expr("I(f(2,s2,s3))")
+*--#] Issue367 :
 *--#[ Issue400 :
 * denominators statement for nested functions
 S x;
@@ -4340,6 +4350,185 @@ Print;
 assert succeeded?
 assert result("expr") =~ expr("indhide(e_(N1_?,N2_?,N3_?,N4_?))*v1(N1_?)*v2(N2_?)*v3(N3_?)*v4(N4_?)")
 *--#] Issue710_5 :
+*--#[ Issue741_1 :
+* Crash or hang with replace_(x,0) in nested functions
+CF f,g,f1,...,f4;
+S x,y;
+
+L F1 = f(g(x))*replace_(x,0);
+L F2 = f(g(-x))*replace_(x,1);
+L F3 = f(g(-x))*replace_(x,0);
+L F4 = f(g(x+y))*replace_(x,0);
+L F5 = f1(f2(f3(x*f4(x+y))))*replace_(x,0);
+L F6 = f(x+g(-x))*replace_(x,0);
+P;
+.end
+assert succeeded?
+assert result("F1") =~ expr("f(g(0))")
+assert result("F2") =~ expr("f(g(-1))")
+assert result("F3") =~ expr("f(g(0))")
+assert result("F4") =~ expr("f(g(y))")
+assert result("F5") =~ expr("f1(f2(f3(0)))")
+assert result("F6") =~ expr("f(g(0))")
+*--#] Issue741_1 :
+*--#[ Issue741_2 :
+#-
+Off Statistics;
+
+CFunction f1,...,f3;
+Symbol x,y;
+Vector k1,k2,p1,p2,p3;
+
+#procedure genterms(a1,a2,a3)
+	+ f1(`a1')
+	+ f1(f2(`a2'))
+	+ f1(f2(f3(`a3')))
+
+	+ f1(`a1'+f2(`a2'))
+	+ f1(`a1'+f2(`a2'+f3(`a3')))
+
+	+ f1(`a1'*f2(`a2'))
+	+ f1(`a1'*f2(`a2'*f3(`a3')))
+
+	+ f1(`a1')^2
+	+ f1(`a1'+f2(`a2')^2)^2
+	+ f1(`a1'+f2(`a2'+f3(`a3')^2)^2)^2
+
+	+ f1(`a1'+`a2'*f2(`a3'))
+
+	+ f1(`a1',f2(`a2'),f2(f3(`a3')))
+	+ f1(f2(f3(`a3')),f2(`a2'),`a1')
+#endprocedure
+
+#define ARGS "9"
+Local arg0 = 1;
+Local arg1 = x;
+Local arg2 = -x;
+Local arg3 = y;
+Local arg4 = -y;
+Local arg5 = x+y;
+Local arg6 = k1.k1;
+Local arg7 = -k1.k1;
+Local arg8 = p1-p2;
+Local arg9 = p1-p3;
+
+* Generate a large number of nested functions of various arguments.
+* Then make replacements of the the arguments. We generate duplicates
+* of the same terms a lot, but they merge quickly in the sort.
+Local test =
+	#do a1 = 0,`ARGS'
+	#do a2 = 0,`ARGS'
+	#do a3 = 0,`ARGS'
+		#call genterms((arg`a1'),(arg`a2'),(arg`a3'))
+	#enddo
+	#enddo
+	#enddo
+	;
+.sort
+
+#message Make replacements:
+Multiply replace_(x,0);
+Multiply replace_(y,12345);
+Multiply replace_(k1,4321*k2);
+Multiply replace_(p1,p2);
+Multiply replace_(p3,k1-k2);
+.sort
+
+* The "arg" expressions have had their content replaced directly, so subtract
+* the same set of terms, with the final arguments already in place:
+Local diff = test - (
+	#do a1 = 0,`ARGS'
+	#do a2 = 0,`ARGS'
+	#do a3 = 0,`ARGS'
+		#call genterms((arg`a1'),(arg`a2'),(arg`a3'))
+	#enddo
+	#enddo
+	#enddo
+	);
+
+Print diff;
+.end
+#require wordsize == 4
+assert succeeded?
+assert result("diff") =~ expr("0")
+*--#] Issue741_2 :
+*--#[ Issue741_3a :
+#-
+#: FunctionLevels 31
+
+#define DEPTH "30"
+
+Off Statistics;
+
+CFunction f,f1,...,f`DEPTH';
+Symbol x,y;
+
+Local test = replace_(x,0)*
+	#do i = 1,`DEPTH'
+		f`i'(
+	#enddo
+			y*f(x+y)
+	#do i = 1,`DEPTH'
+		)
+	#enddo
+	;
+
+Local expected =
+	#do i = 1,`DEPTH'
+		f`i'(
+	#enddo
+			0
+	#do i = 1,`DEPTH'
+		)
+	#enddo
+	;
+.sort
+
+Local diff = replace_(y,0)*test - expected;
+
+Print diff;
+.end
+assert succeeded?
+assert result("diff") =~ expr("0")
+*--#] Issue741_3a :
+*--#[ Issue741_3b :
+#-
+#: FunctionLevels 30
+
+#define DEPTH "30"
+
+Off Statistics;
+
+CFunction f,f1,...,f`DEPTH';
+Symbol x,y;
+
+Local test = replace_(y,0)*
+	#do i = 1,`DEPTH'
+		f`i'(
+	#enddo
+			y*f(x+y)
+	#do i = 1,`DEPTH'
+		)
+	#enddo
+	;
+
+Local expected =
+	#do i = 1,`DEPTH'
+		f`i'(
+	#enddo
+			0
+	#do i = 1,`DEPTH'
+		)
+	#enddo
+	;
+.sort
+
+Local diff = replace_(x,0)*test - expected;
+
+Print diff;
+.end
+assert compile_error?("FunctionLevels limit (30) reached. Increase in setup.")
+*--#] Issue741_3b :
 *--#[ Issue747_1 :
 #-
 Off Statistics;
