@@ -238,10 +238,12 @@ int GetFloatArgument(PHEAD mpfr_t f_out,WORD *fun,int par)
 /*
 			If the argument was properly normalized we are not supposed to come here.
 */
+/* INTERNAL_ERROR_EXCL_START */
 			MLOCK(ErrorMessageLock);
-			MesPrint("Unnormalized argument in GetFloatArgument: %a",*term,term);
+			MesPrint("!>Unnormalized argument in GetFloatArgument: %a",*term,term);
 			MUNLOCK(ErrorMessageLock);
 			Terminate(-1);
+/* INTERNAL_ERROR_EXCL_STOP */
 		}
 		else if ( t[0] == SYMBOL && t[1] == 4 && t[2] == PISYMBOL && t[3] == 1 ) {
 			if ( first ) {

@@ -173,7 +173,7 @@ void RatToFloat(mpf_t result, UWORD *formrat, int ratsize);
  		#] Explanations : 
  		#[ Form_mpf_init :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 void Form_mpf_init(mpf_t t)
 {
 	mp_limb_t *d;
@@ -192,12 +192,12 @@ void Form_mpf_init(mpf_t t)
 	t->_mp_d = d;
 	for ( i = 0; i < prec; i++ ) d[i] = 0;
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] Form_mpf_init : 
  		#[ Form_mpf_clear :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 void Form_mpf_clear(mpf_t t)
 {
 	if ( t->_mp_d ) { M_free(t->_mp_d,"Form_mpf_init"); t->_mp_d = 0; }
@@ -205,7 +205,7 @@ void Form_mpf_clear(mpf_t t)
 	t->_mp_size = 0;
 	t->_mp_exp = 0;
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] Form_mpf_clear : 
  		#[ Form_mpf_empty :
@@ -223,7 +223,7 @@ void Form_mpf_empty(mpf_t t)
  		#] Form_mpf_empty : 
  		#[ Form_mpf_set_prec_raw :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 void Form_mpf_set_prec_raw(mpf_t t,ULONG newprec)
 {
 	ULONG newpr = (newprec + 8*sizeof(mp_limb_t)-1)/(8*sizeof(mp_limb_t)) + 1;
@@ -247,7 +247,7 @@ void Form_mpf_set_prec_raw(mpf_t t,ULONG newprec)
 		Terminate(-1);
 	}
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] Form_mpf_set_prec_raw : 
  		#[ PackFloat :
@@ -642,7 +642,7 @@ void RatToFloat(mpf_t result, UWORD *formrat, int ratsize)
  		#] RatToFloat : 
  		#[ FloatFunToRat :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 WORD FloatFunToRat(PHEAD UWORD *ratout,WORD *in)
 {
 	WORD oldin = in[0], nratout;
@@ -652,7 +652,7 @@ WORD FloatFunToRat(PHEAD UWORD *ratout,WORD *in)
 	in[0] = oldin;
 	return(nratout);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] FloatFunToRat : 
  		#[ FloatToRat :
@@ -991,7 +991,7 @@ int PrintFloat(WORD *fun,int numdigits)
  		#] PrintFloat : 
  		#[ AddFloats :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int AddFloats(PHEAD WORD *fun3, WORD *fun1, WORD *fun2)
 {
 	int retval = 0;
@@ -1002,12 +1002,12 @@ int AddFloats(PHEAD WORD *fun3, WORD *fun1, WORD *fun2)
 	else { retval = -1; }
 	return(retval);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] AddFloats : 
  		#[ MulFloats :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int MulFloats(PHEAD WORD *fun3, WORD *fun1, WORD *fun2)
 {
 	int retval = 0;
@@ -1018,12 +1018,12 @@ int MulFloats(PHEAD WORD *fun3, WORD *fun1, WORD *fun2)
 	else { retval = -1; }
 	return(retval);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] MulFloats : 
  		#[ DivFloats :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int DivFloats(PHEAD WORD *fun3, WORD *fun1, WORD *fun2)
 {
 	int retval = 0;
@@ -1034,14 +1034,14 @@ int DivFloats(PHEAD WORD *fun3, WORD *fun1, WORD *fun2)
 	else { retval = -1; }
 	return(retval);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] DivFloats : 
  		#[ AddRatToFloat :
 
 		Note: this can be optimized, because often the rat is rather simple.
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int AddRatToFloat(PHEAD WORD *outfun, WORD *infun, UWORD *formrat, WORD nrat)
 {
 	int retval = 0;
@@ -1053,14 +1053,14 @@ int AddRatToFloat(PHEAD WORD *outfun, WORD *infun, UWORD *formrat, WORD nrat)
 	else retval = -1;
 	return(retval);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] AddRatToFloat : 
  		#[ MulRatToFloat :
 
 		Note: this can be optimized, because often the rat is rather simple.
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int MulRatToFloat(PHEAD WORD *outfun, WORD *infun, UWORD *formrat, WORD nrat)
 {
 	int retval = 0;
@@ -1072,7 +1072,7 @@ int MulRatToFloat(PHEAD WORD *outfun, WORD *infun, UWORD *formrat, WORD nrat)
 	else retval = -1;
 	return(retval);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] MulRatToFloat : 
  		#[ SetupMZVTables :
@@ -1681,11 +1681,13 @@ int AddWithFloat(PHEAD WORD **ps1, WORD **ps2)
 		if ( size2 < 0 ) mpf_neg(aux2,aux2);
 	}
 	else {
+/* INTERNAL_ERROR_EXCL_START */
 		MLOCK(ErrorMessageLock);
-		MesPrint("Illegal value %d for AT.SortFloatMode in AddWithFloat.",AT.SortFloatMode);
+		MesPrint("!>Illegal value %d for AT.SortFloatMode in AddWithFloat.",AT.SortFloatMode);
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
 		return(0);
+/* INTERNAL_ERROR_EXCL_STOP */
 	}
 	mpf_add(aux3,aux1,aux2);
 	sign3 = mpf_sgn(aux3);
@@ -1798,11 +1800,13 @@ int MergeWithFloat(PHEAD WORD **interm1, WORD **interm2)
 		if ( size2 < 0 ) mpf_neg(aux2,aux2);
 	}
 	else {
+/* INTERNAL_ERROR_EXCL_START */
 		MLOCK(ErrorMessageLock);
-		MesPrint("Illegal value %d for AT.SortFloatMode in MergeWithFloat.",AT.SortFloatMode);
+		MesPrint("!>Illegal value %d for AT.SortFloatMode in MergeWithFloat.",AT.SortFloatMode);
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
 		return(0);
+/* INTERNAL_ERROR_EXCL_STOP */
 	}
 	mpf_add(aux3,aux1,aux2);
 	sign3 = mpf_sgn(aux3);
@@ -2018,10 +2022,12 @@ void SingleTable(mpf_t *tabl, int N, int m, int pow)
 	mpf_t jm,jjm;
 	mpf_init(jm); mpf_init(jjm);
 	if ( pow < 1 || pow > 2 ) {
+/* INTERNAL_ERROR_EXCL_START */
 		MLOCK(ErrorMessageLock);
-		MesPrint("Wrong parameter pow in SingleTable: %d\n",pow);
+		MesPrint("!>Wrong parameter pow in SingleTable: %d\n",pow);
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+/* INTERNAL_ERROR_EXCL_STOP */
 	}
 	if ( m < 0 ) { m = -m; s = -1; }
 	mpf_set_si(auxsum,0L);
@@ -2061,10 +2067,12 @@ void DoubleTable(mpf_t *tabout, mpf_t *tabin, int N, int m, int pow)
 	mpf_t jm,jjm;
 	mpf_init(jm); mpf_init(jjm);
 	if ( pow < -1 || pow > 2 ) {
+/* INTERNAL_ERROR_EXCL_START */
 		MLOCK(ErrorMessageLock);
-		MesPrint("Wrong parameter pow in DoubleTable: %d\n",pow);
+		MesPrint("!>Wrong parameter pow in DoubleTable: %d\n",pow);
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+/* INTERNAL_ERROR_EXCL_STOP */
 	}
 	if ( m < 0 ) { m = -m; s = -1; }
 	mpf_set_ui(auxsum,0L);
@@ -2113,10 +2121,12 @@ void EndTable(mpf_t sum, mpf_t *tabin, int N, int m, int pow)
 	mpf_t jm,jjm;
 	mpf_init(jm); mpf_init(jjm);
 	if ( pow < -1 || pow > 2 ) {
+/* INTERNAL_ERROR_EXCL_START */
 		MLOCK(ErrorMessageLock);
-		MesPrint("Wrong parameter pow in EndTable: %d\n",pow);
+		MesPrint("!>Wrong parameter pow in EndTable: %d\n",pow);
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
+/* INTERNAL_ERROR_EXCL_STOP */
 	}
 	if ( m < 0 ) { m = -m; s = -1; }
 	mpf_set_si(sum,0L);
@@ -2526,26 +2536,26 @@ void CalculateEuler(mpf_t result, WORD *Zindexes, int depth)
  		#] CalculateEuler : 
  		#[ ExpandMZV :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int ExpandMZV(WORD *term, WORD level)
 {
 	DUMMYUSE(term);
 	DUMMYUSE(level);
 	return(0);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] ExpandMZV : 
  		#[ ExpandEuler :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int ExpandEuler(WORD *term, WORD level)
 {
 	DUMMYUSE(term);
 	DUMMYUSE(level);
 	return(0);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] ExpandEuler : 
  		#[ EvaluateEuler :

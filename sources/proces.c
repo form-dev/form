@@ -4236,9 +4236,11 @@ AutoGen:	i = *AT.TMout;
 #ifdef WITHPTHREADS
 				if ( dtype > 0 && ! DollarLocalCopy(dtype) ) { UNLOCK(d->pthreadslock); }
 				if ( ( AS.Balancing && CC->numrhs == 0 ) && StartBuf[posisub] ) {
+/* UNFINISHED_FEATURE_EXCL_START */
 					if ( ( id = ConditionalGetAvailableThread() ) >= 0 ) {
 						if ( BalanceRunThread(BHEAD id,termout,level) < 0 ) goto GenCall;
 					}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 				}
 				else
 #endif
@@ -4320,10 +4322,12 @@ AutoGen:	i = *AT.TMout;
 					AR.expchanged = 1;
 #ifdef WITHPTHREADS
 					if ( dtype > 0 && ! DollarLocalCopy(dtype) ) { UNLOCK(d->pthreadslock); }
+/* UNFINISHED_FEATURE_EXCL_START */
 					if ( ( AS.Balancing && CC->numrhs == 0 ) && ( i > 0 )
 					&& ( id = ConditionalGetAvailableThread() ) >= 0 ) {
 						if ( BalanceRunThread(BHEAD id,termout,level) < 0 ) goto GenCall;
 					}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 					else
 #endif
 					if ( Generator(BHEAD termout,level) ) goto GenCall;
@@ -4385,7 +4389,9 @@ AutoGen:	i = *AT.TMout;
 #ifdef WITHPTHREADS
 					if ( dtype > 0 && ! DollarLocalCopy(dtype) ) { UNLOCK(d->pthreadslock); }
 					if ( ( AS.Balancing && CC->numrhs == 0 ) && ( i > 0 ) && ( id = ConditionalGetAvailableThread() ) >= 0 ) {
+/* UNFINISHED_FEATURE_EXCL_START */
 						if ( BalanceRunThread(BHEAD id,termout,level) < 0 ) goto GenCall;
+/* UNFINISHED_FEATURE_EXCL_STOP */
 					}
 					else
 #endif
@@ -4504,8 +4510,9 @@ skippedfirst:
 						AR.expchanged = 1;
 #ifdef WITHPTHREADS
 						if ( ( AS.Balancing && CC->numrhs == 0 ) && ( i > 0 ) && ( id = ConditionalGetAvailableThread() ) >= 0 ) {
+/* UNFINISHED_FEATURE_EXCL_START */
 							if ( BalanceRunThread(BHEAD id,termout,level) < 0 ) goto GenCall;
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 						}
 						else
 #endif

@@ -336,7 +336,7 @@ NotFound:;
 	during runtime. In the case of the $ the value in funnum is -dolnum-1.
 	The return value is the position after the name of the function or the $.
 */
- 
+ /* UNFINISHED_FEATURE_EXCL_START */
 static WORD one = 1;
 
 UBYTE *GetFunction(UBYTE *s,WORD *funnum)
@@ -375,7 +375,7 @@ UBYTE *GetFunction(UBYTE *s,WORD *funnum)
 	*t1 = c;
 	return(t1);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
   	#] GetFunction : 
   	#[ GetNumber :
@@ -384,7 +384,7 @@ UBYTE *GetFunction(UBYTE *s,WORD *funnum)
 	during runtime. In the case of the $ the value in num is -dolnum-2.
 	The return value is the position after the number or the $.
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 UBYTE *GetNumber(UBYTE *s,WORD *num)
 {
 	int type;
@@ -423,7 +423,7 @@ illegal:
 	*t1 = c;
 	return(t1);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
   	#] GetNumber : 
   	#[ GetLastExprName :
@@ -598,7 +598,7 @@ int GetDollar(UBYTE *name)
   	#] GetDollar : 
   	#[ DumpTree :
 */
-
+/* DEBUG_EXCL_START */
 void DumpTree(NAMETREE *nametree)
 {
 	if ( nametree->headnode >= 0
@@ -606,12 +606,12 @@ void DumpTree(NAMETREE *nametree)
 		DumpNode(nametree,nametree->headnode,0);
 	}
 }
-
+/* DEBUG_EXCL_STOP */
 /*
   	#] DumpTree : 
   	#[ DumpNode :
 */
-
+/* DEBUG_EXCL_START */
 void DumpNode(NAMETREE *nametree, WORD node, WORD depth)
 {
 	NAMENODE *n;
@@ -625,7 +625,7 @@ void DumpNode(NAMETREE *nametree, WORD node, WORD depth)
 		name,node,n->parent,n->left,n->right,n->balance);
 	if ( n->right >= 0 ) DumpNode(nametree,n->right,depth+1);
 }
-
+/* DEBUG_EXCL_STOP */
 /*
   	#] DumpNode : 
   	#[ CompactifyTree :
@@ -830,7 +830,7 @@ NAMETREE *MakeNameTree(void)
   	#] MakeNameTree : 
   	#[ FreeNameTree :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 void FreeNameTree(NAMETREE *n)
 {
 	if ( n ) {
@@ -839,7 +839,7 @@ void FreeNameTree(NAMETREE *n)
 		M_free(n,"nametree");
 	}
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
   	#] FreeNameTree : 
 
@@ -2361,6 +2361,7 @@ int CoSet(UBYTE *s)
 	SETS set;
 	WORD numberofset, dim = MAXPOSITIVE;
 #ifdef WITHFLOAT
+/* UNFINISHED_FEATURE_EXCL_START */
 /*----------------------------------------------------------------*/
 	{
 		WORD numeq = 0;
@@ -2391,6 +2392,7 @@ Proper:
 		}		
 	}
 /*----------------------------------------------------------------*/
+/* UNFINISHED_FEATURE_EXCL_STOP */
 #endif
 	if ( ( s = SkipAName(s) ) == 0 ) {
 IllForm:MesPrint("&Illegal name for set");
@@ -2643,7 +2645,7 @@ int AddDollar(UBYTE *name, WORD type, WORD *start, LONG size)
 
 	Not in use????
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int ReplaceDollar(WORD number, WORD newtype, WORD *newstart, LONG newsize)
 {
 	int error = 0;
@@ -2669,7 +2671,7 @@ int ReplaceDollar(WORD number, WORD newtype, WORD *newstart, LONG newsize)
 	}
 	return(error);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
   	#] ReplaceDollar : 
   	#[ AddDubious :

@@ -4254,7 +4254,9 @@ int CoIf(UBYTE *inp)
 	CBUF *C = cbuf+AC.cbufnum;
 	LONG x;
 #ifdef WITHFLOAT
+/* UNFINISHED_FEATURE_EXCL_START */
 	int spec;
+/* UNFINISHED_FEATURE_EXCL_STOP */
 #endif
 	if ( *inp == '(' && inp[1] == ',' ) inp += 2;
 	else if ( *inp == '(' ) inp++;	/* Usually we enter at the bracket */
@@ -4285,6 +4287,7 @@ ReDo:
 		if ( FG.cTable[*p] == 1 ) {		/* Number */
 			if ( gotexp == 1 ) { MesCerr("position for )",p); error = 1; }
 #ifdef WITHFLOAT
+/* UNFINISHED_FEATURE_EXCL_START */
 			pp = CheckFloat(p,&spec);
 			if ( pp > p ) {	/* Got one */
 HaveFloat:
@@ -4309,7 +4312,7 @@ HaveFloat:
 /*
 			Notation: Same as FLOATFUN but FLOATFUN replaced by IFFLOATNUMBER.
 */
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 #endif
 			u = w;
 			*w++ = LONGNUMBER;
@@ -4372,7 +4375,9 @@ OnlyNum:
 			u[2] = (u[1] - 3)/2;
 			if ( level ) u[2] = -u[2];
 #ifdef WITHFLOAT
+/* UNFINISHED_FEATURE_EXCL_START */
 DoneWithNumber:
+/* UNFINISHED_FEATURE_EXCL_STOP */
 #endif
 			gotexp = 1;
 		}
@@ -4772,10 +4777,12 @@ NoGood:			MesPrint("&Unrecognized word: %s",inp);
 			gotexp = 1;
 		}
 #ifdef WITHFLOAT
+/* UNFINISHED_FEATURE_EXCL_START */
 		else if ( *p == '.' ) {
 			pp = CheckFloat(p,&spec);
 			if ( pp > p ) goto HaveFloat;
 		}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 #endif
 		else if ( *p == '(' ) {
 			if ( gotexp ) {

@@ -1115,7 +1115,7 @@ int DoPreAdd(UBYTE *s)
   	#] DoPreAdd : 
   	#[ DictToBytes :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 LONG DictToBytes(DICTIONARY *dict,UBYTE *buf)
 {
 	int numelements = dict->numelements, sizeelement, i, j, x;
@@ -1143,12 +1143,12 @@ LONG DictToBytes(DICTIONARY *dict,UBYTE *buf)
 	}
 	return(s2-buf);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
   	#] DictToBytes : 
   	#[ DictFromBytes :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 DICTIONARY *DictFromBytes(UBYTE *buf)
 {
 	DICTIONARY *dict = Malloc1(sizeof(DICTIONARY),"Dictionary");
@@ -1175,7 +1175,7 @@ DICTIONARY *DictFromBytes(UBYTE *buf)
 	}
 	return(dict);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
   	#] DictFromBytes : 
 */
