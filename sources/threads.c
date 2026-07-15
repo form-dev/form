@@ -980,6 +980,7 @@ int MakeThreadBuckets(int number, int par)
  *  its size. This is used by the checkpoint code to save this information in
  *  the recovery file.
  */
+/* UNFINISHED_FEATURE_EXCL_START */
 int GetTimerInfo(LONG** ti,LONG** sti)
 {
 	*ti = timerinfo;
@@ -990,7 +991,7 @@ int GetTimerInfo(LONG** ti,LONG** sti)
 	return AM.totalnumberofthreads;
 #endif
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
   	#] GetTimerInfo : 
   	#[ WriteTimerInfo :
@@ -1000,6 +1001,7 @@ int GetTimerInfo(LONG** ti,LONG** sti)
  *  Writes data into the static timerinfo variable. This is used by the
  *  checkpoint code to restore the correct timings for the individual threads.
  */
+/* UNFINISHED_FEATURE_EXCL_START */
 void WriteTimerInfo(LONG* ti,LONG* sti)
 {
 	int i;
@@ -1013,7 +1015,7 @@ void WriteTimerInfo(LONG* ti,LONG* sti)
 		sumtimerinfo[i] = sti[i];
 	}
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
   	#] WriteTimerInfo : 
   	#[ GetWorkerTimes :
@@ -1174,7 +1176,7 @@ int LoadOneThread(int from, int identity, THREADBUCKET *thr, int par)
  *	@param level     The level at which we are in the tree. Defines the statement.
  *	@return Standard return convention (OK -> 0)
  */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int BalanceRunThread(PHEAD int identity, WORD *term, WORD level)
 {
 	GETBIDENTITY
@@ -1204,7 +1206,7 @@ int BalanceRunThread(PHEAD int identity, WORD *term, WORD level)
 
 	return(0);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
   	#] BalanceRunThread : 
   	#[ SetWorkerFiles :

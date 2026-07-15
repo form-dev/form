@@ -1021,7 +1021,7 @@ int OpenAddFile(char *name)
  		#] OpenAddFile : 
  		#[ ReOpenFile :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int ReOpenFile(char *name)
 {
 	FILES *f;
@@ -1036,7 +1036,7 @@ int ReOpenFile(char *name)
 	SeekFile(i,&scrpos,SEEK_SET);
 	return(i);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] ReOpenFile : 
  		#[ CreateFile :
@@ -1100,6 +1100,7 @@ void CloseFile(int handle)
  *  Returns non-zero if an error occurred.
  *	Uses if possible the combined large and small sorting buffers as cache.
  */
+/* UNFINISHED_FEATURE_EXCL_START */
 int CopyFile(char *source, char *dest)
 {
 	#define COPYFILEBUFSIZE 40960L
@@ -1150,7 +1151,7 @@ int CopyFile(char *source, char *dest)
 	}
 	return(0);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] CopyFile : 
  		#[ CreateHandle :
@@ -1744,7 +1745,7 @@ int StrICont(UBYTE *s1, UBYTE *s2)
  		#] StrICont : 
  		#[ CmpArray :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
 int CmpArray(WORD *t1, WORD *t2, WORD n)
 {
 	int i,x;
@@ -1753,7 +1754,7 @@ int CmpArray(WORD *t1, WORD *t2, WORD n)
 	}
 	return(0);
 }
-
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
  		#] CmpArray : 
  		#[ ConWord :

@@ -407,6 +407,7 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 				for ( i = 0; i < j; i++ ) coef2[i] = cc[i];
 				break;
 #ifdef WITHFLOAT
+/* UNFINISHED_FEATURE_EXCL_START */
 			case IFFLOATNUMBER:
 /*
 				The sloppy solution is: Convert to rational.
@@ -414,6 +415,7 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 */
 				ncoef2 = FloatFunToRat(BHEAD coef2,ifp);
 				break;
+/* UNFINISHED_FEATURE_EXCL_STOP */
 #endif
 			case MATCH:
 			case TYPEIF:
