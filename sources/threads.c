@@ -2006,6 +2006,8 @@ void *RunSortBot(void *dummy)
 				SETBASEPOSITION(AN.theposition,0);
 				// Reset the sortbot comparison count
 				AT.SS->verbComparisons = 0;
+				// Reset the maximal term size count
+				AT.SS->verbMaxTermSize = 0;
 				break;
 /*
 			#] INISORTBOT : 
@@ -4114,10 +4116,13 @@ EndOfMerge:
 	// The total small/large buffer sort info is the sum of the thread info.
 	// The total comparison count is the sum of the thread counts.
 	// The total unsorted size is the sum of the total generated terms sizes
+	// The total maximal term size is the maximum of all maximal term sizes
 	S->GenTerms = 0;
 	for ( j = 1; j <= numberofworkers; j++ ) {
 		S->GenTerms += AB[j]->T.SS->GenTerms;
 		S->verbComparisons += AB[j]->T.SS->verbComparisons;
+		if ( S->verbMaxTermSize < AB[j]->T.SS->verbMaxTermSize )
+			S->verbMaxTermSize = AB[j]->T.SS->verbMaxTermSize;
 		S->verbSBsortTerms += AB[j]->T.SS->verbSBsortTerms;
 		S->verbSBsortCap += AB[j]->T.SS->verbSBsortCap;
 		S->verbLBsortPatches += AB[j]->T.SS->verbLBsortPatches;
@@ -4268,10 +4273,13 @@ int SortBotMasterMerge(void)
 	// The total small/large buffer sort info is the sum of the thread info.
 	// The total comparison count is the sum of the thread and sortbot counts.
 	// The total unsorted size is the sum of the total generated terms sizes
+	// The total maximal term size is the maximum of all maximal term sizes
 	S->GenTerms = 0;
 	for ( j = 1; j <= numberofworkers; j++ ) {
 		S->GenTerms += AB[j]->T.SS->GenTerms;
 		S->verbComparisons += AB[j]->T.SS->verbComparisons;
+		if ( S->verbMaxTermSize < AB[j]->T.SS->verbMaxTermSize )
+			S->verbMaxTermSize = AB[j]->T.SS->verbMaxTermSize;
 		S->verbSBsortTerms += AB[j]->T.SS->verbSBsortTerms;
 		S->verbSBsortCap += AB[j]->T.SS->verbSBsortCap;
 		S->verbLBsortPatches += AB[j]->T.SS->verbLBsortPatches;
@@ -4280,6 +4288,8 @@ int SortBotMasterMerge(void)
 	}
 	for ( j = numberofworkers+1; j <= numberofworkers+numberofsortbots; j++ ) {
 		S->verbComparisons += AB[j]->T.SS->verbComparisons;
+		if ( S->verbMaxTermSize < AB[j]->T.SS->verbMaxTermSize )
+			S->verbMaxTermSize = AB[j]->T.SS->verbMaxTermSize;
 	}
 
 	S->TermsLeft = numberofterms;

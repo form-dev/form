@@ -1754,6 +1754,7 @@ Finished:
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
 	}
+	if ( **ps1 > S->verbMaxTermSize ) S->verbMaxTermSize = **ps1;
 	return(1);
 }
 

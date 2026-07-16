@@ -260,6 +260,12 @@ int Normalize(PHEAD WORD *term)
 PrintTerm(term,"Normalize");
 */
 
+	if ( AT.SS == AT.S0 ) {
+		if ( *term > AT.SS->verbMaxTermSize ) {
+			AT.SS->verbMaxTermSize = *term;
+		}
+	}
+
 Restart:
 	didcontr = 0;
 	ReplaceType = -1;
@@ -4121,6 +4127,11 @@ NoRep:
 		MesPrint("Term too complex during normalization");
 		MUNLOCK(ErrorMessageLock);
 		goto NormMin;
+	}
+	if ( AT.SS == AT.S0 ) {
+		if ( ( m + i - termout ) > AT.SS->verbMaxTermSize ) {
+			AT.SS->verbMaxTermSize = m+i-termout;
+		}
 	}
 	if ( ReplaceType >= 0 ) {
 		t = n_coef;

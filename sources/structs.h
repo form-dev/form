@@ -1163,6 +1163,7 @@ typedef struct sOrT {
     LONG verbLBsortPatches;
     LONG verbLBsortCap;
     LONG verbUnsortedSize;
+    LONG verbMaxTermSize;
     int MaxPatches;             /* Maximum number of patches in large buffer */
     int MaxFpatches;            /* Maximum number of patches in one filesort */
     int type;                   /* Main, function or sub(routine) */
