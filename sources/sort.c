@@ -59,6 +59,7 @@
 /* #define TESTGARB */
 
 #include "form3.h"
+#include <math.h>
 
 #ifdef WITHPTHREADS
 UBYTE THRbuf[100];
@@ -82,11 +83,12 @@ char *toterms[] = { "   ", " >>", "-->" };
 
 #define HUMANSTRLEN 12
 #define HUMANSUFFLEN 4
-const char humanTermsSuffix[HUMANSUFFLEN][4] = {"K  ","M  ","B  ","T  "};
-const char humanBytesSuffix[HUMANSUFFLEN][4] = {"KiB","MiB","GiB","TiB"};
-void HumanString(char* string, float input, const char suffix[HUMANSUFFLEN][4]) {
+#define HUMANSUFFSTRLEN 4
+const char humanTermsSuffix[HUMANSUFFLEN][HUMANSUFFSTRLEN] = {"K  ","M  ","B  ","T  "};
+const char humanBytesSuffix[HUMANSUFFLEN][HUMANSUFFSTRLEN] = {"KiB","MiB","GiB","TiB"};
+void HumanString(char* string, float input, const char suffix[HUMANSUFFLEN][HUMANSUFFSTRLEN]) {
 	int ind = -1;
-	while (ind < 0 || (input >= 1000.0f && ind < HUMANSUFFLEN) ) {
+	while (ind < 0 || (input >= 1000.0f && ind+1 < HUMANSUFFLEN) ) {
 		input /= 1000.0f;
 		ind++;
 	}
@@ -96,7 +98,7 @@ void HumanString(char* string, float input, const char suffix[HUMANSUFFLEN][4]) 
 	}
 	else {
 		snprintf(string, HUMANSTRLEN,
-			"  (%3.f %s)", input, suffix[ind]);
+			"  (%3ld %s)", lroundf(input), suffix[ind]);
 	}
 }
 
@@ -131,7 +133,7 @@ void WriteStats(POSITION *plspace, WORD par, WORD checkLogType)
 	GETIDENTITY
 	char buf[120];
 	LONG millitime;
-	WORD timepart;
+	UWORD timepart;
 	SORTING *S;
 	int use_wtime;
 
@@ -211,7 +213,7 @@ void WriteStats(POSITION *plspace, WORD par, WORD checkLogType)
 		char *wpref = use_wtime ? "W" : "";
 		char *wspac = use_wtime ? "" : " ";
 		millitime = use_wtime ? TimeWallClock(1) * 10 : TimeCPU(1);
-		timepart = (WORD)(millitime%1000);
+		timepart = (UWORD)(millitime%1000);
 		millitime /= 1000;
 		timepart /= 10;
 
