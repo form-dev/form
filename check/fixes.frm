@@ -4376,7 +4376,7 @@ assert result("F6") =~ expr("f(g(0))")
 Off Statistics;
 
 CFunction f1,...,f3;
-Symbol x,y;
+Symbol x,y,z;
 Vector k1,k2,p1,p2,p3;
 
 #procedure genterms(a1,a2,a3)
@@ -4400,7 +4400,7 @@ Vector k1,k2,p1,p2,p3;
 	+ f1(f2(f3(`a3')),f2(`a2'),`a1')
 #endprocedure
 
-#define ARGS "9"
+#define ARGS "10"
 Local arg0 = 1;
 Local arg1 = x;
 Local arg2 = -x;
@@ -4411,6 +4411,7 @@ Local arg6 = k1.k1;
 Local arg7 = -k1.k1;
 Local arg8 = p1-p2;
 Local arg9 = p1-p3;
+Local arg10 = z^5;
 
 * Generate a large number of nested functions of various arguments.
 * Then make replacements of the the arguments. We generate duplicates
@@ -4432,6 +4433,7 @@ Multiply replace_(y,12345);
 Multiply replace_(k1,4321*k2);
 Multiply replace_(p1,p2);
 Multiply replace_(p3,k1-k2);
+Multiply replace_(z,1000000);
 .sort
 
 * The "arg" expressions have had their content replaced directly, so subtract

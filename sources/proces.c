@@ -1626,6 +1626,15 @@ DoSpec:
 									while ( r < m ) *t++ = *r++;
 									*term -= i;
 								}
+								else if ( i < *t ) {
+									// The term became longer. Can this ever happen? The code
+									// here has never handled the case where TestSub increases
+									// the size of the term.
+									MLOCK(ErrorMessageLock);
+									MesPrint("TestSub: term size increased during recursion.");
+									MUNLOCK(ErrorMessageLock);
+									Terminate(-1);
+								}
 								AN.subsubveto = 0;
 								t1[2] = 1;
 								if ( *t1 == AR.PolyFun && AR.PolyFunType == 2 )
@@ -1638,28 +1647,11 @@ DoSpec:
 								DONE(retvalue)
 							}
 							else {
-								i = *t;
-								Normalize(BHEAD t);
-								if ( *t == 0 ) {
-									// Normalize eliminated the current term (which is inside
-									// a function). Remove it, and update the sizes in the whole
-									// nesting stack. Then continue with the following terms.
-									stop = t;
-									r = t + i;
-									m = AN.EndNest;
-									while ( r < m ) *t++ = *r++;
-									n = AT.Nest;
-									while ( n < AT.NestPoin ) {
-										*(n->argsize) -= i;
-										*(n->funsize) -= i;
-										*(n->termsize) -= i;
-										n++;
-									}
-									AN.EndNest -= i;
-									AT.RecFlag--;
-									t = stop;
-									continue;
-								}
+								// For a long time, Normalize was called in-place here. This was
+								// very dangerous, since Normalize can increase the size of the
+								// term, and overwrite term data at outer nesting levels. We
+								// can instead just rely on the Normalize call (which uses the
+								// WorkSpace) just before calling StoreTerm later.
 								WORD *tend = t + *t, *tt = t+1;
 								stilldirty = 0;
 								tend -= ABS(tend[-1]);
@@ -1668,27 +1660,6 @@ DoSpec:
 										stilldirty = 1; break;
 									}
 									tt += tt[1];
-								}
-								if ( i > *t ) {
-/*
-									We should not forget to correct the Nest
-									stack. That caused trouble in the past.
-*/
-									retvalue = 1;
-									i -= *t;
-									t += *t;
-									r = t + i;
-									m = AN.EndNest;
-									while ( r < m ) *t++ = *r++;
-									t = AT.NestPoin[-1].argsize + ARGHEAD;
-									n = AT.Nest;
-									while ( n < AT.NestPoin ) {
-										*(n->argsize) -= i;
-										*(n->funsize) -= i;
-										*(n->termsize) -= i;
-										n++;
-									}
-									AN.EndNest -= i;
 								}
 							}
 							AN.subsubveto = 0;
@@ -1699,7 +1670,9 @@ DoSpec:
 /*
 						Argument contains no subexpressions.
 						It should be normalized and sorted.
-						The main problem is the storage.
+						The main problem is the storage: we need to Normalize a copy of the
+						term data in the WorkSpace, since Normalize can increase the size
+						of the term, which would overwrite the data which follows!
 */
 						t = AT.NestPoin->argsize;
 						j = *t;
