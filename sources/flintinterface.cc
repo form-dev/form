@@ -144,11 +144,11 @@ WORD* flint::divmod_mpoly(PHEAD const WORD *a, const WORD *b, const bool return_
 	// Write out the result
 	write = true;
 	if ( return_rem ) {
-		(uint64_t)flint::to_argument_mpoly(BHEAD res, with_arghead, must_fit_term, write, prev_size,
+		flint::to_argument_mpoly(BHEAD res, with_arghead, must_fit_term, write, prev_size,
 			rem.d, var_map, ctx.d, sort_vars, scale.d);
 	}
 	else {
-		(uint64_t)flint::to_argument_mpoly(BHEAD res, with_arghead, must_fit_term, write, prev_size,
+		flint::to_argument_mpoly(BHEAD res, with_arghead, must_fit_term, write, prev_size,
 			div.d, var_map, ctx.d, sort_vars, scale.d);
 	}
 
@@ -217,11 +217,11 @@ WORD* flint::divmod_poly(PHEAD const WORD *a, const WORD *b, const bool return_r
 	// Write out the result
 	write = true;
 	if ( return_rem ) {
-		(uint64_t)flint::to_argument_poly(BHEAD res, with_arghead, must_fit_term, write, prev_size,
+		flint::to_argument_poly(BHEAD res, with_arghead, must_fit_term, write, prev_size,
 			rem.d, var_map, scale.d);
 	}
 	else {
-		(uint64_t)flint::to_argument_poly(BHEAD res, with_arghead, must_fit_term, write, prev_size,
+		flint::to_argument_poly(BHEAD res, with_arghead, must_fit_term, write, prev_size,
 			div.d, var_map, scale.d);
 	}
 

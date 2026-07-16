@@ -6542,7 +6542,7 @@ void EGraph::fromDGraph(DGraph *dg)
     esym    = 1;
     extperm = 1;
     multp   = 1;
-    maxdeg  = maxdeg;
+    //maxdeg  = maxdeg;
     
     for (n0 = 0; n0 < dg->nnodes; n0++) {
         nodes[n0]->deg = 0;
