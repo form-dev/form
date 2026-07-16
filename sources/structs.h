@@ -1655,6 +1655,7 @@ struct P_const {
     int     PreAssignLevel;        /* For nesting #$name = ...; assignments */
     int     MaxPreAssignLevel;     /* For nesting #$name = ...; assignments */
     int     fullnamesize;          /* size of the fullname buffer */
+    int     FoundFileSetupCount;   /* The number of "file setup" (#:) lines */
     WORD    DebugFlag;             /* (P) For debugging purposes */
     WORD    preError;              /* (P) Blocks certain types of execution */
     UBYTE   ComChar;               /* (P) Commentary character */

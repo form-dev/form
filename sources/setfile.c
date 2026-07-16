@@ -1174,6 +1174,7 @@ int TryFileSetups(void)
 	int oldNoShowInput = AC.NoShowInput;
 	UBYTE buff[SETBUFSIZE+1], *s, *t, *u, *settop, c;
 	LONG linenum, prevline;
+	AP.FoundFileSetupCount = 0;
 
 	if ( AC.CurrentStream == 0 ) return(error);
 	oldstream = AC.CurrentStream - AC.Streams;
@@ -1200,6 +1201,8 @@ int TryFileSetups(void)
 			while ( c != '\n' && c != ENDOFINPUT ) c = GetInput();
 			continue;
 		}
+		// Count the number of file setup parameters found
+		AP.FoundFileSetupCount++;
 		s = buff;
 		while ( ( c = GetInput() ) == ' ' || c == '\t' || c == '\r' ) {}
 		if ( c == ENDOFINPUT ) break;

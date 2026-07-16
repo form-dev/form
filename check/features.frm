@@ -3289,3 +3289,33 @@ Local test = diagrams_(PHI3,{phi},{phi},{q1,q2},{q1,p2},1,0);
 .end
 assert runtime_error?('Invalid repeated momentum in diagrams_: q1')
 *--#] diagrams_err_8 :
+*--#[ warnings_1 :
+#-
+#define TEST "10"
+#: MaxTermSize 50K
+.sort
+Local test = `TEST';
+Print;
+.end
+assert stdout =~ exact_pattern(<<'EOF')
+Warning: ignoring out-of-place setup command:
+1.frm Line 4 ==> #: MaxTermSize 50K
+EOF
+assert result("test") =~ expr("10")
+*--#] warnings_1 :
+*--#[ warnings_2 :
+#-
+#: SmallSize 200M
+#: LargeSize 500M
+#define TEST "10"
+#: MaxTermSize 50K
+.sort
+Local test = `TEST';
+Print;
+.end
+assert stdout =~ exact_pattern(<<'EOF')
+Warning: ignoring out-of-place setup command:
+1.frm Line 6 ==> #: MaxTermSize 50K
+EOF
+assert result("test") =~ expr("10")
+*--#] warnings_2 :

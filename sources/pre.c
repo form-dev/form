@@ -1216,7 +1216,16 @@ int PreProInstruction(void)
 			&& AP.PreIfStack[AP.PreIfLevel] == EXECUTINGIF ) 
 			AC.NoShowInput = 0;
 	}
-	else if ( *t == ':' ) {}
+	else if ( *t == ':' ) {
+		AP.FoundFileSetupCount--;
+		if ( AP.FoundFileSetupCount < 0 ) {
+			// This implies that TryFileSetups found fewer #: setup lines than
+			// are present in the file. This means that some were specified
+			// out-of-order, i.e. after a non-comment non-#: line. Warn.
+			MesPrint("Warning: ignoring out-of-place setup command:");
+			MesPrint("@%#%s", t);
+		}
+	}
 	else {
 retry:;
 		key = FindKeyWord(t,precommands,sizeof(precommands)/sizeof(KEYWORD));
