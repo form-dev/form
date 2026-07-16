@@ -160,12 +160,14 @@ void WriteStats(POSITION *plspace, WORD par, WORD checkLogType)
 		char humanBytesText[HUMANSTRLEN] = "";
 		char humanUnsortedBytesText[HUMANSTRLEN] = "";
 		char humanComparisonsText[HUMANSTRLEN] = "";
+		char humanMaxTermSizeText[HUMANSTRLEN] = "";
 		if ( AC.HumanStatsFlag ) {
 			HumanString(humanGenTermsText, (float)(S->GenTerms), humanTermsSuffix);
 			HumanString(humanTermsLeftText, (float)(S->TermsLeft), humanTermsSuffix);
 			HumanString(humanBytesText, (float)(BASEPOSITION(*plspace)), humanBytesSuffix);
 			HumanString(humanUnsortedBytesText, (float)(S->verbUnsortedSize), humanBytesSuffix);
 			HumanString(humanComparisonsText, (float)(S->verbComparisons), humanTermsSuffix);
+			HumanString(humanMaxTermSizeText, (float)(S->verbMaxTermSize), humanTermsSuffix);
 		}
 
 		MLOCK(ErrorMessageLock);
@@ -327,6 +329,9 @@ void WriteStats(POSITION *plspace, WORD par, WORD checkLogType)
 				snprintf(buf, sizeof(buf), "%24s Comparisons     =%11ld%s",
 					"",S->verbComparisons,humanComparisonsText);
 				MesPrint("%s", buf);
+				snprintf(buf, sizeof(buf), "%24s Largest Term    =%11ld%s",
+					"",S->verbMaxTermSize,humanMaxTermSizeText);
+				MesPrint("%s", buf);
 			}
 		}
 
@@ -412,6 +417,7 @@ int NewSort(PHEAD0)
 
 	// Zero the SortVerbose counters:
 	S->verbComparisons = 0;
+	S->verbMaxTermSize = 0;
 	S->verbSBsortTerms = 0;
 	S->verbSBsortCap = 0;
 	S->verbLBsortPatches = 0;
@@ -1838,6 +1844,7 @@ RegEnd:
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
 	}
+	if ( **ps1 > S->verbMaxTermSize ) S->verbMaxTermSize = **ps1;
 	return(1);
 }
 
@@ -2024,6 +2031,7 @@ int AddPoly(PHEAD WORD **ps1, WORD **ps2)
 			MUNLOCK(ErrorMessageLock);
 			Terminate(-1);
 		}
+		if ( *m > S->verbMaxTermSize ) S->verbMaxTermSize = *m;
 	}
 	return(1);
 }
@@ -4255,6 +4263,7 @@ int StoreTerm(PHEAD WORD *term)
 
 	// Update SortVerbose counters
 	S->verbUnsortedSize += *term * sizeof(*term);
+	if ( S->verbMaxTermSize < *term ) S->verbMaxTermSize = *term;
 
 	if ( ( ( AP.PreDebug & DUMPTOSORT ) == DUMPTOSORT ) && AR.sLevel == 0 ) {
 #ifdef WITHPTHREADS
