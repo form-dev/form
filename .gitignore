@@ -1,6 +1,8 @@
 *.o
 *.exe
 
+*.str
+
 *.gcno
 *.gcda
 *.gcov
@@ -69,3 +71,13 @@ doc/manual/version.tex
 
 doc/devref/devref/
 doc/manual/manual/
+
+/.diagrams_cache/
+/check/diagrams/.diagrams_cache/
+/diagrams.out
+/feyngraph.jinja
+/feyngraph.toml
+/qgraf.dat
+/qgraf.mdl
+/qgraf.out
+/qgraf.sty
