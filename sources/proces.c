@@ -701,6 +701,7 @@ WORD TestSub(PHEAD WORD *term, WORD level)
 	TABLES T;
 	COMPARE oldcompareroutine = (COMPARE)(AR.CompareRoutine);
 	WORD oldsorttype = AR.SortType;
+	const WORD oldRecFlag = AT.RecFlag;
 ReStart:
 	tbufnum = 0; i = 0; retvalue = 0;
 	AT.TMbuff = AM.rbufnum;
@@ -1600,29 +1601,28 @@ DoSpec:
 					if ( *t > 0 && t[1] ) {	/* Argument is dirty  */
 						AT.NestPoin->argsize = t;
 						AT.NestPoin++;
-/*						stop = t + *t; */
+						if ( AT.NestPoin - AT.Nest >= AM.maxFlevels ) {
+							MLOCK(ErrorMessageLock);
+							// When we read maxFlevels from the setup, we add 1. So print
+							// maxFlevels-1 here, so that the error message does not appear
+							// inconsistent with what the user might have set.
+							MesPrint("&FunctionLevels limit (%d) reached. Increase in setup.",
+								AM.maxFlevels-1);
+							MUNLOCK(ErrorMessageLock);
+							Terminate(-1);
+						}
 						t2 = t;
 						t += ARGHEAD;
 						while ( t < AT.NestPoin[-1].argsize+*(AT.NestPoin[-1].argsize) ) {
-											/* Sum over terms */
+							/* Sum over terms */
 							AT.RecFlag++;
 							i = *t;
 							AN.subsubveto = 1;
-/*
-							AN.subsubveto repairs a bug that became apparent
-							in an example by York Schroeder:
-								f(k1.k1)*replace_(k1,2*k2)
-							Is it possible to repair the counting of the various
-							length indicators? (JV 1-jun-2010)
-*/
 							if ( ( retvalue = TestSub(BHEAD t,level) ) != 0 ) {
-/*
-								Possible size changes:
-								Note defs at 471,467,460,400,425,328
-*/
-redosize:
 								if ( i > *t ) {
-/*
+									// The term became shorter. Fix the sizes at the current
+									// level of nesting. Outer levels will each be fixed as
+									// we leave the TestSub recursion.
 									i -= *t;
 									*t2 -= i;
 									t1[1] -= i;
@@ -1631,21 +1631,15 @@ redosize:
 									m = term + *term;
 									while ( r < m ) *t++ = *r++;
 									*term -= i;
-*/
-									i -= *t;
-									t += *t;
-									r = t + i;
-									m = AN.EndNest;
-									while ( r < m ) *t++ = *r++;
-									t = AT.NestPoin[-1].argsize + ARGHEAD;
-									n = AT.Nest;
-									while ( n < AT.NestPoin ) {
-										*(n->argsize) -= i;
-										*(n->funsize) -= i;
-										*(n->termsize) -= i;
-										n++;
-									}
-									AN.EndNest -= i;
+								}
+								else if ( i < *t ) {
+									// The term became longer. Can this ever happen? The code
+									// here has never handled the case where TestSub increases
+									// the size of the term.
+									MLOCK(ErrorMessageLock);
+									MesPrint("TestSub: term size increased during recursion.");
+									MUNLOCK(ErrorMessageLock);
+									Terminate(-1);
 								}
 								AN.subsubveto = 0;
 								t1[2] = 1;
@@ -1659,47 +1653,19 @@ redosize:
 								DONE(retvalue)
 							}
 							else {
-								/*
-								 * Somehow the next line fixes Issue #106.
-								 */
-								i = *t;
-								Normalize(BHEAD t);
-/*								if ( i > *t ) { retvalue = 1; goto redosize; } */
-								/*
-								 * Experimentally, the next line fixes Issue #105.
-								 */
-								if ( *t == 0 ) { retvalue = 1; goto redosize; }
-								{
-									WORD *tend = t + *t, *tt = t+1;
-									stilldirty = 0;
-									tend -= ABS(tend[-1]);
-									while ( tt < tend ) {
-										if ( *tt == SUBEXPRESSION || *tt == EXPRESSION ) {
-											stilldirty = 1; break;
-										}
-										tt += tt[1];
+								// For a long time, Normalize was called in-place here. This was
+								// very dangerous, since Normalize can increase the size of the
+								// term, and overwrite term data at outer nesting levels. We
+								// can instead just rely on the Normalize call (which uses the
+								// WorkSpace) just before calling StoreTerm later.
+								WORD *tend = t + *t, *tt = t+1;
+								stilldirty = 0;
+								tend -= ABS(tend[-1]);
+								while ( tt < tend ) {
+									if ( *tt == SUBEXPRESSION || *tt == EXPRESSION ) {
+										stilldirty = 1; break;
 									}
-								}
-								if ( i > *t ) {
-/*
-									We should not forget to correct the Nest
-									stack. That caused trouble in the past.
-*/
-									retvalue = 1;
-									i -= *t;
-									t += *t;
-									r = t + i;
-									m = AN.EndNest;
-									while ( r < m ) *t++ = *r++;
-									t = AT.NestPoin[-1].argsize + ARGHEAD;
-									n = AT.Nest;
-									while ( n < AT.NestPoin ) {
-										*(n->argsize) -= i;
-										*(n->funsize) -= i;
-										*(n->termsize) -= i;
-										n++;
-									}
-									AN.EndNest -= i;
+									tt += tt[1];
 								}
 							}
 							AN.subsubveto = 0;
@@ -1710,7 +1676,9 @@ redosize:
 /*
 						Argument contains no subexpressions.
 						It should be normalized and sorted.
-						The main problem is the storage.
+						The main problem is the storage: we need to Normalize a copy of the
+						term data in the WorkSpace, since Normalize can increase the size
+						of the term, which would overwrite the data which follows!
 */
 						t = AT.NestPoin->argsize;
 						j = *t;
@@ -2137,6 +2105,13 @@ Done:
 	if ( Tpattern ) {
 		TermFree(Tpattern,"Tpattern");
 		Tpattern = 0;
+	}
+	if ( AT.RecFlag != oldRecFlag ) {
+		MLOCK(ErrorMessageLock);
+		// Internal error
+		MesPrint("Error in TestSub: bookkeeping problem in RecFlag");
+		MUNLOCK(ErrorMessageLock);
+		Terminate(-1);
 	}
 	return(retvalue);
 EndTest:;
