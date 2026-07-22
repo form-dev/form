@@ -1784,6 +1784,11 @@ struct C_const {
     LONG    tDefaultPrecision;     /* (C) Default precision in bits for float_ */
     LONG    tMaxWeight;            /* (C) Maximum weight for MZV or Euler */
 #endif
+#ifdef WITHFLINT
+    LONG    activePadicPrecision;  /* (C) Precision for padic_ system */
+    int     activePadic;           /* (C) p-adic system currently active */
+    void    *activePadicContext;   /* (C) Active FLINT p-adic context */
+#endif
     int     cbufnum;               /**< Current compiler buffer */
     int     AutoDeclareFlag;       /** (C) Mode of looking for names. Set to NOAUTO (=0) or
                                            WITHAUTO (=2), cf. AutoDeclare statement */
@@ -2114,6 +2119,9 @@ struct T_const {
     void    *aux_;
     void    *auxr_;
 #endif
+#ifdef WITHFLINT
+    void    *padic_aux_;
+#endif
     NORMDATA **NormData;
     LONG    NormDataSize;
     LONG    NormDepth;
@@ -2186,6 +2194,10 @@ struct T_const {
 #ifdef WITHFLOAT
     WORD    FloatPos;
     WORD    SortFloatMode;
+#endif
+#ifdef WITHFLINT
+    WORD    PadicPos;
+    WORD    SortPadicMode;
 #endif
 };
 /*
@@ -2382,6 +2394,11 @@ struct O_const {
     UBYTE   *floatspace;
     LONG    floatsize;
 #endif
+#ifdef WITHFLINT
+    UBYTE   *padicspace;
+    LONG    padicsize;
+    LONG    padicncoeffs;
+#endif
 /*----Leave NumInBrack as first non-pointer. This is used by the checkpoints--*/
     LONG    NumInBrack;            /* (O) For typing [] option in print */
     LONG    wlen;                  /* (O) Used to store files. */
@@ -2409,6 +2426,9 @@ struct O_const {
     int     IndentSpace;           /* For indentation in output */
 #ifdef WITHFLOAT
     int     FloatPrec;
+#endif
+#ifdef WITHFLINT
+    int     PadicPrint;
 #endif
     WORD    schemenum;             /* for feeding a Horner scheme to Optimize */
     WORD    transFlag;             /* ()  >0 indicates that translations have to be done */
