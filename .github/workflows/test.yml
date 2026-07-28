@@ -220,7 +220,7 @@ jobs:
           lcov -r coverage.lcov '*/usr/include/*' '*/extern/*'${{ matrix.flint != 'no' && ' ''*/lib/*''' || '' }} -o coverage.lcov
 
       - name: Coveralls Parallel
-        uses: coverallsapp/github-action@v2
+        uses: coverallsapp/github-action@v2.3.6
         with:
           flag-name: ${{ matrix.bin }}${{ matrix.nthreads && format(' -w{0}', matrix.nthreads) || '' }} (${{ matrix.test }})${{ matrix.flint && format(' (flint - {0})', matrix.flint) || '' }}
           parallel: true
@@ -231,7 +231,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Coveralls Finished
-      uses: coverallsapp/github-action@v2
+      uses: coverallsapp/github-action@v2.3.6
       with:
         parallel-finished: true
 
