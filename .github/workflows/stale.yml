@@ -1,7 +1,7 @@
 name: Close stale issues
 on:
   schedule:
-    - cron: '30 0 * * *'  # daily
+    - cron: '30 0 * * 1-5'  # Runs daily on weekdays
   workflow_dispatch:
 
 permissions:
@@ -26,4 +26,3 @@ jobs:
           days-before-pr-stale: -1  # Do not touch PRs.
           days-before-pr-close: -1
           remove-pr-stale-when-updated: false
-          operations-per-run: 15  # Keep stale operations low for now.
