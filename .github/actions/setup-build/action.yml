@@ -302,8 +302,12 @@ runs:
           ${{ steps.setup.outputs.valgrind == 'true' && 'valgrind' || '' }}
         # Include the runner image version in the cache key to avoid using stale cache.
         # See: https://github.com/awalsh128/cache-apt-pkgs-action/issues/187
-        version: ${{ steps.setup.outputs.image_key }}-1.0
+        version: ${{ steps.setup.outputs.image_key }}-1.1
         empty_packages_behavior: ignore
+      env:
+        # This avoids skipping running apt-fast update.
+        # See: https://github.com/awalsh128/cache-apt-pkgs-action/issues/166
+        ACT: true
 
     # awalsh128/cache-apt-pkgs-action does not work for MPI.
     # See: https://github.com/awalsh128/cache-apt-pkgs-action/issues/57#issuecomment-1304062077
