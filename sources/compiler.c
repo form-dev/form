@@ -162,6 +162,9 @@ static KEYWORD com2commands[] = {
 	,{"factorize",      (TFUN)CoFactorize,        TOOUTPUT,     PARTEST}
 	,{"fill",           (TFUN)CoFill,             DECLARATION,  PARTEST}
 	,{"fillexpression", (TFUN)CoFillExpression,   DECLARATION,  PARTEST}
+#ifdef WITHFLINT
+	,{"frompadic",      (TFUN)CoFromPadic,        STATEMENT,    PARTEST}
+#endif
 	,{"frompolynomial", (TFUN)CoFromPolynomial,   STATEMENT,    PARTEST}
 	,{"funpowers",      (TFUN)CoFunPowers,        DECLARATION,  PARTEST}
 	,{"hide",           (TFUN)CoHide,             SPECIFICATION,PARTEST}
@@ -197,6 +200,9 @@ static KEYWORD com2commands[] = {
 	,{"on",             (TFUN)CoOn,               DECLARATION,  PARTEST}
 	,{"once",           (TFUN)CoOnce,             STATEMENT,    PARTEST}
 	,{"only",           (TFUN)CoOnly,             STATEMENT,    PARTEST}
+#ifdef WITHFLINT
+	,{"padictorat",     (TFUN)CoPadicToRat,       STATEMENT,    PARTEST}
+#endif
 	,{"particle",       (TFUN)CoParticle,         DECLARATION,  PARTEST}
 	,{"polyfun",        (TFUN)CoPolyFun,          DECLARATION,  PARTEST}
 	,{"polyratfun",     (TFUN)CoPolyRatFun,       DECLARATION,  PARTEST}
@@ -236,6 +242,9 @@ static KEYWORD com2commands[] = {
 	,{"threadbucketsize",(TFUN)CoThreadBucket,    DECLARATION,  PARTEST}
 #ifdef WITHFLOAT
 	,{"tofloat",        (TFUN)CoToFloat,          STATEMENT,    PARTEST}
+#endif
+#ifdef WITHFLINT
+	,{"topadic",        (TFUN)CoToPadic,          STATEMENT,    PARTEST}
 #endif
 	,{"topolynomial",   (TFUN)CoToPolynomial,     STATEMENT,    PARTEST}
 #ifdef WITHFLOAT

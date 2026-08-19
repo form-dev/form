@@ -1787,6 +1787,9 @@ int AddCoef(PHEAD WORD **ps1, WORD **ps2)
 #ifdef WITHFLOAT
 	if ( AT.SortFloatMode ) return(AddWithFloat(BHEAD ps1,ps2));
 #endif
+#ifdef WITHFLINT
+	if ( AT.SortPadicMode ) return(AddWithPadic(BHEAD ps1,ps2));
+#endif
 	OutCoef = AN.SoScratC;
 	s1 = *ps1; s2 = *ps2;
 	GETCOEF(s1,l1);
@@ -2402,6 +2405,9 @@ WORD Compare1(PHEAD WORD *term1, WORD *term2, WORD level)
 #ifdef WITHFLOAT
 	AT.SortFloatMode = 0;
 #endif
+#ifdef WITHFLINT
+	AT.SortPadicMode = 0;
+#endif
 	prevorder = 0;
 	GETSTOP(term1,s1);
 	stopper1 = s1;
@@ -2732,6 +2738,18 @@ NoPoly:
 				else if ( TestFloat(s2-FUNHEAD) ) { return(-1); }
 			}
 #endif
+#ifdef WITHFLINT
+			if ( level == 0 && c1 == PADICFUN && t1 == stopper1 && t2 == stopper2 && AC.activePadic ) {
+/*
+				We have two PADICFUN's. Test whether they are 'legal'.
+*/
+				if ( TestPadic(s1-FUNHEAD) ) {
+					if ( TestPadic(s2-FUNHEAD) ) { AT.SortPadicMode = 3; return(0); }
+					else { return(1); }
+				}
+				else if ( TestPadic(s2-FUNHEAD) ) { return(-1); }
+			}
+#endif
 			while ( s1 < t1 ) {
 /*
 				The next statement was added 9-nov-2001. It repaired a bad error
@@ -2800,6 +2818,16 @@ NoPoly:
 	else if ( level == 0 && t2 < stopper2 && *t2 == FLOATFUN && t2+t2[1] == stopper2
 			&& TestFloat(t2) && AT.aux_ != 0 ) {
 		AT.SortFloatMode = 2; return(0);
+	}
+#endif
+#ifdef WITHFLINT
+	if ( level == 0 && t1 < stopper1 && *t1 == PADICFUN && t1+t1[1] == stopper1
+			&& TestPadic(t1) && AC.activePadic ) {
+		AT.SortPadicMode = 1; return(0);
+	}
+	else if ( level == 0 && t2 < stopper2 && *t2 == PADICFUN && t2+t2[1] == stopper2
+			&& TestPadic(t2) && AC.activePadic ) {
+		AT.SortPadicMode = 2; return(0);
 	}
 #endif
 	{
@@ -3967,6 +3995,16 @@ OneTerm:
 						term1 = poin[S->tree[i]];
 						term2 = poin[k];
 						if ( MergeWithFloat(BHEAD &term1,&term2) == 0 )
+							goto cancelled;
+						poin[S->tree[i]] = term1;
+					}
+#endif
+#ifdef WITHFLINT
+					else if ( AT.SortPadicMode ) {
+						WORD *term1, *term2;
+						term1 = poin[S->tree[i]];
+						term2 = poin[k];
+						if ( MergeWithPadic(BHEAD &term1,&term2) == 0 )
 							goto cancelled;
 						poin[S->tree[i]] = term1;
 					}

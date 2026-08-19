@@ -76,6 +76,9 @@ static KEYWORD precommands[] = {
 	,{"endif"        , DoEndif        , 0, 0}
 	,{"endinside"    , DoEndInside    , 0, 0}
 	,{"endnamespace" , DoEndNamespace , 0, 0}
+#ifdef WITHFLINT
+    ,{"endpadic"     , DoEndPadic     , 0, 0}
+#endif
 	,{"endprocedure" , DoEndprocedure , 0, 0}
 	,{"endswitch"    , DoPreEndSwitch , 0, 0}
 	,{"exchange"     , DoPreExchange  , 0, 0}
@@ -113,6 +116,9 @@ static KEYWORD precommands[] = {
 	,{"sortreallocate", DoPreSortReallocate , 0, 0}
 #ifdef WITHFLOAT
     ,{"startfloat"   , DoStartFloat   , 0, 0}
+#endif
+#ifdef WITHFLINT
+    ,{"startpadic"   , DoStartPadic   , 0, 0}
 #endif
 	,{"switch"       , DoPreSwitch    , 0, 0}
 	,{"system"       , DoSystem       , 0, 0}
@@ -7778,6 +7784,12 @@ int DoStartFloat(UBYTE *s)
 		MesPrint("@Simultaneous use of floating point and modulus arithmetic makes no sense.");
 		error = 1;
 	}
+#ifdef WITHFLINT
+	if ( AC.activePadic ) {
+		MesPrint("@Simultaneous use of float_ and padic_ is not allowed.");
+		error = 1;
+	}
+#endif
 	if ( AT.aux_ ) { // First, we clean up any previous floating point system. 
 		ClearfFloat();
 		ClearMZVTables();
@@ -7880,5 +7892,98 @@ int DoEndFloat(UBYTE *s)
 #endif
 /*
  		#] DoEndFloat : 
+ 		#[ DoStartPadic :
+*/
+#ifdef WITHFLINT
+
+int DoStartPadic(UBYTE *s)
+{
+	GETIDENTITY
+	int error = 0;
+	LONG N = 0;
+	UBYTE *ss, *p, *pstop, c;
+
+	if ( AP.PreSwitchModes[AP.PreSwitchLevel] != EXECUTINGPRESWITCH ) return(0);
+	if ( AP.PreIfStack[AP.PreIfLevel] != EXECUTINGIF ) return(0);
+
+	if ( AR.PolyFun != 0 ) {
+		MesPrint("@Simultaneous use of Poly(Rat)Fun and padic_ is not allowed.");
+		error = 1;
+	}
+	if ( AC.ncmod != 0 ) {
+		MesPrint("@Simultaneous use of p-adic and modulus arithmetic makes no sense.");
+		error = 1;
+	}
+#ifdef WITHFLOAT
+	if ( AT.aux_ != 0 ) {
+		MesPrint("@Simultaneous use of float_ and padic_ is not allowed.");
+		error = 1;
+	}
+#endif
+
+	while ( *s == ',' || *s == ' ' || *s == '\t' ) s++;
+	ss = s;
+	// The first parameter is the prime number
+	if ( FG.cTable[*s] == 1 ) {
+		p = s;
+		while ( FG.cTable[*s] == 1 ) s++;
+		pstop = s;
+
+		while ( *s == ',' || *s == ' ' || *s == '\t' ) s++;
+		// The second parameter is the p-adic precision.
+		// It is signed: absolute precisions below O(p^0) is fine.
+		if ( *s == '+' || *s == '-' || FG.cTable[*s] == 1 ) {
+			UBYTE *digits = s;
+			while ( *digits == '+' || *digits == '-' ) digits++;
+			if ( FG.cTable[*digits] != 1 ) goto IllPar;
+			ParseSignedNumber(N,s)
+		}
+		else goto IllPar;
+		while ( *s == ' ' || *s == '\t' ) s++;
+		if ( *s != 0 ) goto IllPar;
+	}
+	else {
+IllPar:
+		MesPrint("@Illegal parameter in %#StartPadic: %s ",ss);
+		error = 1;
+	};
+
+	if ( error == 0 ) {
+		/* Split the existing input buffer so FLINT can parse just the prime. */
+		c = *pstop;
+		*pstop = 0;
+		if ( StartPadicSystem(p,N) ) error = 1;
+		else AO.PadicPrint = 1;
+		*pstop = c;
+	}
+	return(error);
+}
+
+#endif
+/*
+ 		#] DoStartPadic :
+ 		#[ DoEndPadic :
+*/
+#ifdef WITHFLINT
+
+int DoEndPadic(UBYTE *s)
+{
+	int error = 0;
+	if ( AP.PreSwitchModes[AP.PreSwitchLevel] != EXECUTINGPRESWITCH ) return(0);
+	if ( AP.PreIfStack[AP.PreIfLevel] != EXECUTINGIF ) return(0);
+	while ( *s == ',' || *s == ' ' || *s == '\t' ) s++;
+	if ( *s != 0 ) {
+		MesPrint("@Illegal parameter in %#EndPadic instruction: %s ",s);
+		error = 1;
+	}
+	if ( error == 0 ) {
+		ClearPadicSystem();
+	}
+	return(error);
+}
+
+#endif
+/*
+ 		#] DoEndPadic : 
  	# ] PreProcessor :
 */

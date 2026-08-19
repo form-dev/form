@@ -366,7 +366,6 @@ TP=T+1;while(TP<TT){if(*TP==AR.PolyFun){TP[2]|=(DIRTYFLAG|MUSTCLEANPRF);}TP+=TP[
 
 #endif
 
-
 /*
 	MesPrint("P-level popped to %d with %d",AP.PreAssignLevel,(WORD)(AC.iPointer - AC.iBuffer));
 
@@ -1637,6 +1636,8 @@ extern void  poly_free_poly_vars(PHEAD const char *);
 #ifdef WITHFLINT
 extern void  flint_final_cleanup_thread(void);
 extern void  flint_final_cleanup_master(void);
+extern WORD  flint_fmpz_get_form(void *, WORD *);
+extern void  flint_fmpz_set_form(void *, UWORD *, WORD);
 extern WORD* flint_div(PHEAD WORD *, WORD *, const WORD);
 extern int   flint_factorize_argument(PHEAD WORD *, WORD *);
 extern WORD* flint_factorize_dollar(PHEAD WORD *);
@@ -1768,6 +1769,27 @@ void SetfFloatPrecision(LONG);
 int EvaluateFun(PHEAD WORD *, WORD, WORD *);
 int CoStrictRounding(UBYTE *);
 int StrictRounding(PHEAD WORD *, WORD, WORD, WORD);
+#endif
+
+#ifdef WITHFLINT
+int DoStartPadic(UBYTE *);
+int DoEndPadic(UBYTE *);
+int StartPadicSystem(UBYTE *, LONG);
+void ClearPadicSystem(void);
+int CoToPadic(UBYTE *);
+int CoPadicToRat(UBYTE *);
+int CoFromPadic(UBYTE *);
+int ToPadic(PHEAD WORD *,WORD);
+int PadicToRat(PHEAD WORD *,WORD);
+int FromPadic(PHEAD WORD *,WORD,WORD);
+int PrintPadic(WORD *fun);
+int AddWithPadic(PHEAD WORD **,WORD **);
+int MergeWithPadic(PHEAD WORD **,WORD **);
+int MulPadics(PHEAD WORD *, WORD *, WORD *);
+int DivPadics(PHEAD WORD *, WORD *, WORD *);
+int InvPadic(PHEAD WORD *, WORD *);
+int MulRatToPadic(PHEAD WORD *, WORD *, UWORD *, WORD);
+int TestPadic(WORD *);
 #endif
 
 /*

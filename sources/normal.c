@@ -247,9 +247,18 @@ int Normalize(PHEAD WORD *term)
 	WORD withfloat = 0;
 	WORD *firstfloat = 0;
 #endif
+#ifdef WITHFLINT
+	WORD withpadic = 0;
+	WORD *firstpadic = 0;
+	WORD *padicaccum = 0;
+	int padicret;
+#endif
 	LONG oldcpointer = 0, x;
 	n_coef = TermMalloc("NormCoef");
 	n_llnum = TermMalloc("n_llnum");
+#ifdef WITHFLINT
+	padicaccum = TermMalloc("NormPadic");
+#endif
 	lnum = n_llnum+1;
 /*
 	int termflag;
@@ -272,6 +281,9 @@ Restart:
 	t = term;
 	if ( !*t ) {
 		AT.NormDepth--;
+#ifdef WITHFLINT
+		TermFree(padicaccum,"NormPadic");
+#endif
 		TermFree(n_coef,"NormCoef");
 		TermFree(n_llnum,"n_llnum");
 		return(regval);
@@ -2431,6 +2443,33 @@ redoshort:
 				}
 				break;
 #endif
+#ifdef WITHFLINT
+			case PADICFUN :
+/*
+				If it is a proper padic_ we give it special treatment.
+				If it is not proper, we treat it as a regular commuting function.
+*/
+				if ( TestPadic(t) == 0 || AC.activePadic == 0 ) {
+					goto defaultcase;
+				}
+				else {
+					if ( withpadic == 0 ) {
+						firstpadic = t;
+					}
+					else if ( withpadic == 1 ) {
+						padicret = MulPadics(BHEAD padicaccum,firstpadic,t);
+						if ( padicret < 0 ) goto FromNorm;
+						if ( padicret > 0 ) goto NormZero;
+					}
+					else {
+						padicret = MulPadics(BHEAD padicaccum,padicaccum,t);
+						if ( padicret < 0 ) goto FromNorm;
+						if ( padicret > 0 ) goto NormZero;
+					}
+					withpadic++;
+				}
+				break;
+#endif
 			case INTFUNCTION :
 /*
 				Can be resolved if the first argument is a number
@@ -2784,6 +2823,34 @@ TryAgain:;
 							if ( withfloat == 1 ) UnpackFloat(aux4,firstfloat);
 							mpf_div(aux4,aux4,aux5);
 							withfloat++;
+						}
+						tt = to = t;
+						while ( r < m ) *to++ = *r++;
+						*to++ = 1; *to++ = 1; *to++ = 3;
+						if ( ncoef < 0 ) t[-1] = -t[-1];
+						m -= k;
+						stop = m + 3;
+						r = tt;
+					}
+#endif
+#ifdef WITHFLINT
+					else if ( *t == PADICFUN && TestPadic(t) ) {
+						k = t[1];
+						pden[i][1] -= k;
+						pden[i][FUNHEAD] -= k;
+						pden[i][FUNHEAD+ARGHEAD] -= k;
+						if ( withpadic == 0 ) {
+							padicret = InvPadic(BHEAD padicaccum,t);
+							if ( padicret < 0 ) goto FromNorm;
+							if ( padicret > 0 ) goto NormZero;
+							withpadic = 2;
+						}
+						else {
+							padicret = DivPadics(BHEAD padicaccum,
+								(withpadic == 1) ? firstpadic : padicaccum,t);
+							if ( padicret < 0 ) goto FromNorm;
+							if ( padicret > 0 ) goto NormZero;
+							withpadic++;
 						}
 						tt = to = t;
 						while ( r < m ) *to++ = *r++;
@@ -4115,6 +4182,28 @@ NoRep:
 	}
 	else AT.FloatPos = 0;
 #endif
+	#ifdef WITHFLINT
+		if ( withpadic ) {
+			WORD *padicfunction = (withpadic == 1) ? firstpadic : padicaccum;
+	/*
+			First check whether the coefficient is already 1/1.
+	*/
+			if ( ncoef == 3 && n_coef[0] == 1 && n_coef[1] == 1 ) {
+				AT.PadicPos = m-termout;
+				i = padicfunction[1];
+				NCOPY(m,padicfunction,i)
+			}
+			else {
+				padicret = MulRatToPadic(BHEAD m,padicfunction,(UWORD *)n_coef,ncoef);
+				if ( padicret < 0 ) goto FromNorm;
+				if ( padicret > 0 ) goto NormZero;
+				AT.PadicPos = m-termout;
+				m += m[1];
+			}
+			n_coef[0] = 1; n_coef[1] = 1; ncoef = 3;
+		}
+		else AT.PadicPos = 0;
+#endif
 
 /*
   	#] float_ : 
@@ -4174,6 +4263,9 @@ NoRep:
 		AT.NormDepth--;
 		TermFree(n_llnum,"n_llnum");
 		TermFree(n_coef,"NormCoef");
+#ifdef WITHFLINT
+		TermFree(padicaccum,"NormPadic");
+#endif
 		return(1);
 	}
 	else {
@@ -4202,6 +4294,9 @@ RegEnd:
 	AT.NormDepth--;
 	TermFree(n_llnum,"n_llnum");
 	TermFree(n_coef,"NormCoef");
+#ifdef WITHFLINT
+	TermFree(padicaccum,"NormPadic");
+#endif
 	return(regval);
 
 NormInf:
@@ -4228,12 +4323,18 @@ NormZero:
 	AT.NormDepth--;
 	TermFree(n_llnum,"n_llnum");
 	TermFree(n_coef,"NormCoef");
+#ifdef WITHFLINT
+	TermFree(padicaccum,"NormPadic");
+#endif
 	return(regval);
 
 NormMin:
 	AT.NormDepth--;
 	TermFree(n_llnum,"n_llnum");
 	TermFree(n_coef,"NormCoef");
+#ifdef WITHFLINT
+	TermFree(padicaccum,"NormPadic");
+#endif
 	return(-1);
 
 FromNorm:
@@ -4243,6 +4344,9 @@ FromNorm:
 	AT.NormDepth--;
 	TermFree(n_llnum,"n_llnum");
 	TermFree(n_coef,"NormCoef");
+#ifdef WITHFLINT
+	TermFree(padicaccum,"NormPadic");
+#endif
 	return(-1);
 
 /*

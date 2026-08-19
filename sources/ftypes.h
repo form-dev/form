@@ -469,7 +469,8 @@ typedef int (*TFUN1)(UBYTE *,int);
 #define EXPFUNCTION 124
 #define HPLFUNCTION 125
 #define MPLFUNCTION 126
-#define MAXBUILTINFUNCTION 126
+#define PADICFUN 127
+#define MAXBUILTINFUNCTION 127
 
 #define FIRSTUSERFUNCTION 150
 
@@ -596,6 +597,11 @@ typedef int (*TFUN1)(UBYTE *,int);
 #define TYPETORAT 90
 #define TYPESTRICTROUNDING 91
 #define TYPECHOP 92
+#endif
+#ifdef WITHFLINT
+#define TYPETOPADIC 93
+#define TYPEPADICTORAT 94
+#define TYPEFROMPADIC 95
 #endif
 
 /*
@@ -1140,4 +1146,3 @@ typedef int (*TFUN1)(UBYTE *,int);
 #define CYCLR           8388608
 #define FLOOP           16777216
 #define NOTFLOOP        33554432
-
