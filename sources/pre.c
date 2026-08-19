@@ -6862,9 +6862,9 @@ int DoSetRandom(UBYTE *s)
 	if ( *s  == 0 ) {
 #ifdef WITHPTHREADS
 #ifdef WITHSORTBOTS
-		int id, totnum = MaX(2*AM.totalnumberofthreads-3,AM.totalnumberofthreads);
-#else
-		int id, totnum = AM.totalnumberofthreads;
+    int id, totnum = AM.totalnumberofthreads;
+
+    totnum = totnum+ GetNumberOfSortBots(totnum - 1);
 #endif
 		for ( id = 0; id < totnum; id++ ) {
 			AB[id]->R.wranfseed = x;

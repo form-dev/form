@@ -1657,6 +1657,11 @@ extern void find_Horner_MCTS_expand_tree_threaded(void);
 extern void optimize_expression_given_Horner(void);
 extern void optimize_expression_given_Horner_threaded(void);
 #endif
+
+
+#ifdef WITHSORTBOTS
+extern int GetNumberOfSortBots(int);
+#endif
  
 extern int DoPreAdd(UBYTE *s);
 extern int DoPreUseDictionary(UBYTE *s);

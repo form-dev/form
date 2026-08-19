@@ -1145,10 +1145,10 @@ void SetupMZVTables(void)
 void SetupMPFTables(void)
 {
 #ifdef WITHPTHREADS
-	int id, totnum;
+	int totnum = AM.totalnumberofthreads, id;
 	mpf_t *a;
 #ifdef WITHSORTBOTS
-	totnum = MaX(2*AM.totalnumberofthreads-3,AM.totalnumberofthreads);
+    totnum = totnum + GetNumberOfSortBots(totnum - 1);
 #endif
     for ( id = 0; id < totnum; id++ ) {
 /*
@@ -1205,7 +1205,7 @@ void ClearMZVTables(void)
 		}
 	}
 #ifdef WITHSORTBOTS
-	totnum = MaX(2*AM.totalnumberofthreads-3,AM.totalnumberofthreads);
+    totnum = totnum + GetNumberOfSortBots(totnum - 1);
 #endif
     for ( id = 0; id < totnum; id++ ) {
 		if ( AB[id]->T.aux_ ) { 

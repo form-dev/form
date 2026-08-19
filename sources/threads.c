@@ -114,7 +114,6 @@ static pthread_cond_t dummywakeupcondition = PTHREAD_COND_INITIALIZER;
 
 #ifdef WITHSORTBOTS
 static POSITION SortBotPosition;
-static int numberofsortbots;
 static INILOCK(wakeupsortbotlock)
 static pthread_cond_t wakeupsortbotconditions = PTHREAD_COND_INITIALIZER;
 static int topsortbotavailables = 0;
@@ -124,7 +123,7 @@ static LONG numberofterms;
 /*
   	#] Variables : 
   	#[ Identity :
- 		#[ StartIdentity :
+  	#[ StartIdentity :
 */
 /**
  *	To be called once when we start up the threads.
@@ -240,6 +239,22 @@ void StartHandleLock(void)
 
 /*
   	#] StartHandleLock : 
+ 	#[ GetNumberOfSortBots :
+*/
+/**
+ *
+ */
+#ifdef WITHSORTBOTS
+int GetNumberOfSortBots(int numberofworkers)
+{
+    if (numberofworkers <= 1)
+        return 0;
+
+    return numberofworkers - 1;
+}
+#endif
+/*
+	#] GetNumberOfSortBots :
   	#[ StartAllThreads :
 */
 /**
@@ -331,17 +346,14 @@ int StartAllThreads(int number)
 	some of them may end up with a lower number than one of the workers.
 */
 	MasterWaitAll();
+	
+
 #ifdef WITHSORTBOTS
-	if ( numberofworkers > 2 ) {
-		numberofsortbots = numberofworkers-2;
-		for ( j = numberofworkers+1; j < 2*numberofworkers-1; j++ ) {
-			if ( pthread_create(&thethread,NULL,RunSortBot,(void *)(&dummy)) )
-				goto failure;
-		}
+	for ( j = 0; j < GetNumberOfSortBots(numberofworkers); j++ ) {
+		if ( pthread_create(&thethread,NULL,RunSortBot,(void *)(&dummy)) )
+			goto failure;
 	}
-	else {
-		numberofsortbots = 0;
-	}
+		
 	MasterWaitAllSortBots();
 	DefineSortBotTree();
 #endif
@@ -847,7 +859,7 @@ void ClearAllThreads(void)
 		WakeupThread(i,CLEARCLOCK);
 	}
 #ifdef WITHSORTBOTS
-	for ( i = numberofworkers+1; i <= numberofworkers+numberofsortbots; i++ ) {
+	for ( i = numberofworkers+1; i <= numberofworkers+GetNumberOfSortBots(numberofworkers); i++ ) {
 		WakeupThread(i,CLEARCLOCK);
 	}
 #endif
@@ -871,7 +883,7 @@ void TerminateAllThreads(void)
 		WakeupThread(i,TERMINATETHREAD);
 	}
 #ifdef WITHSORTBOTS
-	for ( i = numberofworkers+1; i <= numberofworkers+numberofsortbots; i++ ) {
+	for ( i = numberofworkers+1; i <= numberofworkers+GetNumberOfSortBots(numberofworkers); i++ ) {
 		WakeupThread(i,TERMINATETHREAD);
 	}
 #endif
@@ -879,7 +891,7 @@ void TerminateAllThreads(void)
 		pthread_join(threadpointers[i],NULL);
 	}
 #ifdef WITHSORTBOTS
-	for ( i = numberofworkers+1; i <= numberofworkers+numberofsortbots; i++ ) {
+	for ( i = numberofworkers+1; i <= numberofworkers+GetNumberOfSortBots(numberofworkers); i++ ) {
 		pthread_join(threadpointers[i],NULL);
 	}
 #endif
@@ -1035,7 +1047,7 @@ LONG GetWorkerTimes(void)
 	int i;
 	for ( i = 1; i <= numberofworkers; i++ ) retval += timerinfo[i] + sumtimerinfo[i];
 #ifdef WITHSORTBOTS
-	for ( i = numberofworkers+1; i <= numberofworkers+numberofsortbots; i++ )
+	for ( i = numberofworkers+1; i <= numberofworkers+GetNumberOfSortBots(numberofworkers); i++ )
 		retval += timerinfo[i] + sumtimerinfo[i];
 #endif
 	return(retval);
@@ -2010,8 +2022,10 @@ void *RunSortBot(void *dummy)
 				LOCK(AT.SB.MasterBlockLock[1]);
 				BB = AB[AT.SortBotIn1];
 				LOCK(BB->T.SB.MasterBlockLock[BB->T.SB.MasterNumBlocks]);
-				BB = AB[AT.SortBotIn2];
-				LOCK(BB->T.SB.MasterBlockLock[BB->T.SB.MasterNumBlocks]);
+				if ( AT.SortBotIn2 >= 0 ) {
+					BB = AB[AT.SortBotIn2];
+					LOCK(BB->T.SB.MasterBlockLock[BB->T.SB.MasterNumBlocks]);
+				}
 				AT.SB.FillBlock = 1;
 				AT.SB.MasterFill[1] = AT.SB.MasterStart[1];
 				SETBASEPOSITION(AN.theposition,0);
@@ -2260,7 +2274,7 @@ int SortBotWait(int identity)
 	LOCK(wakeuplocks[identity]);
 	LOCK(availabilitylock);
 	topsortbotavailables++;
-	if ( topsortbotavailables >= numberofsortbots ) {
+	if ( topsortbotavailables >= GetNumberOfSortBots(numberofworkers) ) {
 		UNLOCK(availabilitylock);
 		LOCK(wakeupsortbotlock);
 		wakeupmaster = identity;
@@ -2395,7 +2409,7 @@ void MasterWaitAll(void)
 void MasterWaitAllSortBots(void)
 {
 	LOCK(wakeupsortbotlock);
-	while ( topsortbotavailables < numberofsortbots ) {
+	while ( topsortbotavailables < GetNumberOfSortBots(numberofworkers) ) {
 		pthread_cond_wait(&wakeupsortbotconditions,&wakeupsortbotlock);
 	}
 	UNLOCK(wakeupsortbotlock);
@@ -3722,7 +3736,7 @@ int MasterMerge(void)
 	POSITION position;
 	FILEHANDLE *fin, *fout;
 #ifdef WITHSORTBOTS
-	if ( numberofworkers > 2 ) return(SortBotMasterMerge());
+	if ( GetNumberOfSortBots(numberofworkers) ) return(SortBotMasterMerge());
 #endif
 	fin = &S->file;
 	if ( AR0.PolyFun == 0 ) { S->PolyFlag = 0; }
@@ -4227,7 +4241,7 @@ int SortBotMasterMerge(void)
 	Also the master has to claim the last writing blocks of its input.
 */
 	topsortbotavailables = 0;
-	for ( i = numberofworkers+1; i <= numberofworkers+numberofsortbots; i++ ) {
+	for ( i = numberofworkers+1; i <= numberofworkers+GetNumberOfSortBots(numberofworkers); i++ ) {
 		WakeupThread(i,INISORTBOT);
 	}
 
@@ -4238,8 +4252,10 @@ int SortBotMasterMerge(void)
 	numberclaimed = 0;
 	BB = AB[AT.SortBotIn1];
 	LOCK(BB->T.SB.MasterBlockLock[BB->T.SB.MasterNumBlocks]);
-	BB = AB[AT.SortBotIn2];
-	LOCK(BB->T.SB.MasterBlockLock[BB->T.SB.MasterNumBlocks]);
+	if ( AT.SortBotIn2 >= 0 ) {
+		BB = AB[AT.SortBotIn2];
+		LOCK(BB->T.SB.MasterBlockLock[BB->T.SB.MasterNumBlocks]);
+	}
 
 	MasterWaitAllSortBots();
 /*
@@ -4268,7 +4284,7 @@ int SortBotMasterMerge(void)
 	the writing to output file).
 */
 	topsortbotavailables = 0;
-	for ( i = numberofworkers+1; i <= numberofworkers+numberofsortbots; i++ ) {
+	for ( i = numberofworkers+1; i <= numberofworkers+GetNumberOfSortBots(numberofworkers); i++ ) {
 		WakeupThread(i,RUNSORTBOT);
 	}
 	if ( SortBotMerge(BHEAD0) ) {
@@ -4311,7 +4327,7 @@ int SortBotMasterMerge(void)
 		S->verbLBsortCap += AB[j]->T.SS->verbLBsortCap;
 		S->verbUnsortedSize += AB[j]->T.SS->verbUnsortedSize;
 	}
-	for ( j = numberofworkers+1; j <= numberofworkers+numberofsortbots; j++ ) {
+	for ( j = numberofworkers+1; j <= numberofworkers+GetNumberOfSortBots(numberofworkers); j++ ) {
 		S->verbComparisons += AB[j]->T.SS->verbComparisons;
 		if ( S->verbMaxTermSize < AB[j]->T.SS->verbMaxTermSize )
 			S->verbMaxTermSize = AB[j]->T.SS->verbMaxTermSize;
@@ -4351,7 +4367,16 @@ int SortBotMasterMerge(void)
 int SortBotMerge(PHEAD0)
 {
 	GETBIDENTITY
-	ALLPRIVATES *Bin1 = AB[AT.SortBotIn1],*Bin2 = AB[AT.SortBotIn2];
+	ALLPRIVATES *Bin1, *Bin2;
+	Bin1 = AB[AT.SortBotIn1];
+	if ( AT.SortBotIn2 >= 0 ) {
+		Bin2 = AB[AT.SortBotIn2];
+	}
+	else {
+		// Incorrect dereference of this will cause a crash: all accesses must
+		// be protected with with "if ( AT.SortBotIn2 >= 0 )"
+		Bin2 = NULL;
+	}
 	WORD *term1, *term2, *wp;
 	int blin1, blin2;	/* Current block numbers */
 	int error = 0;
@@ -4380,10 +4405,15 @@ int SortBotMerge(PHEAD0)
 	which means that there will be input.
 */
 	LOCK(Bin1->T.SB.MasterBlockLock[blin1]);
-	LOCK(Bin2->T.SB.MasterBlockLock[blin2]);
-
-	term1 = Bin1->T.SB.MasterStart[blin1];
-	term2 = Bin2->T.SB.MasterStart[blin2];
+	if ( AT.SortBotIn2 >= 0 ) {
+		LOCK(Bin2->T.SB.MasterBlockLock[blin2]);
+	}
+	term1 = Bin1->T.SB.MasterStart[blin1];  
+	WORD zeroterm = 0;
+	term2 = &zeroterm;                                              
+	if ( AT.SortBotIn2 >= 0 ) {   
+		term2 = Bin2->T.SB.MasterStart[blin2];
+	}                                                                                                
 	AT.SB.FillBlock = 1;
 /*
 	Now the main loop. Keep going until one of the two hits the end.
@@ -4812,7 +4842,9 @@ cancelled:;		/* Now we need two new terms */
 	// decrement the BlockTerms counters a final time, the marker is included
 	// in the count.
 	Bin1->T.SB.BlockTerms[blin1]--;
-	Bin2->T.SB.BlockTerms[blin2]--;
+	if ( AT.SortBotIn2 >= 0 ) {
+		Bin2->T.SB.BlockTerms[blin2]--;
+	}
 
 	SortBotOut(BHEAD 0);
 ReturnError:;
@@ -4826,12 +4858,14 @@ ReturnError:;
 	else {
 		UNLOCK(Bin1->T.SB.MasterBlockLock[Bin1->T.SB.MasterNumBlocks]);
 	}
-	UNLOCK(Bin2->T.SB.MasterBlockLock[blin2]);
-	if ( blin2 > 1 ) {
-		UNLOCK(Bin2->T.SB.MasterBlockLock[blin2-1]);
-	}
-	else {
-		UNLOCK(Bin2->T.SB.MasterBlockLock[Bin2->T.SB.MasterNumBlocks]);
+	if ( AT.SortBotIn2 >= 0 ) {
+		UNLOCK(Bin2->T.SB.MasterBlockLock[blin2]);
+		if ( blin2 > 1 ) {
+			UNLOCK(Bin2->T.SB.MasterBlockLock[blin2-1]);
+		}
+		else {
+			UNLOCK(Bin2->T.SB.MasterBlockLock[Bin2->T.SB.MasterNumBlocks]);
+		}
 	}
 	if ( AT.identity > 0 ) {
 		UNLOCK(AT.SB.MasterBlockLock[AT.SB.FillBlock]);
@@ -4871,8 +4905,8 @@ int IniSortBlocks(int numworkers)
 	if ( numworkers == 0 ) return(0);
 
 #ifdef WITHSORTBOTS
-	if ( numworkers > 2 ) {
-		numparts = 2*numworkers - 2;
+	if ( GetNumberOfSortBots(numworkers) > 0 ) {
+		numparts = numworkers + GetNumberOfSortBots(numberofworkers);
 		numberofblocks = numberofblocks/2;
 	}
 	else {
@@ -4957,8 +4991,8 @@ int UpdateSortBlocks(int numworkers)
 	if ( numworkers == 0 ) return(0);
 
 #ifdef WITHSORTBOTS
-	if ( numworkers > 2 ) {
-		numparts = 2*numworkers - 2;
+	if ( GetNumberOfSortBots(numworkers) > 0) {
+		numparts = numworkers + GetNumberOfSortBots(numberofworkers);
 		numberofblocks = numberofblocks/2;
 	}
 	else {
@@ -5025,8 +5059,8 @@ void DefineSortBotTree(void)
 {
 	ALLPRIVATES *B;
 	int n, i, from;
-	if ( numberofworkers <= 2 ) return;
-	n = numberofworkers*2-2;
+	if ( numberofworkers < 2 ) return;
+	n = numberofworkers+GetNumberOfSortBots(numberofworkers);
 	for ( i = numberofworkers+1, from = 1; i <= n; i++ ) {
 		B = AB[i];
 		AT.SortBotIn1 = from++;
@@ -5034,7 +5068,7 @@ void DefineSortBotTree(void)
 	}
 	B = AB[0];
 	AT.SortBotIn1 = from++;
-	AT.SortBotIn2 = from++;
+	AT.SortBotIn2 = -1;
 }
 
 #endif
