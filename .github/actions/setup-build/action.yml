@@ -35,8 +35,6 @@ runs:
         # NOTE: Some features and OS image combinations are not implemented.
       shell: bash
       run: |
-        ### Initialize setup ###
-
         # First, parse the input.
 
         available_features=$(echo "$available_features" | awk '{$1=$1; print}')
@@ -311,15 +309,13 @@ runs:
 
     # awalsh128/cache-apt-pkgs-action does not work for MPI.
     # See: https://github.com/awalsh128/cache-apt-pkgs-action/issues/57#issuecomment-1304062077
-    - name: Install MPI if necessary
+    - name: Install MPI
       if: >-
         runner.os == 'Linux'
         && steps.setup.outputs.container == 'false'
         && (steps.setup.outputs.mpich == 'true' || steps.setup.outputs.openmpi == 'true')
       shell: bash
       run: |
-        ### Install MPI ###
-
         sudo apt-get update
         sudo apt-get install -y -q \
           ${{ steps.setup.outputs.mpich == 'true' && 'libmpich-dev' || '' }} \
@@ -331,8 +327,6 @@ runs:
       if: runner.os == 'Linux' && (steps.setup.outputs.latex == 'true' || steps.setup.outputs.latex2html == 'true')
       shell: bash
       run: |
-        ### Install LaTeX ###
-
         sudo apt-get update
         sudo apt-get install -y -q \
           ${{ steps.setup.outputs.latex == 'true' && 'texlive-latex-extra' || '' }} \
@@ -345,8 +339,6 @@ runs:
       if: steps.setup.outputs.debian == 'true' && steps.setup.outputs.container == 'true'
       shell: bash
       run: |
-        ### Install dependencies ###
-
         apt-get update
         apt-get install -y -q make \
           ${{ steps.setup.outputs.automake == 'true' && 'automake' || '' }} \
@@ -371,13 +363,11 @@ runs:
           || steps.setup.outputs.hyperfine == 'true'
         )
       shell: bash
-      run: |
-        ### Install dependencies ###
-
-        brew install \
-          ${{ steps.setup.outputs.automake == 'true' && 'automake' || '' }} \
-          ${{ (steps.setup.outputs.flint == 'true' && steps.setup.outputs.build_flint == 'false') && 'flint' || '' }} \
-          ${{ steps.setup.outputs.hyperfine == 'true' && 'hyperfine' || '' }}
+      run: >-
+        brew install
+        ${{ steps.setup.outputs.automake == 'true' && 'automake' || '' }}
+        ${{ (steps.setup.outputs.flint == 'true' && steps.setup.outputs.build_flint == 'false') && 'flint' || '' }}
+        ${{ steps.setup.outputs.hyperfine == 'true' && 'hyperfine' || '' }}
 
     # --static fails on macOS but we want to statically link
     # the brewed gmp. The linker supports neither -Wl,-static nor
@@ -391,8 +381,6 @@ runs:
       if: runner.os == 'macOS' && steps.setup.outputs.deploy == 'true'
       shell: bash
       run: |
-        ### Set up statically linked libraries ###
-
         mkdir static-lib
         if [ "${{ runner.arch }}" == "ARM64" ]; then
           brew_dir=/opt/homebrew/opt
@@ -413,8 +401,6 @@ runs:
       if: runner.os == 'macOS' && runner.arch == 'ARM64' && steps.setup.outputs.deploy == 'false'
       shell: bash
       run: |
-        ### Set up Homebrew paths ###
-
         brew_dir=/opt/homebrew/opt
         CPATH="$brew_dir/flint/include:$brew_dir/gmp/include:$brew_dir/mpfr/include:$brew_dir/zstd/include${CPATH:+":$CPATH"}"
         echo "CPATH=$CPATH" >>"$GITHUB_ENV"
@@ -481,8 +467,6 @@ runs:
       if: steps.setup.outputs.build_flint == 'true' && steps.cache-flint.outputs.cache-hit != 'true'
       shell: ${{ steps.setup.outputs.msys2 == 'true' && 'msys2 {0}' || 'bash' }}
       run: |
-        ### Build FLINT ###
-
         mkdir -p build/flint
         cd build/flint
         # We use the tarball from GitHub Releases.
@@ -499,8 +483,6 @@ runs:
       if: steps.setup.outputs.build_flint == 'true'
       shell: ${{ steps.setup.outputs.msys2 == 'true' && 'msys2 {0}' || 'bash' }}
       run: |
-        ### Set FLINT paths ###
-
         CPATH="${{ github.workspace }}/lib/flint/include${CPATH:+":$CPATH"}"
         echo "CPATH=$CPATH" >>"$GITHUB_ENV"
         LIBRARY_PATH="${{ github.workspace }}/lib/flint/lib${LIBRARY_PATH:+":$LIBRARY_PATH"}"
@@ -533,12 +515,10 @@ runs:
         key: ${{ steps.setup.outputs.formlib_key }}
         restore-keys: ${{ steps.setup.outputs.formlib_restore_keys }}
 
-    - name: Install FORM libraries if necessary
+    - name: Install FORM libraries
       if: steps.setup.outputs.formlib == 'true' && steps.cache-formlib.outputs.cache-hit != 'true'
       shell: ${{ steps.setup.outputs.msys2 == 'true' && 'msys2 {0}' || 'bash' }}
       run: |
-        ### Install FORM libraries ###
-
         mkdir -p formlib
         if ${{ steps.setup.outputs.color }} && [ ! -f formlib/color-1.0.0 ]; then
           rm -rf formlib/color*
@@ -600,8 +580,6 @@ runs:
       if: steps.setup.outputs.untar == 'true'
       shell: ${{ steps.setup.outputs.msys2 == 'true' && 'msys2 {0}' || 'bash' }}
       run: |
-        ### Uncompress tarball ###
-
         echo "DISTNAME=$(basename form-*.tar.gz .tar.gz)" >>"$GITHUB_ENV"
 
         tar -xf form-*.tar.gz --strip-components 1
@@ -610,17 +588,12 @@ runs:
     - name: Run Autoreconf
       if: steps.setup.outputs.autoreconf == 'true'
       shell: ${{ steps.setup.outputs.msys2 == 'true' && 'msys2 {0}' || 'bash' }}
-      run: |
-        ### Run Autoreconf ###
-
-        autoreconf -i
+      run: autoreconf -i
 
     - name: Configure
       if: steps.setup.outputs.configure == 'true'
       shell: ${{ steps.setup.outputs.msys2 == 'true' && 'msys2 {0}' || 'bash' }}
       run: |
-        ### Configure ###
-
         if ! ./configure ${{ steps.setup.outputs.config_args }}; then
           cat config.log >&2
           exit 1
