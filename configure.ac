@@ -101,6 +101,9 @@ case $host_os in
 	cygwin* )
 		print_os="Cygwin"
 		;;
+	mingw* )
+		print_os="MinGW"
+		;;
 	freebsd* )
 		print_os="FreeBSD"
 		;;
@@ -123,6 +126,9 @@ case $host_cpu in
 		;;
 	x86_64 )
 		print_cpu="Opteron"
+		;;
+	aarch64 )
+		print_cpu="ARM64"
 		;;
 	alpha* )
 		print_cpu="Alpha"
