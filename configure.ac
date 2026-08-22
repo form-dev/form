@@ -1001,7 +1001,15 @@ if test "$my_test_DEBUGCOMPILEFLAGS" != set && test "x$enable_debug" = xyes; the
 		# Sanitizer option.
 		if test "x$enable_sanitize" = xyes; then
 			enable_sanitize=
-			for san in address undefined; do
+			for san in \
+				address \
+				pointer-compare \
+				pointer-subtract \
+				undefined \
+				bounds-strict \
+				float-divide-by-zero \
+				float-cast-overflow
+			do
 				if test "x$enable_sanitize" = x; then
 					tmp_sanitize=$san
 				else
