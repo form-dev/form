@@ -12,7 +12,7 @@ TEXFILES = $(TEXSRC) $(MAIN).tex version.tex
 
 EXTRA_DIST = $(TEXSRC)
 
-.PHONY: dvi latex2html html ps pdf clean-local update_version_tex
+.PHONY: dvi latex2html html ps pdf update_version_tex
 
 # NOTE: htlatex invalidate .aux, .idx, .dvi files.
 HTMLCLEANFILES = idxmake.dvi idxmake.log $(MAIN).4ct $(MAIN).4dx $(MAIN).4ix \

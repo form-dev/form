@@ -1,10 +1,9 @@
 SUBDIRS = doxygen manual devref
 dist_man1_MANS = form.1
 
-.PHONY: clean-local update_version_man
+.PHONY: update_version_man
 
-clean-local:
-	rm form.1
+CLEANFILES = form.1
 
 form.1: update_version_man
 	$(UPDATE_VERSION_MAN)
