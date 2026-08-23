@@ -5141,3 +5141,17 @@ Global F1 = E{`i' % 10}*E2*E3*E4;
 .end
 assert succeeded?
 *--#] Issue808 :
+*--#[ Issue242 :
+* An #endif without a matching #if must be diagnosed deterministically.
+* Previously the preprocessor peeked at the uninitialized sentinel slot of
+* the PreTypes stack (PreTypes[0] with NumPreTypes == 0), so the behavior
+* depended on heap garbage (Valgrind: "Conditional jump or move depends on
+* uninitialised value" in DoEndif, reported at
+* https://github.com/form-dev/form/issues/242).
+#ifdef `A'
+#message A is defined
+#endif
+#endif
+.end
+assert preprocess_error?("#endif without corresponding #if")
+*--#] Issue242 :

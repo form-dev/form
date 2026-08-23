@@ -1306,6 +1306,13 @@ void StartVariables(void)
 	AP.MaxPreTypes = 10;
 	AP.NumPreTypes = 0;
 	AP.PreTypes = (int *)Malloc1(sizeof(int)*(AP.MaxPreTypes+1),"preprocessor types");
+/*
+	The sentinel slot must be initialized: with an empty stack the
+	preprocessor termination handlers (DoEndif, DoElse, DoElseif, ...)
+	peek at PreTypes[NumPreTypes] == PreTypes[0], and Malloc1 does not
+	zero the memory.
+*/
+	AP.PreTypes[0] = PRETYPENONE;
 	AP.inside.buffer = 0;
 	AP.inside.size = 0;
 
