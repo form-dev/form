@@ -1147,9 +1147,7 @@ void SetupMPFTables(void)
 #ifdef WITHPTHREADS
 	int totnum = AM.totalnumberofthreads, id;
 	mpf_t *a;
-#ifdef WITHSORTBOTS
     totnum = totnum + GetNumberOfSortBots(totnum - 1);
-#endif
     for ( id = 0; id < totnum; id++ ) {
 /*
 		We work here with a[0] etc because the aux1 etc contain B which
@@ -1204,9 +1202,7 @@ void ClearMZVTables(void)
 			AB[id]->T.mpf_tab2 = 0; 
 		}
 	}
-#ifdef WITHSORTBOTS
     totnum = totnum + GetNumberOfSortBots(totnum - 1);
-#endif
     for ( id = 0; id < totnum; id++ ) {
 		if ( AB[id]->T.aux_ ) { 
 			a = (mpf_t *)AB[id]->T.aux_;

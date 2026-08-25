@@ -55,10 +55,8 @@
 	The sortbot additions are from 17-may-2007 and after. They constitute
 	an attempt to make the final merge sorting faster for the master.
 	This way the master has only one compare per term.
-	It does add some complexity, but the final merge routine (MasterMerge)
-	is much simpler for the sortbots. On the other hand the original merging is
-	for a large part a copy of the MergePatches routine in sort.c and hence
-	even though complex the bad part has been thoroughly debugged.
+	It does add some complexity, but the final merge routine (SortBotMasterMerge)
+	is much simpler for the sortbots.
 */
 
 #include "form3.h"
@@ -112,18 +110,16 @@ INILOCK(dummylock)
 INIRWLOCK(dummyrwlock)
 static pthread_cond_t dummywakeupcondition = PTHREAD_COND_INITIALIZER;
 
-#ifdef WITHSORTBOTS
 static POSITION SortBotPosition;
 static INILOCK(wakeupsortbotlock)
 static pthread_cond_t wakeupsortbotconditions = PTHREAD_COND_INITIALIZER;
 static int topsortbotavailables = 0;
 static LONG numberofterms;
-#endif
 
 /*
   	#] Variables : 
   	#[ Identity :
-  	#[ StartIdentity :
+ 		#[ StartIdentity :
 */
 /**
  *	To be called once when we start up the threads.
@@ -239,12 +235,11 @@ void StartHandleLock(void)
 
 /*
   	#] StartHandleLock : 
- 	#[ GetNumberOfSortBots :
+	#[ GetNumberOfSortBots :
 */
 /**
  *
  */
-#ifdef WITHSORTBOTS
 int GetNumberOfSortBots(int numberofworkers)
 {
     if (numberofworkers <= 1)
@@ -252,7 +247,6 @@ int GetNumberOfSortBots(int numberofworkers)
 
     return numberofworkers - 1;
 }
-#endif
 /*
 	#] GetNumberOfSortBots :
   	#[ StartAllThreads :
@@ -281,17 +275,11 @@ int StartAllThreads(int number)
 	pthread_t thethread;
 	identity = WhoAmI();
 
-#ifdef WITHSORTBOTS
+
 	timerinfo = (LONG *)Malloc1(sizeof(LONG)*number*2,"timerinfo");
 	sumtimerinfo = (LONG *)Malloc1(sizeof(LONG)*number*2,"sumtimerinfo");
 	for ( j = 0; j < number*2; j++ ) { timerinfo[j] = 0; sumtimerinfo[j] = 0; }
 	mul = 2;
-#else
-	timerinfo = (LONG *)Malloc1(sizeof(LONG)*number,"timerinfo");
-	sumtimerinfo = (LONG *)Malloc1(sizeof(LONG)*number,"sumtimerinfo");
-	for ( j = 0; j < number; j++ ) { timerinfo[j] = 0; sumtimerinfo[j] = 0; }
-	mul = 1;
-#endif
  
 	listofavailables = (int *)Malloc1(sizeof(int)*(number+1),"listofavailables");
 	threadpointers = (pthread_t *)Malloc1(sizeof(pthread_t)*number*mul,"threadpointers");
@@ -346,17 +334,13 @@ int StartAllThreads(int number)
 	some of them may end up with a lower number than one of the workers.
 */
 	MasterWaitAll();
-	
 
-#ifdef WITHSORTBOTS
 	for ( j = 0; j < GetNumberOfSortBots(numberofworkers); j++ ) {
 		if ( pthread_create(&thethread,NULL,RunSortBot,(void *)(&dummy)) )
 			goto failure;
 	}
-		
 	MasterWaitAllSortBots();
 	DefineSortBotTree();
-#endif
 	IniSortBlocks(number-1);
 	AS.MasterSort = 0;
 	AM.storefilelock = dummylock;
@@ -456,7 +440,6 @@ ALLPRIVATES *InitializeOneThread(int identity)
 */
 	if ( identity > 0 ) TimeCPU(0);
 
-#ifdef WITHSORTBOTS
 
 	if ( identity > numberofworkers ) {
 /*
@@ -539,7 +522,6 @@ ALLPRIVATES *InitializeOneThread(int identity)
 	if ( identity == 0 && AN.SoScratC == 0 ) {
 		AN.SoScratC = (UWORD *)Malloc1(2*(AM.MaxTal+2)*sizeof(UWORD),"Scratch in SortBot");
 	}
-#endif
 	AR.CurDum = AM.IndDum;
 	for ( j = 0; j < 3; j++ ) {
 		if ( identity == 0 ) {
@@ -858,11 +840,9 @@ void ClearAllThreads(void)
 	for ( i = 1; i <= numberofworkers; i++ ) {
 		WakeupThread(i,CLEARCLOCK);
 	}
-#ifdef WITHSORTBOTS
 	for ( i = numberofworkers+1; i <= numberofworkers+GetNumberOfSortBots(numberofworkers); i++ ) {
 		WakeupThread(i,CLEARCLOCK);
 	}
-#endif
 }
 
 /*
@@ -882,19 +862,15 @@ void TerminateAllThreads(void)
 		GetThread(i);
 		WakeupThread(i,TERMINATETHREAD);
 	}
-#ifdef WITHSORTBOTS
 	for ( i = numberofworkers+1; i <= numberofworkers+GetNumberOfSortBots(numberofworkers); i++ ) {
 		WakeupThread(i,TERMINATETHREAD);
 	}
-#endif
 	for ( i = 1; i <= numberofworkers; i++ ) {
 		pthread_join(threadpointers[i],NULL);
 	}
-#ifdef WITHSORTBOTS
 	for ( i = numberofworkers+1; i <= numberofworkers+GetNumberOfSortBots(numberofworkers); i++ ) {
 		pthread_join(threadpointers[i],NULL);
 	}
-#endif
 }
 
 /*
@@ -1001,11 +977,7 @@ int GetTimerInfo(LONG** ti,LONG** sti)
 {
 	*ti = timerinfo;
 	*sti = sumtimerinfo;
-#ifdef WITHSORTBOTS
-	return AM.totalnumberofthreads*2;
-#else
-	return AM.totalnumberofthreads;
-#endif
+	return (numberofworkers + GetNumberOfSortBots(numberofworkers) + 1);
 }
 /* UNFINISHED_FEATURE_EXCL_STOP */
 /*
@@ -1021,11 +993,7 @@ int GetTimerInfo(LONG** ti,LONG** sti)
 void WriteTimerInfo(LONG* ti,LONG* sti)
 {
 	int i;
-#ifdef WITHSORTBOTS
-	int max = AM.totalnumberofthreads*2;
-#else
-	int max = AM.totalnumberofthreads;
-#endif
+	int max = (numberofworkers + GetNumberOfSortBots(numberofworkers) + 1);
 	for ( i=0; i<max; ++i ) {
 		timerinfo[i] = ti[i];
 		sumtimerinfo[i] = sti[i];
@@ -1046,10 +1014,8 @@ LONG GetWorkerTimes(void)
 	LONG retval = 0;
 	int i;
 	for ( i = 1; i <= numberofworkers; i++ ) retval += timerinfo[i] + sumtimerinfo[i];
-#ifdef WITHSORTBOTS
 	for ( i = numberofworkers+1; i <= numberofworkers+GetNumberOfSortBots(numberofworkers); i++ )
 		retval += timerinfo[i] + sumtimerinfo[i];
-#endif
 	return(retval);
 }
 
@@ -1500,11 +1466,9 @@ bucketstolen:;
 			#] LOWESTLEVELGENERATION : 
 			#[ FINISHEXPRESSION :
 */
-#ifdef WITHSORTBOTS
 			case CLAIMOUTPUT:
 				LOCK(AT.SB.MasterBlockLock[1]);
 				break;
-#endif
 			case FINISHEXPRESSION:
 /*
 				Finish the sort
@@ -1518,10 +1482,8 @@ bucketstolen:;
 /*
 				Entry for when we work with sortbots
 */
-#ifdef WITHSORTBOTS
 				/* fall through */
 			case FINISHEXPRESSION2:
-#endif
 /*
 				Now we may need here an fsync on the sort file
 */
@@ -1983,7 +1945,6 @@ ProcErr:
  *	the corresponding action. After this it goes back to sleep.
  */
 
-#ifdef WITHSORTBOTS
 
 void *RunSortBot(void *dummy)
 {
@@ -2084,7 +2045,6 @@ EndOfThread:;
 	return(0);
 }
 
-#endif
 
 /*
   	#] RunSortBot : 
@@ -2257,8 +2217,7 @@ int ThreadWait(int identity)
   	#] ThreadWait : 
   	#[ SortBotWait :
 */
- 
-#ifdef WITHSORTBOTS
+
 /**
  *	To be called by a sortbot thread when it has nothing to do.
  *	It goes to sleep and waits for a wakeup call.
@@ -2293,7 +2252,6 @@ int SortBotWait(int identity)
 	return(retval);
 }
 
-#endif
 
 /*
   	#] SortBotWait : 
@@ -2398,8 +2356,7 @@ void MasterWaitAll(void)
   	#] MasterWaitAll : 
   	#[ MasterWaitAllSortBots :
 */
- 
-#ifdef WITHSORTBOTS
+
 
 /**
  *	To be called by the master when it has to wait for all of the
@@ -2416,7 +2373,6 @@ void MasterWaitAllSortBots(void)
 	return;
 }
 
-#endif
 
 /*
   	#] MasterWaitAllSortBots : 
@@ -3250,7 +3206,7 @@ NextBucket:;
 		}
 	}
 /*
-	We order the threads to finish in the MasterMerge routine
+	We order the threads to finish in the SortBotMasterMerge routine
 	It will start with waiting for all threads to finish.
 	One could make an administration in which threads that have
 	finished can start already with the final sort but
@@ -3261,7 +3217,7 @@ NextBucket:;
 	oldgzipCompress = AR0.gzipCompress;
 	AR0.gzipCompress = 0;
 	if ( AR0.outtohide ) AR0.outfile = AR0.hidefile;
-	if ( MasterMerge() < 0 ) {
+	if ( SortBotMasterMerge() < 0 ) {
 		if ( AR0.outtohide ) AR0.outfile = oldoutfile;
 		AR0.gzipCompress = oldgzipCompress;
 		goto ProcErr;
@@ -3270,7 +3226,7 @@ NextBucket:;
 	AR0.gzipCompress = oldgzipCompress;
 /*
 	Now wait for all threads to be ready to give them the cleaning up signal.
-	With the new MasterMerge routine we can do the cleanup already automatically
+	With the new SortBotMasterMerge routine we can do the cleanup already automatically
 	avoiding having to send these signals.
 */
 	MasterWaitAll();
@@ -3591,10 +3547,6 @@ intercepted:;
  *		The initialization of the variables in SB is done in
  *		IniSortBlocks. This is done only once but it has to wait till
  *		all threads exist and the masters sort buffers have been allocated.
- *
- *		Note: the zero block is reserved for leftovers at the end of the
- *		last block that get moved back to the front to keep the terms
- *		contiguous (done in MasterMerge).
  */
 
 int PutToMaster(PHEAD WORD *term)
@@ -3664,8 +3616,7 @@ int PutToMaster(PHEAD WORD *term)
   	#] PutToMaster : 
   	#[ SortBotOut :
 */
- 
-#ifdef WITHSORTBOTS
+
 
 /**
  *		This is the output routine of the SortBots.
@@ -3692,7 +3643,7 @@ SortBotOut(PHEAD WORD *term)
 		if ( ( im = PutOut(BHEAD term,&SortBotPosition,AR.outfile,1) ) < 0 ) {
 /* INTERNAL_ERROR_EXCL_START */
 			MLOCK(ErrorMessageLock);
-			MesPrint("!>Called from MasterMerge/SortBotOut");
+			MesPrint("Called from SortBotMasterMerge/SortBotOut");
 			MUNLOCK(ErrorMessageLock);
 			return(-1);
 /* INTERNAL_ERROR_EXCL_STOP */
@@ -3702,512 +3653,11 @@ SortBotOut(PHEAD WORD *term)
 	}
 }
 
-#endif
-
 /*
   	#] SortBotOut : 
-  	#[ MasterMerge :
-*/
-/**
- *	This is the routine in which the master merges the sorted output that
- *	comes from the workers. It is similar to MergePatches in sort.c from which
- *	it takes much code.
- *	The important concept here is that we want the master to be working as
- *	little as possible because it constitutes the bottleneck.
- *	The workers fill the buffers of the master. These buffers are divided
- *	into parts for each worker as is done with the file patches in MergePatches
- *	but now also each worker part is divided into blocks. This allows the
- *	worker to fill blocks while the master is already working on blocks that
- *	were filled before. The blocks are arranged in a circular fashion.
- *	The whole is controlled by locks which seems faster than setting it up
- *	with signals.
- *
- *	This routine is run by the master when we don't use the sortbots.
- */
-
-int MasterMerge(void)
-{
-	ALLPRIVATES *B0 = AB[0], *B = 0;
-	SORTING *S = AT0.SS;
-	WORD **poin, **poin2, ul, k, i, im, *m1, j;
-	WORD lpat, mpat, level, l1, l2, r1, r2, r3, c;
-	WORD *m2, *m3, r31, r33, ki, *rr;
-	UWORD *coef;
-	POSITION position;
-	FILEHANDLE *fin, *fout;
-#ifdef WITHSORTBOTS
-	if ( GetNumberOfSortBots(numberofworkers) ) return(SortBotMasterMerge());
-#endif
-	fin = &S->file;
-	if ( AR0.PolyFun == 0 ) { S->PolyFlag = 0; }
-	else if ( AR0.PolyFunType == 1 ) { S->PolyFlag = 1; }
-	else if ( AR0.PolyFunType == 2 ) {
-		if ( AR0.PolyFunExp == 2
-		  || AR0.PolyFunExp == 3 ) S->PolyFlag = 1;
-		else                       S->PolyFlag = 2;
-	}
-	S->TermsLeft = 0;
-	coef = AN0.SoScratC;
-	poin = S->poina; poin2 = S->poin2a;
-	rr = AR0.CompressPointer;
-	*rr = 0;
-/*
- 		#[ Setup :
-*/
-	S->inNum = numberofthreads;
-	fout = AR0.outfile;
-/*
-	Load the patches. The threads have to finish their sort first.
-*/
-	S->lPatch = S->inNum - 1;
-/*
-	Claim all zero blocks. We need them anyway.
-	In principle the workers should never get into these.
-	We also claim all last blocks. This is a safety procedure that
-	should prevent the workers from working their way around the clock
-	before the master gets started again.
-*/
-	AS.MasterSort = 1;
-	numberclaimed = 0;
-	for ( i = 1; i <= S->lPatch; i++ ) {
-		B = AB[i];
-		LOCK(AT.SB.MasterBlockLock[0]);
-		LOCK(AT.SB.MasterBlockLock[AT.SB.MasterNumBlocks]);
-	}
-/*
-	Now wake up the threads and have them start their final sorting.
-	They should start with claiming their block and the master is
-	not allowed to continue until that has been done.
-	This waiting of the master will be done below in MasterWaitAllBlocks
-*/
-	for ( i = 0; i < S->lPatch; i++ ) {
-		GetThread(i+1);
-		WakeupThread(i+1,FINISHEXPRESSION);
-	}
-/*
-	Prepare the output file.
-*/
-	if ( fout->handle >= 0 ) {
-		PUTZERO(position);
-		SeekFile(fout->handle,&position,SEEK_END);
-		ADDPOS(position,((fout->POfill-fout->PObuffer)*sizeof(WORD)));
-	}
-	else {
-		SETBASEPOSITION(position,(fout->POfill-fout->PObuffer)*sizeof(WORD));
-	}
-/*
-	Wait for all threads to finish loading their first block.
-*/
-	MasterWaitAllBlocks();
-/*
-	Claim all first blocks.
-	We don't release the last blocks.
-	The strategy is that we always keep the previous block.
-	In principle it looks like it isn't needed for the last block but
-	actually it is to keep the front from overrunning the tail when writing.
-*/
-	for ( i = 1; i <= S->lPatch; i++ ) {
-		B = AB[i];
-		LOCK(AT.SB.MasterBlockLock[1]);
-		AT.SB.MasterBlock = 1;
-	}
-/*
- 		#] Setup : 
-
-	Now construct the tree:
-*/
-	lpat = 1;
-	do { lpat <<= 1; } while ( lpat < S->lPatch );
-	mpat = ( lpat >> 1 ) - 1;
-	k = lpat - S->lPatch;
-/*
-	k is the number of empty places in the tree. they will
-	be at the even positions from 2 to 2*k
-*/
-	for ( i = 1; i < lpat; i++ ) { S->tree[i] = -1; }
-	for ( i = 1; i <= k; i++ ) {
-		im = ( i * 2 ) - 1;
-		poin[im] = AB[i]->T.SB.MasterStart[AB[i]->T.SB.MasterBlock];
-		poin2[im] = poin[im] + *(poin[im]);
-		S->used[i] = im;
-		S->ktoi[im] = i-1;
-		S->tree[mpat+i] = 0;
-		poin[im-1] = poin2[im-1] = 0;
-	}
-	for ( i = (k*2)+1; i <= lpat; i++ ) {
-		S->used[i-k] = i;
-		S->ktoi[i] = i-k-1;
-		poin[i] = AB[i-k]->T.SB.MasterStart[AB[i-k]->T.SB.MasterBlock];
-		poin2[i] = poin[i] + *(poin[i]);
-	}
-/*
-	the array poin tells the position of the i-th element of the S->tree
-	'S->used' is a stack with the S->tree elements that need to be entered
-	into the S->tree. at the beginning this is S->lPatch. during the
-	sort there will be only very few elements.
-	poin2 is the next value of poin. it has to be determined
-	before the comparisons as the position or the size of the
-	term indicated by poin may change.
-	S->ktoi translates a S->tree element back to its stream number.
-
-	start the sort
-*/
-	level = S->lPatch;
-/*
-	introduce one term
-*/
-OneTerm:
-	k = S->used[level];
-	i = k + lpat - 1;
-	if ( !*(poin[k]) ) {
-		// Stream k has hit the end-of-stream "0". We still need to decrement
-		// BlockTerms, which includes the marker in the count.
-		ki = S->ktoi[k];
-		AB[ki+1]->T.SB.BlockTerms[AB[ki+1]->T.SB.MasterBlock]--;
-		do {
-			if ( !( i >>= 1 ) ) {
-				goto EndOfMerge;
-			}
-		} while ( !S->tree[i] );
-		if ( S->tree[i] == -1 ) {
-			S->tree[i] = 0;
-			level--;
-			goto OneTerm;
-		}
-		k = S->tree[i];
-		S->used[level] = k;
-		S->tree[i] = 0;
-	}
-/*
-	move terms down the tree
-*/
-	while ( i >>= 1 ) {
-		if ( S->tree[i] > 0 ) {
-			if ( ( c = CompareTerms(B0, poin[S->tree[i]],poin[k],(WORD)0) ) > 0 ) {
-/*
-				S->tree[i] is the smaller. Exchange and go on.
-*/
-				S->used[level] = S->tree[i];
-				S->tree[i] = k;
-				k = S->used[level];
-			}
-			else if ( !c ) {	/* Terms are equal */
-/*
-				S->TermsLeft--;
-					Here the terms are equal and their coefficients
-					have to be added.
-*/
-				l1 = *( m1 = poin[S->tree[i]] );
-				l2 = *( m2 = poin[k] );
-				if ( S->PolyWise ) {  /* Here we work with PolyFun */
-					WORD *tt1, *w;
-					tt1 = m1;
-					m1 += S->PolyWise;
-					m2 += S->PolyWise;
-					if ( S->PolyFlag == 2 ) {
-						w = poly_ratfun_add(B0,m1,m2);
-						if ( *tt1 + w[1] - m1[1] > AM.MaxTer/((LONG)sizeof(WORD)) ) {
-							MLOCK(ErrorMessageLock);
-							MesPrint("Term too complex in PolyRatFun addition. MaxTermSize of %10l is too small",AM.MaxTer);
-							MUNLOCK(ErrorMessageLock);
-							Terminate(-1);
-						}
-						AT0.WorkPointer = w;
-						if ( w[FUNHEAD] == -SNUMBER && w[FUNHEAD+1] == 0 && w[1] > FUNHEAD ) {
-							goto cancelled;
-						}
-					}
-					else {
-						w = AT0.WorkPointer;
-						if ( w + m1[1] + m2[1] > AT0.WorkTop ) {
-							MLOCK(ErrorMessageLock);
-							MesPrint("MasterMerge: A WorkSpace of %10l is too small",AM.WorkSize);
-							MUNLOCK(ErrorMessageLock);
-							Terminate(-1);
-						}
-						AddArgs(B0,m1,m2,w);
-					}
-					r1 = w[1];
-					if ( r1 <= FUNHEAD
-						|| ( w[FUNHEAD] == -SNUMBER && w[FUNHEAD+1] == 0 ) )
-							 { goto cancelled; }
-					if ( r1 == m1[1] ) {
-						NCOPY(m1,w,r1);
-					}
-					else if ( r1 < m1[1] ) {
-						r2 = m1[1] - r1;
-						m2 = w + r1;
-						m1 += m1[1];
-						while ( --r1 >= 0 ) *--m1 = *--m2;
-						m2 = m1 - r2;
-						r1 = S->PolyWise;
-						while ( --r1 >= 0 ) *--m1 = *--m2;
-						*m1 -= r2;
-						poin[S->tree[i]] = m1;
-					}
-					else {
-						// Here we are writing the new merged term *before* the original start of term1.
-						// We can always do this, since before term1 there is previous term data of this
-						// block, or the previous block, for which we are holding a lock. This requires
-						// the existence of "block 0", if term1 is the first term of block 1!
-						// It also requires the blocks to be contiguous in memory; we can't allocate
-						// separate memory regions for each block without larger-scale changes.
-						r2 = r1 - m1[1];
-						m2 = tt1 - r2;
-						r1 = S->PolyWise;
-						m1 = tt1;
-						*m1 += r2;
-						poin[S->tree[i]] = m2;
-						NCOPY(m2,m1,r1);
-						r1 = w[1];
-						NCOPY(m2,w,r1);
-					}
-				}
-#ifdef WITHFLOAT
-				else if ( AT.SortFloatMode ) {
-					WORD *term1, *term2;
-					term1 = poin[S->tree[i]];
-					term2 = poin[k];
-					if ( MergeWithFloat(B0, &term1,&term2) == 0 )
-						goto cancelled;
-					poin[S->tree[i]] = term1;
-				}
-#endif
-				else {
-					r1 = *( m1 += l1 - 1 );
-					m1 -= ABS(r1) - 1;
-					r1 = ( ( r1 > 0 ) ? (r1-1) : (r1+1) ) >> 1;
-					r2 = *( m2 += l2 - 1 );
-					m2 -= ABS(r2) - 1;
-					r2 = ( ( r2 > 0 ) ? (r2-1) : (r2+1) ) >> 1;
-
-					if ( AddRat(B0,(UWORD *)m1,r1,(UWORD *)m2,r2,coef,&r3) ) {
-						MLOCK(ErrorMessageLock);
-						MesCall("MasterMerge");
-						MUNLOCK(ErrorMessageLock);
-						SETERROR(-1)
-					}
-
-					if ( AN.ncmod != 0 ) {
-						if ( ( AC.modmode & POSNEG ) != 0 ) {
-							NormalModulus(coef,&r3);
-						}
-						else if ( BigLong(coef,r3,(UWORD *)AC.cmod,ABS(AN.ncmod)) >= 0 ) {
-							WORD ii;
-							SubPLon(coef,r3,(UWORD *)AC.cmod,ABS(AN.ncmod),coef,&r3);
-							coef[r3] = 1;
-							for ( ii = 1; ii < r3; ii++ ) coef[r3+ii] = 0;
-						}
-					}
-					r3 *= 2;
-					r33 = ( r3 > 0 ) ? ( r3 + 1 ) : ( r3 - 1 );
-					if ( r3 < 0 ) r3 = -r3;
-					if ( r1 < 0 ) r1 = -r1;
-					r1 *= 2;
-					r31 = r3 - r1;
-					if ( !r3 ) {		/* Terms cancel */
-cancelled:
-						ul = S->used[level] = S->tree[i];
-						S->tree[i] = -1;
-/*
-						We skip to the next term in stream ul
-*/
-						im = *poin2[ul];
-						poin[ul] = poin2[ul];
-						ki = S->ktoi[ul];
-						AB[ki+1]->T.SB.BlockTerms[AB[ki+1]->T.SB.MasterBlock]--;
-						if ( AB[ki+1]->T.SB.BlockTerms[AB[ki+1]->T.SB.MasterBlock] == 0 ) {
-/*
-							We made it to the end of the block. We have to
-							release the previous block and claim the next.
-*/
-							B = AB[ki+1];
-							i = AT.SB.MasterBlock;
-							if ( i == 1 ) {
-								UNLOCK(AT.SB.MasterBlockLock[AT.SB.MasterNumBlocks]);
-							}
-							else {
-								UNLOCK(AT.SB.MasterBlockLock[i-1]);
-							}
-							if ( i == AT.SB.MasterNumBlocks ) {
-								i = 1;
-							}
-							else { i++; }
-							LOCK(AT.SB.MasterBlockLock[i]);
-							AT.SB.MasterBlock = i;
-							poin[ul] = AT.SB.MasterStart[i];
-							im = *poin[ul];
-							poin2[ul] = poin[ul] + im;
-						}
-						else {
-							poin2[ul] += im;
-						}
-						S->used[++level] = k;
-					}
-					else if ( !r31 ) {		/* copy coef into term1 */
-						goto CopCof2;
-					}
-					else if ( r31 < 0 ) {		/* copy coef into term1
-											and adjust the length of term1 */
-						goto CopCoef;
-					}
-					else {
-/*
-							this is the dreaded calamity.
-							is there enough space?
-*/
-						if( (poin[S->tree[i]]+l1+r31) >= poin2[S->tree[i]] ) {
-/*
-								no space! now the special trick for which
-								we left 2*maxlng spaces open at the beginning
-								of each patch.
-*/
-							if ( (l1 + r31)*((LONG)sizeof(WORD)) >= AM.MaxTer ) {
-								MLOCK(ErrorMessageLock);
-								MesPrint("MasterMerge: Coefficient overflow during sort");
-								MUNLOCK(ErrorMessageLock);
-								goto ReturnError;
-							}
-							m2 = poin[S->tree[i]];
-							m3 = ( poin[S->tree[i]] -= r31 );
-							do { *m3++ = *m2++; } while ( m2 < m1 );
-							m1 = m3;
-						}
-CopCoef:
-						*(poin[S->tree[i]]) += r31;
-CopCof2:
-						m2 = (WORD *)coef; im = r3;
-						NCOPY(m1,m2,im);
-						*m1 = r33;
-					}
-				}
-/*
-				Now skip to the next term in stream k.
-*/
-NextTerm:
-				im = poin2[k][0];
-				poin[k] = poin2[k];
-				ki = S->ktoi[k];
-				AB[ki+1]->T.SB.BlockTerms[AB[ki+1]->T.SB.MasterBlock]--;
-				if ( AB[ki+1]->T.SB.BlockTerms[AB[ki+1]->T.SB.MasterBlock] == 0 ) {
-/*
-				We made it to the end of the block. We have to
-				release the previous block and claim the next.
-*/
-					B = AB[ki+1];
-					i = AT.SB.MasterBlock;
-					if ( i == 1 ) {
-						UNLOCK(AT.SB.MasterBlockLock[AT.SB.MasterNumBlocks]);
-					}
-					else {
-						UNLOCK(AT.SB.MasterBlockLock[i-1]);
-					}
-					if ( i == AT.SB.MasterNumBlocks ) {
-						i = 1;
-					}
-					else { i++; }
-					LOCK(AT.SB.MasterBlockLock[i]);
-					AT.SB.MasterBlock = i;
-					poin[k] = AT.SB.MasterStart[i];
-					im = *poin[k];
-					poin2[k] = poin[k] + im;
-				}
-				else {
-					poin2[k] += im;
-				}
-				goto OneTerm;
-			}
-		}
-		else if ( S->tree[i] < 0 ) {
-			S->tree[i] = k;
-			level--;
-			goto OneTerm;
-		}
-	}
-/*
-	found the smallest in the set. indicated by k.
-	write to its destination.
-*/
-	S->TermsLeft++;
-	if ( ( im = PutOut(B0,poin[k],&position,fout,1) ) < 0 ) {
-/* INTERNAL_ERROR_EXCL_START */
-		MLOCK(ErrorMessageLock);
-		MesPrint("!>Called from MasterMerge with k = %d (stream %d)",k,S->ktoi[k]);
-		MUNLOCK(ErrorMessageLock);
-		goto ReturnError;
-/* INTERNAL_ERROR_EXCL_STOP */
-	}
-	ADDPOS(S->SizeInFile[0],im);
-	goto NextTerm;
-EndOfMerge:
-	if ( FlushOut(&position,fout,1) ) goto ReturnError;
-	ADDPOS(S->SizeInFile[0],1);
-	CloseFile(fin->handle);
-	remove(fin->name);
-	fin->handle = -1;
-	position = S->SizeInFile[0];
-	MULPOS(position,sizeof(WORD));
-
-	// Collect global sort statistics information from the threads.
-	// The total GenTerms is the sum of the thread GenTerms.
-	// The total small/large buffer sort info is the sum of the thread info.
-	// The total comparison count is the sum of the thread counts.
-	// The total unsorted size is the sum of the total generated terms sizes
-	// The total maximal term size is the maximum of all maximal term sizes
-	S->GenTerms = 0;
-	for ( j = 1; j <= numberofworkers; j++ ) {
-		S->GenTerms += AB[j]->T.SS->GenTerms;
-		S->verbComparisons += AB[j]->T.SS->verbComparisons;
-		if ( S->verbMaxTermSize < AB[j]->T.SS->verbMaxTermSize )
-			S->verbMaxTermSize = AB[j]->T.SS->verbMaxTermSize;
-		S->verbSBsortTerms += AB[j]->T.SS->verbSBsortTerms;
-		S->verbSBsortCap += AB[j]->T.SS->verbSBsortCap;
-		S->verbLBsortPatches += AB[j]->T.SS->verbLBsortPatches;
-		S->verbLBsortCap += AB[j]->T.SS->verbLBsortCap;
-		S->verbUnsortedSize += AB[j]->T.SS->verbUnsortedSize;
-	}
-
-	WriteStats(&position,STATSPOSTSORT,NOCHECKLOGTYPE);
-	Expressions[AR0.CurExpr].counter = S->TermsLeft;
-	Expressions[AR0.CurExpr].size = position;
-/*
-	Release all locks
-*/
-	for ( i = 1; i <= S->lPatch; i++ ) {
-		B = AB[i];
-		UNLOCK(AT.SB.MasterBlockLock[0]);
-		if ( AT.SB.MasterBlock == 1 ) {
-			UNLOCK(AT.SB.MasterBlockLock[AT.SB.MasterNumBlocks]);
-		}
-		else {
-			UNLOCK(AT.SB.MasterBlockLock[AT.SB.MasterBlock-1]);
-		}
-		UNLOCK(AT.SB.MasterBlockLock[AT.SB.MasterBlock]);
-	}
-	AS.MasterSort = 0;
-	return(0);
-ReturnError:
-	for ( i = 1; i <= S->lPatch; i++ ) {
-		B = AB[i];
-		UNLOCK(AT.SB.MasterBlockLock[0]);
-		if ( AT.SB.MasterBlock == 1 ) {
-			UNLOCK(AT.SB.MasterBlockLock[AT.SB.MasterNumBlocks]);
-		}
-		else {
-			UNLOCK(AT.SB.MasterBlockLock[AT.SB.MasterBlock-1]);
-		}
-		UNLOCK(AT.SB.MasterBlockLock[AT.SB.MasterBlock]);
-	}
-	AS.MasterSort = 0;
-	return(-1);
-}
-
-/*
-  	#] MasterMerge : 
   	#[ SortBotMasterMerge :
 */
- 
-#ifdef WITHSORTBOTS
+
 
 /**
  *	This is the master routine for the final stage in a sortbot merge.
@@ -4350,14 +3800,12 @@ int SortBotMasterMerge(void)
 	return(0);
 }
 
-#endif
 
 /*
   	#] SortBotMasterMerge : 
   	#[ SortBotMerge :
 */
- 
-#ifdef WITHSORTBOTS
+
 
 /**
  *	This routine is run by a sortbot and merges two sorted output streams into
@@ -4408,12 +3856,12 @@ int SortBotMerge(PHEAD0)
 	if ( AT.SortBotIn2 >= 0 ) {
 		LOCK(Bin2->T.SB.MasterBlockLock[blin2]);
 	}
-	term1 = Bin1->T.SB.MasterStart[blin1];  
+	term1 = Bin1->T.SB.MasterStart[blin1];
 	WORD zeroterm = 0;
-	term2 = &zeroterm;                                              
-	if ( AT.SortBotIn2 >= 0 ) {   
+	term2 = &zeroterm;
+	if ( AT.SortBotIn2 >= 0 ) {
 		term2 = Bin2->T.SB.MasterStart[blin2];
-	}                                                                                                
+	}
 	AT.SB.FillBlock = 1;
 /*
 	Now the main loop. Keep going until one of the two hits the end.
@@ -4629,7 +4077,7 @@ next2:
 					goto cancelled;
 				}
 				else if ( size3 < 0 ) mpf_neg(aux3,aux3);
-				fun3 = TermMalloc("MasterMerge");
+				fun3 = TermMalloc("SortBotMasterMerge");
 				PackFloat(fun3,aux3);
 				l3 = fun3[1]+(fun1-m1)+3; /* new size */
 
@@ -4639,7 +4087,7 @@ next2:
 */
 					if ( (l3)*((LONG)sizeof(WORD)) >= AM.MaxTer ) {
 						MLOCK(ErrorMessageLock);
-						MesPrint("MasterMerge: Coefficient overflow during sort");
+						MesPrint("SortBotMasterMerge: Coefficient overflow during sort");
 						MUNLOCK(ErrorMessageLock);
 						goto ReturnError;
 					}
@@ -4649,7 +4097,7 @@ next2:
 					*m3++ = 1; *m3++ = 1;
 					*m3++ = size3 < 0 ? -3: 3;
 					*wp = m3-wp;
-					TermFree(fun3,"MasterMerge");
+					TermFree(fun3,"SortBotMasterMerge");
 					goto PutOutwp;
 				}
 				for ( jj = 0; jj < fun3[1]; jj++ ) fun1[jj] = fun3[jj];
@@ -4657,7 +4105,7 @@ next2:
 				*fun1++ = 1; *fun1++ = 1;
 				*fun1++ = size3 < 0 ? -3: 3;
 				*term1 = fun1-term1;
-				TermFree(fun3,"MasterMerge");
+				TermFree(fun3,"SortBotMasterMerge");
 			}
 #endif
 			else {
@@ -4876,7 +4324,6 @@ ReturnError:;
 	return(error);
 }
 
-#endif
 
 /*
   	#] SortBotMerge : 
@@ -4888,7 +4335,7 @@ static int SortBlocksInitialized = 0;
 /**
  *	Initializes the blocks in the sort buffers of the master.
  *	These blocks are needed to keep both the workers and the master working
- *	simultaneously. See also the commentary at the routine MasterMerge.
+ *	simultaneously. See also the commentary at the routine SortBotMasterMerge.
  */
 
 int IniSortBlocks(int numworkers)
@@ -4904,7 +4351,6 @@ int IniSortBlocks(int numworkers)
 	SortBlocksInitialized = 1;
 	if ( numworkers == 0 ) return(0);
 
-#ifdef WITHSORTBOTS
 	if ( GetNumberOfSortBots(numworkers) > 0 ) {
 		numparts = numworkers + GetNumberOfSortBots(numberofworkers);
 		numberofblocks = numberofblocks/2;
@@ -4912,9 +4358,6 @@ int IniSortBlocks(int numworkers)
 	else {
 		numparts = numworkers;
 	}
-#else
-	numparts = numworkers;
-#endif
 	S = AM.S0;
 	totalsize = S->LargeSize + S->SmallEsize;
 	workersize = totalsize / numparts;
@@ -4990,7 +4433,6 @@ int UpdateSortBlocks(int numworkers)
 
 	if ( numworkers == 0 ) return(0);
 
-#ifdef WITHSORTBOTS
 	if ( GetNumberOfSortBots(numworkers) > 0) {
 		numparts = numworkers + GetNumberOfSortBots(numberofworkers);
 		numberofblocks = numberofblocks/2;
@@ -4998,9 +4440,6 @@ int UpdateSortBlocks(int numworkers)
 	else {
 		numparts = numworkers;
 	}
-#else
-	numparts = numworkers;
-#endif
 	S = AM.S0;
 	totalsize = S->LargeSize + S->SmallEsize;
 	workersize = totalsize / numparts;
@@ -5047,8 +4486,7 @@ int UpdateSortBlocks(int numworkers)
   	#] UpdateSortBlocks : 
   	#[ DefineSortBotTree :
 */
- 
-#ifdef WITHSORTBOTS
+
 
 /**
  *	To be used in a sortbot merge. It initializes the whole sortbot
@@ -5059,7 +4497,6 @@ void DefineSortBotTree(void)
 {
 	ALLPRIVATES *B;
 	int n, i, from;
-	if ( numberofworkers < 2 ) return;
 	n = numberofworkers+GetNumberOfSortBots(numberofworkers);
 	for ( i = numberofworkers+1, from = 1; i <= n; i++ ) {
 		B = AB[i];
@@ -5071,7 +4508,6 @@ void DefineSortBotTree(void)
 	AT.SortBotIn2 = -1;
 }
 
-#endif
 
 /*
   	#] DefineSortBotTree : 

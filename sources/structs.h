@@ -2136,10 +2136,8 @@ struct T_const {
 #ifdef WITHPTHREADS
     int     identity;              /* () When we work with B->T */
     int     LoadBalancing;         /* Needed for synchronization */
-#ifdef WITHSORTBOTS
     int     SortBotIn1;            /* Input stream 1 for a SortBot */
     int     SortBotIn2;            /* Input stream 2 for a SortBot */
-#endif
 #endif
     int     TermMemMax;            /* For TermMalloc. Set zero in Checkpoint */
     int     TermMemTop;            /* For TermMalloc. Set zero in Checkpoint */

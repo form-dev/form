@@ -115,9 +115,7 @@ void SetfFloatPrecision(LONG prec)
 #ifdef WITHPTHREADS
 	int totnum = AM.totalnumberofthreads, id;
 	mpfr_t *a;
-#ifdef WITHSORTBOTS
     totnum = totnum + GetNumberOfSortBots(totnum - 1);
-#endif
     for ( id = 0; id < totnum; id++ ) {
 		AB[id]->T.auxr_ = (void *)Malloc1(sizeof(mpfr_t)*5,"AB[id]->T.auxr_");
 		a = (mpfr_t *)AB[id]->T.auxr_;
@@ -143,9 +141,7 @@ void ClearfFloat(void)
 #ifdef WITHPTHREADS
 	int totnum = AM.totalnumberofthreads, id;
 	mpfr_t *a;
-#ifdef WITHSORTBOTS
     totnum = totnum + GetNumberOfSortBots(totnum - 1);
-#endif
 	if ( AB[0]->T.auxr_ ) {
 	    for ( id = 0; id < totnum; id++ ) {
 			a = (mpfr_t *)AB[id]->T.auxr_;

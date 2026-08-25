@@ -287,7 +287,6 @@ template<typename T> struct calc {
 #define DEBUGGINGLOCKS
 #define WITHSTATS
 */
-#define WITHSORTBOTS
 
 #include <stdio.h>
 #include <stdlib.h>

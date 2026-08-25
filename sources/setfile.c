@@ -388,7 +388,6 @@ int RecalcSetups(void)
 	if ( AM.MaxTer > MAXPOSITIVE - 200*(LONG)(sizeof(WORD)) ) AM.MaxTer = MAXPOSITIVE - 200*(LONG)(sizeof(WORD));
 	AM.MaxTer /= sizeof(WORD);
 	AM.MaxTer *= sizeof(WORD);
-#ifdef WITHSORTBOTS
 	int numworkers = AM.totalnumberofthreads - 1;
         int numberofsortbots = GetNumberOfSortBots(numworkers);
 	if ( numberofsortbots ) {
@@ -396,7 +395,6 @@ int RecalcSetups(void)
 			NUMBEROFBLOCKSINSORT*MINIMUMNUMBEROFTERMS/2*AM.MaxTer);
 	}
 	else
-#endif
 	{
 		minimumsize = numworkers*(AM.MaxTer+
 			NUMBEROFBLOCKSINSORT*MINIMUMNUMBEROFTERMS*AM.MaxTer);

@@ -1423,7 +1423,6 @@ extern void   WakeupThread(int,int);
 extern int    MasterWait(void);
 extern int    InParallelProcessor(void);
 extern int    ThreadsProcessor(EXPRESSIONS,WORD,WORD);
-extern int    MasterMerge(void);
 extern int    PutToMaster(PHEAD WORD *);
 extern void   SetWorkerFiles(void);
 extern int    MakeThreadBuckets(int,int);
@@ -1659,9 +1658,7 @@ extern void optimize_expression_given_Horner_threaded(void);
 #endif
 
 
-#ifdef WITHSORTBOTS
 extern int GetNumberOfSortBots(int);
-#endif
  
 extern int DoPreAdd(UBYTE *s);
 extern int DoPreUseDictionary(UBYTE *s);
