@@ -1349,6 +1349,12 @@ void StartVariables(void)
 	AC.MaxWeight = AM.gMaxWeight = AM.ggMaxWeight = MAXWEIGHT;
 	AC.DefaultPrecision = AM.gDefaultPrecision = AM.ggDefaultPrecision = DEFAULTPRECISION;
 #endif
+#ifdef WITHFLINT
+	AC.activePadicPrecision = 0;
+	AC.activePadic = 0;
+	AC.activePadicContext = 0;
+	AO.padicncoeffs = 0;
+#endif
 	AC.CommuteInSet = 0;
 
 	AM.PrintTotalSize = 0;
@@ -2118,6 +2124,7 @@ backtrace_fallback: ;
 	This keeps valgrind happy.
 */
 #ifdef WITHFLINT
+	ClearPadicSystem();
 	flint_final_cleanup_master();
 #endif
 	CleanUp(errorcode);
