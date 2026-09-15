@@ -1654,11 +1654,9 @@ void UpdateMaxSize(void)
 					position = sort->file.filesize;
 					ADD2POS(sumsize,position);
 				}
-				for ( i = 0; i < 2; i++ ) {
-					if ( sort && sort->FoStage4[i].handle >= 0 ) {
-						position = sort->FoStage4[i].filesize;
-						ADD2POS(sumsize,position);
-					}
+				if ( sort && sort->FoStage4.handle >= 0 ) {
+					position = sort->FoStage4.filesize;
+					ADD2POS(sumsize,position);
 				}
 			}
 		}
@@ -1670,11 +1668,9 @@ void UpdateMaxSize(void)
 			position = sort->file.filesize;
 			ADD2POS(sumsize,position);
 		}
-		for ( i = 0; i < 2; i++ ) {
-			if ( sort && sort->FoStage4[i].handle >= 0 ) {
-				position = sort->FoStage4[i].filesize;
-				ADD2POS(sumsize,position);
-			}
+		if ( sort && sort->FoStage4.handle >= 0 ) {
+			position = sort->FoStage4.filesize;
+			ADD2POS(sumsize,position);
 		}
 	}
 #endif

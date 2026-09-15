@@ -444,7 +444,6 @@ int NewSort(PHEAD0)
 	S->sTerms = 0;
 	PUTZERO(S->file.POposition);
 	S->stage4 = 0;
-	S->Stage4Name = 0;
 	if ( AR.sLevel > AN.MaxFunSorts ) AN.MaxFunSorts = AR.sLevel;
 
 	// Zero the SortVerbose counters:
@@ -873,7 +872,6 @@ TooLarge:
 #endif
 			}
 		}
-		S->Stage4Name = 0;
 #ifdef WITHPTHREADS
 		if ( AS.MasterSort && AC.ThreadSortFileSynch ) {
 			if ( S->file.handle >= 0 ) {
@@ -3540,7 +3538,7 @@ int MergePatches(WORD par)
 	}
 #endif
 	fin = &S->file;
-	fout = &(S->FoStage4[0]);
+	fout = &(S->FoStage4);
 NewMerge:
 	coef = AN.SoScratC;
 	poin = S->poina; poin2 = S->poin2a;
@@ -3602,7 +3600,6 @@ ConMer:
 		Input is from S->file and output will go to S->FoStage4.
 		The file corresponding to this last one must be made now.
 */
-		S->Stage4Name ^= 1;
 		S->iPatches = S->fPatches;
 		S->fPatches = S->inPatches;
 		S->inPatches = S->iPatches;
@@ -4463,19 +4460,14 @@ void StageSort(FILEHANDLE *fout)
 		S->fPatchN = 0;
 
 		{
-			int i;
-			for ( i = 0; i < 2; i++ ) {
-				FILEHANDLE *stage4 = &(S->FoStage4[i]);
-				if ( stage4->PObuffer == 0 ) {
-					size_t namesize = strlen(S->file.name) + 4;
-					stage4->PObuffer = (WORD *)Malloc1(stage4->POsize + namesize,
-												"Stage 4 buffer");
-					stage4->POfill = stage4->POfull = stage4->PObuffer;
-					stage4->POstop = stage4->PObuffer
-										 + stage4->POsize/sizeof(WORD);
-					stage4->name = (char *)((UBYTE *)stage4->PObuffer + stage4->POsize);
-					snprintf(stage4->name,namesize,"%s.4%c",S->file.name,'a'+i);
-				}
+			FILEHANDLE *stage4 = &(S->FoStage4);
+			if ( stage4->PObuffer == 0 ) {
+				size_t namesize = strlen(S->file.name) + 4;
+				stage4->PObuffer = (WORD *)Malloc1(stage4->POsize + namesize, "Stage 4 buffer");
+				stage4->POfill = stage4->POfull = stage4->PObuffer;
+				stage4->POstop = stage4->PObuffer + stage4->POsize/sizeof(WORD);
+				stage4->name = (char *)((UBYTE *)stage4->PObuffer + stage4->POsize);
+				snprintf(stage4->name,namesize,"%s.4a",S->file.name);
 			}
 		}
 		S->stage4 = 1;
@@ -4598,7 +4590,7 @@ void CleanUpSort(int num)
 {
 	GETIDENTITY
 	SORTING *S;
-	int minnum = num, i, j;
+	int minnum = num, i;
 	if ( AN.FunSorts ) {
 		if ( num == -1 ) {
 			if ( AN.MaxFunSorts > 3 ) {
@@ -4610,19 +4602,17 @@ void CleanUpSort(int num)
 		for ( i = minnum; i < AN.NumFunSorts; i++ ) {
 			S = AN.FunSorts[i];
 			if ( S ) {
-				for ( j = 0; j < 2; j++ ) {
-					if ( S->FoStage4[j].handle >= 0 ) {
-						UpdateMaxSize();
+				if ( S->FoStage4.handle >= 0 ) {
+					UpdateMaxSize();
 #ifdef WITHZLIB
-						ClearSortGZIP(&(S->FoStage4[j]));
+					ClearSortGZIP(&(S->FoStage4));
 #endif
-						CloseFile(S->FoStage4[j].handle);
-						remove(S->FoStage4[j].name);
-						S->FoStage4[j].handle = -1;
-					}
-					if ( S->FoStage4[j].PObuffer ) {
-						M_free(S->FoStage4[j].PObuffer, "CleanUpSort: Stage 4 buffer");
-					}
+					CloseFile(S->FoStage4.handle);
+					remove(S->FoStage4.name);
+					S->FoStage4.handle = -1;
+				}
+				if ( S->FoStage4.PObuffer ) {
+					M_free(S->FoStage4.PObuffer, "CleanUpSort: Stage 4 buffer");
 				}
 				if ( S->file.handle >= 0 ) {
 /*					TruncateFile(S->file.handle); */
@@ -4664,16 +4654,14 @@ void CleanUpSort(int num)
 		if ( num == 0 ) {
 			S = AN.FunSorts[0];
 			if ( S ) {
-				for ( j = 0; j < 2; j++ ) {
-					if ( S->FoStage4[j].handle >= 0 ) {
-						UpdateMaxSize();
+				if ( S->FoStage4.handle >= 0 ) {
+					UpdateMaxSize();
 #ifdef WITHZLIB
-						ClearSortGZIP(&(S->FoStage4[j]));
+					ClearSortGZIP(&(S->FoStage4));
 #endif
-						CloseFile(S->FoStage4[j].handle);
-						remove(S->FoStage4[j].name);
-						S->FoStage4[j].handle = -1;
-					}
+					CloseFile(S->FoStage4.handle);
+					remove(S->FoStage4.name);
+					S->FoStage4.handle = -1;
 				}
 				if ( S->file.handle >= 0 ) {
 /*					TruncateFile(S->file.handle); */
