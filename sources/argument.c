@@ -2076,7 +2076,7 @@ int ArgFactorize(PHEAD WORD *argin, WORD *argout)
 #ifdef NEWORDER
 	WORD *tt;
 #endif
-	WORD startebuf = cbuf[AT.ebufnum].numrhs,oldword;
+	WORD startebuf = cbuf[AT.ebufnum].numrhs, extrasymbolbase = -1, oldword;
 	WORD oldsorttype = AR.SortType, numargs;
 	int error = 0, action = 0, i, ii, number, sign = 1;
 
@@ -2254,7 +2254,7 @@ int ArgFactorize(PHEAD WORD *argin, WORD *argout)
 		argextra = AT.WorkPointer;
 		NewSort(BHEAD0);
 		while ( t < tstop ) {
-			if ( LocalConvertToPoly(BHEAD t,argextra,startebuf,0) < 0 ) {
+			if ( LocalConvertToPoly(BHEAD t,argextra,startebuf,0,&extrasymbolbase) < 0 ) {
 				error = -1;
 getout:
 				AR.SortType = oldsorttype;
@@ -2309,8 +2309,8 @@ getout:
 				argextra = AT.WorkPointer;
 				NewSort(BHEAD0);
 				while ( t < tstop ) {
-					if ( ConvertFromPoly(BHEAD t,argextra,numxsymbol,CC->numrhs-startebuf+numxsymbol
-					,startebuf-numxsymbol,1) <= 0 ) {
+					if ( ConvertFromPoly(BHEAD t,argextra,extrasymbolbase,CC->numrhs-startebuf+extrasymbolbase
+					,startebuf-extrasymbolbase,1) <= 0 ) {
 						TermFree(argcopy2,"argcopy2");
 						LowerSortLevel();
 						error = -3;

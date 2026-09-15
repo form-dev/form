@@ -505,13 +505,25 @@ int ConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD *comlist, WORD par)
  *		buffer and represented by a symbol. The numbering of the extra
  *		symbols is down from the maximum. In principle there can be a
  *		problem when running into the already assigned ones.
- *		This uses the FindTree for searching in the global tree and
- *		then looks further in the AT.ebufnum. This allows fully parallel
- *		processing. Hence we need no locks. Cannot be used in the same
- *		module as ConvertToPoly.
+ *		The temporary extrasymbol definitions live in the private AT.ebufnum.
+ *		We don't touch the global definitions, beyond determining the current
+ *		number of global extrasymbols, under a lock.
  */
 
-int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par)
+/** Helper function: copy the current numxsymbol, under a lock. Local temporary
+ * extrasymbol numbers will follow this. If the argument is positive, we have
+ * already stored the global numxsymbol and don't store it again. */
+static WORD LocalExtraSymbolBase(WORD *base)
+{
+	if ( *base < 0 ) {
+		LOCK(AM.sbuflock);
+		*base = numxsymbol;
+		UNLOCK(AM.sbuflock);
+	}
+	return(*base);
+}
+
+int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par, WORD *base)
 {
 	WORD *tout, *tstop, ncoef, *t, *r, *tt, *ttwo = 0;
 	int i, action = 0;
@@ -536,7 +548,7 @@ int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par
 					tout[2] = 4;
 					tout[3] = r[0];
 					tout[4] = -1;
-					i = FindLocalSubterm(BHEAD tout+1,startebuf);
+					i = FindLocalSubterm(BHEAD tout+1,startebuf,LocalExtraSymbolBase(base));
 					*tout++ = SYMBOL;
 					*tout++ = 4;
 					*tout++ = MAXVARIABLES-i;
@@ -560,7 +572,7 @@ int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par
 				else {
 					tout[5] = 1;
 				}
-				i = FindLocalSubterm(BHEAD tout+1,startebuf);
+				i = FindLocalSubterm(BHEAD tout+1,startebuf,LocalExtraSymbolBase(base));
 				*tout++ = SYMBOL;
 				*tout++ = 4;
 				*tout++ = MAXVARIABLES-i;
@@ -577,7 +589,7 @@ int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par
 				tout[2] = 4;
 				tout[3] = r[0];
 				tout[4] = r[1];
-				i = FindLocalSubterm(BHEAD tout+1,startebuf);
+				i = FindLocalSubterm(BHEAD tout+1,startebuf,LocalExtraSymbolBase(base));
 				*tout++ = SYMBOL;
 				*tout++ = 4;
 				*tout++ = MAXVARIABLES-i;
@@ -593,7 +605,7 @@ int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par
 				tout[1] = INDEX;
 				tout[2] = 3;
 				tout[3] = r[0];
-				i = FindLocalSubterm(BHEAD tout+1,startebuf);
+				i = FindLocalSubterm(BHEAD tout+1,startebuf,LocalExtraSymbolBase(base));
 				*tout++ = SYMBOL;
 				*tout++ = 4;
 				*tout++ = MAXVARIABLES-i;
@@ -615,7 +627,7 @@ int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par
 			else { t += t[1]; }
 		}
 		else if ( *t >= FUNCTION ) {
-			i = FindLocalSubterm(BHEAD t,startebuf);
+			i = FindLocalSubterm(BHEAD t,startebuf,LocalExtraSymbolBase(base));
 			t += t[1];
 			*tout++ = SYMBOL;
 			*tout++ = 4;
@@ -661,65 +673,61 @@ int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par
 		subexpressions when extra symbols have been replaced.
 */
 
+#ifdef WITHPTHREADS
+/** Helper function: we only lock sbuflock if the term actually has an
+ * extrasymbol to replace. Search for one. */
+static int PolyHasExtraSymbols(WORD *term, WORD from, WORD to)
+{
+	WORD *t, *tt, *tstop, *tstop1;
+
+	tstop = term + *term - ABS(term[*term-1]);
+	for ( t = term + 1; t < tstop; t += t[1] ) {
+		if ( *t != SYMBOL ) {
+			continue;
+		}
+		tstop1 = t + t[1];
+		for ( tt = t + 2; tt < tstop1; tt += 2 ) {
+			if ( *tt >= MAXVARIABLES - to && *tt < MAXVARIABLES - from ) {
+				return(1);
+			}
+		}
+	}
+	return(0);
+}
+#endif
+
+static int ConvertFromPolyImpl(PHEAD WORD *term, WORD *outterm, WORD from, WORD to, WORD offset, WORD par);
+
 int ConvertFromPoly(PHEAD WORD *term, WORD *outterm, WORD from, WORD to, WORD offset, WORD par)
+{
+	int locked = 0, result;
+	/* LocalConvertToPoly uses only AT.ebufnum. Expression-level FromPolynomial
+	 * needs the global lock if the term contains a global extrasymbol. */
+#ifdef WITHPTHREADS
+	if ( ! par && PolyHasExtraSymbols(term,from,to) ) {
+		LOCK(AM.sbuflock);
+		locked = 1;
+	}
+#endif
+	result = ConvertFromPolyImpl(BHEAD term,outterm,from,to,offset,par);
+#ifdef WITHPTHREADS
+	if ( locked ) {
+		UNLOCK(AM.sbuflock);
+	}
+#else
+	DUMMYUSE(locked);
+#endif
+	return(result);
+}
+
+static int ConvertFromPolyImpl(PHEAD WORD *term, WORD *outterm, WORD from, WORD to, WORD offset, WORD par)
 {
 	WORD *tout, *tstop, *tstop1, ncoef, *t, *r, *tt;
 	int i;
-/*	first = 1; */
 	tt = term + *term;
 	tout = outterm+1;
 	ncoef = ABS(tt[-1]);
 	tstop = tt - ncoef;
-/*
-	r = t = term + 1;
-	while ( t < tstop ) {
-		if ( *t == SYMBOL ) {
-			tstop1 = t + t[1];
-			tt = t + 2;
-			while ( tt < tstop1 ) {
-				if ( ( *tt < MAXVARIABLES - to )
-				  || ( *tt >= MAXVARIABLES - from ) ) {
-					tt += 2;
-				}
-				else break;
-			}
-			if ( tt >= tstop1 ) { t = tstop1; continue; }
-			while ( r < t ) *tout++ = *r++;
-			t += 2;
-			first = 0;
-			while ( t < tstop1 ) {
-				if ( ( *t < MAXVARIABLES - to )
-				  || ( *t >= MAXVARIABLES - from ) ) {
-					*tout++ = SYMBOL;
-					*tout++ = 4;
-					*tout++ = *t++;
-					*tout++ = *t++;
-				}
-				else {
-					*tout++ = SUBEXPRESSION;
-					*tout++ = SUBEXPSIZE;
-					*tout++ = MAXVARIABLES - *t++ + offset;
-					*tout++ = *t++;
-					if ( par ) *tout++ = AT.ebufnum;
-					else       *tout++ = AM.sbufnum;
-					FILLSUB(tout)
-				}
-			}
-			r = t;
-		}
-		else {
-			t += t[1];
-		}
-	}
-	if ( first ) {
-		i = *term; t = term;
-		NCOPY(outterm,t,i);
-		return(*term);
-	}
-	while ( r < t ) *tout++ = *r++;
-	NCOPY(tout,tstop,ncoef)
-	*outterm = tout-outterm;
-*/
 	t = term + 1;
 	while ( t < tstop ) {
 		if ( *t == SYMBOL ) {
@@ -771,7 +779,8 @@ int ConvertFromPoly(PHEAD WORD *term, WORD *outterm, WORD from, WORD to, WORD of
 		Searching is by tree structure.
 		Adding changes the tree.
 
-		Notice that in TFORM we should be in sequential mode.
+		Writing to the global extra-symbol buffer and its search tree is protected
+		in TFORM by AM.sbuflock.
 */
 
 int FindSubterm(WORD *subterm)
@@ -837,14 +846,15 @@ int FindSubterm(WORD *subterm)
  		#[ FindLocalSubterm :
 
 		In this routine we look up a variable.
-		If we don't find it we will enter it in the subterm compiler buffer
-		Searching is by tree structure.
-		Adding changes the tree.
+		If we don't find it we enter it in the thread-private compiler buffer.
 
-		Notice that in TFORM we should be in sequential mode.
+		The definitions and lookup are private to this thread. The numbering
+		starts after the stored global base, but may overlap global symbols
+		created by other threads after that store. The definitions are temporary,
+		so this doesn't matter.
 */
 
-int FindLocalSubterm(PHEAD WORD *subterm, WORD startebuf)
+int FindLocalSubterm(PHEAD WORD *subterm, WORD startebuf, WORD base)
 {
 	WORD old[5], *ss, *term, i, j, *t1, *t2;
 	int number;
@@ -857,13 +867,7 @@ int FindLocalSubterm(PHEAD WORD *subterm, WORD startebuf)
 	old[0] = *term; old[1] = ss[0]; old[2] = ss[1]; old[3] = ss[2]; old[4] = ss[3];
 	ss[0] = 1; ss[1] = 1; ss[2] = 3; ss[3] = 0; *term = subterm[1]+4;
 /*
-		First see whether we have this one already in the global buffer.
-*/
-	number = FindTree(AM.sbufnum,term);
-	if ( number > 0 ) goto wearehappy;
-/*
-	Now look whether it is in the ebufnum between startebuf and numrhs
-	Note however that we need an offset of (numxsymbol-startebuf)
+	Look whether it is in the private ebufnum between startebuf and numrhs.
 */
 	for ( i = startebuf+1; i <= C->numrhs; i++ ) {
 		t1 = C->rhs[i]; t2 = term;
@@ -871,7 +875,7 @@ int FindLocalSubterm(PHEAD WORD *subterm, WORD startebuf)
 			j = *t1;
 			while ( *t1 == *t2 && j > 0 ) { t1++; t2++; j--; }
 			if ( j <= 0 ) {
-				number = i-startebuf+numxsymbol;
+				number = i-startebuf+base;
 				goto wearehappy;
 			}
 		}
@@ -882,7 +886,7 @@ int FindLocalSubterm(PHEAD WORD *subterm, WORD startebuf)
 	AddRHS(AT.ebufnum,1);
 	AddNtoC(AT.ebufnum,*term,term,9);
 	AddToCB(C,0)
-	number = C->numrhs-startebuf+numxsymbol;
+	number = C->numrhs-startebuf+base;
 wearehappy:
 	*term = old[0]; ss[0] = old[1]; ss[1] = old[2]; ss[2] = old[3]; ss[3] = old[4];
 	return(number);
@@ -1094,7 +1098,8 @@ void PrintExtraSymbol(int num, WORD *terms,int par)
 		Searching is by tree structure.
 		Adding changes the tree.
 
-		Notice that in TFORM we should be in sequential mode.
+		Writing to the global extra-symbol buffer and its search tree is protected
+		in TFORM by AM.sbuflock.
 */
 
 int FindSubexpression(WORD *subexpr)
