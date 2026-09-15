@@ -402,7 +402,7 @@ ALLPRIVATES *InitializeOneThread(int identity)
 {
 	WORD *t, *ScratchBuf;
 	int i, j, bsize, *bp;
-	LONG ScratchSize[3], IOsize;
+	LONG ScratchSize[3];
 	ALLPRIVATES *B;
 	UBYTE *s;
 
@@ -563,18 +563,6 @@ ALLPRIVATES *InitializeOneThread(int identity)
 	AR.Fscr[0].handle = -1;
 	AR.Fscr[1].handle = -1;
 	AR.Fscr[2].handle = -1;
-	AR.FoStage4[0].handle = -1;
-	AR.FoStage4[1].handle = -1;
-	IOsize = AM.S0->file.POsize;
-#ifdef WITHZLIB
-	AR.FoStage4[0].ziosize = IOsize;
-	AR.FoStage4[1].ziosize = IOsize;
-	AR.FoStage4[0].ziobuffer = 0;
-	AR.FoStage4[1].ziobuffer = 0;
-#endif	
-	AR.FoStage4[0].POsize  = ((IOsize+sizeof(WORD)-1)/sizeof(WORD))*sizeof(WORD);
-	AR.FoStage4[1].POsize  = ((IOsize+sizeof(WORD)-1)/sizeof(WORD))*sizeof(WORD);
-
 	AR.hidefile = &(AR.Fscr[2]);
 	AR.StoreData.Handle = -1;
 	AR.SortType = AC.SortType;
@@ -637,7 +625,6 @@ ALLPRIVATES *InitializeOneThread(int identity)
 /*
 	Still to do: the SS stuff.
 	             the Fscr[3]
-	             the FoStage4[2]
 */
 	if ( AT.WorkSpace == 0 ||
 	     AT.Nest == 0 ||
@@ -1076,7 +1063,6 @@ int LoadOneThread(int from, int identity, THREADBUCKET *thr, int par)
 	AR.DeferFlag = AR0.DeferFlag;
 	AR.TePos = 0;
 	AR.sLevel = AR0.sLevel;
-	AR.Stage4Name = AR0.Stage4Name;
 	AR.GetOneFile = AR0.GetOneFile;
 	AR.PolyFun = AR0.PolyFun;
 	AR.PolyFunInv = AR0.PolyFunInv;

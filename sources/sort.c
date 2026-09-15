@@ -872,7 +872,6 @@ TooLarge:
 #endif
 			}
 		}
-		AR.Stage4Name = 0;
 #ifdef WITHPTHREADS
 		if ( AS.MasterSort && AC.ThreadSortFileSynch ) {
 			if ( S->file.handle >= 0 ) {
@@ -3539,7 +3538,7 @@ int MergePatches(WORD par)
 	}
 #endif
 	fin = &S->file;
-	fout = &(AR.FoStage4[0]);
+	fout = &(S->FoStage4);
 NewMerge:
 	coef = AN.SoScratC;
 	poin = S->poina; poin2 = S->poin2a;
@@ -3598,14 +3597,8 @@ ConMer:
 	else if ( par == 0 && S->stage4 > 0 ) {
 /*
 		We will have to do our job more than once.
-		Input is from S->file and output will go to AR.FoStage4.
+		Input is from S->file and output will go to S->FoStage4.
 		The file corresponding to this last one must be made now.
-*/
-		AR.Stage4Name ^= 1;
-/*
-		s = (UBYTE *)(fout->name); while ( *s ) s++;
-		if ( AR.Stage4Name ) s[-1] += 1;
-		else                s[-1] -= 1;
 */
 		S->iPatches = S->fPatches;
 		S->fPatches = S->inPatches;
@@ -4221,14 +4214,6 @@ EndOfAll:
 			goto ConMer;
 		}
 		else {
-/*
-			if ( fin == &(AR.FoStage4[0]) ) {
-				s = (UBYTE *)(fin->name); while ( *s ) s++;
-				if ( AR.Stage4Name == 1 ) s[-1] -= 1;
-				else                      s[-1] += 1;
-			}
-*/
-/*			TruncateFile(fin->handle); */
 			UpdateMaxSize();
 #ifdef WITHZLIB
 			ClearSortGZIP(fin);
@@ -4240,13 +4225,6 @@ EndOfAll:
 			MesPrint("%w MergePatches removed in file %s",fin->name);
 			MUNLOCK(ErrorMessageLock);
 #endif
-/*
-			if ( fin == &(AR.FoStage4[0]) ) {
-				s = (UBYTE *)(fin->name); while ( *s ) s++;
-				if ( AR.Stage4Name == 1 ) s[-1] += 1;
-				else                      s[-1] -= 1;
-			}
-*/
 			fin->handle = -1;
 			{ FILEHANDLE *ff = fin; fin = fout; fout = ff; }
 			PUTZERO(S->SizeInFile[0]);
@@ -4440,35 +4418,24 @@ void StageSort(FILEHANDLE *fout)
 	SORTING *S = AT.SS;
 	if ( S->fPatchN >= S->MaxFpatches ) {
 		POSITION position;
-		if ( S != AT.S0 ) {
-/*
-			There are no proper provisions for stage 4 or higher sorts
-			for function arguments and $ variables. The reason:
-			The current code maps out the patches, based on the size of
-			the buffers in the FoStage4 structs, while they are used
-			inside the S->file struct that may have far smaller buffers.
-			By itself that might still be repairable, but it goes completely
-			wrong when during the sort polyRatFuns have to be added and they
-			would go into stage4 (very rare but possible).
-			The only really correct solution would be to put FoStage4 structs
-			in all sort levels. Messy. (JV 8-oct-2018).
-*/
-			MLOCK(ErrorMessageLock);
-			MesPrint("Currently Stage 4 sorts are not allowed for function arguments or $ variables.");
-			MesPrint("Please increase correspondingsorting parameters (sub-) in the setup.");
-			MUNLOCK(ErrorMessageLock);
-			Terminate(-1);
-		}
 		PUTZERO(position);
-		MLOCK(ErrorMessageLock);
+		if ( S != AT.S0 && AS.SubSortStage4Warning == 0 ) {
+			MLOCK(ErrorMessageLock);
+			AS.SubSortStage4Warning = 1;
+			Warning("StageSort in sub-buffer: increasing sub-buffer sizes in setup recommended.");
+			MUNLOCK(ErrorMessageLock);
+		}
+		if ( S == AT.S0 ) {
+			MLOCK(ErrorMessageLock);
 #ifdef WITHPTHREADS
-		MesPrint("StageSort in thread %d",identity);
+			MesPrint("StageSort in thread %d",identity);
 #elif defined(WITHMPI)
-		MesPrint("StageSort in process %d",PF.me);
+			MesPrint("StageSort in process %d",PF.me);
 #else
-		MesPrint("StageSort");
+			MesPrint("StageSort");
 #endif
-		MUNLOCK(ErrorMessageLock);
+			MUNLOCK(ErrorMessageLock);
+		}
 		SeekFile(fout->handle,&position,SEEK_END);
 /*
 		No extra compression data has to be written.
@@ -4492,25 +4459,16 @@ void StageSort(FILEHANDLE *fout)
 		S->fPatches[0] = fout->filesize;
 		S->fPatchN = 0;
 
-		if ( AR.FoStage4[0].PObuffer == 0 ) {
-			AR.FoStage4[0].PObuffer = (WORD *)Malloc1(AR.FoStage4[0].POsize*sizeof(WORD)
-												,"Stage 4 buffer");
-			AR.FoStage4[0].POfill   = AR.FoStage4[0].PObuffer;
-			AR.FoStage4[0].POstop   = AR.FoStage4[0].PObuffer
-						 + AR.FoStage4[0].POsize/sizeof(WORD);
-#ifdef WITHPTHREADS
-			AR.FoStage4[0].pthreadslock = dummylock;
-#endif
-		}
-		if ( AR.FoStage4[1].PObuffer == 0 ) {
-			AR.FoStage4[1].PObuffer = (WORD *)Malloc1(AR.FoStage4[1].POsize*sizeof(WORD)
-												,"Stage 4 buffer");
-			AR.FoStage4[1].POfill   = AR.FoStage4[1].PObuffer;
-			AR.FoStage4[1].POstop   = AR.FoStage4[1].PObuffer
-						 + AR.FoStage4[1].POsize/sizeof(WORD);
-#ifdef WITHPTHREADS
-			AR.FoStage4[1].pthreadslock = dummylock;
-#endif
+		{
+			FILEHANDLE *stage4 = &(S->FoStage4);
+			if ( stage4->PObuffer == 0 ) {
+				size_t namesize = strlen(S->file.name) + 4;
+				stage4->PObuffer = (WORD *)Malloc1(stage4->POsize + namesize, "Stage 4 buffer");
+				stage4->POfill = stage4->POfull = stage4->PObuffer;
+				stage4->POstop = stage4->PObuffer + stage4->POsize/sizeof(WORD);
+				stage4->name = (char *)((UBYTE *)stage4->PObuffer + stage4->POsize);
+				snprintf(stage4->name,namesize,"%s.4a",S->file.name);
+			}
 		}
 		S->stage4 = 1;
 	}
@@ -4644,6 +4602,18 @@ void CleanUpSort(int num)
 		for ( i = minnum; i < AN.NumFunSorts; i++ ) {
 			S = AN.FunSorts[i];
 			if ( S ) {
+				if ( S->FoStage4.handle >= 0 ) {
+					UpdateMaxSize();
+#ifdef WITHZLIB
+					ClearSortGZIP(&(S->FoStage4));
+#endif
+					CloseFile(S->FoStage4.handle);
+					remove(S->FoStage4.name);
+					S->FoStage4.handle = -1;
+				}
+				if ( S->FoStage4.PObuffer ) {
+					M_free(S->FoStage4.PObuffer, "CleanUpSort: Stage 4 buffer");
+				}
 				if ( S->file.handle >= 0 ) {
 /*					TruncateFile(S->file.handle); */
 					UpdateMaxSize();
@@ -4684,6 +4654,15 @@ void CleanUpSort(int num)
 		if ( num == 0 ) {
 			S = AN.FunSorts[0];
 			if ( S ) {
+				if ( S->FoStage4.handle >= 0 ) {
+					UpdateMaxSize();
+#ifdef WITHZLIB
+					ClearSortGZIP(&(S->FoStage4));
+#endif
+					CloseFile(S->FoStage4.handle);
+					remove(S->FoStage4.name);
+					S->FoStage4.handle = -1;
+				}
 				if ( S->file.handle >= 0 ) {
 /*					TruncateFile(S->file.handle); */
 					UpdateMaxSize();
@@ -4700,22 +4679,6 @@ void CleanUpSort(int num)
 #endif
 				}
 			}
-		}
-	}
-	for ( i = 0; i < 2; i++ ) {
-		if ( AR.FoStage4[i].handle >= 0 ) {
-			UpdateMaxSize();
-#ifdef WITHZLIB
-			ClearSortGZIP(&(AR.FoStage4[i]));
-#endif
-			CloseFile(AR.FoStage4[i].handle);
-			remove(AR.FoStage4[i].name);
-			AR.FoStage4[i].handle = -1;
-#ifdef GZIPDEBUG
-			MLOCK(ErrorMessageLock);
-			MesPrint("%w CleanUpSort removed stage4 file %s",AR.FoStage4[i].name);
-			MUNLOCK(ErrorMessageLock);
-#endif
 		}
 	}
 }
