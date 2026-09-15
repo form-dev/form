@@ -526,9 +526,11 @@ balance:;
 	Returns -1 if the element is not in the tree.
 	The advantage of this routine over InsTree is that this routine
 	can be run in parallel.
+	Note that this is not strictly thread safe when "usage" is updated.
+	This update is controlled with the "updateusage" parameter.
 */
 
-int FindTree(int bufnum, WORD *subexpr)
+int FindTree(int bufnum, WORD *subexpr, int updateusage)
 {
 	CBUF *C = cbuf + bufnum;
 	COMPTREE *boomlijst = C->boomlijst, *q = boomlijst + C->rootnum, *p;
@@ -552,7 +554,9 @@ int FindTree(int bufnum, WORD *subexpr)
 			else { return(-1); }
 		}
 		else {
-			p->usage++;
+			if ( updateusage ) {
+				p->usage++;
+			}
 			return(p->value);
 		}
 	}

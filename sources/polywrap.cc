@@ -1264,6 +1264,7 @@ int poly_factorize_expression(EXPRESSIONS expr) {
 	// use polynomial as buffer, because it is easy to extend
 	poly buffer(BHEAD 0);
 	int bufpos = 0;
+	int locked = 0;
 	int sumcommu = 0;
 
 	// read all terms
@@ -1271,12 +1272,14 @@ int poly_factorize_expression(EXPRESSIONS expr) {
 		// substitute non-symbols by extra symbols
 		sumcommu += DoesCommu(term);
 		if ( sumcommu > 1 ) {
+			UnlockLocalPolynomial(&locked);
 			MesPrint("ERROR: Cannot factorize an expression with more than one noncommuting object");
 			Terminate(-1);
 		}
 		buffer.check_memory(bufpos);		
-		if (LocalConvertToPoly(BHEAD term, buffer.terms + bufpos, startebuf,0) < 0) {
+		if (LocalConvertToPoly(BHEAD term, buffer.terms + bufpos,startebuf,0,&locked) < 0) {
 /* INTERNAL_ERROR_EXCL_START */
+			UnlockLocalPolynomial(&locked);
 			MesPrint("!>ERROR: in LocalConvertToPoly [factorize_expression]");
 			Terminate(-1);
 /* INTERNAL_ERROR_EXCL_STOP */
@@ -1414,8 +1417,9 @@ int poly_factorize_expression(EXPRESSIONS expr) {
 					for (WORD *t=buffer.terms; *t!=0; t+=*t) {
 						// substitute extra symbols
 						if (ConvertFromPoly(BHEAD t, term, numxsymbol, CC->numrhs-startebuf+numxsymbol,
-																startebuf-numxsymbol, 1) <= 0 ) {
+														startebuf-numxsymbol, 1) <= 0 ) {
 /* INTERNAL_ERROR_EXCL_START */
+							UnlockLocalPolynomial(&locked);
 							MesPrint("!>ERROR: in ConvertFromPoly [factorize_expression]");
 							Terminate(-1);
 							return(-1);
@@ -1430,7 +1434,10 @@ int poly_factorize_expression(EXPRESSIONS expr) {
 
 					// sort and store in buffer
 					WORD *buffer;
-					if (EndSort(BHEAD (WORD *)((void *)(&buffer)),2) < 0) return -1;
+					if (EndSort(BHEAD (WORD *)((void *)(&buffer)),2) < 0) {
+						UnlockLocalPolynomial(&locked);
+						return -1;
+					}
 					
 					LONG bufsize=0;
 					for (WORD *t=buffer; *t!=0; t+=*t)
@@ -1495,6 +1502,7 @@ int poly_factorize_expression(EXPRESSIONS expr) {
 	// final sorting
 	if (EndSort(BHEAD NULL,0) < 0) {
 		LowerSortLevel();
+		UnlockLocalPolynomial(&locked);
 		Terminate(-1);
 	}
 
@@ -1511,6 +1519,7 @@ int poly_factorize_expression(EXPRESSIONS expr) {
 	strcpy((char*)AC.Commercial, oldCommercial);
 	
 	poly_free_poly_vars(BHEAD "AN.poly_vars_factorize_expression");
+	UnlockLocalPolynomial(&locked);
 
 	return 0;
 }

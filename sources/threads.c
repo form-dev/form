@@ -321,7 +321,9 @@ int StartAllThreads(int number)
 	AR.infile = &(AR.Fscr[0]);
 	AR.outfile = &(AR.Fscr[1]);
 	AR.hidefile = &(AR.Fscr[2]);
-	AM.sbuflock = dummylock;
+	/* This lock must be recursive; it is held during local polynomial conversions,
+	 * and FindSubterm and FindSubexpression take the lock also. */
+	INIRECLOCK(AM.sbuflock);
 	AS.inputslock = dummylock;
 	AS.outputslock = dummylock;
 	AS.MaxExprSizeLock = dummylock;

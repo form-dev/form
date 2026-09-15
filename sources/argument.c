@@ -2078,7 +2078,7 @@ int ArgFactorize(PHEAD WORD *argin, WORD *argout)
 #endif
 	WORD startebuf = cbuf[AT.ebufnum].numrhs,oldword;
 	WORD oldsorttype = AR.SortType, numargs;
-	int error = 0, action = 0, i, ii, number, sign = 1;
+	int error = 0, action = 0, i, ii, locked = 0, number, sign = 1;
 
 	*argout = 0;
 /*
@@ -2254,9 +2254,10 @@ int ArgFactorize(PHEAD WORD *argin, WORD *argout)
 		argextra = AT.WorkPointer;
 		NewSort(BHEAD0);
 		while ( t < tstop ) {
-			if ( LocalConvertToPoly(BHEAD t,argextra,startebuf,0) < 0 ) {
+			if ( LocalConvertToPoly(BHEAD t,argextra,startebuf,0,&locked) < 0 ) {
 				error = -1;
 getout:
+				UnlockLocalPolynomial(&locked);
 				AR.SortType = oldsorttype;
 				TermFree(argcopy,"argcopy");
 				if ( argfree != argin ) TermFree(argfree,"argfree");
@@ -2350,6 +2351,7 @@ getout:
 			for ( i = 0; i <= *argcopy; i++ ) a[i] = argcopy[i];
 		}
 	}
+	UnlockLocalPolynomial(&locked);
 /*
   	#] step 6 : 
   	#[ step 7 : Add this one to the tables.
@@ -2526,9 +2528,12 @@ WORD FindArg(PHEAD WORD *a)
 {
 	int number;
 	if ( AN.ncmod != 0 ) return(0);	/* no room for mod stuff */
-	number = FindTree(AT.fbufnum,a);
+	/* FindTree is not strictly thread safe, but AT.fbufnum is thread local */
+	number = FindTree(AT.fbufnum,a,1);
 	if ( number >= 0 ) return(number+1);
-	number = FindTree(AC.ffbufnum,a);
+	/* AC.ffbufnum is global, but currently unused. If it becomes used, we need
+	 * to lock here! */
+	number = FindTree(AC.ffbufnum,a,1);
 	if ( number >= 0 ) return(-number-1);
 	return(0);
 }
