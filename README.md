@@ -56,11 +56,13 @@ make install
 
 For more advanced build options, see the file "[INSTALL](INSTALL)".
 
+A pre-compiled FORM binary can also by installed from [PyPI](https://pypi.org/project/form-bin/).
+
 
 Additional information
 ----------------------
 
-The latest release notes are available on the [Wiki](https://github.com/form-dev/form/wiki/Release-Notes-FORM-5.0.0); the latest reference manual can be found [here](https://form-dev.github.io/form-docs/stable/manual/), and the Form Cookbook can be found [here](https://github.com/form-dev/form/wiki/FORM-Cookbook).
+The latest release notes are available on the [Wiki](https://github.com/form-dev/form/wiki/Release-Notes-FORM-5.0); the latest reference manual can be found [here](https://form-dev.github.io/form-docs/stable/manual/), and the Form Cookbook can be found [here](https://github.com/form-dev/form/wiki/FORM-Cookbook).
 
 More background information, a collection of FORM programs, and a number of courses can be found on the official [FORM website](http://www.nikhef.nl/~form) and on the [Wiki](https://github.com/form-dev/form/wiki).
 
