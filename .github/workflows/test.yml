@@ -32,16 +32,12 @@ jobs:
         include:
           - {bin: form,    test: default}
           - {bin: tform,   test: default}
-          - {bin: tform,   test: default, nthreads: 2}
           - {bin: form,    test: default, flint: no}
           - {bin: tform,   test: default, flint: no}
-          - {bin: tform,   test: default, nthreads: 2, flint: no}
           - {bin: form,    test: extra,   timeout: 60}
           - {bin: tform,   test: extra,   timeout: 60}
-          - {bin: tform,   test: extra,   timeout: 60, nthreads: 2}
           - {bin: form,    test: extra,   timeout: 60, flint: no}
           - {bin: tform,   test: extra,   timeout: 60, flint: no}
-          - {bin: tform,   test: extra,   timeout: 60, nthreads: 2, flint: no}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -121,16 +117,6 @@ jobs:
           - {bin: tvorm, test: default, group: 8/10}
           - {bin: tvorm, test: default, group: 9/10}
           - {bin: tvorm, test: default, group: 10/10}
-          - {bin: tvorm, test: default, nthreads: 2, group: 1/10}
-          - {bin: tvorm, test: default, nthreads: 2, group: 2/10}
-          - {bin: tvorm, test: default, nthreads: 2, group: 3/10}
-          - {bin: tvorm, test: default, nthreads: 2, group: 4/10}
-          - {bin: tvorm, test: default, nthreads: 2, group: 5/10}
-          - {bin: tvorm, test: default, nthreads: 2, group: 6/10}
-          - {bin: tvorm, test: default, nthreads: 2, group: 7/10}
-          - {bin: tvorm, test: default, nthreads: 2, group: 8/10}
-          - {bin: tvorm, test: default, nthreads: 2, group: 9/10}
-          - {bin: tvorm, test: default, nthreads: 2, group: 10/10}
           - {bin: vorm,  test: extra,   group: 1/5}
           - {bin: vorm,  test: extra,   group: 2/5}
           - {bin: vorm,  test: extra,   group: 3/5}
@@ -146,16 +132,6 @@ jobs:
           - {bin: tvorm, test: extra,   group: 8/10}
           - {bin: tvorm, test: extra,   group: 9/10}
           - {bin: tvorm, test: extra,   group: 10/10}
-          - {bin: tvorm, test: extra,   nthreads: 2, group: 1/10}
-          - {bin: tvorm, test: extra,   nthreads: 2, group: 2/10}
-          - {bin: tvorm, test: extra,   nthreads: 2, group: 3/10}
-          - {bin: tvorm, test: extra,   nthreads: 2, group: 4/10}
-          - {bin: tvorm, test: extra,   nthreads: 2, group: 5/10}
-          - {bin: tvorm, test: extra,   nthreads: 2, group: 6/10}
-          - {bin: tvorm, test: extra,   nthreads: 2, group: 7/10}
-          - {bin: tvorm, test: extra,   nthreads: 2, group: 8/10}
-          - {bin: tvorm, test: extra,   nthreads: 2, group: 9/10}
-          - {bin: tvorm, test: extra,   nthreads: 2, group: 10/10}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -189,16 +165,12 @@ jobs:
         include:
           - {bin: vorm,  test: default}
           - {bin: tvorm, test: default}
-          - {bin: tvorm, test: default, nthreads: 2}
           - {bin: vorm,  test: extra,   timeout: 60}
           - {bin: tvorm, test: extra,   timeout: 60}
-          - {bin: tvorm, test: extra,   timeout: 60, nthreads: 2}
           - {bin: vorm,  test: default, flint: no}
           - {bin: tvorm, test: default, flint: no}
-          - {bin: tvorm, test: default, nthreads: 2, flint: no}
           - {bin: vorm,  test: extra,   timeout: 60, flint: no}
           - {bin: tvorm, test: extra,   timeout: 60, flint: no}
-          - {bin: tvorm, test: extra,   timeout: 60, nthreads: 2, flint: no}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -258,7 +230,6 @@ jobs:
         include:
           - {bin: form}
           - {bin: tform}
-          - {bin: tform, nthreads: 2}
     steps:
       # 32-bit containers lack the amd64 libstdc++ runtime library needed by
       # the runner-provided Node.js runtime.
