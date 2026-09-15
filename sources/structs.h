@@ -1113,7 +1113,7 @@ typedef struct PaRtI {
 
 typedef struct sOrT {
     FILEHANDLE file;            /* The own sort file */
-    FILEHANDLE FoStage4[2];     /* Temporary files for stage 4 and higher */
+    FILEHANDLE FoStage4;        /* Temporary file for stage 4 and higher */
     POSITION SizeInFile[3];     /* Sizes in the various files */
     POSITION OldPosIn;          /* Sort file fill positions */
     POSITION OldPosOut;
@@ -1180,7 +1180,6 @@ typedef struct sOrT {
     WORD fPatchN;               /* Number of patches on file (output) */
     WORD inNum;                 /* Number of patches on file (input) */
     WORD stage4;                /* Are we using stage4? */
-    WORD Stage4Name;            /* Selects the stage 4 temporary file name */
 } SORTING;
 
 #ifdef WITHPTHREADS
