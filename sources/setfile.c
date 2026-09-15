@@ -416,11 +416,8 @@ int AllocSetups(void)
 {
 	SETUPPARAMETERS *sp;
 	LONG LargeSize, SmallSize, SmallEsize, TermsInSmall, IOsize;
-	int MaxPatches, MaxFpatches, error = 0, i, size;
+	int MaxPatches, MaxFpatches, error = 0, i, j, size;
 	UBYTE *s;
-#ifndef WITHPTHREADS
-	int j;
-#endif
 	sp = GetSetupPar((UBYTE *)"threads");
 	if ( sp->value > 0 ) AM.totalnumberofthreads = sp->value+1;
 
@@ -588,19 +585,16 @@ int AllocSetups(void)
 	/* AM.S0->file.ziosize was already set to a (larger) value by AllocSort, here it is re-set. */
 #ifdef WITHZLIB
 	AM.S0->file.ziosize = IOsize;
+	for ( j = 0; j < 2; j++ ) {
+		AM.S0->FoStage4[j].ziosize = IOsize;
+	}
 #ifndef WITHPTHREADS
-	AR.FoStage4[0].ziosize = IOsize;
-	AR.FoStage4[1].ziosize = IOsize;
 	AT.S0 = AM.S0;
 #endif
 #else
 #ifndef WITHPTHREADS
 	AT.S0 = AM.S0;
 #endif
-#endif
-#ifndef WITHPTHREADS
-	AR.FoStage4[0].POsize   = ((IOsize+sizeof(WORD)-1)/sizeof(WORD))*sizeof(WORD);
-	AR.FoStage4[1].POsize   = ((IOsize+sizeof(WORD)-1)/sizeof(WORD))*sizeof(WORD);
 #endif
 	sp = GetSetupPar((UBYTE *)"subsmallsize");
 	AM.SSmallSize = sp->value;
@@ -999,6 +993,19 @@ SORTING *AllocSort(LONG inLargeSize, LONG inSmallSize, LONG inSmallEsize, LONG i
 	sort->file.ziosize = IObuffersize*sizeof(WORD);
 	sort->file.ziobuffer = 0;
 #endif
+	for ( j = 0; j < 2; j++ ) {
+		FILEHANDLE *stage4 = &(sort->FoStage4[j]);
+		memset(stage4,0,sizeof(*stage4));
+		stage4->POsize = sort->file.POsize;
+		stage4->handle = -1;
+#ifdef WITHPTHREADS
+		stage4->pthreadslock = dummylock;
+#endif
+#ifdef WITHZLIB
+		stage4->ziosize = sort->file.ziosize;
+		stage4->ziobuffer = 0;
+#endif
+	}
 	if ( AM.S0 != 0 ) {
 		sort->file.name = (char *)(sort->file.PObuffer + IObuffersize);
 		AllocSortFileName(sort);

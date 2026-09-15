@@ -1113,6 +1113,7 @@ typedef struct PaRtI {
 
 typedef struct sOrT {
     FILEHANDLE file;            /* The own sort file */
+    FILEHANDLE FoStage4[2];     /* Temporary files for stage 4 and higher */
     POSITION SizeInFile[3];     /* Sizes in the various files */
     POSITION OldPosIn;          /* Sort file fill positions */
     POSITION OldPosOut;
@@ -1179,6 +1180,7 @@ typedef struct sOrT {
     WORD fPatchN;               /* Number of patches on file (output) */
     WORD inNum;                 /* Number of patches on file (input) */
     WORD stage4;                /* Are we using stage4? */
+    WORD Stage4Name;            /* Selects the stage 4 temporary file name */
 } SORTING;
 
 #ifdef WITHPTHREADS
@@ -1990,7 +1992,6 @@ struct S_const {
 struct R_const {
     FILEDATA    StoreData;         /* (O) */
     FILEHANDLE  Fscr[3];           /* (R) Dollars etc play with it too */
-    FILEHANDLE  FoStage4[2];       /* (R) In Sort. Stage 4. */
     POSITION DefPosition;          /* (R) Deferred position of keep brackets. */
     FILEHANDLE *infile;            /* (R) Points alternatingly to Fscr[0] or Fscr[1] */
     FILEHANDLE *outfile;           /* (R) Points alternatingly to Fscr[1] or Fscr[0] */
@@ -2033,7 +2034,6 @@ struct R_const {
     WORD    DeferFlag;             /* (R) For deferred brackets */
     WORD    TePos;                 /* (R) */
     WORD    sLevel;                /* (R) Sorting level */
-    WORD    Stage4Name;            /* (R) Sorting only */
     WORD    GetOneFile;            /* (R) Getting from hide or regular */
     WORD    PolyFun;               /* (C) Number of the PolyFun function */
     WORD    PolyFunInv;            /* (C) Number of the Inverse of the PolyFun function */
@@ -2152,6 +2152,7 @@ struct T_const {
     int     numpoly;
     int     LeaveNegative;
     int     TrimPower;             /* Indicates trimming in polyratfun expansion */
+    int     SubSortStage4Warning;  /* Has the sub-sort stage 4 warning been printed? */
     WORD    small_power_maxx;      /*     size of the cache for small powers  */
     WORD    small_power_maxn;      /*     size of the cache for small powers */
     WORD    dummysubexp[SUBEXPSIZE+4]; /* () used in normal.c */
