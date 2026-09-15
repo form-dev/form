@@ -966,8 +966,6 @@ void StartFiles(void)
 	AR.Fscr[0].handle = -1;
 	AR.Fscr[1].handle = -1;
 	AR.Fscr[2].handle = -1;
-	AR.FoStage4[0].handle = -1;
-	AR.FoStage4[1].handle = -1;
 	AR.infile = &(AR.Fscr[0]);
 	AR.outfile = &(AR.Fscr[1]);
 	AR.hidefile = &(AR.Fscr[2]);
@@ -1614,8 +1612,9 @@ int CloseChannel(char *name)
 void UpdateMaxSize(void)
 {
 	POSITION position, sumsize;
-	int i;
+	int i, k;
 	FILEHANDLE *scr;
+	SORTING *sort;
 #ifdef WITHMPI
 	/* Currently, it works only on the master. The sort files on the slaves
 	 * are ignored. (TU 11 Oct 2011) */
@@ -1649,29 +1648,34 @@ void UpdateMaxSize(void)
 		ALLPRIVATES *B;
 		for ( j = 0; j < AM.totalnumberofthreads; j++ ) {
 			B = AB[j];
-			if ( AT.SS && AT.SS->file.handle >= 0 ) {
-				position = AT.SS->file.filesize;
-/*
-MLOCK(ErrorMessageLock);
-MesPrint("%d: %10p",j,&(AT.SS->file.filesize));
-MUNLOCK(ErrorMessageLock);
-*/
-				ADD2POS(sumsize,position);
-			}
-			if ( AR.FoStage4[0].handle >= 0 ) {
-				position = AR.FoStage4[0].filesize;
-				ADD2POS(sumsize,position);
+			for ( k = 0; k < AN.NumFunSorts; k++ ) {
+				sort = AN.FunSorts[k];
+				if ( sort && sort->file.handle >= 0 ) {
+					position = sort->file.filesize;
+					ADD2POS(sumsize,position);
+				}
+				for ( i = 0; i < 2; i++ ) {
+					if ( sort && sort->FoStage4[i].handle >= 0 ) {
+						position = sort->FoStage4[i].filesize;
+						ADD2POS(sumsize,position);
+					}
+				}
 			}
 		}
 	}
 #else
-	if ( AT.SS && AT.SS->file.handle >= 0 ) {
-		position = AT.SS->file.filesize;
-		ADD2POS(sumsize,position);
-	}
-	if ( AR.FoStage4[0].handle >= 0 ) {
-		position = AR.FoStage4[0].filesize;
-		ADD2POS(sumsize,position);
+	for ( k = 0; k < AN.NumFunSorts; k++ ) {
+		sort = AN.FunSorts[k];
+		if ( sort && sort->file.handle >= 0 ) {
+			position = sort->file.filesize;
+			ADD2POS(sumsize,position);
+		}
+		for ( i = 0; i < 2; i++ ) {
+			if ( sort && sort->FoStage4[i].handle >= 0 ) {
+				position = sort->FoStage4[i].filesize;
+				ADD2POS(sumsize,position);
+			}
+		}
 	}
 #endif
 /*

@@ -2162,13 +2162,123 @@ Print;
 .end
 # Only for 64-bit systems. Otherwise "Output term too large".
 #require wordsize == 4
-# For now it fails because
-#   "Currently Stage 4 sorts are not allowed for function arguments or $ variables."
-assert runtime_error?
-#assert succeeded?
-#assert result("test1") =~ expr("0")
-#assert result("test2") =~ expr("g(0)")
+assert warning?("StageSort in sub-buffer: increasing sub-buffer sizes in setup recommended.")
+assert result("test1") =~ expr("0")
+assert result("test2") =~ expr("g(0)")
 *--#] Issue211 : 
+*--#[ Issue215_1 :
+#-
+
+#: SubTermsInSmall 16
+#: SubLargePatches 4
+#: SubFilePatches 4
+
+Off statistics;
+Off threadstats;
+
+CFunction f;
+Symbol j,x;
+
+#define BLOWUP "1000"
+
+Local argument = f(x) + f(2*x);
+Argument f;
+	Identify x = sum_(j,1,`BLOWUP',x*j/`BLOWUP');
+EndArgument;
+Identify f(x?) = x;
+Identify x = 1;
+Print;
+.end
+assert warning?("StageSort in sub-buffer: increasing sub-buffer sizes in setup recommended.")
+assert result("argument") =~ expr("3003/2")
+*--#] Issue215_1 :
+*--#[ Issue215_2 :
+#-
+
+#: SubTermsInSmall 16
+#: SubLargePatches 4
+#: SubFilePatches 4
+
+Off statistics;
+Off threadstats;
+
+Symbol j,x;
+
+#define BLOWUP "1000"
+
+#$dol = x;
+Local dollar = 1;
+Inside $dol;
+	Identify x = sum_(j,1,`BLOWUP',x*j/`BLOWUP');
+EndInside;
+Multiply $dol;
+Identify x = 1;
+Print;
+ModuleOption local $dol;
+.end
+assert warning?("StageSort in sub-buffer: increasing sub-buffer sizes in setup recommended.")
+assert result("dollar") =~ expr("1001/2")
+*--#] Issue215_2 :
+*--#[ Issue215_3 :
+#-
+
+#: SubTermsInSmall 16
+#: SubLargePatches 4
+#: SubFilePatches 4
+
+Off statistics;
+Off threadstats;
+
+Symbol j,x;
+
+#define BLOWUP "1000"
+
+Local term = x;
+Term;
+	Identify x = sum_(j,1,`BLOWUP',x*j/`BLOWUP');
+EndTerm;
+Identify x = 1;
+Print;
+.end
+assert warning?("StageSort in sub-buffer: increasing sub-buffer sizes in setup recommended.")
+assert result("term") =~ expr("1001/2")
+*--#] Issue215_3 :
+*--#[ Issue215_4 :
+#-
+
+#: TermsInSmall 16
+#: LargePatches 4
+#: FilePatches 4
+
+#: SubTermsInSmall 16
+#: SubLargePatches 4
+#: SubFilePatches 4
+
+Off statistics;
+Off threadstats;
+
+CFunction f;
+Symbol i,j,x;
+
+#define N "500"
+#define BLOWUP "1000"
+
+Local nested = {`N'*(`N'+1)/2}
+	#do i = 1,`N'
+		- f(x^`i')
+	#enddo
+	;
+
+Argument f;
+	Identify x^i? = sum_(j,1,`BLOWUP',x^i*i/`BLOWUP');
+EndArgument;
+Identify f(x?) = x;
+Identify x^i? = 1;
+Print;
+.end
+assert warning?("StageSort in sub-buffer: increasing sub-buffer sizes in setup recommended.")
+assert result("nested") =~ expr("0")
+*--#] Issue215_4 :
 *--#[ Issue222 :
 * accessing #factdollar factors causes program termination
 Symbol x;
