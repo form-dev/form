@@ -6,7 +6,7 @@ FORM
 
 FORM is a Symbolic Manipulation System. It reads symbolic expressions from files and executes symbolic/algebraic transformations upon them. The answers are returned in a textual mathematical representation. As its landmark feature, the size of the considered expressions in FORM is only limited by the available disk space and not by the available RAM. FORM has been essential for many state-of-the-art computations in High Energy Physics.
 
-FORM's original author is Jos Vermaseren of NIKHEF, the Dutch institute for subatomic physics. Other people that have made contributions can be found in the file "[AUTHORS](AUTHORS)".
+FORM's original author is Jos Vermaseren of NIKHEF, the Dutch institute for subatomic physics. Other people that have made contributions can be found in the file "[AUTHORS](https://github.com/form-dev/form/blob/master/AUTHORS)".
 
 Quick examples
 --------------
@@ -54,17 +54,19 @@ make
 make install
 ```
 
-For more advanced build options, see the file "[INSTALL](INSTALL)".
+For more advanced build options, see the file "[INSTALL](https://github.com/form-dev/form/blob/master/INSTALL)".
+
+A pre-compiled FORM binary can also by installed from [PyPI](https://pypi.org/project/form-bin/).
 
 
 Additional information
 ----------------------
 
-The latest release notes are available on the [Wiki](https://github.com/form-dev/form/wiki/Release-Notes-FORM-5.0.0); the latest reference manual can be found [here](https://form-dev.github.io/form-docs/stable/manual/), and the Form Cookbook can be found [here](https://github.com/form-dev/form/wiki/FORM-Cookbook).
+The latest release notes are available on the [Wiki](https://github.com/form-dev/form/wiki/Release-Notes-FORM-5.0); the latest reference manual can be found [here](https://form-dev.github.io/form-docs/stable/manual/), and the Form Cookbook can be found [here](https://github.com/form-dev/form/wiki/FORM-Cookbook).
 
 More background information, a collection of FORM programs, and a number of courses can be found on the official [FORM website](http://www.nikhef.nl/~form) and on the [Wiki](https://github.com/form-dev/form/wiki).
 
-Information about copying and licensing of this software can be found in the file "[COPYING](COPYING)".
+Information about copying and licensing of this software can be found in the file "[COPYING](https://github.com/form-dev/form/blob/master/COPYING)".
 
 
 Bugs and remarks
