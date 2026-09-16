@@ -2619,6 +2619,36 @@ Print;
 assert succeeded?
 assert result("test") =~ expr("prf(16*x + 16*y - 8*z,z)*pf(8) + prf(8,1)*pf( - 8*z + 16*y + 16*x)")
 *--#] Issue313 :
+*--#[ Issue315 :
+#-
+Symbol x;
+Local test = 22400/27/(2+x)/(4+x)*replace_(x,134);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("1400/31671")
+*--#] Issue315 :
+*--#[ Issue316 :
+#-
+Symbol a,b,c,d;
+Local test1 = 1/(2*a)/(2*a)*replace_(a,b);
+Local test2 = 1/(2*a)/(3*c)*replace_(a,b,c,d);
+Local test3 = 1/(1+a)/(1+c)/(1+a+c)*replace_(a,b,c,d);
+Local test4 = 1/(1+a/(1+b))*replace_(a,b);
+Local test5 = 1/(2*a/(2*b))*replace_(a,b);
+Local test6 = exp_(2*a*exp_(2*b,2),2);
+Local test7 = exp_(2*a,1+c)*replace_(a,b,c,d);
+Print;
+.end
+assert succeeded?
+assert result("test1") =~ expr("1/4*b^-2")
+assert result("test2") =~ expr("1/6*b^-1*d^-1")
+assert result("test3") =~ expr("1/(1 + b)/(1 + d)/(1 + d + b)")
+assert result("test4") =~ expr("1/(1 + 1/(1 + b)*b)")
+assert result("test5") =~ expr("1")
+assert result("test6") =~ expr("64*a^2*b^4")
+assert result("test7") =~ expr("(2*b)^(1 + d)")
+*--#] Issue316 :
 *--#[ Issue324 :
 * Wrong implicit symbol declaration in "autodeclare index"
 autodeclare index randomIndex=n;

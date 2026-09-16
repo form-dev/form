@@ -2699,7 +2699,11 @@ TryAgain:;
 		for ( i = 0; i < nden; i++ ) {
 			t = pden[i];
 			if ( ( t[2] & DIRTYFLAG ) == 0 ) continue;
-			t[2] = 0;
+			/* Before marking clean, we have to check the denominator argument is
+			 * itself clean and does not contain subexpressions. */
+			if ( ( t[FUNHEAD] < 0 || t[FUNHEAD+1] == 0 ) && ! TestFunFlag(BHEAD t) ) {
+				t[2] = 0;
+			}
 			if ( t[FUNHEAD] == -SYMBOL ) {
 				WORD change;
 				t += FUNHEAD+1;
@@ -5311,7 +5315,13 @@ Nexti:;
 int TestFunFlag(PHEAD WORD *tfun)
 {
 	WORD *t, *tstop, *r, *rstop, *m, *mstop;
-	if ( functions[*tfun-FUNCTION].spec <= 0 ) return(0);
+	/* DENOMINATOR and EXPONENT functions have spec <= 0, but may have
+	 * subexpression arguments to search for. */
+	if ( *tfun != DENOMINATOR && *tfun != EXPONENT
+		&& functions[*tfun-FUNCTION].spec <= 0 ) {
+
+		return(0);
+	}
 	tstop = tfun + tfun[1];
 	t = tfun + FUNHEAD;
 	while ( t < tstop ) {
