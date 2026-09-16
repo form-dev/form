@@ -649,15 +649,37 @@ void DivLong_fix_args(UWORD *a, WORD na, UWORD *b, WORD nb, UWORD *c,	WORD *nc, 
  *	 should end with "gcd OPER_MUL" at all times, so that one level
  *	 higher gcds can be extracted again.
  */
-void build_Horner_tree (const WORD **terms, int numterms, int var, int maxvar, int pos, vector<WORD> *res) {
+void build_Horner_tree (const WORD **terms, LONG numterms, int var, int maxvar, int pos, vector<WORD> *res) {
 
 	GETIDENTITY;
+
+	/* When the input has a large number of variables but is very sparse,
+	 * each absent variable causes another recursion and multiplication by
+	 * 1. The tree is quadratic in the number of variables.
+	 * The symbols in a term are ordered by their index. So the symbol at
+	 * "pos" is the next symbol which can possibly occur in the term. Skip
+	 * symbols which do not occur, to avoid the unnecessary recursion. */
+	if (var < maxvar && AN.poly_vars[var] != FACTORSYMBOL
+		&& AN.poly_vars[var] != SEPARATESYMBOL) {
+
+		int nextvar = maxvar;
+		for (LONG i=0; i<numterms; i++) {
+			const WORD *t = terms[i];
+			if (*t != ABS(*(t+*t-1))+1 && 2*pos+2 < t[2]) {
+				nextvar = MiN(nextvar, (int)t[2*pos+3]);
+			}
+			if ( nextvar == var ) {
+				break;
+			}
+		}
+		if (nextvar > var) var = nextvar;
+	}
 
 	if (var == maxvar) {
 		// Horner tree is finished, so add remaining terms unfactorized
 		// (note: since only complete Horner schemes seem to be useful, numterms=1 here
 
-		for (int fr=0; fr<numterms; fr++) {
+		for (LONG fr=0; fr<numterms; fr++) {
 
 			bool empty = true;
 			const WORD *t = terms[fr];
@@ -715,15 +737,15 @@ void build_Horner_tree (const WORD **terms, int numterms, int var, int maxvar, i
 		UWORD *dum = NumberMalloc("build_Horner_tree");
 
 		// previous coefficient for gcd extraction or coefficient multiplication
-		int prev_coeff_idx = -1;
+		LONG prev_coeff_idx = -1;
 
-		for (int fr=0; fr<numterms;) {
+		for (LONG fr=0; fr<numterms;) {
 
 			// find power of current term
 			WORD pow = getpower(terms[fr], var, pos);
 
 			// find all terms with that power
-			int to=fr+1;
+			LONG to=fr+1;
 			while (to<numterms && getpower(terms[to], var, pos) == pow) to++;
 
 			// recursively build Horner tree of all terms proportional to var^pow
@@ -956,8 +978,8 @@ vector<WORD> Horner_tree (const WORD *expr, const vector<WORD> &order) {
 	build_Horner_tree(&terms[0], terms.size(), 0, AN.poly_num_vars, 0, &res);
 
 	// remove leading zeroes in coefficients
-	int j=0;
-	for (int i=0; i<(int)res.size();) {
+	LONG j=0;
+	for (LONG i=0; i<(LONG)res.size();) {
 		if (res[i]==OPER_ADD || res[i]==OPER_MUL || res[i]==OPER_COMMA)
 			res[j++] = res[i++];
 		else if (res[i]==SYMBOL) {
@@ -1002,7 +1024,7 @@ void print_tree (const vector<WORD> &tree) {
 
 	GETIDENTITY;
 
-	for (int i=0; i<(int)tree.size();) {
+	for (LONG i=0; i<(LONG)tree.size();) {
 		if (tree[i]==OPER_ADD) {
 			MesPrint("+%");
 			i++;
@@ -1051,15 +1073,15 @@ void print_tree (const vector<WORD> &tree) {
 
 
 struct CSEHash {
-	size_t operator()(const vector<WORD>& n) const {
+	size_t operator()(const vector<LONG>& n) const {
 		return n[0];
 	}
 };
 
 struct CSEEq {
-	bool operator()(const vector<WORD>& lhs, const vector<WORD>& rhs) const {
+	bool operator()(const vector<LONG>& lhs, const vector<LONG>& rhs) const {
 			if (lhs.size() != rhs.size()) return false;
-			for (unsigned int i = 1; i < lhs.size(); i++) {
+			for (LONG i = 1; i < (LONG)lhs.size(); i++) {
 				if (lhs[i] != rhs[i]) return false;
 			}
 			return true;
@@ -1067,10 +1089,10 @@ struct CSEEq {
 };
 
 
-template<typename T> size_t hash_range(T* array, int size) {
+template<typename T> size_t hash_range(T* array, LONG size) {
 	size_t hash = 0;
 
-	for (int i = 0; i < size; i++) {
+	for (LONG i = 0; i < size; i++) {
 		hash ^= array[i] + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 	}
 
@@ -1135,7 +1157,7 @@ vector<WORD> generate_instructions (const vector<WORD> &tree, bool do_CSE) {
 						thetime_str().c_str(), do_CSE?1:0);
 #endif
 
-	typedef unordered_map<vector<WORD>, int, CSEHash, CSEEq> csemap;
+	typedef unordered_map<vector<LONG>, LONG, CSEHash, CSEEq> csemap;
 	csemap ID;
 
 	// reserve lots of space, to prevent later rehashes
@@ -1145,15 +1167,16 @@ vector<WORD> generate_instructions (const vector<WORD> &tree, bool do_CSE) {
 	}
 
 	// s is a stack of operands to process when you encounter operators
-	// in the postfix expression tree. Operands consist of three WORDs,
-	// formatted as the LHS/RHS of the keys in ID.
-	stack<int> s;
+	// in the postfix expression tree. Operands consist of three fields,
+	// formatted as the LHS/RHS of the keys in ID. The fields use LONG
+	// because coefficient positions may have a sign.
+	stack<LONG> s;
 	vector<WORD> instr;
 	WORD numinstr = 0;
-	vector<WORD> x;
+	vector<LONG> x;
 
 	// process the expression tree
-	for (int i=0; i<(int)tree.size();) {
+	for (LONG i=0; i<(LONG)tree.size();) {
 		x.clear();
 
 		if (tree[i]==SNUMBER) {
@@ -1228,7 +1251,7 @@ vector<WORD> generate_instructions (const vector<WORD> &tree, bool do_CSE) {
 
 			x.push_back(0); // placeholder for hash
 			x.push_back(oper);
-			vector<WORD> hash;
+			vector<LONG> hash;
 			hash.push_back(oper);
 
 			// get two operands from the stack
@@ -1252,7 +1275,7 @@ vector<WORD> generate_instructions (const vector<WORD> &tree, bool do_CSE) {
 					// check whether operand 1 equals +/-1
 					if (x[idx_oper1]==SNUMBER) {
 
-						int idx = ABS(x[idx_oper1+1])-1;
+						LONG idx = ABS(x[idx_oper1+1])-1;
 						if (tree[idx+2]==1 && tree[idx+3]==1 && ABS(tree[idx+4])==3) {
 							// push +/- other operand and continue
 							s.push(x[idx_oper2+2]);
@@ -1283,7 +1306,7 @@ vector<WORD> generate_instructions (const vector<WORD> &tree, bool do_CSE) {
 
 				ID[x] = ++numinstr;
 
-				int lenidx = instr.size()-1;
+				LONG lenidx = instr.size()-1;
 
 				for (int j=0; j<2; j++)
 					if (x[3*j+2]==SYMBOL || x[3*j+2]==EXTRASYMBOL) {
@@ -1298,7 +1321,7 @@ vector<WORD> generate_instructions (const vector<WORD> &tree, bool do_CSE) {
 						instr[lenidx] += 8;
 					}
 					else { // x[3*j+1]==SNUMBER
-						int t = ABS(x[3*j+3])-1;
+						LONG t = ABS(x[3*j+3])-1;
 						instr.push_back(tree[t+1]-1);							   // length number
 						instr.insert(instr.end(), &tree[t+2], &tree[t]+tree[t+1]); // digits
 						instr.back() *= SGN(instr.back()) * SGN(x[3*j+3]);
@@ -1341,7 +1364,7 @@ vector<WORD> generate_instructions (const vector<WORD> &tree, bool do_CSE) {
 int count_operators_cse (const vector<WORD> &tree) {
 	//MesPrint ("*** [%s] Starting CSEE", thetime_str().c_str());
 
-	typedef unordered_map<vector<WORD>, int, CSEHash, CSEEq> csemap;
+	typedef unordered_map<vector<LONG>, LONG, CSEHash, CSEEq> csemap;
 	csemap ID;
 
 	// reserve lots of space, to prevent later rehashes
@@ -1349,14 +1372,15 @@ int count_operators_cse (const vector<WORD> &tree) {
 	ID.rehash(mcts_expr_score * 2);
 
 	// s is a stack of operands to process when you encounter operators
-	// in the postfix expression tree. Operands consist of three WORDs,
-	// formatted as the LHS/RHS of the keys in ID.
-	stack<int> s;
+	// in the postfix expression tree. Operands consist of three fields,
+	// formatted as the LHS/RHS of the keys in ID. The fields use LONG
+	// because coefficient positions may have a sign.
+	stack<LONG> s;
 	int numinstr = 0, numcommas = 0;
-	vector<WORD> x;
+	vector<LONG> x;
 
 	// process the expression tree
-	for (int i=0; i<(int)tree.size();) {
+	for (LONG i=0; i<(LONG)tree.size();) {
 		x.clear();
 
 		if (tree[i]==SNUMBER) {
@@ -1417,7 +1441,7 @@ int count_operators_cse (const vector<WORD> &tree) {
 
 			x.push_back(0); // placeholder for hash
 			x.push_back(oper);
-			vector<WORD> hash;
+			vector<LONG> hash;
 			hash.push_back(oper);
 
 			// get two operands from the stack
@@ -1442,7 +1466,7 @@ int count_operators_cse (const vector<WORD> &tree) {
 					// check whether operand 1 equals +/-1
 					if (x[idx_oper1]==SNUMBER) {
 
-						int idx = ABS(x[idx_oper1+1])-1;
+						LONG idx = ABS(x[idx_oper1+1])-1;
 						if (tree[idx+2]==1 && tree[idx+3]==1 && ABS(tree[idx+4])==3) {
 							// push +/- other operand and continue
 							s.push(x[idx_oper2+2]);
@@ -1566,10 +1590,10 @@ NODE* buildTree(vector<WORD> &tree) {
 	// allocate spaces for the tree, cannot be more nodes than tree size
 	NODE* ar = (NODE*)Malloc1(tree.size() * sizeof(NODE), "CSE tree");
 	NODE* c = 0;
-	unsigned int curIndex = 0;
+	LONG curIndex = 0;
 
 	stack<NODE*> st;
-	for (int i=0; i<(int)tree.size();) {
+	for (LONG i=0; i<(LONG)tree.size();) {
 		c = ar + curIndex;
 		new (c) NODE(&tree[i]); // placement new
 		curIndex++;
@@ -1613,7 +1637,7 @@ NODE* buildTree(vector<WORD> &tree) {
 	// we swap the first element with the root
 	// we need to change the pointer in the operator node that has this element as a child
 	// TODO: check performance
-	for (unsigned int i = 0; i < curIndex; i++) {
+	for (LONG i = 0; i < curIndex; i++) {
 		if (ar[i].l == ar) ar[i].l = st.top();
 		if (ar[i].r == ar) ar[i].r = st.top();
 	}
