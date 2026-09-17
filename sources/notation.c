@@ -290,7 +290,41 @@ WORD ComparePoly(WORD *term1, WORD *term2, WORD level)
 
 /*
  		#] ComparePoly : 
- 		#[ ConvertToPoly :
+		#[ LockLocalPolynomial :
+*/
+/** In TFORM, we must protect local conversions to polynomial notation, and
+ * back again, with a lock when the same modules can add entries to the global
+ * extrasymbol buffer (because we use ToPolynomial, for instance).
+ * Returns 1 with the lock held, or -1 when this module cannot update the
+ * global extrasymbol buffer and therefore needs no transaction lock. */
+int LockLocalPolynomial(void)
+{
+#ifdef WITHPTHREADS
+	if ( AC.topolynomialflag & TOPOLYNOMIALFLAG ) {
+		LOCK(AM.sbuflock);
+		return(1);
+	}
+#endif
+	return(-1);
+}
+
+/*
+		#] LockLocalPolynomial :
+		#[ UnlockLocalPolynomial :
+*/
+void UnlockLocalPolynomial(int *locked)
+{
+#ifdef WITHPTHREADS
+	if ( *locked == 1 ) {
+		UNLOCK(AM.sbuflock);
+	}
+#endif
+	*locked = 0;
+}
+
+/*
+		#] UnlockLocalPolynomial :
+		#[ ConvertToPoly :
 */
 /**
  *		Converts a generic term to polynomial notation in which there are
@@ -507,11 +541,22 @@ int ConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD *comlist, WORD par)
  *		problem when running into the already assigned ones.
  *		This uses the FindTree for searching in the global tree and
  *		then looks further in the AT.ebufnum. This allows fully parallel
- *		processing. Hence we need no locks. Cannot be used in the same
- *		module as ConvertToPoly.
+ *		processing while the global tree is stable. The locked argument must
+ *		start at zero. It changes to 1 when the first extra symbol is actually
+ *		needed and AM.sbuflock is acquired, or to -1 when no transaction lock
+ *		is needed for this module. The caller must hold this state until we
+ *		have converted back, and then it passes it to UnlockLocalPolynomial.
  */
 
-int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par)
+/** Helper function, which locks AM.sbuflock only when required. */
+static void EnsureLocalPolynomialLock(int *locked)
+{
+	if ( *locked == 0 ) {
+		*locked = LockLocalPolynomial();
+	}
+}
+
+int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par, int *locked)
 {
 	WORD *tout, *tstop, ncoef, *t, *r, *tt, *ttwo = 0;
 	int i, action = 0;
@@ -532,6 +577,7 @@ int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par
 					*tout++ = r[1];
 				}
 				else {
+					EnsureLocalPolynomialLock(locked);
 					tout[1] = SYMBOL;
 					tout[2] = 4;
 					tout[3] = r[0];
@@ -547,6 +593,7 @@ int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par
 			}
 		}
 		else if ( *t == DOTPRODUCT ) {
+			EnsureLocalPolynomialLock(locked);
 			r = t + 2;
 			t += t[1];
 			while ( r < t ) {
@@ -570,6 +617,7 @@ int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par
 			}
 		}
 		else if ( *t == VECTOR ) {
+			EnsureLocalPolynomialLock(locked);
 			r = t + 2;
 			t += t[1];
 			while ( r < t ) {
@@ -587,6 +635,7 @@ int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par
 			}
 		}
 		else if ( *t == INDEX ) {
+			EnsureLocalPolynomialLock(locked);
 			r = t + 2;
 			t += t[1];
 			while ( r < t ) {
@@ -615,6 +664,7 @@ int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par
 			else { t += t[1]; }
 		}
 		else if ( *t >= FUNCTION ) {
+			EnsureLocalPolynomialLock(locked);
 			i = FindLocalSubterm(BHEAD t,startebuf);
 			t += t[1];
 			*tout++ = SYMBOL;
@@ -661,65 +711,62 @@ int LocalConvertToPoly(PHEAD WORD *term, WORD *outterm, WORD startebuf, WORD par
 		subexpressions when extra symbols have been replaced.
 */
 
+#ifdef WITHPTHREADS
+/** Helper function: we only lock sbuflock if the term actually has an
+ * extrasymbol to replace. Search for one. */
+static int PolyHasExtraSymbols(WORD *term, WORD from, WORD to)
+{
+	WORD *t, *tt, *tstop, *tstop1;
+
+	tstop = term + *term - ABS(term[*term-1]);
+	for ( t = term + 1; t < tstop; t += t[1] ) {
+		if ( *t != SYMBOL ) {
+			continue;
+		}
+		tstop1 = t + t[1];
+		for ( tt = t + 2; tt < tstop1; tt += 2 ) {
+			if ( *tt >= MAXVARIABLES - to && *tt < MAXVARIABLES - from ) {
+				return(1);
+			}
+		}
+	}
+	return(0);
+}
+#endif
+
+static int ConvertFromPolyImpl(PHEAD WORD *term, WORD *outterm, WORD from, WORD to, WORD offset, WORD par);
+
 int ConvertFromPoly(PHEAD WORD *term, WORD *outterm, WORD from, WORD to, WORD offset, WORD par)
+{
+	int locked = 0, result;
+	/* For LocalConvertToPoly operations, the caller already holds ebuflock if the
+	 * the conversion introduced extrasymbols. Expression level FromPolynomial
+	 * only needs to take the lock if the term really contains an extrasymbol. */
+#ifdef WITHPTHREADS
+	if ( ! par && PolyHasExtraSymbols(term,from,to) ) {
+		LOCK(AM.sbuflock);
+		locked = 1;
+	}
+#endif
+	result = ConvertFromPolyImpl(BHEAD term,outterm,from,to,offset,par);
+#ifdef WITHPTHREADS
+	if ( locked ) {
+		UNLOCK(AM.sbuflock);
+	}
+#else
+	DUMMYUSE(locked);
+#endif
+	return(result);
+}
+
+static int ConvertFromPolyImpl(PHEAD WORD *term, WORD *outterm, WORD from, WORD to, WORD offset, WORD par)
 {
 	WORD *tout, *tstop, *tstop1, ncoef, *t, *r, *tt;
 	int i;
-/*	first = 1; */
 	tt = term + *term;
 	tout = outterm+1;
 	ncoef = ABS(tt[-1]);
 	tstop = tt - ncoef;
-/*
-	r = t = term + 1;
-	while ( t < tstop ) {
-		if ( *t == SYMBOL ) {
-			tstop1 = t + t[1];
-			tt = t + 2;
-			while ( tt < tstop1 ) {
-				if ( ( *tt < MAXVARIABLES - to )
-				  || ( *tt >= MAXVARIABLES - from ) ) {
-					tt += 2;
-				}
-				else break;
-			}
-			if ( tt >= tstop1 ) { t = tstop1; continue; }
-			while ( r < t ) *tout++ = *r++;
-			t += 2;
-			first = 0;
-			while ( t < tstop1 ) {
-				if ( ( *t < MAXVARIABLES - to )
-				  || ( *t >= MAXVARIABLES - from ) ) {
-					*tout++ = SYMBOL;
-					*tout++ = 4;
-					*tout++ = *t++;
-					*tout++ = *t++;
-				}
-				else {
-					*tout++ = SUBEXPRESSION;
-					*tout++ = SUBEXPSIZE;
-					*tout++ = MAXVARIABLES - *t++ + offset;
-					*tout++ = *t++;
-					if ( par ) *tout++ = AT.ebufnum;
-					else       *tout++ = AM.sbufnum;
-					FILLSUB(tout)
-				}
-			}
-			r = t;
-		}
-		else {
-			t += t[1];
-		}
-	}
-	if ( first ) {
-		i = *term; t = term;
-		NCOPY(outterm,t,i);
-		return(*term);
-	}
-	while ( r < t ) *tout++ = *r++;
-	NCOPY(tout,tstop,ncoef)
-	*outterm = tout-outterm;
-*/
 	t = term + 1;
 	while ( t < tstop ) {
 		if ( *t == SYMBOL ) {
@@ -771,7 +818,8 @@ int ConvertFromPoly(PHEAD WORD *term, WORD *outterm, WORD from, WORD to, WORD of
 		Searching is by tree structure.
 		Adding changes the tree.
 
-		Notice that in TFORM we should be in sequential mode.
+		Writing to the global extra-symbol buffer and its search tree is protected
+		in TFORM by AM.sbuflock.
 */
 
 int FindSubterm(WORD *subterm)
@@ -841,7 +889,9 @@ int FindSubterm(WORD *subterm)
 		Searching is by tree structure.
 		Adding changes the tree.
 
-		Notice that in TFORM we should be in sequential mode.
+		Access to the global tree is protected by AM.sbuflock. In a module
+		that also adds global extra symbols, the caller already holds this
+		recursive lock for the complete local polynomial operation.
 */
 
 int FindLocalSubterm(PHEAD WORD *subterm, WORD startebuf)
@@ -859,7 +909,7 @@ int FindLocalSubterm(PHEAD WORD *subterm, WORD startebuf)
 /*
 		First see whether we have this one already in the global buffer.
 */
-	number = FindTree(AM.sbufnum,term);
+	number = FindTree(AM.sbufnum,term,0);
 	if ( number > 0 ) goto wearehappy;
 /*
 	Now look whether it is in the ebufnum between startebuf and numrhs
@@ -1094,7 +1144,8 @@ void PrintExtraSymbol(int num, WORD *terms,int par)
 		Searching is by tree structure.
 		Adding changes the tree.
 
-		Notice that in TFORM we should be in sequential mode.
+		Writing to the global extra-symbol buffer and its search tree is protected
+		in TFORM by AM.sbuflock.
 */
 
 int FindSubexpression(WORD *subexpr)

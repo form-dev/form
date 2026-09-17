@@ -2947,7 +2947,7 @@ int DollarFactorize(PHEAD WORD numdollar)
 #ifdef STEP2
 	WORD *tstop, pow, *r;
 #endif
-	int i, j, jj, action = 0, sign = 1;
+	int i, j, jj, action = 0, locked = 0, sign = 1;
 	LONG insize, ii;
 	WORD startebuf = cbuf[AT.ebufnum].numrhs;
 	WORD nfactors, factorsincontent, extrafactor = 0;
@@ -3144,8 +3144,9 @@ int DollarFactorize(PHEAD WORD numdollar)
 		NewSort(BHEAD0);
 		NewSort(BHEAD0);
 		while ( *t ) {
-			if ( LocalConvertToPoly(BHEAD t,termextra,startebuf,0) < 0 ) {
+			if ( LocalConvertToPoly(BHEAD t,termextra,startebuf,0,&locked) < 0 ) {
 getout:
+				UnlockLocalPolynomial(&locked);
 				AR.SortType = oldsorttype;
 				M_free(buf1,"DollarFactorize-2");
 				if ( buf1content ) TermFree(buf1content,"DollarContent");
@@ -3169,6 +3170,7 @@ getout:
  		#[ Step 4: Now the hard work.
 */
 	if ( ( buf3 = poly_factorize_dollar(BHEAD buf2) ) == 0 ) {
+		UnlockLocalPolynomial(&locked);
 		MesCall("DollarFactorize");
 		AR.SortType = oldsorttype;
 		if ( buf2 != buf1 && buf2 ) M_free(buf2,"DollarFactorize-3");
@@ -3247,6 +3249,7 @@ getout:
 			if ( buf2 != buf1 && buf2 ) M_free(buf2,"DollarFactorize-4");
 			M_free(buf1,"DollarFactorize-4");
 			if ( buf1content ) TermFree(buf1content,"DollarContent");
+			UnlockLocalPolynomial(&locked);
 			return(0);
 		}
 		else {
@@ -3278,6 +3281,7 @@ getout:
 				,startebuf-numxsymbol,1) <= 0 ) {
 					LowerSortLevel();
 getout2:			AR.SortType = oldsorttype;
+					UnlockLocalPolynomial(&locked);
 					M_free(d->factors,"factors in dollar");
 					d->factors = 0;
 #ifdef WITHPTHREADS
@@ -3336,6 +3340,7 @@ getout2:			AR.SortType = oldsorttype;
 			d->factors[i].size = t - d->factors[i].where;
 		}
 	}
+	UnlockLocalPolynomial(&locked);
 	d->nfactors = nfactors + factorsincontent;
 /*
  		#] Step 5: ConvertFromPoly 

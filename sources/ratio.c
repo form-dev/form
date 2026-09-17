@@ -1149,7 +1149,7 @@ WORD *GCDfunction3(PHEAD WORD *in1, WORD *in2)
 	GETBIDENTITY
 	WORD oldsorttype = AR.SortType, *ow = AT.WorkPointer;;
 	WORD *t, *tt, *gcdout, *term1, *term2, *confree1, *confree2, *gcdout1, *proper1, *proper2;
-	int i, actionflag1, actionflag2;
+	int i, actionflag1, actionflag2, locked = 0;
 	WORD startebuf = cbuf[AT.ebufnum].numrhs;
 	WORD tryterm1, tryterm2;
 	if ( in2[*in2] == 0 ) { t = in1; in1 = in2; in2 = t; }
@@ -1187,7 +1187,7 @@ WORD *GCDfunction3(PHEAD WORD *in1, WORD *in2)
 	Now we have to replace all non-symbols and symbols to a negative power
 	by extra symbols.
 */
-	if ( ( proper1 = PutExtraSymbols(BHEAD confree1,startebuf,&actionflag1) ) == 0 ) goto CalledFrom;
+	if ( ( proper1 = PutExtraSymbols(BHEAD confree1,startebuf,&actionflag1,&locked) ) == 0 ) goto CalledFrom;
 	if ( confree1 != in1 ) {
 		if ( tryterm1 ) { TermFree(confree1,"TakeContent"); }
 		else { M_free(confree1,"TakeContent"); }
@@ -1195,7 +1195,7 @@ WORD *GCDfunction3(PHEAD WORD *in1, WORD *in2)
 /*
 	TermFree(confree1,"TakeSymbolContent");
 */
-	if ( ( proper2 = PutExtraSymbols(BHEAD confree2,startebuf,&actionflag2) ) == 0 ) goto CalledFrom;
+	if ( ( proper2 = PutExtraSymbols(BHEAD confree2,startebuf,&actionflag2,&locked) ) == 0 ) goto CalledFrom;
 	if ( confree2 != in2 ) {
 		if ( tryterm2 ) { TermFree(confree2,"TakeContent"); }
 		else { M_free(confree2,"TakeContent"); }
@@ -1220,6 +1220,7 @@ WORD *GCDfunction3(PHEAD WORD *in1, WORD *in2)
 	}
 
 	cbuf[AT.ebufnum].numrhs = startebuf;
+	UnlockLocalPolynomial(&locked);
 /*
 	Now multiply gcdout by term1
 */
@@ -1234,6 +1235,7 @@ WORD *GCDfunction3(PHEAD WORD *in1, WORD *in2)
 	AT.WorkPointer = ow;
 	return(gcdout);
 CalledFrom:
+	UnlockLocalPolynomial(&locked);
 	AN.tryterm = 0;
 	MLOCK(ErrorMessageLock);
 	MesCall("GCDfunction3");
@@ -1246,14 +1248,14 @@ CalledFrom:
  		#[ PutExtraSymbols :
 */
 
-WORD *PutExtraSymbols(PHEAD WORD *in,WORD startebuf,int *actionflag)
+WORD *PutExtraSymbols(PHEAD WORD *in,WORD startebuf,int *actionflag,int *locked)
 {
 	WORD *termout = AT.WorkPointer;
 	int action;
 	*actionflag = 0;
 	NewSort(BHEAD0);
 	while ( *in ) {
-		if ( ( action = LocalConvertToPoly(BHEAD in,termout,startebuf,0) ) < 0 ) {
+		if ( ( action = LocalConvertToPoly(BHEAD in,termout,startebuf,0,locked) ) < 0 ) {
 			LowerSortLevel();
 			goto CalledFrom;
 		}
@@ -2850,7 +2852,7 @@ int DIVfunction(PHEAD WORD *term,WORD level,int par)
 	WORD *t, *tt, *r, *arg1 = 0, *arg2 = 0, *arg3 = 0, *termout;
 	WORD *tstop, *tend, *r3, *rr, *rstop, tlength, rlength, newlength;
 	WORD *proper1, *proper2, *proper3 = 0, numdol = -1;
-	int numargs = 0, type1, type2, actionflag1, actionflag2;
+	int numargs = 0, type1, type2, actionflag1, actionflag2, locked = 0;
 	WORD startebuf = cbuf[AT.ebufnum].numrhs;
 	int division = ( par <= 2 );  /* false for mul_ */
 	if ( par < 0 || par > 3 ) {
@@ -2939,8 +2941,8 @@ divzero:;
 		M_free(arg1,"DIVfunction");
 		return(0);
 	}
-	if ( ( proper1 = PutExtraSymbols(BHEAD arg1,startebuf,&actionflag1) ) == 0 ) goto CalledFrom;
-	if ( ( proper2 = PutExtraSymbols(BHEAD arg2,startebuf,&actionflag2) ) == 0 ) goto CalledFrom;
+	if ( ( proper1 = PutExtraSymbols(BHEAD arg1,startebuf,&actionflag1,&locked) ) == 0 ) goto CalledFrom;
+	if ( ( proper2 = PutExtraSymbols(BHEAD arg2,startebuf,&actionflag2,&locked) ) == 0 ) goto CalledFrom;
 /*
 	if ( type2 == 0 ) M_free(arg2,"DIVfunction");
 	else {
@@ -2974,6 +2976,7 @@ divzero:;
 	M_free(proper2,"DIVfunction");
 	M_free(proper1,"DIVfunction");
 	cbuf[AT.ebufnum].numrhs = startebuf;
+	UnlockLocalPolynomial(&locked);
 	if ( *arg3 ) {
 		termout = AT.WorkPointer;
 		tlength = tend[-1];
@@ -3004,6 +3007,7 @@ divzero:;
 	M_free(arg3,"DIVfunction");
 	return(0);
 CalledFrom:
+	UnlockLocalPolynomial(&locked);
 	MLOCK(ErrorMessageLock);
 	MesCall("DIVfunction");
 	MUNLOCK(ErrorMessageLock);

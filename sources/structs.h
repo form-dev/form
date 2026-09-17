@@ -1438,7 +1438,7 @@ struct M_const {
 #ifdef WITHPTHREADS
     pthread_rwlock_t handlelock;   /* (M) */
     pthread_mutex_t storefilelock; /* (M) */
-	pthread_mutex_t	sbuflock;      /* (M) Lock for writing in the AM.sbuffer */
+	pthread_mutex_t  sbuflock;      /* (M) Recursive lock for the AM.sbuffer and local polynomial conversions */
     LONG    ThreadScratSize;       /* (M) Size of Fscr[0/2] buffers of the workers */
     LONG    ThreadScratOutSize;    /* (M) Size of Fscr[1] buffers of the workers */
 #endif
@@ -1843,7 +1843,7 @@ struct C_const {
     int     NoCompress;            /* (R) Controls native compression */
     int     IsFortran90;           /* Tells whether the Fortran is Fortran90 */
     int     MultiBracketLevels;    /* Number of elements in MultiBracketBuf */
-    int     topolynomialflag;      /* To avoid ToPolynomial and FactArg together */
+    int     topolynomialflag;      /* Module can add entries to the global extra-symbol buffer */
     int     ffbufnum;              /* Buffer number for user defined factorizations */
     int     OldFactArgFlag;
     int     MemDebugFlag;          /* Only used when MALLOCDEBUG in tools.c */

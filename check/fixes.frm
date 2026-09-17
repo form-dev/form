@@ -1409,6 +1409,49 @@ assert stdout =~ exact_pattern(<<'EOF')
    F
 EOF
 *--#] Issue129_2 :
+*--#[ Issue138_1 :
+CFunction f,a,b,c,d;
+Symbol x,y;
+Local F = (1+f((a+b)^2,(a+b)*(c*d)))^20;
+.sort
+Identify f(x?,y?) = f(gcd_(x,y));
+ToPolynomial;
+.sort
+FromPolynomial;
+Identify f(a+b) = -1;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("0")
+*--#] Issue138_1 :
+*--#[ Issue138_2 :
+CFunction f,g;
+Symbol x,y;
+Local F = (1+f((g(x)+g(y))^2))^20;
+FactArg f;
+ToPolynomial;
+.sort
+FromPolynomial;
+Identify f(g(x)+g(y),g(x)+g(y)) = -1;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("0")
+*--#] Issue138_2 :
+*--#[ Issue138_3 :
+CFunction f,g;
+Symbol x,y;
+Local F = (1+f((g(x)+g(y))^2))^20;
+FactArg f;
+ArgToExtraSymbol g;
+.sort
+FromPolynomial;
+Identify f(g(x)+g(y),g(x)+g(y)) = -1;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("0")
+*--#] Issue138_3 :
 *--#[ Issue139 :
 * Corrupted characters in printing f(-2147483648)
 CF f;
