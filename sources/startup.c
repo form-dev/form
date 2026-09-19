@@ -850,7 +850,7 @@ classic:;
 	*t = 0;
 
 /*
-	Now we should assign a name to the main sort file and the two stage 4 files.
+	Now we should assign a name to the main sort file.
 */
 	AM.S0->file.name = (char *)Malloc1(sizeof(char)*(i+DEFAULTFNAMELENGTH),"name for temporary files");
 	s = (UBYTE *)AM.S0->file.name;
@@ -877,27 +877,13 @@ classic:;
 	}
 #endif
 /*
-	With the stage4 and scratch file names we have to be a bit more careful.
+	With the scratch file names we have to be a bit more careful.
 	They are to be allocated after the threads are initialized when there
 	are threads of course.
 */
 	if ( par == 0 ) {
-		s = (UBYTE *)((void *)(FG.fname2)); i = 0;
-		while ( *s ) { s++; i++; }
-		/* +1 for null terminator */
-		s = (UBYTE *)Malloc1(sizeof(char)*(i+1),"name for stage4 file a");
-		AR.FoStage4[1].name = (char *)s;
-		t = (UBYTE *)FG.fname2;
-		while ( *t ) *s++ = *t++;
-		s[-2] = '4'; s[-1] = 'a'; *s = 0;
 		s = (UBYTE *)((void *)(FG.fname)); i = 0;
 		while ( *s ) { s++; i++; }
-		/* +1 for null terminator */
-		s = (UBYTE *)Malloc1(sizeof(char)*(i+1),"name for stage4 file b");
-		AR.FoStage4[0].name = (char *)s;
-		t = (UBYTE *)FG.fname;
-		while ( *t ) *s++ = *t++;
-		s[-2] = '4'; s[-1] = 'b'; *s = 0;
 		for ( j = 0; j < 3; j++ ) {
 			/* +1 for null terminator */
 			s = (UBYTE *)Malloc1(sizeof(char)*(i+1),"name for scratch file");
@@ -909,23 +895,8 @@ classic:;
 	}
 #ifdef WITHPTHREADS
 	else if ( par == 2 ) {
-		size_t tname;
-		s = (UBYTE *)((void *)(FG.fname2)); i = 0;
-		while ( *s ) { s++; i++; }
-		/* +1 for null terminator, +10 for 32bit int, +1 for "." */
-		tname = sizeof(char)*(i+12);
-		s = (UBYTE *)Malloc1(tname,"name for stage4 file a");
-		snprintf((char *)s,tname,"%s.%d",FG.fname2,AT.identity);
-		s[i-2] = '4'; s[i-1] = 'a';
-		AR.FoStage4[1].name = (char *)s;
 		s = (UBYTE *)((void *)(FG.fname)); i = 0;
 		while ( *s ) { s++; i++; }
-		/* +1 for null terminator, +10 for 32bit int, +1 for "." */
-		tname = sizeof(char)*(i+12);
-		s = (UBYTE *)Malloc1(tname,"name for stage4 file b");
-		snprintf((char *)s,tname,"%s.%d",FG.fname,AT.identity);
-		s[i-2] = '4'; s[i-1] = 'b';
-		AR.FoStage4[0].name = (char *)s;
 		if ( AT.identity == 0 ) {
 			for ( j = 0; j < 3; j++ ) {
 				/* +1 for null terminator */
@@ -1358,6 +1329,7 @@ void StartVariables(void)
 	AO.BlockSpaces = 0;
 	AO.OptimizationLevel = 0;
 	PUTZERO(AS.MaxExprSize);
+	AS.SubSortStage4Warning = 0;
 	PUTZERO(AC.StoreFileSize);
 
 #ifdef WITHPTHREADS
@@ -1496,8 +1468,6 @@ void IniVars(void)
 	AM.gOutNumberType = RATIONALMODE;
 #ifdef WITHZLIB
 	AR.gzipCompress = GZIPDEFAULT;
-	AR.FoStage4[0].ziobuffer = 0;
-	AR.FoStage4[1].ziobuffer = 0;
 #ifdef WITHZSTD
 	/* Zstd compression is on by default, if we have compiled with it */
 	ZWRAP_useZSTDcompression(1);
