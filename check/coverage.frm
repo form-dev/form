@@ -2274,3 +2274,26 @@ Symbols x;
 assert runtime_error?
 assert stdout =~ /No current external channel/
 *--#] cov_extnochannel :
+*--#[ cov_dict :
+* preprocessor dictionaries: #opendictionary/#add/#usedictionary + output
+* (DoPreOpenDictionary/DoPreAddDictionary/WriteLists->WriteDictionary)
+On names;
+Symbols x1,mu,N;
+CFunction f;
+#OpenDictionary dic
+  #add x1: "x_1"
+  #add mu: "\mu"
+  #add f: "\ln"
+#CloseDictionary
+Local F = x1*mu*f(x1)+N;
+#usedictionary dic
+Print +s;
+.sort
+Print F;
+.end
+assert succeeded?
+assert nterms("F") == 2
+assert stdout =~ /Contents of dictionary dic/
+assert stdout =~ /x_1/
+assert stdout =~ /\\ln/
+*--#] cov_dict :
