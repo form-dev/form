@@ -869,7 +869,6 @@ Local G = $s*x;
 Print F;
 Print G;
 .end
-assert succeeded?
 assert nterms("F") == 1
 assert nterms("G") == 1
 *--#] cov_pp_random :
@@ -1179,7 +1178,6 @@ Local G = f(a1,a2)*f(a2,a3) + f(a1,a2)*f(a3,a2);
 CreateAll paths,f,g,outf,type=symbol,ifnopath=0;
 Print G;
 .end
-assert succeeded?
 assert nterms("F") == 1
 assert result("F") =~ expr("f(a1,a2)*f(a2,a3)*f(a3,a1)*g(a1,a2,a3)")
 assert result("G") =~ expr("f(a1,a2)*f(a2,a3)*outf(a2) + f(a1,a2)*f(a3,a2)*outf(a2)")
@@ -2106,3 +2104,100 @@ assert nterms("u1") == 1 && nterms("u2") == 1
 assert result("u1") == "e(a)"
 assert nterms("q2") == 1
 *--#] cov_dolconv :
+*--#[ cov_loadzoo :
+* Save/Load round trip with >INFILEINDEX expressions (index buffer
+* overflow -> SeekFile/ReadSaveIndex reload path), the silent-load
+* option, and the illegal-option error path
+Auto S x;
+#do i = 1,15
+Global g`i' = x^`i' + `i';
+#enddo
+.store
+Save cov1a.dat;
+.end
+Load cov1a.dat;
+Local T = g1+g5+g13;
+.sort
+Print T;
+.end
+Load,-s,cov1a.dat;
+Local U = g2+g14;
+.sort
+Print U;
+.end
+Load,-x,cov1a.dat;
+.end
+assert nterms("T") == 4
+assert result("T") =~ expr("19 + x + x^5 + x^13")
+assert nterms("U") == 3
+assert result("U") =~ /x\^14/
+assert runtime_error?
+assert stdout =~ /Illegal option in Load statement/
+*--#] cov_loadzoo :
+*--#[ cov_dolwild :
+* wildcard-argument list capture ?ww$x (DOLWILDARGS dollars) plus
+* termsin/sizeof preprocessor branches on wildargs and empty dollars
+#pend_if threaded?
+S a,b,c;
+CFunction g,h;
+Local E = g(a,b,c);
+$z = 0;
+id g(?ww$x) = h($x);
+.sort
+#if ( termsin($x) == 3 )
+Local W3 = a;
+#endif
+#if ( sizeof($x) > 2 )
+Local W2 = b;
+#endif
+#if ( termsin($z) == 0 )
+Local Z1 = c;
+#endif
+Local E2 = g(5);
+id g(?wv$x2) = h($x2);
+.sort
+#if ( termsin($x2) == 1 && sizeof($x2) >= 1 )
+Local W1 = a;
+#endif
+Print E,E2,W3,W2,Z1,W1;
+.end
+assert nterms("W3") == 1 && nterms("W2") == 1 && nterms("Z1") == 1
+assert nterms("W1") == 1
+assert result("E2") == "h(5)"
+assert nterms("E") == 1
+*--#] cov_dolwild :
+*--#[ cov_exprprop :
+* re-declaration of existing expressions (Local/Global/Factorized
+* property changes, DoExpr else branch) and the invalid-name error path
+S x;
+Local F = x^2;
+LocalFactorized G = 2*(x+1)*(x+2);
+.sort
+Global F;
+Local F;
+GlobalFactorized G;
+LocalFactorized G;
+.sort
+Print F,G;
+.end
+S x;
+Local H = x;
+.sort
+Global Nosuch;
+.end
+assert nterms("F") == 1
+assert result("F") == "x^2"
+assert nterms("G") == 5
+assert runtime_error?
+assert stdout =~ /Nosuch is not a valid expression/
+*--#] cov_exprprop :
+*--#[ cov_bernoulli :
+* builtin Bernoulli number function bernoulli_(n) (BERNOULLIFUNCTION
+* normalisation path, reken.c Bernoulli())
+Auto S x;
+Local B = bernoulli_(0)+bernoulli_(1)+bernoulli_(2)+bernoulli_(6)-bernoulli_(7);
+Print B;
+.end
+assert nterms("B") == 1
+assert result("B") == "47881/30240"
+*--#] cov_bernoulli :

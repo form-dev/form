@@ -4263,6 +4263,9 @@ LONG ReadSaveIndex(FILEINDEX *fileind)
 {
 	/* do we need some translation for the FILEINDEX? */
 	if ( AO.transFlag ) {
+		/* UNFINISHED_FEATURE_EXCL_START: save file header/index translation
+		   only happens when reading a save file made with a different
+		   word size or byte order; not testable in same-platform runs */
 		/* if a translated FILEINDEX can hold less entries than the original
 		   FILEINDEX, then we need to buffer the extra entries in this static
 		   variable (can happen going from 32bit to 64bit */
@@ -4286,9 +4289,11 @@ LONG ReadSaveIndex(FILEINDEX *fileind)
 
 		if ( ReadFile(AO.SaveData.Handle, (UBYTE *)fileind, sizeof(FILEINDEX))
 				!= sizeof(FILEINDEX) ) {
+			/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 			return ( MesPrint("!>Error(1) reading stored expression.") );
 /* INTERNAL_ERROR_EXCL_STOP */
+			/* UNFINISHED_FEATURE_EXCL_START */
 		}
 
 		/* do we need to flip the endianness? */
@@ -4406,6 +4411,7 @@ LONG ReadSaveIndex(FILEINDEX *fileind)
 			NCOPYB(p, q, n)
 		}
 		return ( 0 );
+		/* UNFINISHED_FEATURE_EXCL_STOP */
 	} else {
 		return ( ReadFile(AO.SaveData.Handle, (UBYTE *)fileind, sizeof(FILEINDEX))
 		         != sizeof(FILEINDEX) );
