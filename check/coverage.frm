@@ -1932,3 +1932,53 @@ Print F5;
 assert succeeded?
 assert result("F5") =~ expr("acc(2*x^3 + 4*x^2 + 3*x + 1,2*x^2 + x)")
 *--#] cov_polyratsave :
+*--#[ cov_idfun :
+* id_() intrinsic: crossbreed of replace_ and id statements
+CFunction f;
+Symbols a,b,c,x,y,u,v,z;
+Local Id1 = x^2*id_(x^2,y+z+1,y,u+v,x,z+u)*y*3;
+Print Id1;
+.sort
+Local Id2 = id_(a,3,c,2)*f(a,c);
+Print Id2;
+.sort
+.end
+assert succeeded?
+assert result("Id1") =~ expr("3*v + 3*v*z + 3*u + 3*u*z + 3*y*v + 3*y*u")
+*--#] cov_idfun :
+*--#[ cov_trace4 :
+* 4-dimensional gamma traces with Trace4 (spin lines 1 and 2)
+Vector p1,p2,p3,p4,p5;
+Symbols x,e;
+Local Tr1 = g_(1,p1,p2,p3,p4);
+Local Tr2 = g_(1,p1,p2,p3,p4,p5);
+Local Tr3 = g5_(1,p1,p2,p3,p4);
+Local Tr4 = g5_(1,p1,p2,p3,p4,p5);
+Local Tr5 = g5_(1,p1,p2,p3,p4,p5,p2,p3,p4,p1);
+Local Tr6 = g_(1,p1,p2,p3,p4,p5,p2,p3,p4,p1);
+Local Tr7 = gi_(1,p1,p2,p3);
+Local Tr8 = g_(1,p1,p2,p3,p4)*g5_(2,p1,p2,p3,p4);
+Trace4,1;
+id p1.p2 = x;
+id p1.p1 = 3;
+id p2.p2 = 2;
+id p3.p3 = 4;
+id p4.p4 = 5;
+id p5.p5 = 6;
+Print;
+.sort
+Trace4,2;
+id x = 7;
+Print;
+.sort
+Trace4,notrick,1;
+Trace4,nosymmetrize,1;
+Trace4,trick,1;
+Print Tr1;
+.sort
+.end
+assert succeeded?
+assert result("Tr1") =~ expr("-4*p1.p3*p2.p4 + 4*p1.p4*p2.p3 + 28*p3.p4")
+assert result("Tr3") =~ expr("4*e_(p1,p2,p3,p4)")
+assert result("Tr2") == "0"
+*--#] cov_trace4 :
