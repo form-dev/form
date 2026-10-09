@@ -1776,3 +1776,135 @@ Print B2;
 .end
 assert succeeded?
 *--#] cov_bracketkeep :
+*--#[ cov_optimize :
+* optimizer: Horner + CSE with #optimize and #clearoptimize
+CFunction f;
+Symbols a,b,c;
+Local OpH = f(a)+f(b)+(a+b+c)^2;
+Local OpG = f(c)+(a+b+c)^3;
+Format O2;
+Print +f;
+.sort
+ExtraSymbols,array,w;
+#optimize OpG
+#write "%O"
+#clearoptimize
+.sort
+#optimize OpH
+#write "%O"
+.end
+* Format Optimize options and mcts Horner
+Symbols a,b,c,d;
+CFunction f;
+Local OpM = (a+b)^2*(c+d)^3 + f((a+b)*(c+d));
+.sort
+#optimize OpM
+#write "%O"
+#clearoptimize
+.sort
+Format Optimize horner=mcts,hornerdirection=backward;
+.sort
+#optimize OpM
+#write "%O"
+#clearoptimize
+.sort
+Format Optimize method=cse;
+#optimize OpM
+#write "%O"
+#clearoptimize
+.sort
+Format Optimize method=csegreedy;
+#optimize OpM
+#write "%O"
+#clearoptimize
+.sort
+Format Optimize method=greedy,horner=sa,hornerdirection=forwardandbackward;
+#optimize OpM
+#write "%O"
+#clearoptimize
+.end
+#pend_if mpi?
+assert succeeded?
+*--#] cov_optimize :
+*--#[ cov_precondmembers :
+* $( ) special keywords set_ and multipleof_ inside #if
+Symbols a,b,c,z;
+Set s3: a,b;
+#if $( b == set_(s3) )
+Local Pk1 = 1;
+#endif
+#if $( z == set_(s3) )
+Local Pk2 = 2;
+#endif
+#if $( z != set_(s3) )
+Local Pk3 = 3;
+#endif
+#if $( 6 == multipleof_(2) )
+Local Pk4 = 4;
+#endif
+#if $( 7 == multipleof_(3) )
+Local Pk5 = 5;
+#endif
+Print Pk1,Pk3,Pk4;
+.end
+assert succeeded?
+assert result("Pk1") =~ expr("1")
+*--#] cov_precondmembers :
+*--#[ cov_inside :
+* #inside $var executes statements on the contents of a $ variable
+CFunction f;
+Local Inx1 = f(3);
+.sort
+$dd = f(3);
+Print "%$",$dd;
+.sort
+#inside $dd
+	Multiply 2;
+#endinside
+.sort
+Local Inx2 = f($dd);
+Print Inx2;
+.end
+#pend_if threaded?
+
+assert succeeded?
+
+*--#] cov_inside :
+
+*--#[ cov_inside :
+* #inside $var executes statements on the contents of a $ variable
+CFunction f;
+Local Inx1 = f(3);
+.sort
+$dd = f(3);
+Print "%$",$dd;
+.sort
+#inside $dd
+	Multiply 2;
+#endinside
+.sort
+Local Inx2 = f($dd);
+Print Inx2;
+.end
+#pend_if threaded?
+assert succeeded?
+assert result("Inx2") =~ expr("f(2*f(3))")
+*--#] cov_inside :
+*--#[ cov_termsinbracket :
+* termsinbracket_() with Keep Brackets machinery
+CFunction f,g;
+Symbols x,y;
+Local Te1 = (f(x)+f(y))*(g(x)+g(y)) + termsinbracket_();
+Print;
+.sort
+Keep Brackets;
+Brackets x;
+.sort
+id f(x?) = termsinbracket_(0)*f(x) + g(x);
+Print;
+.sort
+Local Te2 = termsinbracket_() + x;
+Print Te2;
+.end
+assert succeeded?
+*--#] cov_termsinbracket :
