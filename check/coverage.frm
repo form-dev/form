@@ -1165,3 +1165,171 @@ Trace4 ;
 .end
 assert compile_error?
 *--#] cov_traceopts_error :
+*--#[ cov_createall :
+* CreateAll loops and CreateAll paths on graphs of function arguments
+Symbols a1,a2,a3;
+CFunction f,g,outf;
+Local F = f(a1,a2)*f(a2,a3)*f(a3,a1) + f(a1,a2) + f(a1,a3);
+CreateAll loops,f,g,type=symbol,ifnoloop=0;
+Print F;
+.end
+Symbols a1,a2,a3;
+CFunction f,g,outf;
+Local G = f(a1,a2)*f(a2,a3) + f(a1,a2)*f(a3,a2);
+CreateAll paths,f,g,outf,type=symbol,ifnopath=0;
+Print G;
+.end
+assert succeeded?
+assert nterms("F") == 1
+assert result("F") =~ expr("f(a1,a2)*f(a2,a3)*f(a3,a1)*g(a1,a2,a3)")
+assert result("G") =~ expr("f(a1,a2)*f(a2,a3)*outf(a2) + f(a1,a2)*f(a3,a2)*outf(a2)")
+*--#] cov_createall :
+*--#[ cov_replaceloop :
+* ReplaceLoop statement and the findloop() condition of If
+Index i1,i2,i3,j1,j2,j3;
+CFunction fv(Symmetric),ofn;
+Local F2 = fv(i1,i2,j1)*fv(i2,i3,j2)*fv(i1,i3,j3);
+ReplaceLoop fv,arguments=3,loopsize=3,outfun=ofn,include=i1;
+Print F2;
+.sort
+Local F3 = fv(i1,i2,j1)*fv(i2,i1,j2) + fv(i1,i2,j1);
+If ( findloop(fv,arguments=3,loopsize=2) );
+	Multiply 3;
+EndIf;
+Print F3;
+.end
+assert succeeded?
+*--#] cov_replaceloop :
+*--#[ cov_mergestuffle :
+* Merge/Shuffle/Stuffle statements with once variants
+CFunction mf;
+Local F3 = mf(1,2)*mf(3,4);
+Shuffle mf;
+Print F3;
+.sort
+Local F4 = mf(1,2)*mf(3,4);
+Merge mf;
+Print F4;
+.sort
+Local F5 = mf(1,2)*mf(3,4);
+Merge,once,mf;
+Print F5;
+.sort
+Stuffle mf+;
+Print F3;
+.sort
+Stuffle,once,mf-;
+Print F4;
+.sort
+Stuffle mf-;
+Print F5;
+.end
+assert succeeded?
+*--#] cov_mergestuffle :
+*--#[ cov_sumstmt :
+* Sum statement with a list of replacement values
+CFunction sf;
+Index mu,nu;
+Local T2 = sf(mu,mu);
+Local T3 = sf(mu,nu)*sf(mu,nu);
+Sum mu,0,1,2, nu,0,1,2;
+Print;
+.end
+assert succeeded?
+assert result("T2") =~ expr("sf(0,0) + sf(1,1) + sf(2,2)")
+assert nterms("T3") == 9
+*--#] cov_sumstmt :
+*--#[ cov_putinside :
+* PutInside with bracket information (cf. manual example)
+Symbols b1,c1,z;
+Function pif;
+Local PI = b1 + c1 + (b1+c1)*z;
+Bracket b1;
+.sort
+PutInside pif;
+Print;
+.end
+assert succeeded?
+*--#] cov_putinside :
+*--#[ cov_factorize :
+* Factorize/UnFactorize on a named expression
+Symbols x,y;
+Local F7 = x^2*y^2 + x*y + 1;
+Factorize F7;
+Print F7;
+.sort
+UnFactorize F7;
+Print F7;
+.end
+assert succeeded?
+assert nterms("F7") == 3
+*--#] cov_factorize :
+*--#[ cov_symmetrize_stmt :
+* Symmetrize family on (a)symmetric functions
+CFunction syf1,syf2,syf3;
+Symbol a,b,c;
+Local F8 = syf1(b,a)*syf2(b,a) + syf3(b,a,c);
+Symmetrize syf1;
+AntiSymmetrize syf2;
+CycleSymmetrize syf3;
+RCycleSymmetrize syf3;
+Print F8;
+.end
+assert succeeded?
+*--#] cov_symmetrize_stmt :
+*--#[ cov_chisholm_dollar :
+* Chisholm with a dollar-variable level and option keywords
+Symbols x,z;
+CFunction c1;
+#$d = 3;
+Local F = c1((x+z)^2) + c1(x+z);
+Chisholm,symmetrize $d;
+Chisholm,nosymmetrize 2;
+Print F;
+.end
+assert succeeded?
+*--#] cov_chisholm_dollar :
+*--#[ cov_printfiles :
+* Print to a file: the +f form and the <channel> form
+Symbols q;
+Local F9 = q^2;
+#write <p9b.txt> "opened";
+Print +f, F9;
+Print <p9b.txt>, F9;
+.sort
+Print <p9b.txt>, F9;
+Print +f;
+.end
+assert succeeded?
+*--#] cov_printfiles :
+*--#[ cov_checkpoint_on :
+* On checkpoint with an interval and a run script (deprecated mechanism,
+* prints a DeprecationWarning)
+On checkpoint 1s,run="true";
+Local F10 = 1;
+Print;
+.end
+assert warning?
+assert stdout =~ /Deprecation/
+*--#] cov_checkpoint_on :
+*--#[ cov_external :
+* the #external preprocessor block
+Symbols x;
+#external cat
+Local FX = (1+x)^3;
+#rmexternal
+Print;
+.end
+assert succeeded?
+*--#] cov_external :
+*--#[ cov_createrrors :
+* error paths for CreateAll/ReplaceLoop/Print/On checkpoint
+Symbols x;
+CFunction f,g,h;
+Local F = 1;
+CreateAll cuts,f,g;
+Print;
+.end
+assert compile_error?
+assert stdout =~ /Illegal subkey/
+*--#] cov_createrrors :
