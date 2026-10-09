@@ -1689,3 +1689,90 @@ Print Epx;
 #pend_if mpi?
 assert preprocess_error?
 *--#] cov_errpre :
+*--#[ cov_polyratfun :
+* PolyRatFun accumulation
+Symbols x,y;
+CFunction acc;
+PolyRatFun acc;
+Local PrFA = 3*x^2*acc(1+y+y^2,1-y) + 2*x^2*acc(1-y+y^2,1+y);
+Print PrFA;
+.end
+* PolyRatFun with Denominators
+Symbols a,x,y;
+CFunction rat,den;
+Local PrFB = 1/(x+y) + 1/(x-y^2);
+.sort
+PolyRatFun rat;
+Denominators den;
+id den(a?) = rat(1,a);
+Print PrFB;
+.end
+* PolyRatFun reduction and default mode reset
+Symbols x;
+CFunction rat;
+PolyRatFun rat;
+Local PrFC = rat(x^2+1,x-1) + rat(x,x)/x;
+Print PrFC;
+.sort
+PolyRatFun;
+Local PrFD = rat(x,x);
+Print PrFD;
+.end
+#pend_if mpi?
+assert succeeded?
+assert result("PrFA") =~ expr("x^2*acc(-y^3-10*y^2-2*y-5,y^2-1)")
+assert nterms("PrFC") == 2
+*--#] cov_polyratfun :
+*--#[ cov_precondzoo :
+* preprocessor dollar conditions and do-loop bounds
+#$n = 7;
+#if ( $( $n > 5 ) )
+Local Q1 = 1;
+#endif
+#if ( $( $n < 3 ) )
+Local Q2 = 1;
+#endif
+#if ( $( $n == 7 ) )
+Local Q3 = 3;
+#endif
+#$k6 = 21;
+#if ( $( $k6 / 3 == 7 ) )
+Local Q4 = 2;
+#endif
+Print Q1,Q3,Q4;
+.end
+* #do loop with plain and dollar bounds
+#$n = 3;
+#do p3 = 1,3
+Local T`p3' = `p3'+1;
+Print T`p3';
+.sort
+#EndDo
+Print T1,T2,T3;
+.end
+#$n = 3;
+#do p4 = 1,`$n'
+Local U`p4' = `p4'*2;
+Print U`p4';
+.sort
+#EndDo
+Print U1,U3;
+.end
+assert succeeded?
+assert nterms("U3") == 1
+*--#] cov_precondzoo :
+*--#[ cov_bracketkeep :
+* brackets with Keep Brackets across modules
+Symbols x;
+CFunction f;
+Local B1 = f(x)*x^2 + f(x)*x^3;
+bracket x;
+.sort
+Keep Brackets;
+Print B1;
+.sort
+Local B2 = B1;
+Print B2;
+.end
+assert succeeded?
+*--#] cov_bracketkeep :
