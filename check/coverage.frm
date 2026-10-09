@@ -940,3 +940,228 @@ Format O4,saIter=10,saMinT=1,saMaxT=2,method=csegreedy,greedytimelimit=1,
 .end
 assert succeeded?
 *--#] cov_opt_format :
+*--#[ cov_printoptions :
+* covers option syntax and string form of Print/NPrint statements
+Symbols x;
+#$d = 3;
+Local F = (x+1)^2;
+Print +s;
+.sort
+Print -s F;
+.sort
+Print +ss;
+.sort
+Print -ss;
+.sort
+Print +f;
+.sort
+Print "%$ is the value",$d;
+Print -f;
+.sort
+NPrint;
+.end
+assert succeeded?
+assert result("F") =~ expr("1 + 2*x + x^2")
+*--#] cov_printoptions :
+*--#[ cov_onoff :
+* covers On/Off statements with most option keywords and arguments
+On insidefirst;
+Off insidefirst;
+On propercount;
+Off propercount;
+On allnames;
+Off allnames;
+On allwarnings;
+Off allwarnings;
+On powerfirst;
+On lowfirst;
+On highfirst;
+On setup;
+Off setup;
+On codes;
+Off codes;
+On tokens;
+Off tokens;
+On properorder;
+Off properorder;
+On nospacesinnumbers;
+Off nospacesinnumbers;
+On totalsize;
+Off totalsize;
+On backtrace;
+Off backtrace;
+On flag,1;
+Off flag,1;
+On innertest;
+Off innertest;
+On oldfactarg;
+Off oldfactarg;
+On memdebugflag;
+Off memdebugflag;
+On oldgcd;
+Off oldgcd;
+On oldprfsign;
+Off oldprfsign;
+On wtimestats;
+Off wtimestats;
+On sortreallocate;
+Off sortreallocate;
+On flint;
+Off flint;
+On humanstats;
+Off humanstats;
+On humanstatistics;
+Off humanstatistics;
+On fewerstats;
+Off fewerstats;
+On fewerstatistics;
+Off fewerstatistics;
+On processstats;
+Off processstats;
+On finalstats;
+Off finalstats;
+On shortstats;
+Off shortstats;
+On shortstatistics;
+Off shortstatistics;
+On grccverbose;
+Off grccverbose;
+On sortverbose;
+Off sortverbose;
+On indentspace 5;
+Off indentspace;
+On compress;
+Off compress;
+On compress gzip 8;
+Off compress;
+On compress zstd 5;
+Off compress;
+On statistics;
+Off statistics;
+.end
+assert succeeded?
+*--#] cov_onoff :
+*--#[ cov_onoff_error :
+* error paths of On/Off: unknown option, bad compress argument,
+* bad checkpoint interval, and IndentSpace out of range (warning)
+On nosuchoption;
+.end
+On checkpoint 5z;
+.end
+On compress badthing;
+.end
+On indentspace 50;
+Off indentspace;
+.end
+assert compile_error?
+*--#] cov_onoff_error :
+*--#[ cov_factdollar :
+* covers FactDollar statement and If with indexed (factorized) $-variables
+Symbols x,y;
+CFunction f1,f2;
+Local F = f1(x^2+2*x*y+y^2)+f1(x^4-y^4);
+id f1(x?$x) = f2(x);
+FactDollar,$x;
+Do $i = 1,$x[0];
+	Print "in %t factor %$ is %$",$i,$x[$i];
+Enddo;
+Print F;
+.sort
+Local G = $x[0];
+Local H = 1;
+If ( $x[1] != 0 );
+	Print "factor 1 ok";
+	Multiply 2;
+EndIf;
+Print H;
+Print G;
+.end
+# Under threads the module with $-assignments is forced to sequential mode
+# (a warning is printed) and the dollar is captured once per thread.
+#pend_if threaded?
+assert succeeded?
+assert nterms("G") == 1
+assert result("H") =~ expr("2")
+*--#] cov_factdollar :
+*--#[ cov_factdollar_error :
+* error paths: undefined dollar with factor index in If; too many %$ in Print format
+Symbols x;
+#$d = 2;
+If ( $nosuch[1] == 0 );
+	Print "x";
+EndIf;
+Print "%$ %$",$d;
+.end
+assert compile_error?
+*--#] cov_factdollar_error :
+*--#[ cov_modulus :
+* covers Modulus statement and its option keywords
+Symbols x;
+Modulus 7;
+Local F = (x+5)^2;
+Print F;
+.sort
+Modulus plusmin,positive,3;
+Local G = (x+2)*(x+1);
+Print G;
+.sort
+Modulus nofunctions,coefficientsonly,5;
+Local H = (x+1)*(x+4);
+Print H;
+.sort
+Modulus alsodollars,inversetable,nopowers,101;
+#$dd = 8*8;
+Local I = $dd + 1;
+Print I;
+.sort
+Modulus nodollars,noinversetable,alsopowers,printpowersof(2),13;
+Local J = 3*x^2+99;
+Print J;
+.end
+assert succeeded?
+assert result("F") =~ expr("4 + 3*x + x^2")
+*--#] cov_modulus :
+*--#[ cov_traceopts :
+* covers Trace4 with option keywords and TraceN
+Vectors p,q;
+Index mu,nu;
+Local F = g_(1,p,mu,q,mu);
+Trace4,contract,1;
+Print F;
+.sort
+Local A = g_(1,p,nu,q,nu);
+Trace4,nocontract,1;
+Print A;
+.sort
+Local B = g_(1,p,mu,q,mu);
+Trace4,notrick,1;
+Print B;
+.sort
+Local C = g_(1,p,mu,q,mu);
+Trace4,trick,1;
+Print C;
+.sort
+Local D = g_(1,p,mu,q,mu);
+Trace4,nosymmetrize,1;
+Print D;
+.sort
+Local E = g_(1,p,mu,q,mu);
+Trace4,symmetrize,1;
+Print E;
+.sort
+Local H = g_(2,p,mu,q,mu);
+TraceN 2;
+Print H;
+.end
+assert succeeded?
+*--#] cov_traceopts :
+*--#[ cov_traceopts_error :
+* error paths of Trace4: undefined index, empty argument
+Vectors p;
+Index mu;
+Local F = g_(1,p,mu,mu);
+Trace4 notanindex;
+Trace4 ;
+.end
+assert compile_error?
+*--#] cov_traceopts_error :
