@@ -1908,3 +1908,27 @@ Print Te2;
 .end
 assert succeeded?
 *--#] cov_termsinbracket :
+*--#[ cov_polyratsave :
+* Save/Load of expressions with PolyRatFun (storage round trip)
+Off Statistics;
+CFunction acc,accinv;
+Symbols x,y;
+PolyRatFun acc,accinv;
+Global F1 = acc(1+x,1) + acc(x,1+2*x);
+Print F1;
+.sort
+.store
+Save cov_prf.dat F1;
+.end
+Off Statistics;
+CFunction acc,accinv;
+Symbols x,y;
+PolyRatFun acc,accinv;
+Load cov_prf.dat F1;
+Local F5 = F1 + acc(1,x);
+Print F5;
+.sort
+.end
+assert succeeded?
+assert result("F5") =~ expr("acc(2*x^3 + 4*x^2 + 3*x + 1,2*x^2 + x)")
+*--#] cov_polyratsave :
