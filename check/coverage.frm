@@ -1635,3 +1635,57 @@ Print DrQ;
 #pend_if threaded?
 assert succeeded?
 *--#] cov_dollarrhs :
+*--#[ cov_errzoo :
+* compile-error zoo, one tiny program per message site
+Local Err1 = x^((y);
+.end
+UnrecognizedStatement;
+.end
+Vector p1;
+Symbols q;
+Local Err3 = p1[q];
+.end
+Symbols y1;
+CFunction d_;
+Local Err4 = d_(y1);
+.end
+Vector p2,p3;
+Local Err5 = p2.5;
+.end
+AutoDeclare Vector;
+Local Err6 = 1;
+.end
+Local Err7 = ((x);
+.end
+Symbols aa$b;
+Local Err8 = 1;
+.end
+Vector p4,p5;
+Local Err10 = p4.p5^2 + r.s;
+.end
+Symbols x9;
+Print >%s Err10;
+.end
+Symbols x9;
+CFunction FX;
+Local Err9 = x9^3;
+Factor FX;
+.sort
+UnFactor FX(???);
+.end
+#pend_if mpi?
+assert compile_error?
+*--#] cov_errzoo :
+*--#[ cov_errpre :
+* preprocessor-error zoo
+Symbols x;
+Local Ep1 = x;
+.sort
+#inside Ep1
+Local Epx = 2;
+#endinside
+Print Epx;
+.end
+#pend_if mpi?
+assert preprocess_error?
+*--#] cov_errpre :
