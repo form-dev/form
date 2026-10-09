@@ -1982,3 +1982,64 @@ assert result("Tr1") =~ expr("-4*p1.p3*p2.p4 + 4*p1.p4*p2.p3 + 28*p3.p4")
 assert result("Tr3") =~ expr("4*e_(p1,p2,p3,p4)")
 assert result("Tr2") == "0"
 *--#] cov_trace4 :
+*--#[ cov_diagrams :
+* Feynman diagram generation via diagrams_ (grcc engine), manual: diagrams.tex
+Model QCD;
+   Particle qua,QUA,  -2;
+   Particle gho,GHO,  -1;
+   Particle glu,      +3;
+   Vertex QUA,qua,glu: g;
+   Vertex GHO,gho,glu: g;
+   Vertex glu,glu,glu: g;
+   Vertex glu,glu,glu,glu: g^2;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8;
+Vector k1,k2,k3,k4,k5,k6,k7,k8;
+Set ext : q1,q2,q3,q4,q5,q6,q7,q8;
+Set int : k1,k2,k3,k4,k5,k6,k7,k8;
+Local gluglu1 = diagrams_(QCD, {glu}, {glu}, int, ext, 1,
+    `WithEdges_'+`OnShell_'+`NoTadpole_'+`NoSnail_');
+Print gluglu1;
+.sort
+Local gg2 = diagrams_(QCD, {glu}, {glu}, int, ext, 2, 0);
+Local gg2b = diagrams_(QCD, {glu}, {glu}, int, ext, 2,
+    `WithBlocks_'+`WithOnePISets_'+`WithoutNodes_');
+Local gg2t = diagrams_(QCD, {glu,glu}, {glu}, int, ext, 2, `TopologiesOnly_');
+Local vac = diagrams_(QCD, {}, {}, int, ext, 2, `Floop_');
+Print gg2;
+.sort
+Print gg2b;
+.sort
+Print gg2t;
+.sort
+Print vac;
+.sort
+.end
+Model PHI3;
+   Particle phi, +1;
+   Vertex phi,phi,phi: g;
+EndModel;
+On GrccVerbose;
+Vector q1,q2,k1,k2;
+Set ext : q1,q2;
+Set int : k1,k2;
+Local t1 = diagrams_(PHI3, {phi}, {phi}, int, ext, 1, `TopologiesOnly_');
+Local gg = diagrams_(PHI3, {phi}, {phi}, int, ext, g^2, 0);
+Print t1;
+.sort
+Off GrccVerbose;
+Print gg;
+.sort
+.end
+assert succeeded?
+assert nterms("gluglu1") == 3
+assert nterms("gg2") == 127
+assert nterms("gg2b") == 65
+assert nterms("gg2t") == 217
+assert nterms("vac") == 5
+assert result("gluglu1") =~ /node_\(3,g,QUA\(-q1\),qua\(-q2\),glu\(k1\)/
+assert result("vac") =~ /topo_/
+assert nterms("t1") == 2
+assert nterms("gg") == 2
+assert result("t1") =~ /topo_\(2\)/
+*--#] cov_diagrams :
