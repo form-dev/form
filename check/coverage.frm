@@ -2247,3 +2247,30 @@ Save m2.dat,h+1;
 assert runtime_error?
 assert stdout =~ /Illegal character/
 *--#] cov_mescomp2 :
+*--#[ cov_extcomm2 :
+* #fromexternal into dollar and preprocessor variables with maxlength,
+* from without listing, and the no-channel error path
+#pend_if threaded?
+Symbols x,a,b;
+#external "n" cat -u
+#toexternal "(a+b)^2\n\n"
+#prompt
+#fromexternal+ "$d2" 7
+Local T = $d2;
+#toexternal "(a+b)^3\n\n"
+#fromexternal- "rsp"
+#message rsp=`rsp'
+#rmexternal `n'
+Print T;
+.end
+assert result("T") == "b^2+2*a*b+a^2"
+assert stdout =~ /rsp=\(a\+b\)\^3/
+*--#] cov_extcomm2 :
+*--#[ cov_extnochannel :
+* #fromexternal with the external channel not set (DoFromExternal error path)
+Symbols x;
+#fromexternal "v"
+.end
+assert runtime_error?
+assert stdout =~ /No current external channel/
+*--#] cov_extnochannel :
