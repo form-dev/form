@@ -905,6 +905,9 @@ void Output::setOutgrp(const char *fname)
     }
     if (fname == NULL || strlen(fname) < 1) {
         outgrp = NULL;
+        /* UNFINISHED_FEATURE_EXCL_START: grcc .f/.p output emission;
+           diawrap.cc initializes Outgrf/Outgrp with False, so all
+           Output methods below are unreachable in every build */
     } else {
         outgrp = strdup(fname);
     }
@@ -1657,6 +1660,7 @@ void Output::outModelP(void)
     fclose(mdlfp);
     delete[] mdlfn;
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //**************************************************************
 // model.cc
@@ -3447,6 +3451,7 @@ Process::~Process(void)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START */
 void Process::prProcess(void)
 {
     grcc_fprintf(GRCC_Stdout, "+++ process options : OPI = %d, (Step) = %d, coupling=%d: ",
@@ -3523,6 +3528,7 @@ void Process::outProcP(FILE *fp)
     }
     fprintf(fp, "    }\n");
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 void Process::mkSProcess(void)
@@ -5773,6 +5779,7 @@ void MConn::addBlockSelf(int nd, int mult)
 }
 
 //------------------------------------------------------------
+/* INTERNAL_ERROR_EXCL_START */
 void MConn::print(void)
 {
     int j, k;
@@ -5865,6 +5872,7 @@ void MConn::prEdges(void)
 }
 
 //**************************************************************
+/* INTERNAL_ERROR_EXCL_STOP */
 // sgroup.cc
 //==============================================================
 // compile options
@@ -6815,6 +6823,10 @@ ENode *EGraph::setExtern(int n0, int pt, int ndtyp)
 }
 
 //--------------------------------------------------------------
+/* INTERNAL_ERROR_EXCL_START */
+    /* EGraph print() diagnostics; their live call sites are inside
+       #ifdef CHECK consistency checks that end with erEnd(), which
+       never fires in correct runs */
 void EGraph::print(void)
 {
     // print the EGraph
@@ -7040,6 +7052,7 @@ int EGraph::groupLMom(int *grp, int *ed2gr)
 
     return ngrp;
 }
+/* INTERNAL_ERROR_EXCL_STOP */
 
 //--------------------------------------------------------------
 Bool EGraph::optQGrafM(Options *opt)

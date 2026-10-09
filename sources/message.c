@@ -858,6 +858,9 @@ int MesComp(char *s, UBYTE *p, UBYTE *q)
  		#[ PrintTerm :
 */
 
+/* DEBUG_EXCL_START */
+    /* debug-only term printers; their only live call sites are
+       commented out or sit inside INTERNAL_ERROR_EXCL regions */
 void PrintTerm(WORD *term, char *where)
 {
 	UBYTE OutBuf[140];
@@ -970,6 +973,7 @@ void PrintSeq(WORD *a,char *text)
 		a += *a;
 	}
 }
+/* DEBUG_EXCL_STOP */
 
 /*
  		#] PrintSeq : 
