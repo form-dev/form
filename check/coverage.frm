@@ -1424,11 +1424,60 @@ Print F2;
 assert succeeded?
 *--#] cov_replaceloop2 :
 *--#[ cov_gettable_err :
-* runtime error for an unfilled table element
-CTable,sparse ttt(1:3);
+* sparse table lookup: unfilled elements stay as table calls
+CTable,sparse ttt(1);
 Fill ttt(1) = 7;
-Local TT = ttt(2);
+Local TT = ttt(2) + ttt(1) + ttt(2);
 Print;
 .end
-assert runtime_error?
+assert succeeded?
+assert result("TT") =~ expr("7 + 2*ttt(2)")
 *--#] cov_gettable_err :
+*--#[ cov_writeformats :
+* #write format specifiers: %d %s %e %E %X %O and %% 
+Symbols x;
+#define str "abc"
+#$dd = 5;
+Local F = x;
+.sort
+#write "A%d B%s";
+#write "S:%s",str;
+#write "D:%$",$dd;
+#write "E:%e",F;
+#write "O:%O";
+#write "X:%X",F;
+Print;
+.end
+assert succeeded?
+assert stdout =~ /S:str/
+assert stdout =~ /D:5/
+assert stdout =~ /E:x;/
+assert stdout =~ /X:/
+*--#] cov_writeformats :
+*--#[ cov_tryreplace :
+* TryReplace swaps a pair of objects (only when it sorts better)
+Symbols x,y,z;
+Local F = y*z + y*x^2;
+TryReplace x,z;
+Print;
+.sort
+Local G = y*z + y*x^2;
+TryReplace z,x;
+Print G;
+Print;
+.end
+assert succeeded?
+assert nterms("F") == 2
+assert nterms("G") == 2
+*--#] cov_tryreplace :
+*--#[ cov_table_err :
+* table with a bounded index range, filled and read back
+Table ttt(1:3);
+Fill ttt(1) = 7;
+Fill ttt(2) = 8;
+Local TT = ttt(2)*ttt(1);
+Print;
+.end
+assert succeeded?
+assert result("TT") == "56"
+*--#] cov_table_err :
