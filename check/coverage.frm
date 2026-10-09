@@ -2201,3 +2201,49 @@ Print B;
 assert nterms("B") == 1
 assert result("B") == "47881/30240"
 *--#] cov_bernoulli :
+*--#[ cov_polygcd :
+* PolyRatFun with multi-term numerator and denominator (gcd via
+* GCDfunction3 multi-term branch -> TakeSymbolContent/GCDclean) and
+* products of PolyRatFun functions (MULfunc)
+Symbol x,y;
+CFunction rat;
+PolyRatFun rat;
+Local E = rat((x^2+3*x+2)*(x^3-1),(x^2+3*x+2)*(x^3+x^2));
+Local Pr2 = rat((x^2+y^2)*(x^2-y^2),(x^2+y^2)*(x^4+x*y^2+x^2*y));
+Local G = rat((x-y)*(x+y)^2,(x-y)*(x+y));
+.sort
+Print E,Pr2,G;
+.end
+assert result("E") == "rat(x^3-1,x^3+x^2)"
+assert result("Pr2") == "rat(x^2-y^2,x^4+x^2*y+x*y^2)"
+assert result("G") == "rat(x+y,1)"
+*--#] cov_polygcd :
+*--#[ cov_mescerr :
+* illegal name in declaration statement (MesCerr)
+Symbol 1x;
+.end
+assert compile_error?
+assert stdout =~ /Illegal name/
+*--#] cov_mescerr :
+*--#[ cov_mescomp :
+* illegal character in the Load expression list (MesComp)
+S x;
+Global g = x;
+.store
+Save m3.dat;
+.end
+Load m3.dat,g+2;
+.end
+assert runtime_error?
+assert stdout =~ /Illegal character/
+*--#] cov_mescomp :
+*--#[ cov_mescomp2 :
+* illegal character in the Save expression list (MesComp)
+S x;
+Global h = x;
+.store
+Save m2.dat,h+1;
+.end
+assert runtime_error?
+assert stdout =~ /Illegal character/
+*--#] cov_mescomp2 :
