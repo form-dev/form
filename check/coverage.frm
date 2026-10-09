@@ -1481,3 +1481,21 @@ Print;
 assert succeeded?
 assert result("TT") == "56"
 *--#] cov_table_err :
+*--#[ cov_symmetricmatch2 :
+* deeper symmetric matching: nested (anti)symmetric arguments, cyclic wildcards
+CFunction fs(Symmetric),fa(AntiSymmetric),fc(Cyclic),frc(ReverseCyclic);
+Symbols a,b,c,d,x,y,z,q1,q2;
+Local F = fa(b,a)*fa(a,c)*fa(c,b) + fs(a,b)*fs(b,a)
+        + fs(fa(a,b),fa(c,d))*fs(fa(c,d),fa(a,b));
+id fa(x?,y?)*fa(y?,z?) = fa(x,z);
+id fs(x?,y?)*fs(y?,x?) = fs(x,y);
+Print;
+.sort
+Local G = fc(a,b,c)*frc(a,b,c) + fc(q1,q2,a)*fc(a,q1,q2);
+id fc(x?,y?,z?)*frc(x?,y?,z?) = fc(x,y,z);
+id fc(x?,y?,z?)*fc(y?,z?,x?) = fc(1,x,y);
+Print G;
+Print;
+.end
+assert succeeded?
+*--#] cov_symmetricmatch2 :
