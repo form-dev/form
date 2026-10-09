@@ -1499,3 +1499,139 @@ Print;
 .end
 assert succeeded?
 *--#] cov_symmetricmatch2 :
+*--#[ cov_shapezoo1 :
+* metric deltas, epsilon tensors and dotproducts
+Vectors p1,p2,p3,p4;
+Index i1,i2,i3;
+Local ShpE = d_(i1,i2)*d_(i2,i3) + d_(i1,i1) + e_(p1,p2,p3,p4)
+        + e_(p1,p1,p3,p4) + p1.p2 + p4.p4;
+Print ShpE;
+.end
+* nested functions, empty and numeric arguments
+CFunction f,g,f2;
+Symbols a,b,x,y,z;
+Local ShpF = f(g(a,b),b) + f() + f(0) + f(f2(a)) + g(a^2-1) + f(x,y,z);
+Print ShpF;
+.end
+assert succeeded?
+assert nterms("ShpE") == 5
+*--#] cov_shapezoo1 :
+*--#[ cov_shapezoo2 :
+* Sqrt_, sum_ and denominators
+Symbols x,k;
+CFunction shpf;
+Local ShpA = Sqrt_(x+1) + sum_(k,1,5,shpf(k));
+Print ShpA;
+.sort
+Symbols y;
+Local ShpD = 1/(x^2+y) + (x-y)^-2;
+Print ShpD;
+.end
+* bignum coefficients and high powers
+Symbols x;
+Local ShpB = 12345678901234567890^2 + (x+1)^61;
+Print ShpB;
+.end
+assert succeeded?
+*--#] cov_shapezoo2 :
+*--#[ cov_wildzoo1 :
+* set membership, dynamic sets and exclusions for wildcards
+Symbols x,y,w,a,a1,a2,a3,b1,b2,c,nn;
+CFunction wzf,wzg;
+Set aa: a1,a2,a3;
+Local W1 = wzf(a1) + wzf(b1) + wzf(a3);
+id wzf(x?aa) = wzg(x);
+Print W1;
+.sort
+Set bb: a1,a2,a3;
+Local W2 = wzf(a2) + wzf(c) + wzf(a3);
+id wzf(y?bb[nn]) = wzg(nn);
+Print W2;
+.end
+Symbols z,d1,d2;
+CFunction h1,h2,h3;
+Local W3 = h1(0) + h1(5);
+id h1(z?!{0,0}) = h2(z);
+Print W3;
+.sort
+Symbols w,p,q,r,a3;
+Local W4 = h3(p,q,a3,r);
+id h3(w?{p,q,a3}) = h2(w);
+Print W4;
+.end
+assert succeeded?
+assert nterms("W3") == 2
+*--#] cov_wildzoo1 :
+*--#[ cov_wildzoo2 :
+* number and dummy-index wildcards in powers and tensors
+Symbols x,x1,n;
+CFunction t;
+Local P1 = x^3 + x1^2;
+id x^n? = t(x,n);
+Print P1;
+.end
+Symbols q1,q2;
+CFunction wzf,wzg;
+Index i1,i2;
+Local P2 = wzf(i1,i2)*wzf(i2,i1);
+id wzf(N1_?,N2_?)*wzf(N2_?,N1_?) = wzg(N1_?,N2_?);
+Print P2;
+.end
+assert succeeded?
+assert nterms("P1") == 2
+*--#] cov_wildzoo2 :
+*--#[ cov_idmodifiers :
+* Many/Once/Only/Select id modifiers and bare-vector substitution
+Symbols x,y;
+CFunction f,g,h;
+Local IdF = f(x)*f(y);
+Many f(x?) = g(x);
+Print IdF;
+.sort
+Local IdG = f(x)*f(y);
+Once f(x?) = g(x);
+Print IdG;
+.sort
+Local IdH = f(x)*f(y);
+Only f(x?) = h(x);
+Print IdH;
+.sort
+Local IdS = f(x);
+Select f(x?) = h(x);
+Print IdS;
+Print;
+.end
+Vector p1,p2;
+CFunction f;
+Local IdV = f(p1,p2);
+id p1 = p2;
+Print IdV;
+.end
+assert succeeded?
+assert result("IdF") =~ expr("g(x)*g(y)")
+*--#] cov_idmodifiers :
+*--#[ cov_dollarrhs :
+* runtime dollars assigned in one module, used in the next
+Symbols x,y;
+CFunction f,g;
+Local Dr0 = 1;
+Print Dr0;
+.sort
+$d = x^2;
+Print "%$",$d;
+.sort
+Local DrF = $d + f($d);
+Print DrF;
+Print;
+.end
+Symbols x,y;
+CFunction f,g;
+Local DrQ = f(y) + 1;
+.sort
+$w = f(y) + 1;
+id f(x?) = g($w,x);
+Print DrQ;
+.end
+#pend_if threaded?
+assert succeeded?
+*--#] cov_dollarrhs :
