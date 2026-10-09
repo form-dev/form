@@ -685,3 +685,258 @@ assert result("test7") =~ expr("f(1)*y1^3*y2^2 + f(1,1)*n1^3*n2^2 + 2*f(2,1)*y1^
 assert result("test8") =~ expr("0")
 assert result("test9") =~ expr("0")
 *--#] cov_transform :
+
+*--#[ cov_stmt_tableops :
+* covers Fill, PrintTable, ClearTable statements
+Symbols x,y;
+CTable,sparse tbl(1);
+Fill tbl(2) = x^2+y;
+Local F = tbl(2);
+Print F;
+.sort
+ClearTable tbl;
+Fill tbl(2) = 2*y;
+Local G = tbl(2);
+Print G;
+PrintTable tbl;
+.end
+assert succeeded?
+assert result("G") =~ expr("2*y")
+assert nterms("F") == 2
+*--#] cov_stmt_tableops :
+*--#[ cov_stmt_compress :
+* covers Compress on/off and FunPowers (all options) declarations
+Symbols x;
+Compress on;
+CFunction f;
+Local F = (x+1)^3;
+Print;
+.sort
+Compress off;
+Print;
+.sort
+FunPowers allfunpowers;
+Local G = f(x)^3;
+Print G;
+.sort
+FunPowers nofunpowers;
+.end
+assert succeeded?
+assert result("F") =~ expr("1 + 3*x + 3*x^2 + x^3")
+assert result("G") =~ expr("f(x)^3")
+*--#] cov_stmt_compress :
+*--#[ cov_stmt_unittrace :
+* covers UnitTrace statement
+Index mu;
+Local F = gi_(1)*g_(1,mu)*g_(1,mu);
+Trace4,1;
+Print F;
+.sort
+UnitTrace 7;
+Local G = gi_(2)*g_(2,mu)*g_(2,mu);
+Trace4,2;
+Print G;
+.end
+assert succeeded?
+assert result("F") =~ expr("16")
+assert result("G") =~ expr("28")
+*--#] cov_stmt_unittrace :
+*--#[ cov_stmt_ratio :
+* covers Ratio statement (partial fractioning with c = b-a)
+Symbols a,b,c;
+Local F = 1/(a^2*b^2);
+Ratio a,b,c;
+Print +s F;
+.end
+assert succeeded?
+assert nterms("F") == 4
+*--#] cov_stmt_ratio :
+*--#[ cov_stmt_chisholm :
+* covers Chisholm statement
+Index a,b,mu,nu;
+Local F = g_(1,a,mu,b)*g_(2,mu)*g_(2,nu)*g_(1,nu);
+Chisholm 2;
+Print F;
+.end
+assert succeeded?
+*--#] cov_stmt_chisholm :
+*--#[ cov_stmt_switch :
+* covers Switch/Case/Break/Default/EndSwitch statements
+Symbols x;
+Local F = x;
+.sort
+#$num = 2;
+Switch $num;
+	Case 1;
+		Multiply 10;
+	Break;
+	Case 2;
+		Multiply 20;
+	Break;
+	Default;
+		Multiply 99;
+EndSwitch;
+Print F;
+.end
+Symbols x;
+Local G = x;
+.sort
+#$num = 5;
+Switch $num;
+	Case 1;
+		Multiply 10;
+	Break;
+	Case 2;
+		Multiply 20;
+	Break;
+	Default;
+		Multiply 99;
+EndSwitch;
+Print G;
+.end
+assert succeeded?
+assert result("F") =~ expr("20*x")
+assert result("G") =~ expr("99*x")
+*--#] cov_stmt_switch :
+*--#[ cov_stmt_ifelse :
+* covers If with dollar comparisons, ElseIf, Else and the one-line If form
+Symbols x;
+Local F = x;
+.sort
+#$num = 2;
+If ($num == 2);
+	Multiply 3;
+ElseIf ($num == 1);
+	Multiply 11;
+Else;
+	Multiply 13;
+EndIf;
+If ($num > 5) Multiply 7;
+Print F;
+.end
+assert succeeded?
+assert result("F") =~ expr("3*x")
+*--#] cov_stmt_ifelse :
+*--#[ cov_stmt_setexit :
+* covers SetExitFlag statement (graceful stop; after it the sort is skipped)
+Symbols x;
+Local F = x;
+Print F;
+.sort
+SetExitFlag;
+.end
+assert succeeded?
+*--#] cov_stmt_setexit :
+*--#[ cov_stmt_exit :
+* covers Exit statement (abnormal termination)
+Symbols x;
+Local F = x;
+Print F;
+Exit "stopping early";
+.end
+assert runtime_error?
+*--#] cov_stmt_exit :
+*--#[ cov_stmt_writenwrite :
+* covers Write and NWrite format statements with various options
+Symbols x;
+Write stats;
+NWrite statistics;
+Write shortstats;
+NWrite warnings;
+Write allwarnings;
+NWrite setup;
+Write names;
+NWrite allnames;
+Write codes;
+NWrite highfirst;
+Write lowfirst;
+NWrite powerfirst;
+Write tokens;
+Local F = x;
+Print F;
+.end
+assert succeeded?
+assert result("F") =~ expr("x")
+*--#] cov_stmt_writenwrite :
+*--#[ cov_pp_random :
+* covers #setrandom and the random_ preprocessor function
+#setrandom 8938
+#$r = random_(6);
+#$s = random_(6);
+Symbols x;
+Local F = $r*x;
+Local G = $s*x;
+Print F;
+Print G;
+.end
+assert succeeded?
+assert nterms("F") == 1
+assert nterms("G") == 1
+*--#] cov_pp_random :
+*--#[ cov_pp_directives :
+* covers #breakdo, #show, #debug and #commentchar
+* (with #debug 1 the preprocessor runs in preprocess-only mode)
+#debug 1
+#show
+#commentchar %
+% comment via the changed comment character
+#do i = 1,5
+	#breakdo
+#enddo
+*--#] cov_pp_directives :
+*--#[ cov_pp_appendexchange :
+* covers #append/#write/#close and #exchange for expressions and $variables
+#append <outappend.txt>
+#write <outappend.txt> "new line"
+#close <outappend.txt>
+S x,y;
+Local F = x;
+Local G = 2*y;
+.sort
+#exchange F,G
+#$a = 1;
+#$b = 2;
+#exchange $a,$b
+Local H = $a + $b + F;
+Print H;
+.end
+#prepare write "outappend.txt", "old line\n"
+assert succeeded?
+assert result("H") =~ expr("3 + 2*y")
+*--#] cov_pp_appendexchange :
+*--#[ cov_opt_format :
+* covers the optimization options of the Format statement and
+* #optimize/#clearoptimize/#skipextrasymbols/Delete extrasymbols
+Symbols a,b,c,d,e;
+Local F1 = (a+b+c)*(d+e)*(a+c) + (a+c)*(b+d)*(e+1) + a^2*e - b^3;
+Format O1,method=cse;
+.sort
+#optimize F1
+#write "%O"
+#clearoptimize
+Local F2 = (a+b+c)*(d+e)*(a+c) + (a+c)*(b+d)*(e+1) + a^2*e - b^3;
+Format O2,greedyminnum=3,greedymaxperc=2,horner=occurrence,
+	hornerdirection=forwardandbackward,stats=on;
+.sort
+#optimize F2
+#write "%O"
+#skipextrasymbols
+Delete extrasymbols;
+#clearoptimize
+Local F3 = (a+b+c)*(d+e)*(a+c) + (a+c)*(b+d)*(e+1) + a^2*e - b^3;
+Format O3,mctsnumexpand=5,mctsnumkeep=2,mctsnumrepeat=1,mctsconstant=0.5,
+	mctsdecaymode=0,mctstimelimit=1;
+.sort
+#optimize F3
+#write "%O"
+#clearoptimize
+Local F4 = (a+b+c)*(d+e)*(a+c) + (a+c)*(b+d)*(e+1) + a^2*e - b^3;
+Format O4,saIter=10,saMinT=1,saMaxT=2,method=csegreedy,greedytimelimit=1,
+	timelimit=1,printscheme=off,debugflag=2;
+.sort
+#optimize F4
+#write "%O"
+#clearoptimize
+.end
+assert succeeded?
+*--#] cov_opt_format :
