@@ -2317,7 +2317,8 @@ int GCDterms(PHEAD WORD *term1, WORD *term2, WORD *termout)
  		#] GCDterms : 
  		#[ ReadPolyRatFun :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
+/* never called: call sites commented out in proces.c */
 int ReadPolyRatFun(PHEAD WORD *term)
 {
 	WORD *oldworkpointer = AT.WorkPointer;
@@ -2431,6 +2432,7 @@ int ReadPolyRatFun(PHEAD WORD *term)
 	AR.SortType = oldsorttype;
 	return(0);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
  		#] ReadPolyRatFun : 

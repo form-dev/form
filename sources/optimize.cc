@@ -1338,6 +1338,8 @@ vector<WORD> generate_instructions (const vector<WORD> &tree, bool do_CSE) {
 * A hash is created on the fly and is passed through the stack.
 * TODO: find better hash functions
 */
+/* UNFINISHED_FEATURE_EXCL_START */
+/* only call site is commented out */
 int count_operators_cse (const vector<WORD> &tree) {
 	//MesPrint ("*** [%s] Starting CSEE", thetime_str().c_str());
 
@@ -1486,9 +1488,10 @@ int count_operators_cse (const vector<WORD> &tree) {
 	//MesPrint ("*** [%s] Stopping CSEE", thetime_str().c_str());
 	return numinstr - numcommas;
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
-  	#] count_operators_cse : 
+   	#] count_operators_cse : 
   	#[ count_operators_cse_topdown :
 */
 

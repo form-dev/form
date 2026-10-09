@@ -3556,7 +3556,8 @@ void CleanDollarFactors(DOLLARS d)
   	#] CleanDollarFactors : 
   	#[ TakeDollarContent :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
+/* only caller is TakeDollarContent(), which has no caller */
 WORD *TakeDollarContent(PHEAD WORD *dollarbuffer, WORD **factor)
 {
 	WORD *remain, *t;
@@ -3771,6 +3772,7 @@ MakeDollarIntegerErr:
 	Terminate(-1);
 	return(0);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
   	#] MakeDollarInteger : 

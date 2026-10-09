@@ -5026,7 +5026,8 @@ FromGCD:
 	and in the denominator and then combine them.
 	Answer is either PolyRatFun(ep^n,1) or PolyRatFun(1,1) or PolyRatFun(1,ep^n)
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
+/* only runs when AR.PolyFunExp == 1 (divergence mode, unimplemented in flint engine) */
 int TreatPolyRatFun(PHEAD WORD *prf)
 {
 	WORD *t, *tstop, *r, *rstop, *m, *mstop;
@@ -5157,6 +5158,7 @@ int TreatPolyRatFun(PHEAD WORD *prf)
 	prf[1] = t - prf;
 	return(0);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
   	#] TreatPolyRatFun : 
