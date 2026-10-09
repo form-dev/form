@@ -1333,3 +1333,102 @@ Print;
 assert compile_error?
 assert stdout =~ /Illegal subkey/
 *--#] cov_createrrors :
+*--#[ cov_preifdollar :
+* #if/#elseif/#else/#ifdef/#ifndef with preprocessor dollars
+#$d1 = 7;
+#if ( $( $d1 == 7 ) )
+#write "if branch";
+#elseif ( $( $d1 > 7 ) )
+#write "elseif branch1";
+#else
+#write "else branch";
+#endif
+#if ( $( $d1 != 7 ) )
+#write "neg branch";
+#elseif ( $( $d1 < 7 ) )
+#write "elseif branch2";
+#else
+#write "else2 branch";
+#endif
+#ifdef $d1
+#write "d1 defined";
+#endif
+#ifndef nosuchvar
+#write "nosuch undefined";
+#endif
+Local F = 1;
+Print;
+.end
+assert succeeded?
+assert stdout =~ /if branch/
+assert stdout =~ /else2 branch/
+assert stdout =~ /d1 defined/
+assert stdout =~ /nosuch undefined/
+*--#] cov_preifdollar :
+*--#[ cov_prewrite :
+* #create/#write/#append/#close/#remove with a channel
+#$wv = 3;
+#create <c1.txt> "start";
+#write <c1.txt> "wv=%$",$wv;
+#append <c1.txt> "more";
+#close <c1.txt>;
+#remove <c1.txt>;
+#write "plain %$",$wv;
+Local F = 1;
+Print;
+.end
+assert succeeded?
+*--#] cov_prewrite :
+*--#[ cov_symmetricmatch :
+* id-matching for symmetric, cyclic and reversecyclic functions
+Symbols x,y,z;
+CFunction fsym(Symmetric),fcyc(Cyclic),frc(ReverseCyclic);
+Symbol a,b,c,d;
+Local M = fsym(b,a)*fsym(a,b) + fcyc(a,b,c)*fcyc(c,a,b)
+        + frc(b,a,c)*frc(c,a,b);
+id fsym(x?,y?)*fsym(y?,x?) = fsym(x+y,0);
+id fcyc(x?,y?,z?)*fcyc(z?,x?,y?) = fcyc(x,y,0);
+id frc(x?,y?,z?)*frc(z?,x?,y?) = frc(x,y,0);
+Print;
+.end
+assert succeeded?
+assert nterms("M") == 3
+*--#] cov_symmetricmatch :
+*--#[ cov_factdollar2 :
+* FactDollar on a multi-term dollar and error path
+Symbols x,y;
+Local F = (x+1)*(y+1) + (x-1)*(y-1);
+.sort
+$e = F;
+FactDollar $e;
+Print "%$",$e;
+.end
+# The $-assignment module is forced to sequential mode under threads
+# (produces a warning).
+#pend_if threaded?
+assert succeeded?
+*--#] cov_factdollar2 :
+*--#[ cov_replaceloop2 :
+* ReplaceLoop variants: no include, loopsize<, multiple loops in one term
+Index i1,i2,i3,i4,i5,j1,j2,j3,j4,j5,k1;
+CFunction fv(Symmetric),ofn;
+Local F1 = fv(i1,i2,j1)*fv(i2,i1,j2);
+ReplaceLoop fv,arguments=3,loopsize=2,outfun=ofn;
+Print F1;
+.sort
+Local F2 = fv(i1,i2,j1)*fv(i2,i3,j2)*fv(i1,i3,j3)*fv(i4,i5,j5)
+         + fv(i1,i2,j1)*fv(i2,i1,j2)*fv(i3,i4,j4)*fv(i4,i3,j5);
+ReplaceLoop fv,arguments=3,loopsize<4,outfun=ofn;
+Print F2;
+.end
+assert succeeded?
+*--#] cov_replaceloop2 :
+*--#[ cov_gettable_err :
+* runtime error for an unfilled table element
+CTable,sparse ttt(1:3);
+Fill ttt(1) = 7;
+Local TT = ttt(2);
+Print;
+.end
+assert runtime_error?
+*--#] cov_gettable_err :
