@@ -2043,3 +2043,66 @@ assert nterms("t1") == 2
 assert nterms("gg") == 2
 assert result("t1") =~ /topo_\(2\)/
 *--#] cov_diagrams :
+*--#[ cov_modstmts :
+* module-level statements: insidefirst, propercount, notinparallel, nhide,
+* nfactorize (CoInsideFirst, CoProperCount, CoNotInParallel, CoNoHide,
+* CoNFactorize + DoFactorize without-factor mode)
+S x;
+CFunction f;
+InsideFirst off;
+ProperCount off;
+NotInParallel;
+NHide;
+Local F = f(x)^2;
+id f(x?) = x^2;
+id x^2 = 4;
+Factorize F;
+NFactorize F;
+Print F;
+.sort
+S c;
+Local G = (x+1)^5*c + x^3*c;
+Factorize G;
+NFactorize G;
+Print "%t";
+.sort
+Print G;
+.end
+assert succeeded?
+assert result("F") == "16"
+*--#] cov_modstmts :
+*--#[ cov_dolconv :
+* dollar->long/index conversions: #do loop with dollar bound (DolToLong),
+* trace with dollar spin line + index dollar (DolToIndex), sizeof/termsin
+* preprocessor conditions on dollar variables
+* dollar loop bounds force sequential modules -> pending under threads
+#pend_if threaded?
+S a; Vector p1,p2;
+CFunction e;
+Local w0 = 1;
+$d = 2;
+.sort
+#do i = 1,$d
+Local u`i' = e(a)^`i';
+#enddo
+Local T = g_(1,p1,p2);
+$n = 1;
+Trace4,$n;
+.sort
+Print +s T;
+Print u1,u2;
+.end
+S x;
+Local q = x;
+$xs = 2*x+1;
+.sort
+#if ( sizeof($xs) > 2 && termsin($xs) == 2 )
+Local q2 = 1;
+#endif
+Print q2;
+.end
+assert succeeded?
+assert nterms("u1") == 1 && nterms("u2") == 1
+assert result("u1") == "e(a)"
+assert nterms("q2") == 1
+*--#] cov_dolconv :
