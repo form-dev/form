@@ -3139,3 +3139,35 @@ assert result("E") =~ expr("g*h(1,1)")
 assert result("F") =~ expr("g*h(1,x,2)")
 assert result("G") =~ expr("g(2)")
 *--#] cov_cycargwild :
+*--#[ cov_ifdolindex :
+* Runtime if-statement with a DOLINDEX dollar (a dollar assigned an
+* index).  DoIfStatement rejects such dollars because their index
+* number is always >= AM.OffsetIndex, giving "$... is of wrong type".
+Indices i;
+Symbols s;
+Local T = s;
+$d = i;
+$e = 0;
+.sort
+if ( $d > 0 ) $e = 1;
+Print " e=%$;", $e;
+.end
+assert runtime_error?
+*--#] cov_ifdolindex :
+*--#[ cov_ifdolwildargs :
+* Runtime if-statement with a dollar bound to an argument wildcard
+* (?a$d, type DOLWILDARGS).  Such bindings always start with a zero
+* count word, which DoIfStatement cannot compare numerically: the
+* DOLWILDARGS check passes and the DOLARGUMENT case reports
+* "$... is of wrong type".
+CFunction f,g,h;
+Symbols s;
+Local T = f(2,3);
+$e = 0;
+.sort
+id f(?a$d) = h(?a);
+if ( $d == 2 ) $e = 1;
+Print " e=%$;", $e;
+.end
+assert runtime_error?
+*--#] cov_ifdolwildargs :
