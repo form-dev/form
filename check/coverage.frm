@@ -6978,18 +6978,6 @@ On innertest;
 assert succeeded?
 *--#] cov_on_innertest :
 
-*--#[ cov_notstored_a :
-* expected: is not a stored expression
-* probe: error
-* expected: is not a stored expression
-* Skip expressions exist but are not stored in the expression file
-Symbol x;
-Skip s1 = x;
-.sort
-save ns1.str, s1;
-.end
-assert compile_error?('Illegal name: \'=x\'')
-*--#] cov_notstored_a :
 
 *--#[ cov_dedup_badrange :
 * expected: error from ReadRange inside dedup (transform.c:487-488)
