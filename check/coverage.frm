@@ -2974,3 +2974,105 @@ assert succeeded?
 assert result("E") =~ expr("5 + az + v(i) + f(a)")
 assert result("G") =~ expr("g(b)")
 *--#] cov_reset :
+*--#[ cov_rootsunity :
+* Roots of unity (Symbols w#3, w2#-4) and their normalization in
+* Normalize (normal.c): powers are reduced modulo the root order, and
+* for an even order (w2#-4) half the order evaluates to -1. The sig_
+* numerical function of a root of unity contributes the root itself to
+* the term's symbol-power table.
+Symbols w#3,w2#-4,x;
+Local N1 = w^4;
+Local N2 = w^-1;
+Local N3 = w2^2;
+Local N4 = w2^6;
+Local F = sig_(w)*x;
+Local G = sig_(w)*sig_(w);
+Local H = sig_(w*w2);
+Local I = sig_(w^2);
+Local J = sig_(x+w);
+Local K = sig_(w2)*sig_(w2);
+Local P3 = sig_(w)^3;
+Print N1, N2, N3, N4, F, G, H, I, J, K, P3;
+.end
+assert succeeded?
+assert result("N1") =~ expr("w")
+assert result("N2") =~ expr("w^2")
+assert result("N3") =~ expr("-1")
+assert result("N4") =~ expr("-1")
+assert result("F") =~ expr("w*x")
+assert result("G") =~ expr("w^2")
+assert result("H") =~ expr("w*w2")
+assert result("I") =~ expr("w^2")
+assert result("J") =~ expr("sig_(x + w)")
+assert result("K") =~ expr("-1")
+assert result("P3") =~ expr("1")
+*--#] cov_rootsunity :
+*--#[ cov_modfunc :
+* The mod_ and mod2_ numerical functions in Normalize (normal.c):
+* short/short arguments, a single argument, and long-number arguments
+* with a short or a long modulus.
+Symbols x;
+Local Q1 = mod_(5,3);
+Local Q2 = mod2_(5,3);
+Local Q3 = mod_(2,3);
+Local Q4 = mod2_(2,3);
+Local Q5 = mod_(-2,3);
+Local Q6 = mod2_(-2,3);
+Local Q7 = mod_(0,3);
+Local Q8 = mod_(5);
+Local Q9 = mod_(0);
+Local Q10 = mod_(21474836470,3);
+Local Q11 = mod2_(21474836470,3);
+Local Q12 = mod_(-21474836470,3);
+Local Q13 = mod2_(-21474836470,3);
+Local R1 = mod_(5,21474836470);
+Local R2 = mod2_(5,21474836470);
+Local R5 = mod_(123456789012345,21474836470);
+Local R6 = mod2_(-5,21474836470);
+Local R9 = mod2_(21474836469,21474836470);
+Print Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13;
+Print R1, R2, R5, R6, R9;
+.end
+assert succeeded?
+assert result("Q1") =~ expr("2")
+assert result("Q2") =~ expr("-1")
+assert result("Q3") =~ expr("2")
+assert result("Q4") =~ expr("-1")
+assert result("Q5") =~ expr("1")
+assert result("Q6") =~ expr("1")
+assert result("Q7") =~ expr("0")
+assert result("Q8") =~ expr("5")
+assert result("Q9") =~ expr("0")
+assert result("Q10") =~ expr("1")
+assert result("Q11") =~ expr("1")
+assert result("Q12") =~ expr("2")
+assert result("Q13") =~ expr("-1")
+assert result("R1") =~ expr("5")
+assert result("R2") =~ expr("5")
+assert result("R5") =~ expr("19428982785")
+assert result("R6") =~ expr("-5")
+assert result("R9") =~ expr("-1")
+*--#] cov_modfunc :
+*--#[ cov_makerational :
+* makerational_(a,m) finds a fraction f1/f2, both less than sqrt(m),
+* with f1/f2 = a mod m (manual: reconstruct fractions after modular
+* calculus). Under the modulus the fraction reproduces a; degenerate
+* calls go through the general MakeLongRational path in Normalize
+* (normal.c). The dollar keeps the unreduced fraction.
+#$m = prime_(1);
+Local P4 = makerational_(12345678,$m);
+Local A = makerational_(2,3)*makerational_(5,7);
+$r = makerational_(12345678,$m);
+Print P4;
+.sort
+Modulus `$m';
+Print P4, A;
+Print " r=%$;", $r;
+.end
+# Under threads the $ assignments force sequential mode.
+#pend_if threaded?
+assert succeeded?
+assert result("P4") =~ expr("12345678")
+assert result("A") =~ expr("2147483586")
+assert result("r") =~ expr("9719/38790")
+*--#] cov_makerational :
