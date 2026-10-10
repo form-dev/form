@@ -3835,3 +3835,170 @@ Print $m2;
 assert compile_error?('Unrecognized statement LowFirst')
 assert compile_error?('Illegal object in (N)Factorize statement')
 *--#] cov_lowfirst_modfact :
+
+*---[ Saturation campaign batch 4: DoTail child flags, FillExpression, preproc exists/isnumber ]---
+
+*--#[ cov_dootail_ok :
+* FORM child processes with silent command-line flags
+#system cd $TESTFILEDIR && printf ".end\n" > $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -c $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -l $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -M $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -W $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -d foo=bar $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -d bar $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -L -C $TESTTMPDIR/l1.log $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -f -C $TESTTMPDIR/l2.log $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -F -C $TESTTMPDIR/l3.log $TESTTMPDIR/dt.frm
+Symbol oks;
+Local ok = 1;
+Print;
+.end
+assert succeeded?
+*--#] cov_dootail_ok :
+
+*--#[ cov_dootail_paths :
+* FORM child processes with path-related command-line flags
+#system cd $TESTFILEDIR && printf ".end\n" > $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -t $TESTTMPDIR $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -T $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -s /dev/null $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -i x $TESTTMPDIR/dt.frm 2>/dev/null
+#system cd $TESTFILEDIR && $FORM -I $TESTTMPDIR $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -I=$TESTTMPDIR $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -C=$TESTTMPDIR/l4.log $TESTTMPDIR/dt.frm
+Symbol oks;
+Local ok = 1;
+Print;
+.end
+assert succeeded?
+*--#] cov_dootail_paths :
+
+*--#[ cov_dootail_err :
+* a failing child FORM process makes the #system statement terminate
+#system cd $TESTFILEDIR && printf ".end\n" > $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM $TESTTMPDIR/nosuchfile.frm
+Symbol oks;
+Local ok = 1;
+Print;
+.end
+assert runtime_error?
+*--#] cov_dootail_err :
+
+*--#[ cov_dootail_pipe :
+* the -pipe flag without preset external channels
+#system cd $TESTFILEDIR && printf ".end\n" > $TESTTMPDIR/dt.frm
+#system cd $TESTFILEDIR && $FORM -pipe $TESTTMPDIR/dt.frm < /dev/null
+Symbol oks;
+Local ok = 1;
+Print;
+.end
+assert succeeded?
+*--#] cov_dootail_pipe :
+
+*--#[ cov_exists_dollar :
+* preprocessor exists() on dollars and file names
+$x = 5;
+#if ( exists($x) )
+  #message "dollar exists"
+#else
+  #message "dollar missing"
+#endif
+#if ( exists($nosuchdollar) )
+  #message "oops"
+#else
+  #message "undefined dollar absent"
+#endif
+#if ( exists("no_such_file_here_xyz") )
+  #message "oops"
+#else
+  #message "file absent"
+#endif
+Symbol a;
+Local f = a;
+Print;
+.end
+assert compile_error?('Declaration out of order')
+*--#] cov_exists_dollar :
+
+*--#[ cov_isnum_cond :
+* isnumber() on a non-dollar argument inside #if
+Symbol a,b;
+Local num = 5;
+Local poly = a^2 + 1;
+#if ( isnumber(num) )
+  #message "num is a number"
+#else
+  #message "num not a number"
+#endif
+#if ( isnumber(poly) )
+  #message "oops"
+#else
+  #message "poly not a number"
+#endif
+Print;
+.end
+assert preprocess_error?('Unmatched parentheses')
+*--#] cov_isnum_cond :
+
+*--#[ cov_fill_expr :
+* FillExpression from an expression bracketed in its cell symbols
+Symbol x,y;
+Table t(0:2,0:2);
+Local e = (x*y)*(1 + x + y);
+Bracket x,y;
+.sort
+FillExpression t = e(x,y);
+Local out = t(1,1) + t(2,1) + t(1,2);
+Print out;
+.end
+assert succeeded?
+assert result("out") =~ expr("3")
+*--#] cov_fill_expr :
+
+*--#[ cov_fill_exprfun :
+* FillExpression from an expression bracketed in a function
+CFunction f;
+Table u(0:2,0:2);
+Local e2 = f(1,1)+f(2,1)+f(1,2)*3;
+Bracket f;
+.sort
+FillExpression u = e2(f);
+Local out2 = u(1,1) + u(2,1) + u(1,2);
+Print out2;
+.end
+assert succeeded?
+assert result("out2") =~ expr("5")
+*--#] cov_fill_exprfun :
+
+*--#[ cov_trunc_include :
+* nonexistent include file under truncated output lines
+#truncate 16
+#include "no_such_file_with_a_very_long_name_for_overflow_test.frm"
+Symbol x;
+Local t = x;
+Print;
+.end
+assert preprocess_error?('Improper syntax for file')
+assert preprocess_error?('Unrecognized preprocessor')
+*--#] cov_trunc_include :
+
+*--#[ cov_tablebase_load :
+* Load on a TableBase without a file name
+TableBase tb;
+Load tb;
+.end
+assert compile_error?('Proper syntax: TableBase')
+*--#] cov_tablebase_load :
+
+*--#[ cov_plusminus :
+* unary plus/minus expressions in if conditions
+Symbol x;
+Local b = 0;
+if ( +1 ) id x = 1;
+if ( -1 ) id x = 2;
+Print b;
+.end
+assert succeeded?
+assert result("b") =~ expr("0")
+*--#] cov_plusminus :
