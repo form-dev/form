@@ -2834,6 +2834,49 @@ assert result("F18") =~ expr("x^2*acc(4000000000)")
 assert result("F19") =~ expr("x^2*acc(-4000000000)")
 assert result("FN") =~ expr("x^2*acc(4000000000)")
 *--#] cov_polyfun :
+*--#[ cov_findall :
+* Vector substitution, id <vector> = <vector>, and the simultaneous
+* substitution of consecutive id/also statements (FindAll in pattern.c,
+* the SUBVECTOR case of DoSubst/DoIfSubst). Vectors are replaced in
+* indexed vector objects (p(i)), dot products (p.q, p.p) and chains of
+* them; also-chains replace all chain members in a single pass.
+Vectors p,q,r,s;
+Indices i,j;
+Symbols x;
+Local A = p(i) + x*p.q;
+id p = s;
+Print A;
+.sort
+Local B = x*p.q + p.p;
+id p = s;
+Print B;
+.sort
+Local C = p(i)*p(j)*q(i);
+id p = s;
+Print C;
+.sort
+Local D = p(i)*q(j)*r(i);
+id p = q;
+Print D;
+.sort
+Local E = p.q + p(i);
+id p = q;
+also q = r;
+Print E;
+.sort
+Local F = p(i)*q(j)*p(j);
+id p = q;
+also q = r;
+Print F;
+.end
+assert succeeded?
+assert result("A") =~ expr("q.s*x + s(i)")
+assert result("B") =~ expr("q.s*x + s.s")
+assert result("C") =~ expr("s(j)*q.s")
+assert result("D") =~ expr("q(j)*q.r")
+assert result("E") =~ expr("q.r + q(i)")
+assert result("F") =~ expr("q(i)*q.r")
+*--#] cov_findall :
 
 *--#[ cov_reset :
 * The .store module terminator: saves the state, globalizes all
