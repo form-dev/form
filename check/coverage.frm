@@ -3199,3 +3199,19 @@ Print D;
 assert succeeded?
 assert result("D") == "0"
 *--#] cov_bracketindex_nocompress :
+*--#[ cov_oncevecwild :
+* once-statement patterns with a vector wildcard inside a dotproduct
+* (p.q?): FindOnce walks the dotproduct lists and binds the wildcard
+* vector to the term's second vector. The second pattern has two
+* dotproducts and matches nothing; it exercises the failure paths.
+Vectors a,b,p,q,r;
+Symbols y;
+Local T = p.q + p.p + q.q;
+.sort
+once p.q? = 2*y;
+once p.q?*a.b = 2*y;
+Print T;
+.end
+assert succeeded?
+assert result("T") =~ expr("4*y + q.q")
+*--#] cov_oncevecwild :
