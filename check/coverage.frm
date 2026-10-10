@@ -3215,3 +3215,77 @@ Print T;
 assert succeeded?
 assert result("T") =~ expr("4*y + q.q")
 *--#] cov_oncevecwild :
+*--#[ cov_tablebase_use :
+* tablebase cycle with named load/use: the load and use statements take
+* a table name, and a second use statement finds the elements already
+* loaded (ELEMENTLOADED path in CoTBuse).
+CTable,sparse f(1);
+#do i = 1,10
+	Fill f(`i') = `i';
+#enddo
+.sort
+TableBase "test4.tbl" create;
+TableBase "test4.tbl" addto f;
+.end
+TableBase "test4.tbl" open;
+Tablebase "test4.tbl" load f;
+.sort
+Local test = f(3)*f(20);
+TestUse f;
+.sort
+TableBase "test4.tbl" use f;
+TableBase "test4.tbl" use f;
+Apply;
+Print;
+.end
+#pend_if mpi?
+assert succeeded?
+assert result("test") =~ expr("3*f(20)")
+*--#] cov_tablebase_use :
+*--#[ cov_tablebase_useerr :
+* error path of the tablebase use statement: no open tablebase
+TableBase "nouse.tbl" use;
+.end
+#pend_if mpi?
+assert compile_error?('No open tablebase with the name nouse.tbl')
+*--#] cov_tablebase_useerr :
+*--#[ cov_tablebase_useerr2 :
+* error path of the tablebase use statement: argument is not a table
+CTable,sparse g(1);
+Fill g(1) = 5;
+.sort
+TableBase "test5.tbl" create;
+TableBase "test5.tbl" addto g;
+Symbol z;
+TableBase "test5.tbl" use z;
+.end
+#pend_if mpi?
+assert compile_error?('z should be a previously declared table')
+*--#] cov_tablebase_useerr2 :
+*--#[ cov_tablebase_useerr3 :
+* error path of the tablebase use statement: table is not sparse
+CTable,sparse g(1);
+Fill g(1) = 5;
+.sort
+TableBase "test7.tbl" create;
+TableBase "test7.tbl" addto g;
+Table n(2);
+TableBase "test7.tbl" use n;
+.end
+#pend_if mpi?
+assert compile_error?('n should be a sparse table')
+*--#] cov_tablebase_useerr3 :
+*--#[ cov_tablebase_noload :
+* using a tablebase table that has not been loaded (FindTableTree fails)
+CTable,sparse f(1);
+Fill f(1) = 5;
+.sort
+TableBase "test6.tbl" create;
+TableBase "test6.tbl" addto f;
+.end
+TableBase "test6.tbl" open;
+TableBase "test6.tbl" use f;
+.end
+#pend_if mpi?
+assert runtime_error?('has not been loaded properly')
+*--#] cov_tablebase_noload :
