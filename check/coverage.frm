@@ -7504,3 +7504,350 @@ assert preprocess_error?('Illegal operator in')
 assert preprocess_error?('Illegal string for')
 *--#] cov_nsuse_4 :
 
+*--#[ cov_fact_unlucky :
+* farm probe 0216_fact_unlucky_30 (+8 lines)
+* probe: clean
+Symbol x,y,z;
+Local t = (2*x+4*y)*(6*x+8*y+2*z)*(3*x*z+9*y)*(12*x^2+18*y^2);
+Factorize t;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("( 72 )
+* ( z + 4*y + 3*x )
+* ( 2*y + x )
+* ( 3*y + x*z )
+* ( 3*y^2 + 2*x^2 )")
+*--#] cov_fact_unlucky :
+
+*--#[ cov_powset_3 :
+* farm probe 0025_powset_15 (+5 lines)
+* probe: clean
+Symbol x,a,b,n;
+Set s: a,b;
+CFunction f,g;
+Local t = f(x^a) + f(x^b) + f(x^3);
+id f(x^n?s) = g(x^n);
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(x^3) + f((x)^(a)) + f((x)^(b))")
+*--#] cov_powset_3 :
+
+*--#[ cov_bigexp_6 :
+* large expansion inside Substitute; attempts workspace check path 654-658
+* probe: clean
+* large expansion inside Substitute; attempts workspace check path 654-658
+Symbol x,y;
+CFunction f;
+Local test = f(x);
+id f(x?) = (y+1)^50000;
+.end
+assert runtime_error?
+*--#] cov_bigexp_6 :
+
+*--#[ cov_ns_deepexpr :
+* target: ConstructName with namespace names inside function args and powers
+* probe: clean
+* target: ConstructName with namespace names inside function args and powers
+#namespace k1
+#namespace k2
+AutoDeclare Symbol s;
+CFunction f;
+Local t = f(s1^2,s2)*s3;
+Print t;
+#endnamespace
+#endnamespace
+.end
+assert succeeded?
+assert result("t") =~ expr("f(s1^2,s2)*s3")
+*--#] cov_ns_deepexpr :
+
+*--#[ cov_ratio_dot8 :
+* farm probe 0121_ratio_dot8_19 (+5 lines)
+* probe: clean
+Symbol a,b;
+Vector p,q;
+Local test = MakeRational_(p.q*p.p, p.q^-1*p.p^2);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("makerational_(p.p*p.q,p.p^2*p.q^-1)")
+*--#] cov_ratio_dot8 :
+
+*--#[ cov_argexplode :
+* farm probe 0145_argexplode_10 (+5 lines)
+* probe: clean
+Function f;
+Symbol x,y,z;
+Local test = f(x+y+z);
+ArgExplode f;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(z + y + x)")
+*--#] cov_argexplode :
+
+*--#[ cov_save_load :
+* farm probe 0145_save_load_11 (+5 lines)
+* probe: clean
+Symbol x,y;
+Function f;
+Local test = f(x+y)*3;
+.sort
+Save probesv.dat;
+Drop test;
+Load probesv.dat;
+Print;
+.end
+assert compile_error?('Declaration out of')
+*--#] cov_save_load :
+
+*--#[ cov_brk_dotproduct :
+* farm probe 0204_brk_dotproduct_0 (+34 lines)
+* probe: clean
+Vector p,q;
+Local e = p.q + p.p + 1;
+Bracket p.q;
+Print;
+.end
+assert succeeded?
+assert result("e") =~ expr("+ p.q * ( 1 ) + 1 + p.p")
+*--#] cov_brk_dotproduct :
+
+*--#[ cov_cdt_nofill :
+* farm probe 0136_cdt_nofill_26 (+23 lines)
+* probe: clean
+Symbol x;
+Table t(4,4);
+Local e = x;
+.sort
+ClearTable t;
+Print e;
+.end
+assert succeeded?
+assert result("e") =~ expr("x")
+*--#] cov_cdt_nofill :
+
+*--#[ cov_if_eq_expr :
+* dollar equality between two expressions (possible IsMultipleOf caller)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* dollar equality between two expressions (possible IsMultipleOf caller)
+Symbol x,y;
+Local e1 = (x+y)^2;
+Local e2 = x^2+2*x*y+y^2;
+$a = e1;
+$b = e2;
+if ( $a == $b ) Print;
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_if_eq_expr :
+
+*--#[ cov_sut_relpath :
+* expected: Name space for temp files exhausted
+* probe: clean (parent exits 0; child uses a relative nonexistent dir)
+* expected: Name space for temp files exhausted
+* Relative TempDir variant in case path handling differs; the child
+* also does a real sort so scratch files are actually touched.
+#system cd $TESTFILEDIR && echo "Symbol x,y; Local t = x*y; Bracket x; Print; .end" > $TESTTMPDIR/sutc9.frm
+#system cd $TESTFILEDIR && FORMTMP=nonexistent_sut_rel "$(readlink /proc/$PPID/exe)" $TESTTMPDIR/sutc9.frm > $TESTTMPDIR/sutout.txt 2>&1; cat $TESTTMPDIR/sutout.txt || true
+Symbol x,y;
+Local t = x*y;
+Bracket x;
+Print;
+.end
+assert_includes @stdout, "Name space for temp files exhausted"
+*--#] cov_sut_relpath :
+
+*--#[ cov_dotheta_vec :
+* farm probe 0143_dotheta_vec_16 (+8 lines)
+* probe: clean
+Vector p,q;
+Local t1 = theta_(p,q);
+Local t2 = theta_(0,p);
+Local t3 = theta_(p,0);
+Print;
+.end
+assert succeeded?
+assert result("t1") =~ expr("1")
+assert result("t2") =~ expr("1")
+assert result("t3") =~ expr("0")
+*--#] cov_dotheta_vec :
+
+*--#[ cov_cdt_nontable :
+* expected: should be a previously declared table
+* probe: error
+* expected: should be a previously declared table
+CFunction f;
+Symbol x;
+Local e = f(x);
+.sort
+ClearTable f;
+.end
+assert compile_error?('f is not')
+*--#] cov_cdt_nontable :
+
+*--#[ cov_comp8 :
+* farm probe 0166_comp8_19 (+9 lines)
+* probe: clean
+Symbol x;
+Local F = 1/(1-x)^1000000;
+.end
+assert runtime_error?
+*--#] cov_comp8 :
+
+*--#[ cov_dodollar :
+* #do loop over dollar-driven range with defines inside, then .clear
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* #do loop over dollar-driven range with defines inside, then .clear
+Symbol y;
+$z = 3;
+#do i = 1,2
+    #define w`i' `i'
+#enddo
+Local t = y;
+Print;
+.clear
+.end
+#pend_if threaded?
+assert preprocess_error?('Illegal string for')
+*--#] cov_dodollar :
+
+*--#[ cov_dolphin_wild2 :
+* expected: DOLWILDARGS path with wildcard pattern
+* probe: clean
+* expected: DOLWILDARGS path with wildcard pattern
+Symbol x;
+CFunction f;
+CFunction g;
+Local expr = f(g?)(x);
+id f(g?) = $w;
+Print $w;
+.end
+assert compile_error?('Illegal character at')
+*--#] cov_dolphin_wild2 :
+
+*--#[ cov_dol_nested :
+* farm probe 0117_dol_nested_23 (+8 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+$x = 3;
+$x = 5;
+$y = 1;
+$y = 2;
+.sort
+Local F = $x[$y[2]];
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_dol_nested :
+
+*--#[ cov_tensor_function_to_tensor :
+* farm probe 0112_tensor_function_to_tensor_22 (+6 lines)
+* probe: clean
+Symbol x;
+CTensor t;
+CFunction f;
+Set s: p1,p2;
+Local F = f(x);
+id f(x?x_) = t(s[1]);
+Print;
+.end
+assert compile_error?('p1 has not')
+*--#] cov_tensor_function_to_tensor :
+
+*--#[ cov_seteq_syntax_6 :
+* farm probe 0066_seteq_syntax_15 (+10 lines)
+* probe: clean
+Set sortsize = 200;
+Set scratchsize = 200;
+Symbol a1,a2,a3;
+Local F = (a1+a2+a3)^5;
+Local G = 1;
+.sort
+.copy F to G;
+.sort
+Print G;
+.end
+assert preprocess_error?('Unrecognized module term')
+*--#] cov_seteq_syntax_6 :
+
+*--#[ cov_dotail_pipe_10 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_10 :
+
+*--#[ cov_setnum_out_of_range :
+* expected: Illegal element
+* probe: error
+* expected: Illegal element
+Symbol a,b;
+Set s: a,b;
+Local F = s[2] + s[3];
+Print;
+.end
+assert compile_error?('Illegal element 3')
+*--#] cov_setnum_out_of_range :
+
+
+*--#[ cov_polyundefsec :
+* expected: ghost should be a regular commuting function
+* probe: error
+* expected: ghost should be a regular commuting function
+CFunction rat;
+PolyRatFun rat,ghost;
+.end
+assert compile_error?('ghost should be')
+*--#] cov_polyundefsec :
+
+*--#[ cov_fewer_over :
+* expected: FewerStatistics parameter greater than MaxPatches
+* probe: error
+* expected: FewerStatistics parameter greater than MaxPatches
+* if the over-MaxPatches message is only a warning, the second statement
+* gives: Unrecognized option in ON FewerStatistics statement
+On FewerStatistics 99999999;
+On FewerStatistics 3,4;
+.end
+assert compile_error?('Unrecognized option in')
+*--#] cov_fewer_over :
+
+*--#[ cov_indent_all :
+* covers IndentSpace over-40 warning, bare default, then bad parameter error
+* probe: error
+* covers IndentSpace over-40 warning, bare default, then bad parameter error
+* expected: Unrecognized option in ON IndentSpace statement: abc
+On IndentSpace 50;
+On IndentSpace;
+On IndentSpace abc;
+.end
+assert compile_error?('Unrecognized option in')
+*--#] cov_indent_all :
+
+*--#[ cov_nsuse_5 :
+* guess at #use directive to expose namespace names outside
+* probe: clean
+* guess at #use directive to expose namespace names outside
+#namespace nsuse
+#define w 4
+#endnamespace
+#use nsuse
+#message `w'
+#end
+.end
+assert preprocess_error?('Illegal string for')
+*--#] cov_nsuse_5 :
+
