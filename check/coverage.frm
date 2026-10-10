@@ -6468,3 +6468,550 @@ assert preprocess_error?('there is no')
 assert preprocess_error?('Illegal string for')
 *--#] cov_nsuse_2 :
 
+*--#[ cov_fact_basic :
+* farm probe 0079_fact_basic_12 (+12 lines)
+* probe: clean
+Symbol x,y;
+Local e = (1+x)*(2+x*y);
+Factorize e;
+Print;
+.end
+assert succeeded?
+assert result("e") =~ expr("( 1 + x )
+* ( 2 + x*y )")
+*--#] cov_fact_basic :
+
+*--#[ cov_modulus_2 :
+* farm probe 0133_modulus_10 (+66 lines)
+* probe: clean
+Function f;
+Modulus 7;
+Symbol a,b,x;
+Local test = f(x*a + x*b);
+FactArg f;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(x,b + a)")
+*--#] cov_modulus_2 :
+
+*--#[ cov_fact_pownegsym :
+* farm probe 0079_fact_pownegsym_15 (+6 lines)
+* probe: clean
+Symbol x,y,n;
+Local e = y^-n*x;
+Factorize e;
+Print;
+.end
+assert succeeded?
+assert result("e") =~ expr("( (y)^( - n) )
+* ( x )")
+*--#] cov_fact_pownegsym :
+
+*--#[ cov_factarg_frac :
+* nontrivial denominator: den.is_one() false branch
+* probe: clean
+* nontrivial denominator: den.is_one() false branch
+Symbol x,y;
+CFunction f;
+Local test = f((x^2-1)/3);
+FactArg f;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(1/3, - 1 + x,1 + x)")
+*--#] cov_factarg_frac :
+
+*--#[ cov_fort_brk :
+* farm probe 0089_fort_brk_23 (+8 lines)
+* probe: clean
+Symbol x,y,z;
+Format Fortran;
+Format O1;
+Local F = (x+y+z)^6 + (x-y-z)^4;
+Bracket x,y;
+Print F;
+.end
+assert succeeded?
+*--#] cov_fort_brk :
+
+*--#[ cov_powset :
+* farm probe 0025_powset_15 (+6 lines)
+* probe: clean
+Symbol x,a,b,n;
+Set s: a,b;
+CFunction f,g;
+Local t = f(x^a) + f(x^b) + f(x^3);
+id f(x^n?s) = g(x^n);
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(x^3) + f((x)^(a)) + f((x)^(b))")
+*--#] cov_powset :
+
+*--#[ cov_fun_multi :
+* farm probe 0133_fun_multi_6 (+5 lines)
+* probe: clean
+Function f,g,h;
+Symbol a,b,x,y;
+Local test = f(g(x)*h(y)*a + g(x)*h(y)*b);
+FactArg f;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(b + a,g(x),h(y))")
+*--#] cov_fun_multi :
+
+*--#[ cov_factorsym :
+* speculative: FACTORSYMBOL/HAAKJE/fromindex branch (sort.c 2462-2465) via nested subexpressions
+* probe: clean
+* speculative: FACTORSYMBOL/HAAKJE/fromindex branch (sort.c 2462-2465) via nested subexpressions
+Symbol x,y;
+CFunction gcf;
+PolyFun gcf;
+Local test = (gcf(x+1)+x^2)*(gcf(x+1)-x^2);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("x^4*gcf(-1) + gcf(1 + 2*x + x^2)")
+*--#] cov_factorsym :
+
+*--#[ cov_bigexp_4 :
+* large expansion inside Substitute; attempts workspace check path 654-658
+* probe: clean
+* large expansion inside Substitute; attempts workspace check path 654-658
+Symbol x,y;
+CFunction f;
+Local test = f(x);
+id f(x?) = (y+1)^50000;
+.end
+assert runtime_error?
+*--#] cov_bigexp_4 :
+
+*--#[ cov_trace_rep22 :
+* repeated indices: factor/multiplicity branch (opera.c 1714-1733)
+* probe: clean
+* repeated indices: factor/multiplicity branch (opera.c 1714-1733)
+Vector p1,p2;
+Local F = g_(1,p1,p2,p1,p2);
+trace4,1;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("- 4*p1.p1*p2.p2 + 8*p1.p2^2")
+*--#] cov_trace_rep22 :
+
+*--#[ cov_gcd_exprvec :
+* target: ratio.c lines 762-763 and 797-805 (vector/index firstshort at output)
+* probe: clean
+* target: ratio.c lines 762-763 and 797-805 (vector/index firstshort at output)
+Vector p,q;
+Symbol x;
+Local e1 = p^2;
+Local test = gcd_(e1,p);
+Print;
+.end
+assert succeeded?
+assert result("e1") =~ expr("p*p")
+assert result("test") =~ expr("p")
+*--#] cov_gcd_exprvec :
+
+*--#[ cov_rat_zero_one :
+* farm probe 0156_rat_zero_one_22 (+5 lines)
+* probe: clean
+Symbol x,y;
+Local t = MakeRational_(0, x^2*y);
+Local u = MakeRational_(1, x*y^-1);
+Print t;
+Print u;
+.end
+assert succeeded?
+assert result("t") =~ expr("0")
+assert result("u") =~ expr("makerational_(1,x*y^-1)")
+*--#] cov_rat_zero_one :
+
+*--#[ cov_dth_onearg :
+* target: normal.c DoTheta 4359-4364, single general argument paths
+* probe: clean
+* target: normal.c DoTheta 4359-4364, single general argument paths
+Symbol x,y;
+Local t1 = theta_(x);
+Local t2 = theta_(x+y);
+Print;
+.end
+assert succeeded?
+assert result("t1") =~ expr("theta_(x)")
+assert result("t2") =~ expr("theta_(y + x)")
+*--#] cov_dth_onearg :
+
+*--#[ cov_tr_pairs :
+* farm probe 0180_tr_pairs_5 (+6 lines)
+* probe: clean
+Symbol x,y;
+CFunction f,g;
+Local test = x + f(1);
+TryReplace x, y, f, g;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("y + f(1)")
+*--#] cov_tr_pairs :
+
+*--#[ cov_nsdollar_3 :
+* dollar variable assignment inside namespace (ConstructName '$' case)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* dollar variable assignment inside namespace (ConstructName '$' case)
+#namespace nsdollar
+Symbol q;
+Local F = q;
+$dd = F + 1;
+Print F;
+#endnamespace
+.end
+#pend_if threaded?
+assert succeeded?
+assert result("F") =~ expr("q")
+*--#] cov_nsdollar_3 :
+
+*--#[ cov_dth_moreterms :
+* target: normal.c DoTheta 4409-4410, first arg has more terms (tb >= stopb)
+* probe: clean
+* target: normal.c DoTheta 4409-4410, first arg has more terms (tb >= stopb)
+Symbol x,y;
+Local test = theta_(x+y,x);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("1")
+*--#] cov_dth_moreterms :
+
+*--#[ cov_fun_miss :
+* farm probe 0133_fun_miss_5 (+5 lines)
+* probe: clean
+Function f,g;
+Symbol a,b,x,y;
+Local test = f(g(x)*a + g(y)*b);
+FactArg f;
+Print;
+.end
+assert runtime_error?
+*--#] cov_fun_miss :
+
+*--#[ cov_tr_index :
+* farm probe 0180_tr_index_2 (+5 lines)
+* probe: clean
+Index i,j;
+CFunction f;
+Local test = f(i);
+TryReplace i, j;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(i)")
+*--#] cov_tr_index :
+
+*--#[ cov_tr_minvec :
+* farm probe 0180_tr_minvec_4 (+12 lines)
+* probe: clean
+Vector p,q;
+CFunction f;
+Local test = f(p);
+TryReplace p, -q;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(p)")
+*--#] cov_tr_minvec :
+
+*--#[ cov_abs_negnum :
+* farm probe 0004_abs_negnum_8 (+5 lines)
+* probe: clean
+Local test = abs_(-5);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("5")
+*--#] cov_abs_negnum :
+
+*--#[ cov_4221_zz_paren :
+* expected: 0^0 during normalization of term
+* probe: error
+* expected: 0^0 during normalization of term
+Local test = (0)^(1-1);
+Print;
+.end
+assert runtime_error?
+*--#] cov_4221_zz_paren :
+
+*--#[ cov_popts :
+* Print with +s, +ss and +sss option chains
+* probe: clean
+* Print with +s, +ss and +sss option chains
+Symbol x,y;
+Local t = x*y;
+Print +s t;
+Print +ss t;
+Print +sss t;
+.end
+assert succeeded?
+assert result("t") =~ expr("+
+x
+*y")
+*--#] cov_popts :
+
+*--#[ cov_missing_endwhile :
+* expected: endwhile statement(s) missing
+* probe: error
+* expected: endwhile statement(s) missing
+Symbol x;
+Local t = x;
+While ( x > 0 );
+  id x = x - 1;
+.end
+assert compile_error?('Unrecognized word: x')
+*--#] cov_missing_endwhile :
+
+*--#[ cov_polyrat_with_polyfun_notexact :
+* farm probe 0169_polyrat_with_polyfun_notexact_20 (+7 lines)
+* probe: clean
+Symbol a,b;
+PolyFun f;
+PolyRatFun rat;
+Local test = f(a^2+1)/f(a);
+Print;
+.end
+assert compile_error?('f should be')
+*--#] cov_polyrat_with_polyfun_notexact :
+
+*--#[ cov_vecnotset2 :
+* farm probe 0026_vecnotset2_34 (+6 lines)
+* probe: clean
+Vector p;
+Function g;
+Set s: 1,2,3;
+Symbol x;
+Local t = p(1)+p(2);
+id p(x?{!s}) = g(x);
+Print;
+.end
+assert compile_error?('Illegal object in')
+*--#] cov_vecnotset2 :
+
+*--#[ cov_setflag_wild :
+* farm probe 0019_setflag_wild_51 (+7 lines)
+* probe: clean
+AutoDeclare Symbol a;
+CFunction f,g;
+Local t = f(1,a);
+id f(x?,{1,a}) = g(x);
+Print;
+.end
+assert compile_error?('Undeclared variable x')
+*--#] cov_setflag_wild :
+
+*--#[ cov_apply_deep :
+* target: tables.c 2101-2110 nested recursion, stilltogo != maxtogo path
+* probe: clean
+* target: tables.c 2101-2110 nested recursion, stilltogo != maxtogo path
+Symbol x,y;
+CFunction g,h;
+Local templ = g(x?);
+Local target = g(h(1+x)+y);
+Apply templ to target;
+Print;
+.end
+assert compile_error?('Illegal character at')
+*--#] cov_apply_deep :
+
+*--#[ cov_argtoarg_tensor_err :
+* expected: Illegal substitution of argument field in tensor
+* probe: error
+* expected: Illegal substitution of argument field in tensor
+AutoDeclare Symbol x,y,a;
+Vector p;
+CFunction f;
+Local t = f(x,y);
+id f(?a?) = p(a);
+Print;
+.end
+assert compile_error?('Illegal type of')
+*--#] cov_argtoarg_tensor_err :
+
+*--#[ cov_tryreplace_stmt :
+* farm probe 0199_tryreplace_stmt_23 (+10 lines)
+* probe: clean
+Symbols x,y;
+CFunctions f,g;
+Local test = f(x)*g(f(x)) + f(2);
+TryReplace, f(x?) = g(x?);
+Print;
+.end
+assert compile_error?('Illegal object in')
+*--#] cov_tryreplace_stmt :
+
+*--#[ cov_fact_factdollar :
+* farm probe 0079_fact_factdollar_19 (+9 lines)
+* probe: clean
+Symbol x,y;
+Local e = (1+x)*(1+y);
+Factorize e;
+FactDollar $d,e;
+Print;
+.end
+assert compile_error?('Statement out of')
+*--#] cov_fact_factdollar :
+
+*--#[ cov_seteq_syntax_4 :
+* farm probe 0066_seteq_syntax_15 (+10 lines)
+* probe: clean
+Set sortsize = 200;
+Set scratchsize = 200;
+Symbol a1,a2,a3;
+Local F = (a1+a2+a3)^5;
+Local G = 1;
+.sort
+.copy F to G;
+.sort
+Print G;
+.end
+assert preprocess_error?('Unrecognized module term')
+*--#] cov_seteq_syntax_4 :
+
+*--#[ cov_dotail_pipe_8 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_8 :
+
+*--#[ cov_symm_tensor_TF :
+* target: tensor function branch via TensorFunction declaration (syntax variant)
+* probe: clean
+* target: tensor function branch via TensorFunction declaration (syntax variant)
+Index i,j,k;
+TensorFunction t;
+Symmetrize t,t;
+Local test = t(j,i) + t(k,i,j) + t(j,j,i);
+Print;
+.end
+assert compile_error?('Unrecognized statement')
+*--#] cov_symm_tensor_TF :
+
+*--#[ cov_4221_zz_funarg :
+* expected: 0^0 during normalization of term
+* probe: error
+* expected: 0^0 during normalization of term
+Symbol x;
+CFunction g;
+Local test = g(x)*(0^0);
+Print;
+.end
+assert compile_error?('Encountered 0^0 during')
+*--#] cov_4221_zz_funarg :
+
+*--#[ cov_tr_set :
+* expected: Illegal object type in TryReplace: v
+* probe: error
+* expected: Illegal object type in TryReplace: v
+Symbol x;
+Set v: x;
+Local test = x;
+TryReplace v, x;
+Print;
+.end
+assert compile_error?('Illegal object type')
+*--#] cov_tr_set :
+
+*--#[ cov_ext_doloop :
+* guess: external channel used from inside a preprocessor loop
+* probe: clean
+* guess: external channel used from inside a preprocessor loop
+#setexternal cat
+#do i = 1,3
+    #toexternal item `i'
+#enddo
+#removeexternal
+Symbol x;
+Local t = x;
+Print;
+.end
+assert preprocess_error?('setexternal: number expect')
+*--#] cov_ext_doloop :
+
+*--#[ cov_redef_esc :
+* farm probe 0188_redef_esc_21 (+7 lines)
+* probe: clean
+#define x "1"
+#redefine x "a\+b"
+#write "value = `x'"
+.end
+assert succeeded?
+*--#] cov_redef_esc :
+
+*--#[ cov_mdl_stmt_endmodel :
+* expected: Unknown statement
+* probe: error
+* expected: Unknown statement
+Model qed;
+Particle e spin 2;
+Particle a spin 3 vector;
+Vertex e,e,a coupling ee;
+EndModel;
+.end
+assert compile_error?('A vertex statement')
+*--#] cov_mdl_stmt_endmodel :
+
+*--#[ cov_on_innertest :
+* expected: Unrecognized option in ON statement
+* probe: error
+* expected: Unrecognized option in ON statement
+On innertest xyz;
+On innertest;
+.end
+assert succeeded?
+*--#] cov_on_innertest :
+
+*--#[ cov_notstored_a :
+* expected: is not a stored expression
+* probe: error
+* expected: is not a stored expression
+* Skip expressions exist but are not stored in the expression file
+Symbol x;
+Skip s1 = x;
+.sort
+save ns1.str, s1;
+.end
+assert compile_error?('Illegal name: \'=x\'')
+*--#] cov_notstored_a :
+
+*--#[ cov_dedup_badrange :
+* expected: error from ReadRange inside dedup (transform.c:487-488)
+* probe: error
+* expected: error from ReadRange inside dedup (transform.c:487-488)
+CFunction f;
+Transform f dedup(qq);
+.end
+assert compile_error?('Illegal keyword inside')
+*--#] cov_dedup_badrange :
+
+*--#[ cov_nsuse_3 :
+* guess at #use directive to expose namespace names outside
+* probe: clean
+* guess at #use directive to expose namespace names outside
+#namespace nsuse
+#define w 4
+#endnamespace
+#use nsuse
+#message `w'
+#end
+.end
+assert preprocess_error?('Illegal string for')
+*--#] cov_nsuse_3 :
+
