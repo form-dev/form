@@ -3689,7 +3689,6 @@ assert compile_error?('Illegal specification for symme')
 *--#[ cov_polyraterr :
 * PolyRatFun on a function that is not a regular commutative function
 Symbols x;
-CFunction rat;
 PolyRatFun rat;
 Local t = rat(x^2+1,x^3-2);
 Print +s;
@@ -3716,3 +3715,123 @@ Print;
 .end
 assert compile_error?('Declaration out of order')
 *--#] cov_onfortran :
+
+*---[ Saturation campaign batch 3: FactArg and if/match statement paths ]---
+
+*--#[ cov_factarg_num :
+* FactArg on argument 1 of a function
+Symbol x,y;
+Function f;
+Local test = f((x+y)^2,(x-y)^2);
+FactArg 1,f;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(y+x,y+x,y-x,y-x)")
+*--#] cov_factarg_num :
+
+*--#[ cov_factarg_delta :
+* FactArg moving a delta factor out of function arguments
+Symbol x,y;
+Vector p,q;
+Function f;
+Local test = f(x*d_(p,q) + y*d_(p,q));
+FactArg f;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(y+x,p.q)")
+*--#] cov_factarg_delta :
+
+*--#[ cov_factarg_idx :
+* FactArg on function arguments carrying indices terminates
+Symbol x,y;
+Index i,j;
+Function f;
+Local test = f(x*i + y*i);
+FactArg f;
+Print;
+.end
+assert runtime_error?
+*--#] cov_factarg_idx :
+
+*--#[ cov_factarg_negpow :
+* FactArg combining negative powers inside function arguments
+Symbol x,y;
+Function f;
+Local test = f(1/x + 2/x);
+FactArg f;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(3,x^-1)")
+*--#] cov_factarg_negpow :
+
+*--#[ cov_factarg_tensor :
+* FactArg moving tensor elements out of function arguments
+Symbol x,y;
+Index i;
+Tensor t1;
+Function f;
+Local test = f(t1(i)*x + t1(i)*y);
+FactArg f;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(y+x,t1(i))")
+*--#] cov_factarg_tensor :
+
+*--#[ cov_ifdivnum :
+* integer division in an if condition evaluates to 1
+Local a = 0;
+if ( 3/2 ) id x = 1;
+Print a, x;
+.end
+assert runtime_error?('is not the name of an active expression')
+*--#] cov_ifdivnum :
+
+*--#[ cov_matchcond_undec :
+* match() inside if with an undeclared variable
+CFunction f;
+Local t = f(x);
+if ( match(f(x?)) > 0 ) id x = 2;
+Print t;
+.end
+assert compile_error?('Undeclared variable')
+*--#] cov_matchcond_undec :
+
+*--#[ cov_barelse :
+* else statement with undeclared variable in the condition
+Local t = 5;
+if ( count(x,1) > 0 ) id x = 1;
+else id t = 2;
+endif;
+Print t;
+.end
+assert compile_error?('No extra text allowed')
+*--#] cov_barelse :
+
+*--#[ cov_factdollar_err :
+* Factorize on a dollar variable is illegal
+Symbol a,b;
+Factorize $f1;
+$f1 = (a+b)*(a+c);
+.sort
+Print $f1;
+.end
+assert compile_error?('Illegal object in (N)Factorize statement')
+*--#] cov_factdollar_err :
+
+*--#[ cov_lowfirst_modfact :
+* unrecognized LowFirst statement plus large modulus with Factorize
+Symbol a,b;
+LowFirst;
+Modulus 10000000000000;
+Factorize $m2;
+$m2 = (a+b)^2;
+.sort
+Print $m2;
+.end
+assert compile_error?('Unrecognized statement LowFirst')
+assert compile_error?('Illegal object in (N)Factorize statement')
+*--#] cov_lowfirst_modfact :
