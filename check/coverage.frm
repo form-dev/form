@@ -8352,3 +8352,1020 @@ Print;
 .end
 assert compile_error?("starts with sets of functions")
 *--#] cov_transform_badset :
+*--#[ cov_err_nonpoly_2 :
+* expected: not a polynomial
+* probe: error
+* expected: not a polynomial
+Symbol x,y;
+CFunction f;
+Local F = f(1)*(x+y+1)*(x+2*y+2);
+Factorize F;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("( 1 + y + x )
+* ( 2 + 2*y + x )
+* ( f(1) )")
+*--#] cov_err_nonpoly_2 :
+
+*--#[ cov_0306_fac_content :
+* nontrivial integer content with common variable powers
+* probe: clean
+* nontrivial integer content with common variable powers
+Symbol x,y;
+Local f = 12*x^2*y - 6*x*y^2 + 18*x*y;
+Local g = 1;
+Factorize f,g;
+Print g;
+.end
+assert succeeded?
+assert result("g") =~ expr("( 1 )")
+*--#] cov_0306_fac_content :
+
+*--#[ cov_factor_bare :
+* bare Factorize statement on simple polynomial
+* probe: clean
+* bare Factorize statement on simple polynomial
+Symbol x;
+Local test = x^2-1;
+Factorize;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("(  - 1 + x )
+* ( 1 + x )")
+*--#] cov_factor_bare :
+
+*--#[ cov_powset_5 :
+* farm probe 0025_powset_15 (+5 lines)
+* probe: clean
+Symbol x,a,b,n;
+Set s: a,b;
+CFunction f,g;
+Local t = f(x^a) + f(x^b) + f(x^3);
+id f(x^n?s) = g(x^n);
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(x^3) + f((x)^(a)) + f((x)^(b))")
+*--#] cov_powset_5 :
+
+*--#[ cov_factdol_pow :
+* Factorized dollar raised to a power > 1 (GenerateFactors path)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* Factorized dollar raised to a power > 1 (GenerateFactors path)
+Symbol x;
+Local F = (x+1)*(x-1);
+.sort
+$dd = F;
+.sort
+FactDollar,$dd;
+.sort
+Local G = $dd^2;
+.sort
+Print;
+.end
+#pend_if threaded?
+assert succeeded?
+assert result("F") =~ expr("- 1 + x^2")
+assert result("G") =~ expr("1 - 2*x^2 + x^4")
+*--#] cov_factdol_pow :
+
+*--#[ cov_kb_match :
+* farm probe 0119_kb_match_7 (+11 lines)
+* probe: clean
+Symbols x,y;
+Local ex = (1+x+y)^30;
+.sort
+Bracket x;
+.sort
+Keep Brackets;
+If ( Match(x^2*y) ) id x^2 = 2*x;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("ex") =~ expr("1 + 30*y + 435*y^2 + 4060*y^3 + 27405*y^4 + 142506*y^5 + 593775*y^6 +
+2035800*y^7 + 5852925*y^8 + 14307150*y^9 + 30045015*y^10 + 54627300*y^11
++ 86493225*y^12 + 119759850*y^13 + 145422675*y^14 + 155117520*y^15 +
+145422675*y^16 + 119759850*y^17 + 86493225*y^18 + 54627300*y^19 +
+30045015*y^20 + 14307150*y^21 + 5852925*y^22 + 2035800*y^23 + 593775*
+y^24 + 142506*y^25 + 27405*y^26 + 4060*y^27 + 435*y^28 + 30*y^29 + y^30
++ 30*x + 870*x*y + 12180*x*y^2 + 109620*x*y^3 + 712530*x*y^4 + 3562650*
+x*y^5 + 14250600*x*y^6 + 46823400*x*y^7 + 128764350*x*y^8 + 300450150*x*
+y^9 + 600900300*x*y^10 + 1037918700*x*y^11 + 1556878050*x*y^12 +
+2035917450*x*y^13 + 2326762800*x*y^14 + 2326762800*x*y^15 + 2035917450*x
+*y^16 + 1556878050*x*y^17 + 1037918700*x*y^18 + 600900300*x*y^19 +
+300450150*x*y^20 + 128764350*x*y^21 + 46823400*x*y^22 + 14250600*x*y^23
++ 3562650*x*y^24 + 712530*x*y^25 + 109620*x*y^26 + 12180*x*y^27 + 870*x
+*y^28 + 30*x*y^29 + 435*x^2 + 12180*x^2*y + 164430*x^2*y^2 + 1425060*x^2
+*y^3 + 8906625*x^2*y^4 + 42751800*x^2*y^5 + 163881900*x^2*y^6 +
+515057400*x^2*y^7 + 1352025675*x^2*y^8 + 3004501500*x^2*y^9 + 5708552850
+*x^2*y^10 + 9341268300*x^2*y^11 + 13233463425*x^2*y^12 + 16287339600*x^2
+*y^13 + 17450721000*x^2*y^14 + 16287339600*x^2*y^15 + 13233463425*x^2*
+y^16 + 9341268300*x^2*y^17 + 5708552850*x^2*y^18 + 3004501500*x^2*y^19
++ 1352025675*x^2*y^20 + 515057400*x^2*y^21 + 163881900*x^2*y^22 +
+42751800*x^2*y^23 + 8906625*x^2*y^24 + 1425060*x^2*y^25 + 164430*x^2*
+y^26 + 12180*x^2*y^27 + 435*x^2*y^28 + 4060*x^3 + 109620*x^3*y + 1425060
+*x^3*y^2 + 11875500*x^3*y^3 + 71253000*x^3*y^4 + 327763800*x^3*y^5 +
+1201800600*x^3*y^6 + 3605401800*x^3*y^7 + 9013504500*x^3*y^8 +
+19028509500*x^3*y^9 + 34251317100*x^3*y^10 + 52933853700*x^3*y^11 +
+70578471600*x^3*y^12 + 81436698000*x^3*y^13 + 81436698000*x^3*y^14 +
+70578471600*x^3*y^15 + 52933853700*x^3*y^16 + 34251317100*x^3*y^17 +
+19028509500*x^3*y^18 + 9013504500*x^3*y^19 + 3605401800*x^3*y^20 +
+1201800600*x^3*y^21 + 327763800*x^3*y^22 + 71253000*x^3*y^23 + 11875500*
+x^3*y^24 + 1425060*x^3*y^25 + 109620*x^3*y^26 + 4060*x^3*y^27 + 27405*
+x^4 + 712530*x^4*y + 8906625*x^4*y^2 + 71253000*x^4*y^3 + 409704750*x^4*
+y^4 + 1802700900*x^4*y^5 + 6309453150*x^4*y^6 + 18027009000*x^4*y^7 +
+42814146375*x^4*y^8 + 85628292750*x^4*y^9 + 145568097675*x^4*y^10 +
+211735414800*x^4*y^11 + 264669268500*x^4*y^12 + 285028443000*x^4*y^13 +
+264669268500*x^4*y^14 + 211735414800*x^4*y^15 + 145568097675*x^4*y^16 +
+85628292750*x^4*y^17 + 42814146375*x^4*y^18 + 18027009000*x^4*y^19 +
+6309453150*x^4*y^20 + 1802700900*x^4*y^21 + 409704750*x^4*y^22 +
+71253000*x^4*y^23 + 8906625*x^4*y^24 + 712530*x^4*y^25 + 27405*x^4*y^26
++ 142506*x^5 + 3562650*x^5*y + 42751800*x^5*y^2 + 327763800*x^5*y^3 +
+1802700900*x^5*y^4 + 7571343780*x^5*y^5 + 25237812600*x^5*y^6 +
+68502634200*x^5*y^7 + 154130926950*x^5*y^8 + 291136195350*x^5*y^9 +
+465817912560*x^5*y^10 + 635206244400*x^5*y^11 + 741073951800*x^5*y^12 +
+741073951800*x^5*y^13 + 635206244400*x^5*y^14 + 465817912560*x^5*y^15 +
+291136195350*x^5*y^16 + 154130926950*x^5*y^17 + 68502634200*x^5*y^18 +
+25237812600*x^5*y^19 + 7571343780*x^5*y^20 + 1802700900*x^5*y^21 +
+327763800*x^5*y^22 + 42751800*x^5*y^23 + 3562650*x^5*y^24 + 142506*x^5*
+y^25 + 593775*x^6 + 14250600*x^6*y + 163881900*x^6*y^2 + 1201800600*x^6*
+y^3 + 6309453150*x^6*y^4 + 25237812600*x^6*y^5 + 79919739900*x^6*y^6 +
+205507902600*x^6*y^7 + 436704293025*x^6*y^8 + 776363187600*x^6*y^9 +
+1164544781400*x^6*y^10 + 1482147903600*x^6*y^11 + 1605660228900*x^6*y^12
++ 1482147903600*x^6*y^13 + 1164544781400*x^6*y^14 + 776363187600*x^6*
+y^15 + 436704293025*x^6*y^16 + 205507902600*x^6*y^17 + 79919739900*x^6*
+y^18 + 25237812600*x^6*y^19 + 6309453150*x^6*y^20 + 1201800600*x^6*y^21
++ 163881900*x^6*y^22 + 14250600*x^6*y^23 + 593775*x^6*y^24 + 2035800*
+x^7 + 46823400*x^7*y + 515057400*x^7*y^2 + 3605401800*x^7*y^3 +
+18027009000*x^7*y^4 + 68502634200*x^7*y^5 + 205507902600*x^7*y^6 +
+499090620600*x^7*y^7 + 998181241200*x^7*y^8 + 1663635402000*x^7*y^9 +
+2329089562800*x^7*y^10 + 2752560392400*x^7*y^11 + 2752560392400*x^7*y^12
++ 2329089562800*x^7*y^13 + 1663635402000*x^7*y^14 + 998181241200*x^7*
+y^15 + 499090620600*x^7*y^16 + 205507902600*x^7*y^17 + 68502634200*x^7*
+y^18 + 18027009000*x^7*y^19 + 3605401800*x^7*y^20 + 515057400*x^7*y^21
++ 46823400*x^7*y^22 + 2035800*x^7*y^23 + 5852925*x^8 + 128764350*x^8*y
++ 1352025675*x^8*y^2 + 9013504500*x^8*y^3 + 42814146375*x^8*y^4 +
+154130926950*x^8*y^5 + 436704293025*x^8*y^6 + 998181241200*x^8*y^7 +
+1871589827250*x^8*y^8 + 2911361953500*x^8*y^9 + 3784770539550*x^8*y^10
++ 4128840588600*x^8*y^11 + 3784770539550*x^8*y^12 + 2911361953500*x^8*
+y^13 + 1871589827250*x^8*y^14 + 998181241200*x^8*y^15 + 436704293025*x^8
+*y^16 + 154130926950*x^8*y^17 + 42814146375*x^8*y^18 + 9013504500*x^8*
+y^19 + 1352025675*x^8*y^20 + 128764350*x^8*y^21 + 5852925*x^8*y^22 +
+14307150*x^9 + 300450150*x^9*y + 3004501500*x^9*y^2 + 19028509500*x^9*
+y^3 + 85628292750*x^9*y^4 + 291136195350*x^9*y^5 + 776363187600*x^9*y^6
++ 1663635402000*x^9*y^7 + 2911361953500*x^9*y^8 + 4205300599500*x^9*y^9
++ 5046360719400*x^9*y^10 + 5046360719400*x^9*y^11 + 4205300599500*x^9*
+y^12 + 2911361953500*x^9*y^13 + 1663635402000*x^9*y^14 + 776363187600*
+x^9*y^15 + 291136195350*x^9*y^16 + 85628292750*x^9*y^17 + 19028509500*
+x^9*y^18 + 3004501500*x^9*y^19 + 300450150*x^9*y^20 + 14307150*x^9*y^21
++ 30045015*x^10 + 600900300*x^10*y + 5708552850*x^10*y^2 + 34251317100*
+x^10*y^3 + 145568097675*x^10*y^4 + 465817912560*x^10*y^5 + 1164544781400
+*x^10*y^6 + 2329089562800*x^10*y^7 + 3784770539550*x^10*y^8 +
+5046360719400*x^10*y^9 + 5550996791340*x^10*y^10 + 5046360719400*x^10*
+y^11 + 3784770539550*x^10*y^12 + 2329089562800*x^10*y^13 + 1164544781400
+*x^10*y^14 + 465817912560*x^10*y^15 + 145568097675*x^10*y^16 +
+34251317100*x^10*y^17 + 5708552850*x^10*y^18 + 600900300*x^10*y^19 +
+30045015*x^10*y^20 + 54627300*x^11 + 1037918700*x^11*y + 9341268300*x^11
+*y^2 + 52933853700*x^11*y^3 + 211735414800*x^11*y^4 + 635206244400*x^11*
+y^5 + 1482147903600*x^11*y^6 + 2752560392400*x^11*y^7 + 4128840588600*
+x^11*y^8 + 5046360719400*x^11*y^9 + 5046360719400*x^11*y^10 +
+4128840588600*x^11*y^11 + 2752560392400*x^11*y^12 + 1482147903600*x^11*
+y^13 + 635206244400*x^11*y^14 + 211735414800*x^11*y^15 + 52933853700*
+x^11*y^16 + 9341268300*x^11*y^17 + 1037918700*x^11*y^18 + 54627300*x^11*
+y^19 + 86493225*x^12 + 1556878050*x^12*y + 13233463425*x^12*y^2 +
+70578471600*x^12*y^3 + 264669268500*x^12*y^4 + 741073951800*x^12*y^5 +
+1605660228900*x^12*y^6 + 2752560392400*x^12*y^7 + 3784770539550*x^12*y^8
++ 4205300599500*x^12*y^9 + 3784770539550*x^12*y^10 + 2752560392400*x^12
+*y^11 + 1605660228900*x^12*y^12 + 741073951800*x^12*y^13 + 264669268500*
+x^12*y^14 + 70578471600*x^12*y^15 + 13233463425*x^12*y^16 + 1556878050*
+x^12*y^17 + 86493225*x^12*y^18 + 119759850*x^13 + 2035917450*x^13*y +
+16287339600*x^13*y^2 + 81436698000*x^13*y^3 + 285028443000*x^13*y^4 +
+741073951800*x^13*y^5 + 1482147903600*x^13*y^6 + 2329089562800*x^13*y^7
++ 2911361953500*x^13*y^8 + 2911361953500*x^13*y^9 + 2329089562800*x^13*
+y^10 + 1482147903600*x^13*y^11 + 741073951800*x^13*y^12 + 285028443000*
+x^13*y^13 + 81436698000*x^13*y^14 + 16287339600*x^13*y^15 + 2035917450*
+x^13*y^16 + 119759850*x^13*y^17 + 145422675*x^14 + 2326762800*x^14*y +
+17450721000*x^14*y^2 + 81436698000*x^14*y^3 + 264669268500*x^14*y^4 +
+635206244400*x^14*y^5 + 1164544781400*x^14*y^6 + 1663635402000*x^14*y^7
++ 1871589827250*x^14*y^8 + 1663635402000*x^14*y^9 + 1164544781400*x^14*
+y^10 + 635206244400*x^14*y^11 + 264669268500*x^14*y^12 + 81436698000*
+x^14*y^13 + 17450721000*x^14*y^14 + 2326762800*x^14*y^15 + 145422675*
+x^14*y^16 + 155117520*x^15 + 2326762800*x^15*y + 16287339600*x^15*y^2 +
+70578471600*x^15*y^3 + 211735414800*x^15*y^4 + 465817912560*x^15*y^5 +
+776363187600*x^15*y^6 + 998181241200*x^15*y^7 + 998181241200*x^15*y^8 +
+776363187600*x^15*y^9 + 465817912560*x^15*y^10 + 211735414800*x^15*y^11
++ 70578471600*x^15*y^12 + 16287339600*x^15*y^13 + 2326762800*x^15*y^14
++ 155117520*x^15*y^15 + 145422675*x^16 + 2035917450*x^16*y +
+13233463425*x^16*y^2 + 52933853700*x^16*y^3 + 145568097675*x^16*y^4 +
+291136195350*x^16*y^5 + 436704293025*x^16*y^6 + 499090620600*x^16*y^7 +
+436704293025*x^16*y^8 + 291136195350*x^16*y^9 + 145568097675*x^16*y^10
++ 52933853700*x^16*y^11 + 13233463425*x^16*y^12 + 2035917450*x^16*y^13
++ 145422675*x^16*y^14 + 119759850*x^17 + 1556878050*x^17*y + 9341268300
+*x^17*y^2 + 34251317100*x^17*y^3 + 85628292750*x^17*y^4 + 154130926950*
+x^17*y^5 + 205507902600*x^17*y^6 + 205507902600*x^17*y^7 + 154130926950*
+x^17*y^8 + 85628292750*x^17*y^9 + 34251317100*x^17*y^10 + 9341268300*
+x^17*y^11 + 1556878050*x^17*y^12 + 119759850*x^17*y^13 + 86493225*x^18
++ 1037918700*x^18*y + 5708552850*x^18*y^2 + 19028509500*x^18*y^3 +
+42814146375*x^18*y^4 + 68502634200*x^18*y^5 + 79919739900*x^18*y^6 +
+68502634200*x^18*y^7 + 42814146375*x^18*y^8 + 19028509500*x^18*y^9 +
+5708552850*x^18*y^10 + 1037918700*x^18*y^11 + 86493225*x^18*y^12 +
+54627300*x^19 + 600900300*x^19*y + 3004501500*x^19*y^2 + 9013504500*x^19
+*y^3 + 18027009000*x^19*y^4 + 25237812600*x^19*y^5 + 25237812600*x^19*
+y^6 + 18027009000*x^19*y^7 + 9013504500*x^19*y^8 + 3004501500*x^19*y^9
++ 600900300*x^19*y^10 + 54627300*x^19*y^11 + 30045015*x^20 + 300450150*
+x^20*y + 1352025675*x^20*y^2 + 3605401800*x^20*y^3 + 6309453150*x^20*y^4
++ 7571343780*x^20*y^5 + 6309453150*x^20*y^6 + 3605401800*x^20*y^7 +
+1352025675*x^20*y^8 + 300450150*x^20*y^9 + 30045015*x^20*y^10 + 14307150
+*x^21 + 128764350*x^21*y + 515057400*x^21*y^2 + 1201800600*x^21*y^3 +
+1802700900*x^21*y^4 + 1802700900*x^21*y^5 + 1201800600*x^21*y^6 +
+515057400*x^21*y^7 + 128764350*x^21*y^8 + 14307150*x^21*y^9 + 5852925*
+x^22 + 46823400*x^22*y + 163881900*x^22*y^2 + 327763800*x^22*y^3 +
+409704750*x^22*y^4 + 327763800*x^22*y^5 + 163881900*x^22*y^6 + 46823400*
+x^22*y^7 + 5852925*x^22*y^8 + 2035800*x^23 + 14250600*x^23*y + 42751800*
+x^23*y^2 + 71253000*x^23*y^3 + 71253000*x^23*y^4 + 42751800*x^23*y^5 +
+14250600*x^23*y^6 + 2035800*x^23*y^7 + 593775*x^24 + 3562650*x^24*y +
+8906625*x^24*y^2 + 11875500*x^24*y^3 + 8906625*x^24*y^4 + 3562650*x^24*
+y^5 + 593775*x^24*y^6 + 142506*x^25 + 712530*x^25*y + 1425060*x^25*y^2
++ 1425060*x^25*y^3 + 712530*x^25*y^4 + 142506*x^25*y^5 + 27405*x^26 +
+109620*x^26*y + 164430*x^26*y^2 + 109620*x^26*y^3 + 27405*x^26*y^4 +
+4060*x^27 + 12180*x^27*y + 12180*x^27*y^2 + 4060*x^27*y^3 + 435*x^28 +
+870*x^28*y + 435*x^28*y^2 + 30*x^29 + 30*x^29*y + x^30")
+*--#] cov_kb_match :
+
+*--#[ cov_sort1_polyfun :
+* guess: PolyFun statement sets PolyFunType (sort.c:2631+ PolyFunType==2 branch)
+* probe: clean
+* guess: PolyFun statement sets PolyFunType (sort.c:2631+ PolyFunType==2 branch)
+Symbol x,y;
+CFunction pf;
+PolyFun pf;
+Local t = pf(x+1,x-1) + pf(x^2+1,x) + pf(x+y,y^2);
+.sort
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("pf(1 + x, - 1 + x) + pf(1 + x^2,x) + pf(y + x,y^2)")
+*--#] cov_sort1_polyfun :
+
+*--#[ cov_bigexp_8 :
+* large expansion inside Substitute; attempts workspace check path 654-658
+* probe: clean
+* large expansion inside Substitute; attempts workspace check path 654-658
+Symbol x,y;
+CFunction f;
+Local test = f(x);
+id f(x?) = (y+1)^50000;
+.end
+assert runtime_error?
+*--#] cov_bigexp_8 :
+
+*--#[ cov_delta_nomatch :
+* farm probe 0059_delta_nomatch_67 (+16 lines)
+* probe: clean
+Index i,j,k;
+CFunction f;
+Local test = f(d_(i,j));
+id f(d_(i,k)) = f(i,k);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(d_(i,j))")
+*--#] cov_delta_nomatch :
+
+*--#[ cov_argtoextrasymbol :
+* farm probe 0154_argtoextrasymbol_15 (+10 lines)
+* probe: clean
+Symbol x,y;
+Function f,g;
+Local t = f(x+y,g(x),g(2*x+y));
+ArgToExtraSymbol f;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(Z1_,Z2_,Z3_)")
+*--#] cov_argtoextrasymbol :
+
+*--#[ cov_0017_ns_fn :
+* farm probe 0127_0017_ns_fn_42 (+39 lines)
+* probe: clean
+#namespace wrk
+Symbol x,y;
+CFunction f,g;
+Local test = f(x,y);
+id f(x?,y?) = g(y,x);
+Print;
+#endnamespace
+.end
+assert succeeded?
+assert result("test") =~ expr("g(y,x)")
+*--#] cov_0017_ns_fn :
+
+*--#[ cov_putinside_multi_2 :
+* farm probe 0216_putinside_multi_3 (+9 lines)
+* probe: clean
+Vector p;
+Symbol x,y;
+Function f;
+Local t = f(x,y,p) + f(p.p);
+PutInside f, x, y, p, p.p, d_;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(p.p)*f(1) + f(x,y,p)*f(1)")
+*--#] cov_putinside_multi_2 :
+
+*--#[ cov_hidden :
+* farm probe 0074_hidden_51 (+5 lines)
+* probe: clean
+Symbol x;
+Local ex = (x+1)*(x+2);
+.sort;
+Hide ex;
+.sort;
+Local test = factorin_(ex);
+Print test;
+.end
+assert succeeded?
+assert result("test") =~ expr("1")
+*--#] cov_hidden :
+
+*--#[ cov_thr_bucket :
+* farm probe 0048_thr_bucket_15 (+5 lines)
+* probe: clean
+On parallel;
+ThreadBucketSize 3;
+Symbol x;
+Local test = (x+1)^50;
+.sort
+Print test;
+.end
+assert succeeded?
+assert result("test") =~ expr("1 + 50*x + 1225*x^2 + 19600*x^3 + 230300*x^4 + 2118760*x^5 + 15890700*
+x^6 + 99884400*x^7 + 536878650*x^8 + 2505433700*x^9 + 10272278170*x^10
++ 37353738800*x^11 + 121399651100*x^12 + 354860518600*x^13 +
+937845656300*x^14 + 2250829575120*x^15 + 4923689695575*x^16 +
+9847379391150*x^17 + 18053528883775*x^18 + 30405943383200*x^19 +
+47129212243960*x^20 + 67327446062800*x^21 + 88749815264600*x^22 +
+108043253365600*x^23 + 121548660036300*x^24 + 126410606437752*x^25 +
+121548660036300*x^26 + 108043253365600*x^27 + 88749815264600*x^28 +
+67327446062800*x^29 + 47129212243960*x^30 + 30405943383200*x^31 +
+18053528883775*x^32 + 9847379391150*x^33 + 4923689695575*x^34 +
+2250829575120*x^35 + 937845656300*x^36 + 354860518600*x^37 +
+121399651100*x^38 + 37353738800*x^39 + 10272278170*x^40 + 2505433700*
+x^41 + 536878650*x^42 + 99884400*x^43 + 15890700*x^44 + 2118760*x^45 +
+230300*x^46 + 19600*x^47 + 1225*x^48 + 50*x^49 + x^50")
+*--#] cov_thr_bucket :
+
+*--#[ cov_coif_condclean :
+* farm probe 0061_coif_condclean_23 (+6 lines)
+* probe: clean
+Symbol x;
+Local test = x;
+if ( expression(test) ) id x = 1;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("1")
+*--#] cov_coif_condclean :
+
+*--#[ cov_dot_valid :
+* farm probe 0061_dot_valid_63 (+6 lines)
+* probe: clean
+Vector p,q;
+Symbol s;
+Local f = p.q;
+if ( occurs(p.q) ) id s = 1;
+Print;
+.end
+assert succeeded?
+assert result("f") =~ expr("p.q")
+*--#] cov_dot_valid :
+
+*--#[ cov_argexplode2 :
+* farm probe 0212_argexplode2_28 (+11 lines)
+* probe: clean
+Symbol a,b,c,x,d;
+CFunction f,g,h;
+Local test = f(g(h(a,b,c),d),x);
+ArgExplode f;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(g(h(a,b,c),d),x)")
+*--#] cov_argexplode2 :
+
+*--#[ cov_fixed_index :
+* farm probe 0032_fixed_index_72 (+6 lines)
+* probe: clean
+Vector p;
+Index i;
+Local expr = p(i);
+id p(i?fixed_) = 1;
+Print;
+.end
+assert succeeded?
+assert result("expr") =~ expr("p(i)")
+*--#] cov_fixed_index :
+
+*--#[ cov_gcd_argfun :
+* farm probe 0147_gcd_argfun_15 (+7 lines)
+* probe: clean
+Symbol x,y,z;
+Function f,g,h;
+PolyRatFun gcd_;
+Local F = gcd_(f(x)*g(y)*(x+1), f(x)*h(z)*(x+2));
+Print;
+.end
+assert runtime_error?
+*--#] cov_gcd_argfun :
+
+*--#[ cov_pre_isfact_dollar :
+* farm probe 0046_pre_isfact_dollar_51 (+6 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x;
+Local e = x;
+.sort
+$a = e;
+#if ( isfactorized($a) == 1 )
+  #message factorized
+#endif
+Print;
+.end
+#pend_if threaded?
+assert succeeded?
+assert result("e") =~ expr("x")
+*--#] cov_pre_isfact_dollar :
+
+*--#[ cov_vecset :
+* standalone vectors with set-of-vectors bracket
+* probe: clean
+* standalone vectors with set-of-vectors bracket
+* targets execute.c 1476-1518
+Symbol x;
+Vector p,q,r;
+Set vs: p,q;
+Local test = p + q + r + x;
+Bracket vs;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("+ p * ( 1 ) + q * ( 1 ) + x + r")
+*--#] cov_vecset :
+
+*--#[ cov_prexpand_clean_2 :
+* farm probe 0176_prexpand_clean_31 (+8 lines)
+* probe: clean
+Symbol x;
+CFunction rat,den;
+PolyRatFun rat,den(expand,x,3);
+Local test = rat(x,1);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("rat(x)")
+*--#] cov_prexpand_clean_2 :
+
+*--#[ cov_cdt_nofill_2 :
+* farm probe 0136_cdt_nofill_26 (+5 lines)
+* probe: clean
+Symbol x;
+Table t(4,4);
+Local e = x;
+.sort
+ClearTable t;
+Print e;
+.end
+assert succeeded?
+assert result("e") =~ expr("x")
+*--#] cov_cdt_nofill_2 :
+
+*--#[ cov_1008_chainout :
+* ChainOut: writing an expression to a file through the store layer.
+* probe: clean
+* ChainOut: writing an expression to a file through the store layer.
+CFunction f;
+Symbol i;
+Local test = sum_(i,1,5000,f(i));
+.sort
+ChainOut test;
+.sort
+Print;
+.end
+assert compile_error?('test has not')
+*--#] cov_1008_chainout :
+
+*--#[ cov_vecdirect :
+* bracket a vector directly, term has vector and dotproduct
+* probe: clean
+* bracket a vector directly, term has vector and dotproduct
+* targets execute.c 1477-1518, 1520-1545
+Symbol x;
+Vector p,q;
+Local test = p*q + p + x;
+Bracket p;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("+ p * ( 1 + q ) + x")
+*--#] cov_vecdirect :
+
+*--#[ cov_nterms_reuse :
+* farm probe 0103_nterms_reuse_49 (+10 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x;
+Keep Brackets;
+Local F = (1+x)*(1+x^2);
+.sort
+ #$n = nterms(F);
+$sum = 0;
+#do i = 1,`nterms(F)'
+  $sum = $sum + x^`i';
+#enddo
+.sort
+Print;
+Print $sum;
+.end
+#pend_if threaded?
+assert preprocess_error?('Undefined preprocessor v')
+*--#] cov_nterms_reuse :
+
+*--#[ cov_prfinddiv_clean_2 :
+* farm probe 0176_prfinddiv_clean_27 (+25 lines)
+* probe: clean
+Symbol x;
+CFunction rat,den;
+PolyRatFun rat,den(finddivergence,x);
+Local test = rat(x,1);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("rat(x,1)")
+*--#] cov_prfinddiv_clean_2 :
+
+*--#[ cov_pre_isnum_dollar :
+* farm probe 0046_pre_isnum_dollar_46 (+11 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x;
+Local e = x;
+.sort
+$a = 7;
+#if ( isnumerical($a) == 1 )
+  #message numeric dollar
+#endif
+Print;
+.end
+#pend_if threaded?
+assert succeeded?
+assert result("e") =~ expr("x")
+*--#] cov_pre_isnum_dollar :
+
+*--#[ cov_nterms_sorted :
+* farm probe 0103_nterms_sorted_47 (+7 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x;
+Keep Brackets;
+Local F = (1+x)*(1+x^2)*(1+x^3);
+.sort
+Sort F;
+.sort
+$n = nterms(F);
+Print $n;
+Print;
+.end
+#pend_if threaded?
+assert compile_error?('Illegal syntax for')
+*--#] cov_nterms_sorted :
+
+*--#[ cov_count_cond_2 :
+* farm probe 0055_count_cond_47 (+5 lines)
+* probe: clean
+Symbol x,y;
+Local t = x*x;
+If ( count(x,1) ) Print "a";
+If ( count(x,1) > 0 ) Print "b";
+If ( count(y,1) == 0 ) Print "c";
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("x^2")
+*--#] cov_count_cond_2 :
+
+*--#[ cov_flagok_2 :
+* valid flag(...) condition, big compile run 4510-4543
+* probe: clean
+* valid flag(...) condition, big compile run 4510-4543
+CFunction f;
+Local F = f(1);
+if ( flag(1,2) ) Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("f(1)")
+*--#] cov_flagok_2 :
+
+*--#[ cov_prop_on_ident :
+* fully identical functions: CompArg loop exhausts, return 0
+* probe: clean
+* fully identical functions: CompArg loop exhausts, return 0
+On properorder;
+Symbol a;
+CFunction f;
+Local test = f(a)*f(a);
+.sort
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(a)^2")
+*--#] cov_prop_on_ident :
+
+*--#[ cov_maxpower :
+* farm probe 0005_maxpower_48 (+6 lines)
+* probe: clean
+Symbol x,y;
+Local F = maxpowerof_(x);
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("500000000")
+*--#] cov_maxpower :
+
+*--#[ cov_isfactorized_improper_name :
+* expected: &Improper name for an expression: '
+* probe: error
+* expected: &Improper name for an expression: '
+Symbol x;
+Local F = x;
+if ( isfactorized (F, badname) ) discard;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("x")
+*--#] cov_isfactorized_improper_name :
+
+*--#[ cov_norm01_dimvec :
+* target: normal.c 374-397 DIMENSIONSYMBOL branch of Normalize
+* probe: clean
+* target: normal.c 374-397 DIMENSIONSYMBOL branch of Normalize
+Vector p,q;
+Symbol x;
+Local test = dimension_*p.p + x;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("x")
+*--#] cov_norm01_dimvec :
+
+*--#[ cov_rl_err :
+* expected: Illegal attempt to use a non-index-like argument in a tensor
+* probe: error
+* expected: Illegal attempt to use a non-index-like argument in a tensor
+Symbol x;
+Index a,b,c,d;
+Function h1;
+Tensor t2;
+Local test = h1(x,a,b,c);
+.sort
+ReplaceLoop h1,t2;
+Print;
+.end
+assert compile_error?('h1 should be')
+*--#] cov_rl_err :
+
+*--#[ cov_norm04_specials :
+* target: normal.c 323-372 COEFFSYMBOL/NUMERATORSYMBOL/DENOMINATORSYMBOL
+* probe: clean
+* target: normal.c 323-372 COEFFSYMBOL/NUMERATORSYMBOL/DENOMINATORSYMBOL
+* branches of Normalize, via the special reserved symbols
+Symbol x;
+Local test = num_*den_*coeff_*x;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("x")
+*--#] cov_norm04_specials :
+
+*--#[ cov_while_dollar :
+* While loop with dollar condition and dollar arithmetic
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* While loop with dollar condition and dollar arithmetic
+Symbol a;
+CFunction f;
+Local out = a;
+$n = 0;
+While ( $n < 3 ) $n = $n + 1; Endwhile;
+If ( $n == 3 ) id a = f(1); Endif;
+Print out;
+.end
+#pend_if threaded?
+assert compile_error?('EndWhile statement witho')
+*--#] cov_while_dollar :
+
+*--#[ cov_missing_combo :
+* expected: statement(s) missing
+* probe: error
+* expected: statement(s) missing
+Symbol x,i;
+CFunction f;
+Local t = f(x);
+Do i = 1,2;
+Inside t;
+Argument f;
+  id x = x + 1;
+.end
+assert compile_error?('do loop parameter')
+*--#] cov_missing_combo :
+
+*--#[ cov_deepnest_2 :
+* three levels of nested dollar factors
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* three levels of nested dollar factors
+Symbol x;
+$i = 5;
+$j = 2;
+$k = 3;
+Local test = x;
+if ( $i[$j[$k[2]]] > 0 ) id x = 1;
+Print test;
+.end
+#pend_if threaded?
+assert compile_error?('Definition out of')
+*--#] cov_deepnest_2 :
+
+*--#[ cov_no_endterm :
+* expected: endterm statement(s) missing
+* probe: error
+* expected: endterm statement(s) missing
+Symbol x;
+CFunction f;
+Local F = f(x)*x;
+Term;
+id x = 2;
+.end
+assert runtime_error?
+*--#] cov_no_endterm :
+
+*--#[ cov_asc_fill :
+* ascending fills of a 1-index sparse table: right-insertion walk,
+* probe: clean
+* ascending fills of a 1-index sparse table: right-insertion walk,
+* balance propagation with right child (q->blnce++), right rotations
+Symbol x,i;
+Table t(1,0);
+Do i = 1, 40;
+    Fill t(i) = x^i;
+EndDo;
+Local test = t(37) + t(12);
+Print;
+.end
+assert compile_error?('do loop parameter')
+*--#] cov_asc_fill :
+
+*--#[ cov_topol_bracket :
+* farm probe 0167_topol_bracket_10 (+6 lines)
+* probe: clean
+Symbol x,y;
+CFunction f;
+ToPolynomial;
+Local t = f(x+1) + f(y);
+Bracket x;
+Print +s;
+.sort
+Print;
+.end
+assert compile_error?('Definition out of')
+*--#] cov_topol_bracket :
+
+*--#[ cov_ifcomp_2 :
+* target: if.c NOT/subexpression fast path, OR short-circuit, nested parens
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* target: if.c NOT/subexpression fast path, OR short-circuit, nested parens
+Symbol x,y,z;
+$a = 1;
+Local t = 3*x*y;
+If ( ! Occurrence(z) ) Multiply 2; EndIf;
+If ( $a > 0 || Coefficient(y) > 2 ) Multiply 3; EndIf;
+If ( ( Count(x,1,0) || Count(y,1,0) ) && Occurrence(x) ) Multiply 5; EndIf;
+Print;
+.end
+#pend_if threaded?
+assert compile_error?('Definition out of')
+*--#] cov_ifcomp_2 :
+
+*--#[ cov_r07_findloop :
+* findloop if-condition (if.c Lus via TYPEFINDLOOP)
+* findloop if-condition (if.c Lus via TYPEFINDLOOP)
+Functions f(symmetric), g(symmetric);
+Symbols x,y,z;
+Local F = f(x,y,z,x);
+If ( findloop(f, arguments=3, loopsize=2) ) id F = g(x,y,z);
+Print F;
+.end
+assert compile_error?('Expression not allowed')
+*--#] cov_r07_findloop :
+
+*--#[ cov_doloop2 :
+* farm probe 0031_doloop2_66 (+16 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x,y;
+CFunction f;
+Local q = 1;
+Do $i = 1,3;
+  $a = $i*y;
+  q = q + f($a);
+EndDo;
+Print q;
+.end
+#pend_if threaded?
+assert compile_error?('Unrecognized statement q,=q+f')
+*--#] cov_doloop2 :
+
+*--#[ cov_fac_unfac :
+* ToPolynomial then print - exercises factorized print machinery from
+* probe: clean
+* ToPolynomial then print - exercises factorized print machinery from
+* the other side of the conversion
+Symbol x;
+Factorize test;
+Local test = (x-1)^2*(x+1)^2;
+ToPolynomial test;
+Print;
+.end
+assert compile_error?('Definition out of')
+*--#] cov_fac_unfac :
+
+*--#[ cov_multibracket_b :
+* alternative MultiBracket syntax attempt
+* probe: clean
+* alternative MultiBracket syntax attempt
+Symbols x,y;
+CFunction f;
+Local t = f(x,y);
+MultiBracket;
+Bracket x,y;
+Print;
+.sort
+.end
+assert compile_error?('Illegal Multiple Brack')
+*--#] cov_multibracket_b :
+
+*--#[ cov_seteq_syntax_8 :
+* farm probe 0066_seteq_syntax_15 (+10 lines)
+* probe: clean
+Set sortsize = 200;
+Set scratchsize = 200;
+Symbol a1,a2,a3;
+Local F = (a1+a2+a3)^5;
+Local G = 1;
+.sort
+.copy F to G;
+.sort
+Print G;
+.end
+assert preprocess_error?('Unrecognized module term')
+*--#] cov_seteq_syntax_8 :
+
+*--#[ cov_id_all_illopt :
+* expected: Illegal ALL option in id-statement
+* probe: error
+* expected: Illegal ALL option in id-statement
+Symbol x,y;
+Local e = x*y;
+id,all(foo),x*y = 1;
+.end
+assert compile_error?('Illegal ALL option')
+*--#] cov_id_all_illopt :
+
+*--#[ cov_topol_onlyfunc_2 :
+* farm probe 0167_topol_onlyfunc_1 (+6 lines)
+* probe: clean
+Symbol x;
+CFunction f,g,h;
+ToPolynomial onlyfunctions f,g;
+Local t = f(x) + g(x) + h(x);
+Print;
+.end
+assert compile_error?('Definition out of')
+*--#] cov_topol_onlyfunc_2 :
+
+*--#[ cov_dotail_pipe_12 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_12 :
+
+*--#[ cov_if_elseif :
+* farm probe 0026_if_elseif_1 (+6 lines)
+* probe: clean
+Symbol x;
+Local t = x^2;
+if ( count(x,1,5) ) multiply 2;
+elseif ( count(x,1,1) ) multiply 3;
+else multiply 5;
+endif;
+Print +s;
+.end
+assert compile_error?('Illegal name: count,x,1,5')
+*--#] cov_if_elseif :
+
+*--#[ cov_merge_shuffle :
+* farm probe 0052_merge_shuffle_45 (+5 lines)
+* probe: clean
+Symbol x, y, z;
+CFunction f;
+Local F = f(x,y,z);
+Merge f (1,2);
+Print;
+.end
+assert compile_error?('f(1,2) has not')
+*--#] cov_merge_shuffle :
+
+*--#[ cov_dollarsetnoparen :
+* expected: @Improper use of special keyword in $( ) option
+* probe: error
+* expected: @Improper use of special keyword in $( ) option
+Symbol x;
+Local F = x;
+#if $(x set_ {a,b} x)
+  id x = 1;
+#endif
+Print;
+.end
+assert preprocess_error?('Improper bracketting')
+*--#] cov_dollarsetnoparen :
+
+*--#[ cov_qed_min :
+* target: EGraph::fromDGraph via Diagram statement (GRCC)
+* probe: clean
+* target: EGraph::fromDGraph via Diagram statement (GRCC)
+Symbol ph;
+Model;
+Particle ep,em,ph;
+Interaction V = ep*em*ph;
+Local F = V(1,2)*V(3,4);
+Diagram D;
+Print F;
+.end
+assert compile_error?('Illegal name for')
+*--#] cov_qed_min :
+
+*--#[ cov_setindex_invalidtoken3 :
+* expected: Set index in RHS is not a wildcard symbol
+* probe: error
+* expected: Set index in RHS is not a wildcard symbol
+Symbol x;
+Local expr = 2_1(x);
+.end
+assert compile_error?('Illegal charac')
+*--#] cov_setindex_invalidtoken3 :
+
+*--#[ cov_permute_undefdol :
+* expected: Undefined variable $
+* probe: error
+* expected: Undefined variable $
+CFunction f;
+Transform f permute($qq,1,2);
+.end
+assert compile_error?('Undefined variable $')
+*--#] cov_permute_undefdol :
+
+*--#[ cov_set_badval :
+* expected: Illegal value for set element
+* probe: error
+* expected: Illegal value for set element
+Set s: 999999999;
+.end
+assert compile_error?('Illegal value for')
+*--#] cov_set_badval :
+
+*--#[ cov_nsuse_7 :
+* guess at #use directive to expose namespace names outside
+* probe: clean
+* guess at #use directive to expose namespace names outside
+#namespace nsuse
+#define w 4
+#endnamespace
+#use nsuse
+#message `w'
+#end
+.end
+assert preprocess_error?('Illegal string for')
+*--#] cov_nsuse_7 :
+
