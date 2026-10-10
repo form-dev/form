@@ -5525,3 +5525,674 @@ assert compile_error?('Undeclared va')
 assert runtime_error?
 *--#] cov_pipe_from_stream :
 
+*--#[ cov_factorize_sub :
+* Factorize with subexpression option (best attempt at exact syntax)
+* probe: clean
+* Factorize with subexpression option (best attempt at exact syntax)
+Symbol a,b,c;
+Local test = (a+b)*(a+b+c);
+Factorize test, sub;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("( c + b + a )
+* ( b + a )")
+*--#] cov_factorize_sub :
+
+*--#[ cov_mod101_same_mod :
+* farm probe 0191_mod101_same_mod_3 (+27 lines)
+* probe: clean
+Symbol x;
+Modulus 101;
+Local f = x^7+x^2+1;
+Local g = x^6+x+1;
+Factorize f;
+Factorize g;
+Print;
+.end
+assert succeeded?
+assert result("f") =~ expr("( 1 + x + x^2 )
+* ( 1 + 100*x + x^2 + 100*x^4 + x^5 )")
+assert result("g") =~ expr("( 54 + 65*x + 73*x^2 + 38*x^3 + x^4 )
+* ( 58 + 63*x + x^2 )")
+*--#] cov_mod101_same_mod :
+
+*--#[ cov_clearall_2 :
+* farm probe 0065_clearall_0 (+5 lines)
+* probe: clean
+Symbol x,y;
+Vector v;
+Index i;
+CFunction f;
+Set s: x,y;
+Table tb(1:2,1:2);
+.sort
+Fill tb(1,1) = 5;
+.sort
+Local t = f(x)*v(i) + tb(1,1);
+.sort
+Print;
+.clear
+.sort
+Local u = 1;
+Print;
+.end
+assert succeeded?
+assert result("u") =~ expr("1")
+*--#] cov_clearall_2 :
+
+*--#[ cov_bigexp_2 :
+* large expansion inside Substitute; attempts workspace check path 654-658
+* probe: clean
+* large expansion inside Substitute; attempts workspace check path 654-658
+Symbol x,y;
+CFunction f;
+Local test = f(x);
+id f(x?) = (y+1)^50000;
+.end
+assert runtime_error?
+*--#] cov_bigexp_2 :
+
+*--#[ cov_sort1_properorder :
+* guess: On properorder sets AC.properorderflag (sort.c:2765-2773 CompArg loop)
+* probe: clean
+* guess: On properorder sets AC.properorderflag (sort.c:2765-2773 CompArg loop)
+CFunction f,g;
+Symbol x,y;
+On properorder;
+Local t = f(x+y)*g(x) + f(x)*g(x+y) + f(y)*g(y^2);
+.sort
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(y + x)*g(x) + f(x)*g(y + x) + f(y)*g(y^2)")
+*--#] cov_sort1_properorder :
+
+*--#[ cov_mkrat_bignum :
+* hits normal.c 963-978 (big arg1), 984-990, 1014-1023 (DivLong), 1035-1043
+* probe: clean
+* hits normal.c 963-978 (big arg1), 984-990, 1014-1023 (DivLong), 1035-1043
+Local test = MakeRational_(123456789012345678901234567890,5);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("0/0")
+*--#] cov_mkrat_bignum :
+
+*--#[ cov_nsdollar :
+* dollar variable assignment inside namespace (ConstructName '$' case)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* dollar variable assignment inside namespace (ConstructName '$' case)
+#namespace nsdollar
+Symbol q;
+Local F = q;
+$dd = F + 1;
+Print F;
+#endnamespace
+.end
+#pend_if threaded?
+assert succeeded?
+assert result("F") =~ expr("q")
+*--#] cov_nsdollar :
+
+*--#[ cov_ddrep6 :
+* farm probe 0118_ddrep6_5 (+13 lines)
+* probe: clean
+Vector p1,p2,p3;
+Local test = dd_(p1,p1,p2,p2,p3,p3);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("p1.p1*p2.p2*p3.p3 + 2*p1.p1*p2.p3^2 + 8*p1.p2*p1.p3*p2.p3 + 2*p1.p2^2*
+p3.p3 + 2*p1.p3^2*p2.p2")
+*--#] cov_ddrep6 :
+
+*--#[ cov_rev_raw :
+* farm probe 0160_rev_raw_9 (+33 lines)
+* probe: clean
+Symbol a,b,c;
+Function f;
+Local F = f(reverse_(a,b,c));
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("f(c,b,a)")
+*--#] cov_rev_raw :
+
+*--#[ cov_sym_fixzero :
+* note: should emit Warning "Restriction to zero arguments removed"
+* probe: clean
+* note: should emit Warning "Restriction to zero arguments removed"
+Symbol x;
+CFunction f;
+Local test = f(1,2);
+Symmetrize f:0;
+Print;
+.end
+assert warning?('Restriction to ze')
+assert result("test") =~ expr("f(1,2)")
+*--#] cov_sym_fixzero :
+
+*--#[ cov_sym_groups :
+* farm probe 0124_sym_groups_2 (+21 lines)
+* probe: clean
+Symbol x;
+CFunction f;
+Local test = f(1,2,3,4);
+Symmetrize f(1,2),(3,4);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(1,2,3,4)")
+*--#] cov_sym_groups :
+
+*--#[ cov_dim_ok :
+* target: names.c:1481-1502 dimension field {d=...}
+* probe: clean
+* target: names.c:1481-1502 dimension field {d=...}
+Function f{d=4};
+Local test = f(1,2);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(1,2)")
+*--#] cov_dim_ok :
+
+*--#[ cov_rr_msg :
+* expansion inside #message (output capture variant)
+* probe: clean
+* expansion inside #message (output capture variant)
+#message `RANDOM_(lin,0.5,0.5)'
+Symbol x;
+Local t = 1;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("1")
+*--#] cov_rr_msg :
+
+*--#[ cov_ddsort :
+* farm probe 0118_ddsort_2 (+6 lines)
+* probe: clean
+Vector p1,p2,p3,p4;
+Local test = dd_(p3,p1,p4,p2);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("p1.p2*p3.p4 + p1.p3*p2.p4 + p1.p4*p2.p3")
+*--#] cov_ddsort :
+
+*--#[ cov_rat_small :
+* target: reken.c GcdLong small-arg branch (lines 2457-2462, na==1 case line 2459)
+* probe: clean
+* target: reken.c GcdLong small-arg branch (lines 2457-2462, na==1 case line 2459)
+Local r = MakeRational_(3,5);
+Local s = MakeRational_(-8,6);
+Local t = MakeRational_(7,7);
+Local u = MakeRational_(1000003,1000003);
+Print r,s,t,u;
+.end
+assert warning?('fraction could not')
+assert result("r") =~ expr("- 2")
+assert result("s") =~ expr("- 2")
+assert result("t") =~ expr("7")
+assert result("u") =~ expr("1000003")
+*--#] cov_rat_small :
+
+*--#[ cov_sort1_powtype_c :
+* alternative guess: On powerfirst;
+* probe: clean
+* alternative guess: On powerfirst;
+Symbol x,y;
+On powerfirst;
+Local t = x + x*y + x^2*y + x*y^3 + y^2 + x^2;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("x*y^3 + x^2*y + x^2 + x*y + y^2 + x")
+*--#] cov_sort1_powtype_c :
+
+*--#[ cov_revinc_ok :
+* hits tools.c:354 (REVERSEFILESTREAM + ReverseStatements)
+* probe: clean
+* hits tools.c:354 (REVERSEFILESTREAM + ReverseStatements)
+#system cd $TESTFILEDIR && { printf "Local ra = 1;\nLocal rb = 2;\n" > rev.inc; } 2>/dev/null
+#reverseinclude rev.inc
+Print;
+.end
+assert succeeded?
+assert result("rb") =~ expr("2")
+assert result("ra") =~ expr("1")
+*--#] cov_revinc_ok :
+
+*--#[ cov_rev_raw0 :
+* farm probe 0160_rev_raw0_10 (+5 lines)
+* probe: clean
+Function f;
+Local F = f(reverse_);
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("f")
+*--#] cov_rev_raw0 :
+
+*--#[ cov_unhide_global :
+* farm probe 0173_unhide_global_6 (+7 lines)
+* probe: clean
+Symbol x;
+Global f = x;
+.sort
+Hide f;
+.sort
+UnHide f;
+.sort
+Print f;
+.end
+assert succeeded?
+assert result("f") =~ expr("x")
+*--#] cov_unhide_global :
+
+*--#[ cov_set_ordered :
+* farm probe 0193_set_ordered_4 (+20 lines)
+* probe: clean
+Symbol a,b;
+Set v(ordered): a,b;
+Local t = a*b;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("a*b")
+*--#] cov_set_ordered :
+
+*--#[ cov_dimfield :
+* dimension field {d=...} on a symbol declaration
+* probe: clean
+* dimension field {d=...} on a symbol declaration
+Symbol x{d=4};
+Local t = x;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("x")
+*--#] cov_dimfield :
+
+*--#[ cov_fmt_float :
+* Format Float with no arg (OutNumberType=10) and too-small precision
+* probe: clean
+* Format Float with no arg (OutNumberType=10) and too-small precision
+* (compcomm.c 329-344, warning ... float format value corrected to 3)
+Symbol x;
+Local t = x;
+Format Float;
+Format Float,1;
+Print;
+.end
+assert compile_error?('... float format')
+*--#] cov_fmt_float :
+
+*--#[ cov_ddempty :
+* farm probe 0118_ddempty_7 (+11 lines)
+* probe: clean
+Local test = dd_();
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("1")
+*--#] cov_ddempty :
+
+*--#[ cov_intohide_global :
+* farm probe 0173_intohide_global_8 (+7 lines)
+* probe: clean
+Symbol x;
+Global f = x;
+.sort
+IntoHide f;
+.sort
+.end
+assert succeeded?
+*--#] cov_intohide_global :
+
+*--#[ cov_pbtbl_sflag :
+* farm probe 0195_pbtbl_sflag_2 (+14 lines)
+* probe: clean
+Table t(1:3,1:2);
+Fill t(1,1)=1, t(3,2)=2;
+PrintTable +s t;
+Print;
+.end
+assert compile_error?('Illegal character at')
+*--#] cov_pbtbl_sflag :
+
+*--#[ cov_expr_notexpr :
+* expected: is not an expression
+* probe: error
+* expected: is not an expression
+Symbol q,x;
+Local t = x;
+If ( expression(q) ) Id x = 1;
+.end
+assert compile_error?('q is not')
+*--#] cov_expr_notexpr :
+
+*--#[ cov_pbtbl_sfcomma :
+* farm probe 0195_pbtbl_sfcomma_3 (+7 lines)
+* probe: clean
+Table t(1:2);
+Fill t(1,1)=1;
+PrintTable +s,+f t;
+Print;
+.end
+assert compile_error?('Incorrect number of')
+*--#] cov_pbtbl_sfcomma :
+
+*--#[ cov_pbtbl_flagjunk :
+* expected: Illegal + option in PrintTable statement
+* probe: error
+* expected: Illegal + option in PrintTable statement
+Table t(1:2);
+Fill t(1,1)=1;
+PrintTable +fzz t;
+.end
+assert compile_error?('Incorrect number of')
+*--#] cov_pbtbl_flagjunk :
+
+*--#[ cov_pbtbl_fileout :
+* farm probe 0195_pbtbl_fileout_5 (+7 lines)
+* probe: clean
+Table t(1:2);
+Fill t(1,1)=1;
+PrintTable t > tbl_out.txt;
+Print;
+.end
+assert compile_error?('Incorrect number of')
+*--#] cov_pbtbl_fileout :
+
+*--#[ cov_modcoeff :
+* farm probe 0186_modcoeff_3 (+10 lines)
+* probe: clean
+Symbol x;
+Function f;
+Modulus 7,coefficientsonly;
+Local t = f(x+1)+x^9;
+Print t;
+Modulus;
+.end
+assert compile_error?('Declaration out of')
+*--#] cov_modcoeff :
+
+*--#[ cov_star :
+* star-table fill, syntax variant A: negative count in declaration
+* probe: clean
+* star-table fill, syntax variant A: negative count in declaration
+Table t(-(3),1:10);
+Fill t(1,5)=25;
+Fill t(2,3,4)=12;
+Fill t(3,1,2,3)=9;
+Local z = 1;
+Print z;
+.end
+assert compile_error?('Illegal character at')
+*--#] cov_star :
+
+*--#[ cov_seteq_syntax_2 :
+* farm probe 0066_seteq_syntax_15 (+10 lines)
+* probe: clean
+Set sortsize = 200;
+Set scratchsize = 200;
+Symbol a1,a2,a3;
+Local F = (a1+a2+a3)^5;
+Local G = 1;
+.sort
+.copy F to G;
+.sort
+Print G;
+.end
+assert preprocess_error?('Unrecognized module term')
+*--#] cov_seteq_syntax_2 :
+
+*--#[ cov_topol_onlyfunc :
+* farm probe 0167_topol_onlyfunc_1 (+27 lines)
+* probe: clean
+Symbol x;
+CFunction f,g,h;
+ToPolynomial onlyfunctions f,g;
+Local t = f(x) + g(x) + h(x);
+Print;
+.end
+assert compile_error?('Definition out of')
+*--#] cov_topol_onlyfunc :
+
+*--#[ cov_dotail_pipe_6 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_6 :
+
+*--#[ cov_cnt_doterr :
+* expected: Illegal use of . after
+* probe: error
+* expected: Illegal use of . after
+* dot after a symbol in count: compcomm.c 4094-4105
+Symbol x,y;
+Local test = x^2;
+If ( count(x.y,1,1) ) Print "yes";
+Print;
+.end
+assert compile_error?('Illegal use of')
+*--#] cov_cnt_doterr :
+
+*--#[ cov_set_dim :
+* farm probe 0193_set_dim_7 (+16 lines)
+* probe: clean
+Symbol a,b;
+Set v{d=3}: a,b;
+Local t = a*b;
+Print;
+.end
+assert compile_error?('Dimension check failed')
+*--#] cov_set_dim :
+
+*--#[ cov_cnt_notvec :
+* expected: Not a vector in dotproduct
+* probe: error
+* expected: Not a vector in dotproduct
+* vector.symboldot in count: compcomm.c 4088-4091
+Vector p;
+Symbol y;
+Local test = p;
+If ( count(p.y,1,1) ) Print "yes";
+Print;
+.end
+assert compile_error?('Not a vector')
+*--#] cov_cnt_notvec :
+
+*--#[ cov_dol_factor_dynindex :
+* farm probe 0172_dol_factor_dynindex_5 (+12 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x;
+$n = 1;
+$x = 5*x;
+Factorize $x;
+$y = 0;
+If ($x[$n] > 3) $y = 1;
+Print $y;
+.end
+#pend_if threaded?
+assert compile_error?('Illegal object in')
+*--#] cov_dol_factor_dynindex :
+
+*--#[ cov_cnt_dot :
+* hits dotproduct count path: compcomm.c 4080-4092, 4131-4135, Sgetnum
+* probe: clean
+* hits dotproduct count path: compcomm.c 4080-4092, 4131-4135, Sgetnum
+Vector p,q;
+Local test = p.q;
+If ( count(p.q,1,1) ) Print "yes";
+Print;
+.end
+assert compile_error?('Illegal name: unt,p.q,1,1')
+*--#] cov_cnt_dot :
+
+*--#[ cov_cnt_vecparen :
+* expected: specifier for vector
+* probe: error
+* expected: specifier for vector
+* vector followed by ) in count: compcomm.c 4194-4200
+Vector p;
+Local test = p;
+If ( count(p) ) Print "yes";
+Print;
+.end
+assert compile_error?('Illegal specifier for')
+*--#] cov_cnt_vecparen :
+
+*--#[ cov_fmt_oopt :
+* expected: Illegal optimization specification in format statement
+* probe: error
+* expected: Illegal optimization specification in format statement
+* trailing option after O<num> -> CoOptimizeOption (compcomm.c 227),
+* then out-of-range level -> switch default (compcomm.c 222-225)
+Symbol x;
+Local t = x;
+Format O2,compress;
+Format O9;
+Print;
+.end
+assert compile_error?('Correct use in')
+*--#] cov_fmt_oopt :
+
+*--#[ cov_fmt_ls :
+* linesize corrections and junk trailing field (compcomm.c 272-291)
+* probe: clean
+* linesize corrections and junk trailing field (compcomm.c 272-291)
+* warnings expected: Too small value for linesize corrected to 39,
+* Illegal value for linesize: 0, Illegal linesize field in format statement
+Symbol x;
+Local t = x;
+Format 10;
+Format 0;
+Format 72abc;
+Print;
+.end
+assert compile_error?('Illegal value for')
+*--#] cov_fmt_ls :
+
+*--#[ cov_fmt_cmode :
+* Format C<num> -> CMODE/Cnumpows (compcomm.c 415-422), then bad
+* probe: clean
+* Format C<num> -> CMODE/Cnumpows (compcomm.c 415-422), then bad
+* suffix -> goto Unknown (compcomm.c 419, 424)
+Symbol x;
+Local t = x;
+Format C3;
+Format C3x;
+Print;
+.end
+assert compile_error?('Unknown option: C3x')
+*--#] cov_fmt_cmode :
+
+*--#[ cov_dol_def_bt_err :
+* expected: Illegal factor number for dollar variable
+* runtime $-variables force sequential mode under threads
+* probe: error
+* expected: Illegal factor number for dollar variable
+* tools.c:403-404 via backtick substitution
+Symbol x,y,z;
+$n = 3;
+#define m `$n[]'
+.end
+#pend_if threaded?
+assert preprocess_error?('Illegal factor number')
+*--#] cov_dol_def_bt_err :
+
+*--#[ cov_azur_0001_0003_dolnumber_simple :
+* farm probe azur_0001_0003_dolnumber_simple_2 (+5 lines)
+* probe: clean
+Symbol a;
+Local F = a*$1^2;
+Print;
+.end
+assert runtime_error?
+*--#] cov_azur_0001_0003_dolnumber_simple :
+
+*--#[ cov_rr_lin_big :
+* hits %3f/%2f/%1f and big "%e" branches (reken.c:3995-3996,4005-4007)
+* probe: clean
+* hits %3f/%2f/%1f and big "%e" branches (reken.c:3995-3996,4005-4007)
+#define v1`RANDOM_(lin,500,500)'
+#define v2`RANDOM_(lin,5000,5000)'
+#define v3`RANDOM_(lin,50000,50000)'
+#define v4`RANDOM_(lin,2000000,2000000)'
+Symbol x;
+Local t = 1;
+Print;
+.end
+assert preprocess_error?('Illegal string for')
+*--#] cov_rr_lin_big :
+
+*--#[ cov_revinc_end :
+* expected: reverseinclude
+* probe: error
+* expected: reverseinclude
+* tries ReverseStatements failure -> tools.c:355-356
+#system cd $TESTFILEDIR && { printf ".end\n" > revend.inc; } 2>/dev/null
+#reverseinclude revend.inc
+Print;
+.end
+assert succeeded?
+*--#] cov_revinc_end :
+
+*--#[ cov_enddo_missing :
+* expected: enddo statement(s) missing
+* probe: error
+* expected: enddo statement(s) missing
+Symbol i;
+Do i = 1,3;
+.end
+assert compile_error?('do loop parameter')
+*--#] cov_enddo_missing :
+
+*--#[ cov_cplx_bad :
+* expected: Illegal specification for complexity of f
+* probe: error
+* expected: Illegal specification for complexity of f
+Function f#q;
+.end
+assert compile_error?('Illegal specification for')
+*--#] cov_cplx_bad :
+
+*--#[ cov_nsuse :
+* guess at #use directive to expose namespace names outside
+* probe: clean
+* guess at #use directive to expose namespace names outside
+#namespace nsuse
+#define w 4
+#endnamespace
+#use nsuse
+#message `w'
+#end
+.end
+assert preprocess_error?('Illegal string for')
+*--#] cov_nsuse :
+
+*--#[ cov_extchan_open :
+* farm probe 0187_extchan_open_0 (+7 lines)
+* probe: clean
+#externalchannel "echo x = 17"
+#fromexternal x
+#show x
+.end
+assert preprocess_error?('Unrecognized preprocessor')
+*--#] cov_extchan_open :
+
