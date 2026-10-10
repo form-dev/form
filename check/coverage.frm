@@ -2877,6 +2877,73 @@ assert result("D") =~ expr("q(j)*q.r")
 assert result("E") =~ expr("q.r + q(i)")
 assert result("F") =~ expr("q(i)*q.r")
 *--#] cov_findall :
+*--#[ cov_tensdollar :
+* Dollar variables in tensor-function arguments (InFunction in proces.c):
+* a $-reference inside a tensor argument is stored as a FUNNYDOLLAR
+* placeholder and replaced by the dollar's current value when the term is
+* generated. The value can come from a wildcard binding: a number
+* (DOLNUMBER), zero (DOLZERO) or a wildarg list (DOLWILDARGS). With
+* Modulus and the alsofunctions option, function arguments are reduced
+* modulo the modulus while the dollars are substituted.
+Symbols x,a;
+Indices i,j,k;
+Tensor t1;
+CFunction f,g;
+Modulus 7, alsofunctions;
+Local T1 = f(2)*g(0)*t1(i,j);
+id f(x?$d1) = 1;
+id g(x?$d2) = 1;
+id t1(?a$d3) = 1;
+$z = t1($d1,j);
+$z0 = t1($d2,j);
+$zw = t1($d3);
+Print T1;
+Print " z1=%$;", $z;
+Print " z2=%$;", $z0;
+Print " z3=%$;", $zw;
+.end
+# Under threads the $-assignments force sequential mode and the
+# wildcard-bound dollars are captured per thread.
+#pend_if threaded?
+assert succeeded?
+assert result("T1") =~ expr("1")
+assert result("z1") =~ expr("t1(2,j)")
+assert result("z2") =~ expr("0")
+assert result("z3") =~ expr("t1(i,j)")
+*--#] cov_tensdollar :
+*--#[ cov_tensdollar2 :
+* A dollar bound to a symbol has the wrong type for a tensor-function
+* argument substitution: InFunction reports the error and the program
+* terminates at run time.
+Symbols x;
+Indices i,j;
+Tensor t1;
+CFunction f;
+Local T = f(x);
+id f(x?$d4) = 1;
+$z = t1($d4,j);
+.end
+# Under threads the $-assignments force sequential mode and the
+# wildcard-bound dollars are captured per thread.
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_tensdollar2 :
+*--#[ cov_tensdollar3 :
+* A wildcard-bound dollar that never got a value is undefined in a tensor
+* substitution (InFunction reports the error and the program terminates).
+Symbols x;
+Indices i,j;
+Tensor t1;
+CFunction f;
+Local T = t1(i,j);
+id f(x?$d5) = 1;
+$z = t1($d5,j);
+.end
+# Under threads the $-assignments force sequential mode and the
+# wildcard-bound dollars are captured per thread.
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_tensdollar3 :
 
 *--#[ cov_reset :
 * The .store module terminator: saves the state, globalizes all
