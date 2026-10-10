@@ -3171,3 +3171,31 @@ Print " e=%$;", $e;
 .end
 assert runtime_error?
 *--#] cov_ifdolwildargs :
+*--#[ cov_bracketindex :
+* Bracket index lookups that fall between two indexed brackets force
+* FindBracket to scan the stored terms forward (index.c 188-266).
+* The bracket w does not occur in F, so the result is zero.
+Symbols a,b,c,w,x;
+Local F = a*x^2+b*x+c;
+B+ x;
+.sort
+Local D = F[w]*F[x];
+Print D;
+.end
+assert succeeded?
+assert result("D") == "0"
+*--#] cov_bracketindex :
+*--#[ cov_bracketindex_nocompress :
+* Same as cov_bracketindex, but with Compress off the stored terms are
+* uncompressed, so FindBracket scans take the no-compression branches.
+Symbols a,b,c,w,x;
+Compress off;
+Local F = a*x^2+b*x+c;
+B+ x;
+.sort
+Local D = F[w]*F[x];
+Print D;
+.end
+assert succeeded?
+assert result("D") == "0"
+*--#] cov_bracketindex_nocompress :
