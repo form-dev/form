@@ -4372,6 +4372,7 @@ Symbol x,y;
 Local test = x;
 id, all, x = y;
 .end
+#pend_if threaded?
 assert runtime_error?
 *--#] cov_idall_sym_err :
 
@@ -5036,6 +5037,7 @@ Local t = f;
 #enddo
 Print;
 .end
+#pend_if threaded?
 assert runtime_error?
 *--#] cov_s2_argtoobig :
 
@@ -5605,6 +5607,7 @@ Local t = f(x+y)*g(x) + f(x)*g(x+y) + f(y)*g(y^2);
 .sort
 Print;
 .end
+#pend_if threaded?
 assert succeeded?
 assert result("t") =~ expr("f(y + x)*g(x) + f(x)*g(y + x) + f(y)*g(y^2)")
 *--#] cov_sort1_properorder :
@@ -6285,6 +6288,7 @@ Local F = random_(1000000000000000000000000);
 .sort
 Print F;
 .end
+#pend_if threaded?
 assert succeeded?
 assert result("F") =~ expr("864792395326970427174710")
 *--#] cov_r02_rand_big :
@@ -7850,4 +7854,476 @@ assert compile_error?('Unrecognized option in')
 .end
 assert preprocess_error?('Illegal string for')
 *--#] cov_nsuse_5 :
+
+*--#[ cov_powset_4 :
+* farm probe 0025_powset_15 (+5 lines)
+* probe: clean
+Symbol x,a,b,n;
+Set s: a,b;
+CFunction f,g;
+Local t = f(x^a) + f(x^b) + f(x^3);
+id f(x^n?s) = g(x^n);
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(x^3) + f((x)^(a)) + f((x)^(b))")
+*--#] cov_powset_4 :
+
+*--#[ cov_sortflush_compressbig :
+* Compress variant with fat terms and an extra sort after Off compress
+* probe: clean
+* Compress variant with fat terms and an extra sort after Off compress
+* so both compr>0 and compr==0 flushes are exercised.
+Symbol x1,x2,x3,x4,x5,x6,x7,x8,x9;
+On compress;
+Local big = (x1+x2+x3+x4+x5+x6+x7+x8+x9)^9*3^400;
+.sort;
+.sort;
+Off compress;
+.sort;
+Local n = nterms_(big);
+Print n;
+.end
+assert runtime_error?
+*--#] cov_sortflush_compressbig :
+
+*--#[ cov_bigexp_7 :
+* large expansion inside Substitute; attempts workspace check path 654-658
+* probe: clean
+* large expansion inside Substitute; attempts workspace check path 654-658
+Symbol x,y;
+CFunction f;
+Local test = f(x);
+id f(x?) = (y+1)^50000;
+.end
+assert runtime_error?
+*--#] cov_bigexp_7 :
+
+*--#[ cov_normalize_ratroot_huge :
+* farm probe 0006_normalize_ratroot_huge_47 (+12 lines)
+* probe: clean
+Symbol x;
+Local F = root_(3,123456789012345678901234567890);
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("root_(3,123456789012345678901234567890)")
+*--#] cov_normalize_ratroot_huge :
+
+*--#[ cov_tenvec_match_func_no_match :
+* farm probe 0192_tenvec_match_func_no_match_23 (+9 lines)
+* probe: clean
+Symbol x,y;
+CTensor T;
+CFunction f;
+Local expr = f(T(1),x);
+id f(T(2),x) = x;
+.end
+assert succeeded?
+*--#] cov_tenvec_match_func_no_match :
+
+*--#[ cov_sizeof_bad :
+* expected: Problems with argument of SizeOf_
+* probe: error
+* expected: Problems with argument of SizeOf_
+Symbol x;
+Local F = SizeOf_(x+1);
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("sizeof_(1 + x)")
+*--#] cov_sizeof_bad :
+
+*--#[ cov_ns_deepexpr_2 :
+* target: ConstructName with namespace names inside function args and powers
+* probe: clean
+* target: ConstructName with namespace names inside function args and powers
+#namespace k1
+#namespace k2
+AutoDeclare Symbol s;
+CFunction f;
+Local t = f(s1^2,s2)*s3;
+Print t;
+#endnamespace
+#endnamespace
+.end
+assert succeeded?
+assert result("t") =~ expr("f(s1^2,s2)*s3")
+*--#] cov_ns_deepexpr_2 :
+
+*--#[ cov_brkt_explist :
+* farm probe 0072_brkt_explist_64 (+5 lines)
+* probe: clean
+AutoDeclare Symbol a;
+Local test =
+#do i = 1,60
+a`i' +
+#enddo
+0;
+Bracket
+#do i = 1,59
+a`i',
+#enddo
+a60;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("a60 + a59 + a58 + a57 + a56 + a55 + a54 + a53 + a52 + a51 + a50 + a49 +
+a48 + a47 + a46 + a45 + a44 + a43 + a42 + a41 + a40 + a39 + a38 + a37 +
+a36 + a35 + a34 + a33 + a32 + a31 + a30 + a29 + a28 + a27 + a26 + a25 +
+a24 + a23 + a22 + a21 + a20 + a19 + a18 + a17 + a16 + a15 + a14 + a13 +
+a12 + a11 + a10 + a9 + a8 + a7 + a6 + a5 + a4 + a3 + a2 + a1")
+*--#] cov_brkt_explist :
+
+*--#[ cov_tenvec_dol_tensor_neg :
+* expected: $A should have been a tensor in module
+* runtime $-variables force sequential mode under threads
+* probe: error
+* expected: $A should have been a tensor in module
+Symbol x;
+CFunction f;
+Local expr = f(x);
+$A = -x;
+id f(x) = $A[2];
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_tenvec_dol_tensor_neg :
+
+*--#[ cov_dodelta_mixed :
+* targets normal.c DoDelta 4456-4466: symbol first arg, composite second arg
+* probe: clean
+* targets normal.c DoDelta 4456-4466: symbol first arg, composite second arg
+Symbol x,y;
+Local test = delta_(x,x*y);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("delta_(x,x*y)")
+*--#] cov_dodelta_mixed :
+
+*--#[ cov_dodelta_neqfun :
+* targets normal.c DoDelta 4469-4471: unequal composite args, isnum=0
+* probe: clean
+* targets normal.c DoDelta 4469-4471: unequal composite args, isnum=0
+Symbol x,y;
+CFunction f;
+Local test = delta_(f(x),f(y));
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("delta_(f(x),f(y))")
+*--#] cov_dodelta_neqfun :
+
+*--#[ cov_tab_ex3 :
+* Tables with 0 indices, expansion
+* probe: clean
+* Tables with 0 indices, expansion
+Symbol x;
+Table t(0);
+Fill t() = x;
+Local F = t();
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("t")
+*--#] cov_tab_ex3 :
+
+*--#[ cov_prexpand_clean :
+* farm probe 0176_prexpand_clean_31 (+10 lines)
+* probe: clean
+Symbol x;
+CFunction rat,den;
+PolyRatFun rat,den(expand,x,3);
+Local test = rat(x,1);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("rat(x)")
+*--#] cov_prexpand_clean :
+
+*--#[ cov_prfinddiv_clean :
+* farm probe 0176_prfinddiv_clean_27 (+21 lines)
+* probe: clean
+Symbol x;
+CFunction rat,den;
+PolyRatFun rat,den(finddivergence,x);
+Local test = rat(x,1);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("rat(x,1)")
+*--#] cov_prfinddiv_clean :
+
+*--#[ cov_leh_zero320 :
+* target: reken.c:2648-2657, still larger size variant
+* probe: clean
+* target: reken.c:2648-2657, still larger size variant
+Local t = (2*(2^32-1)*2^320000)/((2^32-1)*2^320000);
+Print;
+.end
+assert runtime_error?
+*--#] cov_leh_zero320 :
+
+*--#[ cov_count_cond :
+* farm probe 0055_count_cond_47 (+6 lines)
+* probe: clean
+Symbol x,y;
+Local t = x*x;
+If ( count(x,1) ) Print "a";
+If ( count(x,1) > 0 ) Print "b";
+If ( count(y,1) == 0 ) Print "c";
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("x^2")
+*--#] cov_count_cond :
+
+*--#[ cov_setelement_number :
+* farm probe 0150_setelement_number_27 (+9 lines)
+* probe: clean
+Set myset: 5,7;
+Local F = myset[1];
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("5")
+*--#] cov_setelement_number :
+
+*--#[ cov_raise_low_big :
+* farm probe 0202_raise_low_big_26 (+11 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x, y;
+AutoDeclare Symbol z;
+Local expr = x^1000000 + y^1000000;
+#$a = expr;
+$b = $a + 10^500000;
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_raise_low_big :
+
+*--#[ cov_sort185 :
+* expected:
+* probe: error
+* expected: 
+Symbol x;
+Local F = x^10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000;
+.end
+assert succeeded?
+*--#] cov_sort185 :
+
+*--#[ cov_gcopy_idrep :
+* target: editing a graph expression via id replaces edges
+* probe: clean
+* target: editing a graph expression via id replaces edges
+CFunction e_,v_;
+Symbol x;
+Local t1 = v_(1,2,3)*e_(1,2)*e_(2,3)*e_(3,1);
+.sort
+id e_(1,2) = e_(2,1)*x;
+Print t1;
+.end
+assert compile_error?('Illegally formed function')
+*--#] cov_gcopy_idrep :
+
+*--#[ cov_11_multidim :
+* farm probe 0136_11_multidim_44 (+8 lines)
+* probe: clean
+Symbol i,j;
+Table sparse t(1:2,1:2);
+#do i = 1,2
+    #do j = 1,2
+        Fill t(`i',`j') = `i' + `j';
+    #enddo
+#enddo
+PreDeallocateTable t;
+Fill t(1,1) = 5;
+Local test = t(1,1);
+Print test;
+.end
+assert compile_error?('First argument in')
+*--#] cov_11_multidim :
+
+*--#[ cov_sort10 :
+* expected:
+* probe: error
+* expected: 
+Symbol x;
+Local F = x^1000000000000000;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_sort10 :
+
+*--#[ cov_collect_commute_big :
+* farm probe 0085_collect_commute_big_34 (+5 lines)
+* probe: clean
+Symbol x;
+CFunction f;
+Local F = (1+x)^30*(1+x^2)^10;
+Bracket x;
+Collect f,commute;
+Print;
+.end
+assert compile_error?('Specification out')
+*--#] cov_collect_commute_big :
+
+*--#[ cov_collect_commute_alt :
+* farm probe 0085_collect_commute_alt_35 (+5 lines)
+* probe: clean
+Symbol x;
+CFunction f;
+Local F = (1+x)^6;
+Bracket x;
+Collect commute;
+Print;
+.end
+assert compile_error?('Specification out')
+*--#] cov_collect_commute_alt :
+
+*--#[ cov_dolerr_badtype :
+* expected: Invalid $-variable in do loop
+* runtime $-variables force sequential mode under threads
+* probe: error
+* expected: Invalid $-variable in do loop
+Symbol x;
+Local F = x;
+$m(1) = 5;
+#do i = 1,`$m'
+  id x = x+1;
+#enddo
+Print;
+.end
+#pend_if threaded?
+assert preprocess_error?('Improper syntax in')
+*--#] cov_dolerr_badtype :
+
+*--#[ cov_dollar_index_dollar :
+* farm probe 0124_dollar_index_dollar_29 (+6 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x;
+Local F = x^3;
+$d = F;
+$i = 1;
+#write "%e\n", $d[$i];
+.end
+#pend_if threaded?
+assert preprocess_error?('expression name e')
+*--#] cov_dollar_index_dollar :
+
+*--#[ cov_seteq_syntax_7 :
+* farm probe 0066_seteq_syntax_15 (+10 lines)
+* probe: clean
+Set sortsize = 200;
+Set scratchsize = 200;
+Symbol a1,a2,a3;
+Local F = (a1+a2+a3)^5;
+Local G = 1;
+.sort
+.copy F to G;
+.sort
+Print G;
+.end
+assert preprocess_error?('Unrecognized module term')
+*--#] cov_seteq_syntax_7 :
+
+*--#[ cov_conflict_subdisorder :
+* Test disorder with another option
+* probe: clean
+* Test disorder with another option
+Symbol x,y;
+Local F = x*y;
+id disorder select s x,y = y,x;
+Set s: x,y;
+Print;
+.end
+assert compile_error?('s is not')
+*--#] cov_conflict_subdisorder :
+
+*--#[ cov_dotail_pipe_11 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_11 :
+
+*--#[ cov_shuffle_merge :
+* need actual merge/shuffle statements; use syntax guess
+* probe: clean
+Symbol x,y;
+Local F = x*y;
+* need actual merge/shuffle statements; use syntax guess
+Merge x,y;
+Print;
+.end
+assert compile_error?('x,y has not')
+*--#] cov_shuffle_merge :
+
+*--#[ cov_stuffle_probe :
+* need actual stuffle; use syntax guess
+* probe: clean
+Symbol x,y;
+Local F = x*y;
+* need actual stuffle; use syntax guess
+Stuffle x,y;
+Print;
+.end
+assert compile_error?('x has been')
+*--#] cov_stuffle_probe :
+
+*--#[ cov_sqrt_big :
+* farm probe 0119_sqrt_big_31 (+18 lines)
+* probe: clean
+#do i = 1, 10^/
+  #message sqrt(10) = `i'
+#enddo
+.end
+assert succeeded?
+*--#] cov_sqrt_big :
+
+*--#[ cov_log2_postfix :
+* farm probe 0119_log2_postfix_29 (+7 lines)
+* probe: clean
+#do i = 1, 8^%
+  #message log2(8) = `i'
+#enddo
+.end
+assert succeeded?
+*--#] cov_log2_postfix :
+
+*--#[ cov_fact5 :
+* farm probe 0119_fact5_24 (+7 lines)
+* probe: clean
+#do i = 1, 5!
+  #message fact(5) = `i'
+#enddo
+.end
+assert succeeded?
+*--#] cov_fact5 :
+
+
+*--#[ cov_nsuse_6 :
+* guess at #use directive to expose namespace names outside
+* probe: clean
+* guess at #use directive to expose namespace names outside
+#namespace nsuse
+#define w 4
+#endnamespace
+#use nsuse
+#message `w'
+#end
+.end
+assert preprocess_error?('Illegal string for')
+*--#] cov_nsuse_6 :
 
