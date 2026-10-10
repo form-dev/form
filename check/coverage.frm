@@ -2062,26 +2062,6 @@ Print Pk1,Pk3,Pk4;
 assert succeeded?
 assert result("Pk1") =~ expr("1")
 *--#] cov_precondmembers :
-*--#[ cov_inside :
-* #inside $var executes statements on the contents of a $ variable
-CFunction f;
-Local Inx1 = f(3);
-.sort
-$dd = f(3);
-Print "%$",$dd;
-.sort
-#inside $dd
-	Multiply 2;
-#endinside
-.sort
-Local Inx2 = f($dd);
-Print Inx2;
-.end
-#pend_if threaded?
-
-assert succeeded?
-
-*--#] cov_inside :
 
 *--#[ cov_inside :
 * #inside $var executes statements on the contents of a $ variable
@@ -3546,3 +3526,193 @@ Print;
 .end
 assert compile_error?('Illegal value for base')
 *--#] cov_transform_baseone :
+
+*---[ Saturation campaign batch 2: LLM-authored probes (wildcards, brackets, #write) ]---
+
+*--#[ cov_wildargtomatch :
+* ?a wildcards comparing whole argument lists between two functions
+CFunction f,g,h;
+Symbol x,y,z;
+Local t = f(g(x),g(x)) + f(g(x),g(y)) + f(h(x,y),h(x,y)) + f(h(x,y),h(x,z))
+ + f(h(x),h(x,y));
+id f(g(?a),g(?a)) = 1;
+id f(h(?a),h(?a)) = 1;
+Print;
+.end
+assert result("t") =~
+ expr("2+f(g(x),g(y))+f(h(x),h(x,y))+f(h(x,y),h(x,z))")
+*--#] cov_wildargtomatch :
+
+*--#[ cov_bracketsetvec :
+* Bracket with a set of vectors
+Vector v,p;
+CFunction f;
+Set vs: v, p;
+Local e = v(1)*f(2);
+Bracket vs;
+Print;
+.end
+assert succeeded?
+*--#] cov_bracketsetvec :
+
+*--#[ cov_wildsetnum :
+* Set statement referencing not-yet-declared names
+Set even: 2,4,6;
+Set sb: a,b;
+Symbol x,y,a,b;
+CFunction f,g;
+Local t = f(2,4) + f(2,3);
+id f(x?even_,x?even_) = 1;
+Print +s;
+.end
+assert compile_error?('has not been declared')
+*--#] cov_wildsetnum :
+
+*--#[ cov_bracketdeltaerr :
+* Bracket on the delta function g_ is illegal
+CFunction f;
+Local e = g_(1,2)*f(3);
+Bracket g_(1,2);
+Print;
+.end
+assert compile_error?('Illegal separator: Bracket')
+*--#] cov_bracketdeltaerr :
+
+*--#[ cov_wildbracerr :
+* id on an undeclared function
+Symbol a,x;
+Local F = (a+1)*f((a+1)^2);
+Keep Brackets;
+id f(?a) = g(?a);
+Print +s;
+.end
+assert compile_error?('Undeclared variable')
+*--#] cov_wildbracerr :
+
+*--#[ cov_wildbrac :
+* wildcard id applied while brackets are kept
+Symbol a,x;
+CFunction f,g;
+Keep Brackets;
+Local F = (a+1)*f((a+1)^2);
+id f(?a) = g(?a);
+Print +s;
+.end
+assert succeeded?
+*--#] cov_wildbrac :
+
+*--#[ cov_wch_width :
+* #write number formats with explicit field widths
+Symbol x;
+Local e = x;
+#write "n=%5d, k=%12d end\n" 42 7
+#write "m=%1d end\n" 9
+Print;
+.end
+assert succeeded?
+assert result("e") =~ expr("x")
+*--#] cov_wch_width :
+
+*--#[ cov_wch_plusnum :
+* the - flag is not a legal #write format modifier
+Symbol x;
+Local e = x;
+#write "n=%-4d end\n" 7
+Print;
+.end
+assert preprocess_error?('Illegal control sequence')
+*--#] cov_wch_plusnum :
+
+*--#[ cov_wch_dollar :
+* #write of a preprocessor dollar value
+#$s = 123456789012345;
+#write "val=%$ end\n" $s
+Symbol x;
+Local e = x;
+Print;
+.end
+assert succeeded?
+assert result("e") =~ expr("x")
+*--#] cov_wch_dollar :
+
+*--#[ cov_wch_undol :
+* #write %$ of an undefined dollar
+#write "a=%$ end\n" $nosuchdollar1
+Symbol x;
+Local e = x;
+Print;
+.end
+assert preprocess_error?('has not been defined')
+*--#] cov_wch_undol :
+
+*--#[ cov_wch_dolerr :
+* #write %$ with a non-dollar argument
+#write "a=%$ end\n" 5
+Symbol x;
+Local e = x;
+Print;
+.end
+assert preprocess_error?('$-variable expected')
+*--#] cov_wch_dolerr :
+
+*--#[ cov_wch_noclose :
+* unterminated #write format string
+#write "unterminated format string
+Symbol x;
+Local e = x;
+Print;
+.end
+assert warning?('end instruction generated')
+*--#] cov_wch_noclose :
+
+*--#[ cov_wch_illch :
+* illegal characters after a $-variable in #write
+Symbol x;
+#$s = 3;
+#write "a=%$ end\n" $s+
+Local e = x;
+Print;
+.end
+assert preprocess_error?('illegal characters after $-variable')
+*--#] cov_wch_illch :
+
+*--#[ cov_funcncerr :
+* illegal symmetry specification in a Functions declaration
+Functions f,g,nc(nocom);
+Symbol x;
+Local t = f(x)*g(x);
+Print;
+.end
+assert compile_error?('Illegal specification for symme')
+*--#] cov_funcncerr :
+
+*--#[ cov_polyraterr :
+* PolyRatFun on a function that is not a regular commutative function
+Symbols x;
+CFunction rat;
+PolyRatFun rat;
+Local t = rat(x^2+1,x^3-2);
+Print +s;
+.end
+assert compile_error?('should be a regular commuting')
+*--#] cov_polyraterr :
+
+*--#[ cov_dotseterr :
+* dot product with an illegal second element
+Vector p,q;
+CFunction f;
+Local e = p.f(3);
+Print;
+.end
+assert compile_error?('Illegal second element in dotpr')
+*--#] cov_dotseterr :
+
+*--#[ cov_onfortran :
+* On fortran after statement code in the same module
+Symbol x;
+Local e = x;
+On fortran;
+Print;
+.end
+assert compile_error?('Declaration out of order')
+*--#] cov_onfortran :
