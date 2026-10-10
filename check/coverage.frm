@@ -6196,3 +6196,275 @@ assert preprocess_error?('Illegal string for')
 assert preprocess_error?('Unrecognized preprocessor')
 *--#] cov_extchan_open :
 
+*--#[ cov_err_nonpoly :
+* expected: not a polynomial
+* probe: error
+* expected: not a polynomial
+Symbol x,y;
+CFunction f;
+Local F = f(1)*(x+y+1)*(x+2*y+2);
+Factorize F;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("( 1 + y + x )
+* ( 2 + 2*y + x )
+* ( f(1) )")
+*--#] cov_err_nonpoly :
+
+*--#[ cov_mv_highdeg :
+* high degrees in each variable -> ideal-adic Newton iteration loop
+* probe: clean
+* high degrees in each variable -> ideal-adic Newton iteration loop
+Symbol x,y;
+Local F = (x+y^2+1)*(x*y+x+y^3+2)*(2*x+y^2+y+3);
+Factorize F;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("( 1 + y^2 + x )
+* ( 2 + y^3 + x + x*y )
+* ( 3 + y + y^2 + 2*x )")
+*--#] cov_mv_highdeg :
+
+*--#[ cov_clearall_3 :
+* farm probe 0065_clearall_0 (+5 lines)
+* probe: clean
+Symbol x,y;
+Vector v;
+Index i;
+CFunction f;
+Set s: x,y;
+Table tb(1:2,1:2);
+.sort
+Fill tb(1,1) = 5;
+.sort
+Local t = f(x)*v(i) + tb(1,1);
+.sort
+Print;
+.clear
+.sort
+Local u = 1;
+Print;
+.end
+assert succeeded?
+assert result("u") =~ expr("1")
+*--#] cov_clearall_3 :
+
+*--#[ cov_bigexp_3 :
+* large expansion inside Substitute; attempts workspace check path 654-658
+* probe: clean
+* large expansion inside Substitute; attempts workspace check path 654-658
+Symbol x,y;
+CFunction f;
+Local test = f(x);
+id f(x?) = (y+1)^50000;
+.end
+assert runtime_error?
+*--#] cov_bigexp_3 :
+
+*--#[ cov_putinside_multi :
+* farm probe 0216_putinside_multi_3 (+18 lines)
+* probe: clean
+Vector p;
+Symbol x,y;
+Function f;
+Local t = f(x,y,p) + f(p.p);
+PutInside f, x, y, p, p.p, d_;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(p.p)*f(1) + f(x,y,p)*f(1)")
+*--#] cov_putinside_multi :
+
+*--#[ cov_r02_rand_big :
+* random_ with very large n (long-number paste path)
+* random_ with very large n (long-number paste path)
+#setrandom 89
+Local F = random_(1000000000000000000000000);
+.sort
+Print F;
+.end
+assert succeeded?
+assert result("F") =~ expr("864792395326970427174710")
+*--#] cov_r02_rand_big :
+
+*--#[ cov_nsdollar_2 :
+* dollar variable assignment inside namespace (ConstructName '$' case)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* dollar variable assignment inside namespace (ConstructName '$' case)
+#namespace nsdollar
+Symbol q;
+Local F = q;
+$dd = F + 1;
+Print F;
+#endnamespace
+.end
+#pend_if threaded?
+assert succeeded?
+assert result("F") =~ expr("q")
+*--#] cov_nsdollar_2 :
+
+*--#[ cov_sum_dollarloop :
+* farm probe 0209_sum_dollarloop_2 (+18 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+CFunction f;
+Index i,j;
+Local e = f(i,j);
+$a = 1;
+$b = 2;
+Sum i,$a,$b;
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_sum_dollarloop :
+
+*--#[ cov_commute_tensor :
+* tensor functions under CommuteInSet: raw-word compare branch
+* probe: clean
+* tensor functions under CommuteInSet: raw-word compare branch
+Tensor t1,t2;
+Vector p,q;
+CommuteInSet {t1,t2},{t1,t2};
+Local test = t1(p,q)*t2(p);
+id t1(p?) = t2(p);
+Print;
+.end
+assert compile_error?('t1 is not')
+*--#] cov_commute_tensor :
+
+*--#[ cov_deepnest :
+* three levels of nested dollar factors
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* three levels of nested dollar factors
+Symbol x;
+$i = 5;
+$j = 2;
+$k = 3;
+Local test = x;
+if ( $i[$j[$k[2]]] > 0 ) id x = 1;
+Print test;
+.end
+#pend_if threaded?
+assert compile_error?('Definition out of')
+*--#] cov_deepnest :
+
+*--#[ cov_r10_setmember :
+* dollar set-membership test (dollar.c IsSetMember)
+* runtime $-variables force sequential mode under threads
+* dollar set-membership test (dollar.c IsSetMember)
+Symbols a,b,x;
+$r1 = a in {a,b};
+$r2 = x in {a,b};
+Local T1 = $r1;
+Local T2 = $r2;
+.sort
+Print T1;
+Print T2;
+.end
+#pend_if threaded?
+assert compile_error?('Illegal position for')
+*--#] cov_r10_setmember :
+
+*--#[ cov_seteq_syntax_3 :
+* farm probe 0066_seteq_syntax_15 (+10 lines)
+* probe: clean
+Set sortsize = 200;
+Set scratchsize = 200;
+Symbol a1,a2,a3;
+Local F = (a1+a2+a3)^5;
+Local G = 1;
+.sort
+.copy F to G;
+.sort
+Print G;
+.end
+assert preprocess_error?('Unrecognized module term')
+*--#] cov_seteq_syntax_3 :
+
+*--#[ cov_bigfactor :
+* expected: Value in dollar factor too large
+* runtime $-variables force sequential mode under threads
+* probe: error
+* expected: Value in dollar factor too large
+Symbol x;
+$i = 1;
+Local test = x;
+if ( $i[99999999999999999999] > 0 ) id x = 1;
+Print test;
+.end
+#pend_if threaded?
+assert compile_error?('Definition out of')
+*--#] cov_bigfactor :
+
+*--#[ cov_dotail_pipe_7 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_7 :
+
+*--#[ cov_pre_incr :
+* farm probe 0244_pre_incr_7 (+9 lines)
+* probe: clean
+#do idx = 1,3
+    #message value `idx++'
+#enddo
+.end
+assert succeeded?
+*--#] cov_pre_incr :
+
+*--#[ cov_pre_showinput_ :
+* farm probe 0244_pre_showinput__2 (+5 lines)
+* probe: clean
+#message showinput = `SHOWINPUT_'
+.end
+assert succeeded?
+*--#] cov_pre_showinput_ :
+
+*--#[ cov_pre_time_ :
+* farm probe 0244_pre_time__0 (+13 lines)
+* probe: clean
+#message running time = `time_'
+.end
+assert succeeded?
+*--#] cov_pre_time_ :
+
+*--#[ cov_0902_remove_inside_module :
+* farm probe 0232_0902_remove_inside_module_10 (+5 lines)
+* probe: clean
+Symbol x,y;
+CFunction f;
+#add dm:1,2,3;
+Local t = f(x,y);
+.sort
+#remove dm;
+Print t;
+.end
+assert preprocess_error?('there is no')
+*--#] cov_0902_remove_inside_module :
+
+*--#[ cov_nsuse_2 :
+* guess at #use directive to expose namespace names outside
+* probe: clean
+* guess at #use directive to expose namespace names outside
+#namespace nsuse
+#define w 4
+#endnamespace
+#use nsuse
+#message `w'
+#end
+.end
+assert preprocess_error?('Illegal string for')
+*--#] cov_nsuse_2 :
+
