@@ -3102,3 +3102,40 @@ assert result("T2") =~ expr("(p.q)^(p.q)*h(1)")
 assert result("T3") =~ expr("(p.q)^(q.s*r.t)*h(1)")
 assert result("T4") =~ expr("(p.q)^(x)*h(3)")
 *--#] cov_wildsub :
+*--#[ cov_cycargwild :
+* Cyclic functions with multiple argument-list wildcards (FunMatchCy
+* Case 3): splitting the arguments between ?a and ?b, and the repeated
+* name multiplicity machinery of ?a ?a.  Both occurrences of ?a must
+* match the same argument list, so f(1,1,1) and f(1,1,2) do not match
+* in the ?a ?a module (the later f(x?,?a,?b) rule does match them).
+CFunction f(cyclic),g,h;
+Tensor t(cyclic);
+Symbols x;
+Local A = f(1,2,3);
+Local B = f(1,2,3,4);
+.sort
+id f(?a,?b) = g(?a)*h(?b);
+.sort
+Local C = f(1,1);
+Local D = f(1,1,1);
+Local E = f(1,1,2);
+.sort
+id f(?a,?a) = h(?a);
+.sort
+Local F = f(1,x,2,3);
+Local G = t(1,1);
+.sort
+id f(x?,?a,?b) = g(?a)*h(?b);
+id t(?a,?a) = g(2);
+.sort
+Print A, B, C, D, E, F, G;
+.end
+assert succeeded?
+assert result("A") =~ expr("g*h(1,2,3)")
+assert result("B") =~ expr("g*h(1,2,3,4)")
+assert result("C") =~ expr("h(1)")
+assert result("D") =~ expr("g*h(1,1)")
+assert result("E") =~ expr("g*h(1,1)")
+assert result("F") =~ expr("g*h(1,x,2)")
+assert result("G") =~ expr("g(2)")
+*--#] cov_cycargwild :
