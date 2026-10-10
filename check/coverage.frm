@@ -1007,6 +1007,90 @@ assert succeeded?
 assert result("C") == "1/9*y^-2"
 assert result("T") == "4*y^-2"
 *--#] cov_contentexpr :
+*--#[ cov_contentmerge :
+* content_ over the ContentMerge object cases (execute.c): multi-term
+* expressions with symbols/dotproducts/indices/vectors/gammas/deltas/
+* functions, plus the stored-expression branch of GetContent
+Symbols x,y;
+Vectors p,q;
+Indices i,j;
+Functions G;
+Local F = 2*x*p.q*i*p*G(j) + 4*x*p.q*i*p*G(j) + 8*x*p.q*i*p*G(j);
+Local F2 = 2*g_(1,i)*x + 6*g_(1,i)*x + 14*g_(1,i)*x;
+Local F3 = 3*g_(p,q)*x + 6*g_(p,q)*x + 5*g_(p,q)*x;
+Local F4 = 3*x^2*y^2 + 6*x*y^3 + 9*y^4;
+.sort
+Local C = content_(F);
+Local C2 = content_(F2);
+Local C3 = content_(F3);
+Local C4 = content_(F4);
+Global G5 = 3*x^2*y^2 + 6*x*y^3 + 9*y^4;
+.sort
+Print C, C2, C3, C4;
+.store
+Local D = content_(G5);
+Print D;
+.end
+assert succeeded?
+assert result("C") == "14*G(j)*p*i*p.q*x"
+assert result("C2") == "22*g_(1,i)*x"
+assert result("C3") == "14*g_(p,q)*x"
+assert result("C4") == "3*y^2"
+assert result("D") == "3*y^2"
+*--#] cov_contentmerge :
+*--#[ cov_contentmerge2 :
+* content_ of dollar expressions: the factors of a $-expression are merged
+* by ContentMerge (normal.c CONTENTTERM route), exercising its DOTPRODUCT,
+* INDEX, VECTOR, DELTA/GAMMA and negative-power object cases
+Symbols a,b,x,y;
+Vectors p,q;
+Indices i,j;
+Functions G;
+Local F = 2*x*p.q*i*p*G(j) + 4*x*p.q*i*p*G(j) + 8*x*p.q*i*p*G(j);
+#$pd = (x*p.q*i*G(j))*(p.q)*(3+5*x);
+#$pe = (g_(1,i)*x)*(g_(p,q))*(2+4*g_(1,i));
+#$pf = (p*i*x)*(3+7*p*i);
+#$pg = (x^-2)*(x^-2*y^-3+2);
+#$ph = (p.q^-2)*(p.q^-2*x+2);
+#$pi = (p.q*x^-2)*(2+3*p.q*x^-2);
+#$pj = (p.q^-2*x)*(2+3*p.q^-2);
+#$pk = (b)*(a^-2+3*b);
+#$pl = (x^-2)*(p.q^-2*x^-2+2);
+#$cd = content_($pd);
+#$ce = content_($pe);
+#$cf = content_($pf);
+#$cg = content_($pg);
+#$ch = content_($ph);
+#$ci = content_($pi);
+#$cj = content_($pk);
+#$ck = content_($pj);
+#$cl = content_($pl);
+.sort
+Local CA = $cd;
+Local CB = $ce;
+Local CC = $cf;
+Local CD = $cg;
+Local CE = $ch;
+Local CF = $ci;
+Local CI = $ck;
+Local CJ = $cj;
+Local CL = $cl;
+Local CM = content_(F);
+.sort
+Print CA, CB, CC, CD, CE, CF, CI, CJ, CL, CM;
+.end
+assert succeeded?
+assert result("CA") == "G(j)*i*p.q^2*x"
+assert result("CB") == "2*g_(p,q)*x"
+assert result("CC") == "p*i*x"
+assert result("CD") == "x^-4*y^-3"
+assert result("CE") == "p.q^-4"
+assert result("CF") == "p.q*x^-4"
+assert result("CI") == "p.q^-4*x"
+assert result("CJ") == "a^-2*b"
+assert result("CL") == "p.q^-2*x^-4"
+assert result("CM") == "14*G(j)*p*i*p.q*x"
+*--#] cov_contentmerge2 :
 *--#[ cov_tracengen :
 * tracen: recursion (6/8 gammas), n-4 dimension indices, repeated indices
 * (TraceNgen in opera.c)
