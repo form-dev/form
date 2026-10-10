@@ -3289,3 +3289,260 @@ TableBase "test6.tbl" use f;
 #pend_if mpi?
 assert runtime_error?('has not been loaded properly')
 *--#] cov_tablebase_noload :
+
+*---[ Saturation campaign batch: transforms, stuffle, preprocessor ]---
+
+*--#[ cov_stuffle_root :
+* Stuffle merge on products of root-of-unity symbols (Symbol w#n)
+Symbol w1#3, w2#5, w3#-3;
+CFunction z;
+Local F1 = z(w1)*z(w2);
+Local F2 = z(1,2)*z(w1);
+Local F3 = z(w1/2)*z(2);
+Local F4 = z(w1)*z(w3)*z(2);
+Stuffle z+;
+Print;
+.end
+assert succeeded?
+assert result("F1") =~ expr("z(2*w1*w2)+z(w1,w2)+z(w2,w1)")
+assert result("F2") =~ expr("z(2*w1,2)+z(w1,1,2)+z(1,3*w1)+z(1,w1,2)+z(1,2,w1)")
+assert result("F3") =~ expr("z(2)*z(1/2*w1)")
+assert nterms("F4") == 13
+*--#] cov_stuffle_root :
+
+*--#[ cov_transform_specs :
+* transform statement on a tensor with a mix of index/vector/number args
+Index mu,nu;
+Vector p;
+Tensor t;
+Local test = t(mu,nu,p,3,5);
+Transform t encode(1,last):base=10;
+Transform t decode(1,last):base=10;
+Transform t replace(1,last)=(3,4);
+Transform t implode(1,last);
+Transform t explode(1,last);
+Transform t permute(1,3);
+Transform t reverse(1,last);
+Transform t dedup(1,last);
+Transform t cycle(2,4)=+1;
+Print;
+.end
+assert result("test") =~ expr("t(5,nu,4,mu,p)")
+*--#] cov_transform_specs :
+
+*--#[ cov_transform_rangefar :
+* transform ranges pointing beyond the available arguments
+CFunction f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11;
+Symbol x;
+Local test = f1(1,2)+f2(1,2)+f3(1,2)+f4(1,2)+f5(1,x)+f6(1,2)
+ +f7(1,2)+f8(1,x,2)+f9(1,2)+f10(1,x)+f11(1,x);
+Transform f1 encode(3,7):base=10;
+Transform f2 decode(3,7):base=10;
+Transform f3 implode(3,7);
+Transform f4 explode(3,7);
+Transform f5 replace(3,7)=(xarg_,0);
+Transform f6 permute(3,4,5);
+Transform f7 reverse(3,7);
+Transform f8 dedup(3,7);
+Transform f9 cycle(3,7)=+1;
+Transform f10 addargs(3,7);
+Transform f11 mulargs(3,7);
+Print;
+.end
+assert result("test") =~
+ expr("f1(1,2)+f2(1,2)+f3(1,2)+f4(1,2)+f5(1,x)+f6(1,2)+f7(1,2)+f8(1,x,2)+f9(1,2)+f10(1,x)+f11(1,x)")
+*--#] cov_transform_rangefar :
+
+*--#[ cov_transform_replace :
+* replace with xarg_ wildcards, pairs of arguments and multi-pair lists
+CFunction f1,f2,f3;
+Symbol a,b,x,y;
+Local test = f1(1,y+2) + f2(2,3,a) + f3(3,x);
+Transform f1 replace(1,last)=(xarg_,2*xarg_+1);
+Transform f2 replace(1,last)=(2,y,3,x);
+Transform f3 replace(1,2)=(3,4,xarg_,0);
+Print;
+.end
+assert result("test") =~ expr("f1(3,5+2*y)+f2(y,x,a)+f3(4,0)")
+*--#] cov_transform_replace :
+
+*--#[ cov_transform_bigout :
+* encode results that do not fit in one word; negative and zero digits
+CFunction f1,f2,f3,f4;
+Local test = f1(8,8,8,8) + f2(-1,2) + f3(0,1,1)
+ + f4(0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+ ,1,1,1,1,1,1,1,1,1,1);
+Transform f1 encode(1,last):base=8191;
+Transform f2 encode(1,last):base=10;
+Transform f3 encode(1,last):base=10;
+Transform f4 encode(1,last):base=2;
+Print;
+.end
+assert result("test") =~
+ expr("f1(4396972900352)+f2(8)+f3(11)+f4(35184372088831)")
+*--#] cov_transform_bigout :
+
+*--#[ cov_transform_dollarbase :
+* encode/decode with a dollar-valued base ($ assigned in the same module)
+#pend_if threaded?
+CFunction f1,f2,f3;
+Local test = f1(1,2,1,0,1) + f2(1,2,1,0,1) + f3(13);
+$b = 3;
+Transform f1 encode(1,last):base=$b;
+Transform f2 decode(1,5):base=$b;
+Transform f3 decode(1,5):base=$b;
+Print;
+.end
+assert result("test") =~
+ expr("f1(145)+f2(0,0,0,0,1,2,1,0,1)+f3(0,0,1,1,1)")
+*--#] cov_transform_dollarbase :
+
+*--#[ cov_dollarbase_err :
+* encode with a dollar base that has no acceptable number value
+#pend_if threaded?
+CFunction f;
+Local test = f(1,2,1);
+$b = 1;
+Transform f encode(1,last):base=$b;
+Print;
+.end
+assert runtime_error?('does not have a number value > 1')
+*--#] cov_dollarbase_err :
+
+*--#[ cov_transform_single :
+* transform on single-element and tight ranges
+CFunction f1,f2,f3,f4;
+Local test = f1(7) + f2(2,7,9) + f3(13) + f4(1,2,3,4);
+Transform f1 encode(1,1):base=10;
+Transform f2 encode(2,2):base=10;
+Transform f3 decode(1,1):base=10;
+Transform f4 reverse(2,3);
+Print;
+.end
+assert result("test") =~
+ expr("f1(7)+f2(2,7,9)+f3(13)+f4(1,3,2,4)")
+*--#] cov_transform_single :
+
+*--#[ cov_argstage :
+* ArgImplode/SplitArg with ranges and zero arguments
+CFunction f1,f2;
+Symbol x,y;
+Local test = f1(<x^5>,...,<x^1>) + f2(1,0,1,0);
+ArgImplode f2;
+SplitArg f1;
+Print;
+.end
+assert result("test") =~ expr("f1(x^5,x^4,x^3,x^2,x)+f2(1,2,0)")
+*--#] cov_argstage :
+
+*--#[ cov_setextattr :
+* preprocessor statement for external command attributes
+#setexternalattr shell=noshell,kill=9,killall=false
+Symbol x;
+Local E = x;
+Print;
+.end
+assert succeeded?
+assert result("E") =~ expr("x")
+*--#] cov_setextattr :
+
+*--#[ cov_pifarith :
+* a parenthesised multiplication inside #if is rejected by the preprocessor
+Symbol x;
+#if ( ( (2+3)*(4-1) ) == 15 )
+Local E = x;
+#endif
+Local test = x;
+Print;
+.end
+assert preprocess_error?('illegal operator')
+*--#] cov_pifarith :
+
+*--#[ cov_pifarith_false :
+* simple arithmetic #if conditions evaluate silently to false
+Symbol x;
+#if ( ( 3*4+2 - 4 ) == 10 )
+Local E1 = x;
+#endif
+#if ( ( -7 + 2 ) == -5 )
+Local E2 = x;
+#endif
+Local test = E1+E2;
+Print;
+.end
+assert compile_error?('Undeclared variable E1')
+*--#] cov_pifarith_false :
+
+*--#[ cov_replace_bad :
+* replace pair list with a dangling comma
+CFunction f;
+Symbol a;
+Local test = f(1,2);
+Transform f replace(1,last)=(3,);
+Print;
+.end
+assert compile_error?('Illegal position for closing parenthesis')
+*--#] cov_replace_bad :
+
+*--#[ cov_transform_badopt :
+* unknown transformation name inside a Transform statement
+CFunction f;
+Local test = f(1,2);
+Transform f bogusopt(1,last);
+Print;
+.end
+assert compile_error?('Unknown transformation inside a Transform statement')
+*--#] cov_transform_badopt :
+
+*--#[ cov_transform_lyndonerr :
+* islyndon does not accept a range without an = list
+CFunction f;
+Symbol y;
+Local test = f(1,2,3);
+Transform f islyndon(1,last);
+Print;
+.end
+assert compile_error?('should be followed by')
+*--#] cov_transform_lyndonerr :
+
+*--#[ cov_tensor_adderr :
+* addargs on a tensor is illegal
+Index mu;
+Tensor t;
+Local test = t(mu,1,2);
+Transform t addargs(1,last);
+Print;
+.end
+assert runtime_error?('Illegal attempt to add arguments of a tensor')
+*--#] cov_tensor_adderr :
+
+*--#[ cov_tensor_mulerr :
+* mulargs on a tensor is illegal
+Index mu;
+Tensor t;
+Local test = t(mu,1,2);
+Transform t mulargs(1,last);
+Print;
+.end
+assert runtime_error?('Illegal attempt to multiply arguments of a tensor')
+*--#] cov_tensor_mulerr :
+
+*--#[ cov_replace_nopairs :
+* replace without an = pair list
+CFunction f;
+Local test = f(1,2);
+Transform f replace(1,last);
+Print;
+.end
+assert compile_error?('should be followed by an = sign')
+*--#] cov_replace_nopairs :
+
+*--#[ cov_transform_baseone :
+* encode/decode base must be at least two
+CFunction f;
+Local test = f(1,2);
+Transform f encode(1,last):base=1;
+Print;
+.end
+assert compile_error?('Illegal value for base')
+*--#] cov_transform_baseone :
