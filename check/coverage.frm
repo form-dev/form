@@ -2474,3 +2474,17 @@ Print F;
 assert succeeded?
 assert result("F") == "g(g(f(x,y)*g(x,y)))+g(g(f(y,x)))"
 *--#] cov_abrackets :
+*--#[ cov_polygcd3 :
+* multiterm GCD inside PolyRatFun normalization (GCDfunction3)
+Symbol x,ep;
+CFunction rat;
+PolyRatFun rat;
+Local F = rat(x^2-1, x^3-1);
+Local G = rat(x^2+2*x*ep+ep^2, x+ep);
+Print F;
+Print G;
+.end
+assert succeeded?
+assert result("F") == "rat(x+1,x^2+x+1)"
+assert result("G") == "rat(x+ep,1)"
+*--#] cov_polygcd3 :

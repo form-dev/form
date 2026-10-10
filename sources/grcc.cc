@@ -2041,6 +2041,8 @@ Model::Model(MInput *minp)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START */
+/* Model objects are allocated once and never deleted, so the destructor is never called */
 Model::~Model(void)
 {
     int j;
@@ -2130,6 +2132,7 @@ void Model::prModel(void)
     grcc_fprintf(GRCC_Stdout, "EndInteractionTable;\n");
     grcc_fprintf(GRCC_Stdout, "%s", hdr);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 void Model::addParticle(PInput *pinp)
@@ -2830,6 +2833,8 @@ void PNodeClass::prElem(int j)
 //==============================================================
 // class SProcess
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START */
+/* 15-argument overload is never instantiated: the only call site (line 3684) uses the NCInput overload */
 SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, int ncls, int *cdeg, int *ctyp, int *ptcl, int *cpl, int *cnum, int *cmind, int *cmaxd)
 {
     // Construct a Subprocess object
@@ -2997,6 +3002,7 @@ SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, 
     // save to PNodeClass object
     pnclass = new PNodeClass(this, nNodes, nclass, cdeg, ctyp, ptcl, cpl, cnum, cmind, cmaxd);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 SProcess::SProcess(Model *mdl, Process *prc, Options *opts, int sid, int *clst, int ncls, NCInput *cls)
