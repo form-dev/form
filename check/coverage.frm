@@ -2488,3 +2488,47 @@ assert succeeded?
 assert result("F") == "rat(x+1,x^2+x+1)"
 assert result("G") == "rat(x+ep,1)"
 *--#] cov_polygcd3 :
+*--#[ cov_fmatchcy :
+* pattern matching on cyclic functions (FunMatchCy): rotation machinery
+CFunction f(cyclic),g;
+Symbols n,m;
+Local F = f(1,2,3)+f(4,5,6);
+.sort
+Identify f(n?,3,m?) = g(n,m);
+Identify f(?a,3) = g(?a);
+Identify f(?a,6) = g(?a);
+.sort
+Print F;
+.end
+assert succeeded?
+assert result("F") == "g(2,1)+g(4,5)"
+*--#] cov_fmatchcy :
+*--#[ cov_fmatchcy2 :
+* pattern matching on reverse-cyclic functions (FunMatchCy)
+CFunction f(rcyclic),g;
+Symbols n,m;
+Local F = f(1,2,3)+f(4,5,6);
+.sort
+Identify f(n?,3,m?) = g(n,m);
+Identify f(?a,3) = g(?a);
+Identify f(?a,6) = g(?a);
+.sort
+Print F;
+.end
+assert succeeded?
+assert result("F") == "g(1,2)+g(4,5)"
+*--#] cov_fmatchcy2 :
+*--#[ cov_fmatchsy :
+* pattern matching on symmetric functions (FunMatchSy)
+CFunction h(symmetric),k;
+Symbols n,m;
+Local G = h(1,2,3)+h(4,5,6);
+.sort
+Identify h(n?,3,m?) = k(n,m);
+Identify h(1,n?,m?) = k(n,m);
+.sort
+Print G;
+.end
+assert succeeded?
+assert result("G") == "h(4,5,6)+k(2,1)"
+*--#] cov_fmatchsy :
