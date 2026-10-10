@@ -939,6 +939,34 @@ Format O4,saIter=10,saMinT=1,saMaxT=2,method=csegreedy,greedytimelimit=1,
 .end
 assert succeeded?
 *--#] cov_opt_format :
+*--#[ cov_opt_scheme :
+* Scheme option of the Format,Optimize statement (CoOptimizeOption)
+Symbols a,b,c,d;
+Local F1 = (a+b+c)*(d+a);
+Format O1,scheme=(a,b,c,d);
+.sort
+#optimize F1
+#write "%O"
+#clearoptimize
+Local F2 = (a+b+c)*(d+a);
+Format O2,horner=sa,method=greedy,scheme=(a,c,b),printscheme=on;
+.sort
+#optimize F2
+#write "%O"
+#clearoptimize
+.end
+assert succeeded?
+*--#] cov_opt_scheme :
+*--#[ cov_opt_badopts :
+* error branches of the Format,Optimize option parser (CoOptimizeOption)
+Symbols x,y;
+Local F = x*y;
+Format O1,foo=5;
+Format O2,horner=wrong,method=wrong,stats=wrong;
+.sort
+.end
+assert compile_error?
+*--#] cov_opt_badopts :
 *--#[ cov_printoptions :
 * covers option syntax and string form of Print/NPrint statements
 Symbols x;
