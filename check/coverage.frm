@@ -7003,3 +7003,504 @@ assert compile_error?('Illegal keyword inside')
 assert preprocess_error?('Illegal string for')
 *--#] cov_nsuse_3 :
 
+*--#[ cov_powset_2 :
+* farm probe 0025_powset_15 (+5 lines)
+* probe: clean
+Symbol x,a,b,n;
+Set s: a,b;
+CFunction f,g;
+Local t = f(x^a) + f(x^b) + f(x^3);
+id f(x^n?s) = g(x^n);
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(x^3) + f((x)^(a)) + f((x)^(b))")
+*--#] cov_powset_2 :
+
+*--#[ cov_factarg_dot_mixed :
+* farm probe 0014_factarg_dot_mixed_48 (+5 lines)
+* probe: clean
+Vectors p,q;
+Function f;
+Local t = f((p.q)^2,(p.q)^-1);
+FactArg f;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(p.q,p.q,p.q^-1)")
+*--#] cov_factarg_dot_mixed :
+
+*--#[ cov_argexpsym :
+* farm probe 0017_argexpsym_52 (+13 lines)
+* probe: clean
+Symbol x,y,n;
+CFunction f,g;
+Local test = f(y);
+id f(n?) = g(x^n);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("g((x)^(y))")
+*--#] cov_argexpsym :
+
+*--#[ cov_div_arg :
+* farm probe 0031_div_arg_51 (+5 lines)
+* probe: clean
+Symbol x;
+CFunction f,g;
+Local test = f(x);
+id f(div_(x,2)) = g(1);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(x)")
+*--#] cov_div_arg :
+
+*--#[ cov_bigexp_5 :
+* large expansion inside Substitute; attempts workspace check path 654-658
+* probe: clean
+* large expansion inside Substitute; attempts workspace check path 654-658
+Symbol x,y;
+CFunction f;
+Local test = f(x);
+id f(x?) = (y+1)^50000;
+.end
+assert runtime_error?
+*--#] cov_bigexp_5 :
+
+*--#[ cov_gamma_wild :
+* farm probe 0019_gamma_wild_60 (+5 lines)
+* probe: clean
+Index i,j,n;
+Vector p,q,v;
+Local test = g_(i,p);
+id g_(n?,v?) = g_(j,v);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("g_(j,p)")
+*--#] cov_gamma_wild :
+
+*--#[ cov_vecwild :
+* farm probe 0019_vecwild_80 (+6 lines)
+* probe: clean
+Vector p,q,k;
+Tensor g;
+Local test = g(p,q,k);
+id g(p?,q?,k?) = g(p,q,k);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("g(p,q,k)")
+*--#] cov_vecwild :
+
+*--#[ cov_argtoarg_argw :
+* farm probe 0019_argtoarg_argw_91 (+6 lines)
+* probe: clean
+Index i,j;
+Vector p,q;
+CFunction f;
+Tensor g;
+Local test = f(g(i,p),g(j,q));
+id f(?a) = g(?a);
+Print;
+.end
+assert runtime_error?
+*--#] cov_argtoarg_argw :
+
+*--#[ cov_sign_rat :
+* farm probe 0003_sign_rat_29 (+12 lines)
+* probe: clean
+Local t = 1 + sign_(3/2) + sign_(-3/2);
+Print t;
+.end
+assert succeeded?
+assert result("t") =~ expr("1 + sign_( - 3/2) + sign_(3/2)")
+*--#] cov_sign_rat :
+
+*--#[ cov_fx_filldup :
+* farm probe 0057_fx_filldup_24 (+7 lines)
+* probe: clean
+Symbol a,x,y;
+Table t(0:3);
+Local e = a*x + a*y;
+Bracket a;
+.sort
+FillExpression t = e(a);
+Print;
+.end
+assert succeeded?
+assert result("e") =~ expr("a*y + a*x")
+*--#] cov_fx_filldup :
+
+*--#[ cov_numdummies :
+* epsilon contraction should introduce dummy indices (numdummies field)
+* probe: clean
+* epsilon contraction should introduce dummy indices (numdummies field)
+Dimension 4;
+Vectors p,q;
+Index a,b,c,d;
+Local test = e_(p,q,a,b)*e_(p,q,c,d);
+contract;
+.sort
+.store test;
+.sort
+.get test;
+Print;
+.end
+assert preprocess_error?('Unrecognized module termi')
+*--#] cov_numdummies :
+
+*--#[ cov_dotproduct_multi_same_vector :
+* Exercise DOTPRODUCT while loop 1397-1422 with multiple dotproducts
+* probe: clean
+* Exercise DOTPRODUCT while loop 1397-1422 with multiple dotproducts
+Vectors p,q;
+Index i,j;
+CFunction f;
+Local expr = f(p(i)*p(i)*q(j)*q(j)*d_(i,j));
+Print;
+.end
+assert succeeded?
+assert result("expr") =~ expr("f(p(i)*q(j)*p.q)")
+*--#] cov_dotproduct_multi_same_vector :
+
+*--#[ cov_nsdollar_4 :
+* dollar variable assignment inside namespace (ConstructName '$' case)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* dollar variable assignment inside namespace (ConstructName '$' case)
+#namespace nsdollar
+Symbol q;
+Local F = q;
+$dd = F + 1;
+Print F;
+#endnamespace
+.end
+#pend_if threaded?
+assert succeeded?
+assert result("F") =~ expr("q")
+*--#] cov_nsdollar_4 :
+
+*--#[ cov_root_rat_neg :
+* farm probe 0006_root_rat_neg_38 (+28 lines)
+* probe: clean
+Symbol x;
+Local F = root_(3,-27);
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("- 3")
+*--#] cov_root_rat_neg :
+
+*--#[ cov_fi_scrvec :
+* farm probe 0074_fi_scrvec_19 (+7 lines)
+* probe: clean
+Vectors p,q,r;
+Local e = p.q*p.r + p.q;
+.sort
+Local t = factorin_(e);
+Print;
+.end
+assert succeeded?
+assert result("e") =~ expr("p.q*p.r + p.q")
+assert result("t") =~ expr("p.q")
+*--#] cov_fi_scrvec :
+
+*--#[ cov_write_dollar_zero_pad :
+* farm probe 0033_write_dollar_zero_pad_34 (+5 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+S x;
+L F = x^100;
+.sort
+$d = F;
+#write "%010$", $d
+.end
+#pend_if threaded?
+assert succeeded?
+*--#] cov_write_dollar_zero_pad :
+
+*--#[ cov_empty :
+* farm probe 0074_empty_24 (+5 lines)
+* probe: clean
+Symbol x;
+Local g = 0;
+.sort
+Local F = x*factorin_(g);
+Print F;
+.end
+assert succeeded?
+assert result("F") =~ expr("x")
+*--#] cov_empty :
+
+*--#[ cov_vector_dot_setnum :
+* farm probe 0047_vector_dot_setnum_33 (+20 lines)
+* probe: clean
+Vector v,w;
+Set s: v;
+Local F = v.s[1];
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("v.v")
+*--#] cov_vector_dot_setnum :
+
+*--#[ cov_filltable_func_arg_mismatch :
+* farm probe 0057_filltable_func_arg_mismatch_33 (+5 lines)
+* probe: clean
+CFunction f;
+Table T(3);
+Symbol x;
+Local F = f(2,x);
+FillExpression T = F(f(1,x));
+Print;
+.end
+assert compile_error?('Declaration out of')
+*--#] cov_filltable_func_arg_mismatch :
+
+*--#[ cov_coif_seqnum :
+* expected: sequence
+* probe: error
+* expected: sequence
+Symbol x;
+Local test = x;
+if ( 3/x > 1 ) id x = 1;
+Print;
+.end
+assert compile_error?('Illegal sequence: if,(3/x')
+*--#] cov_coif_seqnum :
+
+*--#[ cov_dollar_negative_set :
+* expected: Array bound check during set substitution
+* runtime $-variables force sequential mode under threads
+* probe: error
+* expected: Array bound check during set substitution
+Symbol x;
+Set s: p1,p2;
+CFunction f;
+Local F = f(x);
+$val = -1;
+id f(x?x_) = s[$val];
+Print;
+.end
+#pend_if threaded?
+assert compile_error?('p1 has not')
+*--#] cov_dollar_negative_set :
+
+*--#[ cov_dq_le :
+* farm probe 0111_dq_le_14 (+5 lines)
+* probe: clean
+#if ( $(1 <= 2) )
+    #message le works
+#endif
+#if ( $(2 >= 1) )
+    #message ge works
+#endif
+.end
+assert succeeded?
+*--#] cov_dq_le :
+
+*--#[ cov_dq_setname :
+* farm probe 0111_dq_setname_3 (+13 lines)
+* probe: clean
+Symbol x,y;
+Set myset: x,y;
+#if ( $(set_ == myset) )
+    #message set matches
+#endif
+#if ( $(set_ != myset) )
+    #message no match
+#endif
+.end
+assert preprocess_error?('Error translating first')
+*--#] cov_dq_setname :
+
+*--#[ cov_select_cap :
+* farm probe 0095_select_cap_4 (+6 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x;
+CFunction f,g;
+Local t = f(x,x,x,x);
+$a = 0;
+id,select,1,2 f(x?$a) = g($a);
+Print t;
+.end
+#pend_if threaded?
+assert compile_error?('1 is not')
+*--#] cov_select_cap :
+
+*--#[ cov_findloop_rational :
+* farm probe 0055_findloop_rational_44 (+5 lines)
+* probe: clean
+Symbol x;
+CFunction f;
+Local F = f(1/2*x);
+if ( findloop(f,1,x) > 0 ) Print;
+.end
+assert compile_error?('f should be')
+*--#] cov_findloop_rational :
+
+*--#[ cov_compsmall2 :
+* expected: CompressSize of
+* probe: error
+* expected: CompressSize of
+Symbol x,y;
+Compress 200;
+Local ex = (x+y)^20000;
+.sort
+Print;
+.end
+assert compile_error?('Unknown option: 200,')
+*--#] cov_compsmall2 :
+
+*--#[ cov_seteq_syntax_5 :
+* farm probe 0066_seteq_syntax_15 (+10 lines)
+* probe: clean
+Set sortsize = 200;
+Set scratchsize = 200;
+Symbol a1,a2,a3;
+Local F = (a1+a2+a3)^5;
+Local G = 1;
+.sort
+.copy F to G;
+.sort
+Print G;
+.end
+assert preprocess_error?('Unrecognized module term')
+*--#] cov_seteq_syntax_5 :
+
+*--#[ cov_d9_modopt_inpar :
+* target: variant syntax: ModuleOption incombined with max dollar
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* target: variant syntax: ModuleOption incombined with max dollar
+Symbol x;
+ModuleOption inparallel, max, $a;
+Local t = 1;
+$a = 3;
+$a = 0;
+$a = -5;
+.sort
+Print t;
+.end
+#pend_if threaded?
+assert compile_error?('Illegal object in')
+*--#] cov_d9_modopt_inpar :
+
+*--#[ cov_dotail_pipe_9 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_9 :
+
+*--#[ cov_002_badsettype :
+* expected: A set in a transform statement should be a set of functions
+* probe: error
+* expected: A set in a transform statement should be a set of functions
+Symbol x;
+Set myset: x;
+Local F = x + x^2;
+Transform F, myset replace x;
+Print;
+.end
+assert compile_error?('F: A transform')
+*--#] cov_002_badsettype :
+
+*--#[ cov_tensor_gamma :
+* expected: 5_,6_,7_ can only be used inside g_
+* probe: error
+* expected: 5_,6_,7_ can only be used inside g_
+Symbol x;
+CFunction f;
+Local test = f(5_);
+Print;
+.end
+assert compile_error?('5_,6_,7_ can only')
+*--#] cov_tensor_gamma :
+
+*--#[ cov_tsgamma_illegal :
+* expected: Illegal use special gamma symbols 5_, 6_, 7_
+* probe: error
+* expected: Illegal use special gamma symbols 5_, 6_, 7_
+Symbol x;
+Local F = 5_(x);
+Print;
+.end
+assert compile_error?('Illegal use special')
+*--#] cov_tsgamma_illegal :
+
+*--#[ cov_enter_named :
+* farm probe 0093_enter_named_33 (+5 lines)
+* probe: clean
+Symbol x;
+Tablebase tbent;
+Sparse ts(4);
+Fill ts(1) = x^2;
+Fill ts(2) = 5;
+Local chk = ts(1);
+B enter tbent, ts;
+Print chk;
+.end
+assert compile_error?('Proper syntax: TableBase')
+*--#] cov_enter_named :
+
+*--#[ cov_inset_negpower :
+* farm probe 0047_inset_negpower_27 (+8 lines)
+* probe: clean
+Symbol x;
+Set s: 1,2,3;
+Local F = s[x]^-2;
+Print;
+.end
+assert compile_error?('Set index in')
+*--#] cov_inset_negpower :
+
+*--#[ cov_lus_errneg :
+* expected: Illegal attempt to use a non-index-like argument in a tensor in ReplaceLoop statement
+* probe: error
+* expected: Illegal attempt to use a non-index-like argument in a tensor in ReplaceLoop statement
+* Ordinary function with a negative number argument past the loop indices.
+Vectors p1,p2,p3;
+Index i1,i2,i3;
+TensorFunction g1;
+Function f;
+Local F = g1(i1,i2,p1)*f(i2,i3,-1)*g1(i3,i1,p3);
+ReplaceLoop,g1,f;
+Print;
+.end
+assert compile_error?('Unrecognized statement Ten')
+*--#] cov_lus_errneg :
+
+*--#[ cov_dq_illop :
+* expected: Illegal operator in $( option of #if
+* probe: error
+#if ( $(1 ! 2) )
+#endif
+* expected: Illegal operator in $( option of #if
+.end
+assert preprocess_error?('Illegal operator in')
+*--#] cov_dq_illop :
+
+*--#[ cov_nsuse_4 :
+* guess at #use directive to expose namespace names outside
+* probe: clean
+* guess at #use directive to expose namespace names outside
+#namespace nsuse
+#define w 4
+#endnamespace
+#use nsuse
+#message `w'
+#end
+.end
+assert preprocess_error?('Illegal string for')
+*--#] cov_nsuse_4 :
+
