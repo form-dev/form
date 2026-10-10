@@ -3076,3 +3076,29 @@ assert result("P4") =~ expr("12345678")
 assert result("A") =~ expr("2147483586")
 assert result("r") =~ expr("9719/38790")
 *--#] cov_makerational :
+*--#[ cov_wildsub :
+* WildFill (wildcard.c) on the replacement of argument wildcards: when
+* a wildcard bound to a symbol or subexpression is used as the power of
+* a dot product in the replacement, an EXPONENT function is built with
+* the bound value inside.
+Symbol a,x,y;
+Vector p,q,r,s,t;
+CFunction f,h;
+Local T1 = f(x);
+Local T2 = f(p.q);
+Local T3 = f(q.s*r.t);
+Local T4 = f(x,p.q);
+Print T1, T2, T3, T4;
+.sort
+id f(a?) = h(1)*(p.q^a);
+Print T1, T2, T3, T4;
+.sort
+id f(a?,p?.q?) = h(3)*(p.q^a);
+Print T1, T2, T3, T4;
+.end
+assert succeeded?
+assert result("T1") =~ expr("(p.q)^(x)*h(1)")
+assert result("T2") =~ expr("(p.q)^(p.q)*h(1)")
+assert result("T3") =~ expr("(p.q)^(q.s*r.t)*h(1)")
+assert result("T4") =~ expr("(p.q)^(x)*h(3)")
+*--#] cov_wildsub :
