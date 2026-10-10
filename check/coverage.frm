@@ -2777,3 +2777,60 @@ assert succeeded?
 assert result("F") =~ expr("m*n + x*z + p.q*z + p(i)*z + f(z)*w + g(z)*w")
 assert result("G") =~ expr("x*w + p.q*w + r.p2*m + p(i)*w + r(i)*w + r(k2)*m + i*w + d_(i,j)*w - t1(p)*w + t1(k2)*m + g_(1,i)*w + f(z)*w + f2(z)*m + f3(p)*w + f3(r)*m + f4(-p)*w + f5(i)*w + f5(k2)*m + f6(g2(z))*m + f7(n)*m + f7(5)*m + f7(g2)*m")
 *--#] cov_select :
+*--#[ cov_polyfun :
+* PolyFun statement: the polyfun argument is the coefficient of the term.
+* Equal terms are merged by adding their polyfun arguments (AddArgs in
+* sort.c) for all argument types: bare functions (commuting and not),
+* symbols, short and long numbers, and with a modulus active.
+Symbols x,y;
+Function g2;
+CFunction h2,acc;
+PolyFun acc;
+Local F1 = x^2*acc(g2) + x^2*acc(g2);
+Local F2 = x^2*acc(g2) + x^2*acc(h2);
+Local F2b = x^2*acc(h2) + x^2*acc(g2);
+Local F3 = x^2*acc(g2) + x^2*acc(y);
+Local F4 = x^2*acc(g2) + x^2*acc(3);
+Local F5 = x^2*acc(y) + x^2*acc(g2);
+Local F6 = x^2*acc(y) + x^2*acc(-3);
+Local F6b = x^2*acc(-3) + x^2*acc(y);
+Local F7 = x^2*acc(3) + x^2*acc(g2);
+Local F8 = x^2*acc(3) + x^2*acc(-3);
+Local F9 = x^2*acc(3) + x^2*acc(-5);
+Local F11 = x^2*acc(g2) + x^2*acc(x^2);
+Local F12 = x^2*acc(x^2) + x^2*acc(y);
+Local F13 = x^2*acc(x^2) + x^2*acc(3);
+Local F14 = x^2*acc(x^2) + x^2*acc(g2);
+Local F15 = x^2*acc(1000000000) + x^2*acc(1000000000);
+Local F17 = x^2*acc(-1000000000) + x^2*acc(-1000000000);
+Local F18 = x^2*acc(2000000000) + x^2*acc(2000000000);
+Local F19 = x^2*acc(-2000000000) + x^2*acc(-2000000000);
+.sort
+Print;
+.sort
+Modulus 1000000000000007;
+Local FN = x^2*acc(2000000000) + x^2*acc(2000000000);
+Print FN;
+.end
+assert succeeded?
+assert result("F1") =~ expr("x^2*acc(2*g2)")
+assert result("F2") =~ expr("x^2*acc(g2 + h2)")
+assert result("F2b") =~ expr("x^2*acc(g2 + h2)")
+assert result("F3") =~ expr("x^2*acc(y + g2)")
+assert result("F4") =~ expr("x^2*acc(3 + g2)")
+assert result("F5") =~ expr("x^2*acc(y + g2)")
+assert result("F6") =~ expr("x^2*acc(-3 + y)")
+assert result("F6b") =~ expr("x^2*acc(-3 + y)")
+assert result("F7") =~ expr("x^2*acc(3 + g2)")
+assert result("F8") == "0"
+assert result("F9") =~ expr("x^2*acc(-2)")
+assert result("F11") =~ expr("x^2*acc(x^2 + g2)")
+assert result("F12") =~ expr("x^2*acc(y + x^2)")
+assert result("F13") =~ expr("x^2*acc(3 + x^2)")
+assert result("F14") =~ expr("x^2*acc(x^2 + g2)")
+assert result("F15") =~ expr("x^2*acc(2000000000)")
+assert result("F17") =~ expr("x^2*acc(-2000000000)")
+assert result("F18") =~ expr("x^2*acc(4000000000)")
+assert result("F19") =~ expr("x^2*acc(-4000000000)")
+assert result("FN") =~ expr("x^2*acc(4000000000)")
+*--#] cov_polyfun :
