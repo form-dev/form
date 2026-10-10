@@ -4002,3 +4002,284 @@ Print b;
 assert succeeded?
 assert result("b") =~ expr("0")
 *--#] cov_plusminus :
+*--#[ cov_takearg_index :
+* target: TakeArgContent INDEX branch, argument.c:2863-2903
+* probe: clean
+* target: TakeArgContent INDEX branch, argument.c:2863-2903
+Symbol x,y;
+Index i,j;
+Function f;
+Local test = f(x*i + y*i);
+FactArg f;
+Print +s;
+.end
+assert runtime_error?
+*--#] cov_takearg_index :
+
+*--#[ cov_bracketsetvec_2 :
+* set of vectors in bracket: bset INDEX branch (execute.c 1445-1489)
+* probe: clean
+* set of vectors in bracket: bset INDEX branch (execute.c 1445-1489)
+Vector v,p;
+CFunction f;
+Set vs: v, p;
+Local e = v(1)*f(2);
+Bracket vs;
+Print;
+.end
+assert succeeded?
+assert result("e") =~ expr("+ v(1) * ( f(2) )")
+*--#] cov_bracketsetvec_2 :
+
+*--#[ cov_thr_bucketsize :
+* farm probe 0032_thr_bucketsize_11 (+9 lines)
+* probe: clean
+On threads;
+Symbol x,y,z;
+ProcessBucketSize 1;
+ThreadBucketSize 1;
+Local f = (x+y+z)^18;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("f") =~ expr("z^18 + 18*y*z^17 + 153*y^2*z^16 + 816*y^3*z^15 + 3060*y^4*z^14 + 8568*
+y^5*z^13 + 18564*y^6*z^12 + 31824*y^7*z^11 + 43758*y^8*z^10 + 48620*y^9*
+z^9 + 43758*y^10*z^8 + 31824*y^11*z^7 + 18564*y^12*z^6 + 8568*y^13*z^5
++ 3060*y^14*z^4 + 816*y^15*z^3 + 153*y^16*z^2 + 18*y^17*z + y^18 + 18*x
+*z^17 + 306*x*y*z^16 + 2448*x*y^2*z^15 + 12240*x*y^3*z^14 + 42840*x*y^4*
+z^13 + 111384*x*y^5*z^12 + 222768*x*y^6*z^11 + 350064*x*y^7*z^10 +
+437580*x*y^8*z^9 + 437580*x*y^9*z^8 + 350064*x*y^10*z^7 + 222768*x*y^11*
+z^6 + 111384*x*y^12*z^5 + 42840*x*y^13*z^4 + 12240*x*y^14*z^3 + 2448*x*
+y^15*z^2 + 306*x*y^16*z + 18*x*y^17 + 153*x^2*z^16 + 2448*x^2*y*z^15 +
+18360*x^2*y^2*z^14 + 85680*x^2*y^3*z^13 + 278460*x^2*y^4*z^12 + 668304*
+x^2*y^5*z^11 + 1225224*x^2*y^6*z^10 + 1750320*x^2*y^7*z^9 + 1969110*x^2*
+y^8*z^8 + 1750320*x^2*y^9*z^7 + 1225224*x^2*y^10*z^6 + 668304*x^2*y^11*
+z^5 + 278460*x^2*y^12*z^4 + 85680*x^2*y^13*z^3 + 18360*x^2*y^14*z^2 +
+2448*x^2*y^15*z + 153*x^2*y^16 + 816*x^3*z^15 + 12240*x^3*y*z^14 + 85680
+*x^3*y^2*z^13 + 371280*x^3*y^3*z^12 + 1113840*x^3*y^4*z^11 + 2450448*x^3
+*y^5*z^10 + 4084080*x^3*y^6*z^9 + 5250960*x^3*y^7*z^8 + 5250960*x^3*y^8*
+z^7 + 4084080*x^3*y^9*z^6 + 2450448*x^3*y^10*z^5 + 1113840*x^3*y^11*z^4
++ 371280*x^3*y^12*z^3 + 85680*x^3*y^13*z^2 + 12240*x^3*y^14*z + 816*x^3
+*y^15 + 3060*x^4*z^14 + 42840*x^4*y*z^13 + 278460*x^4*y^2*z^12 + 1113840
+*x^4*y^3*z^11 + 3063060*x^4*y^4*z^10 + 6126120*x^4*y^5*z^9 + 9189180*x^4
+*y^6*z^8 + 10501920*x^4*y^7*z^7 + 9189180*x^4*y^8*z^6 + 6126120*x^4*y^9*
+z^5 + 3063060*x^4*y^10*z^4 + 1113840*x^4*y^11*z^3 + 278460*x^4*y^12*z^2
++ 42840*x^4*y^13*z + 3060*x^4*y^14 + 8568*x^5*z^13 + 111384*x^5*y*z^12
++ 668304*x^5*y^2*z^11 + 2450448*x^5*y^3*z^10 + 6126120*x^5*y^4*z^9 +
+11027016*x^5*y^5*z^8 + 14702688*x^5*y^6*z^7 + 14702688*x^5*y^7*z^6 +
+11027016*x^5*y^8*z^5 + 6126120*x^5*y^9*z^4 + 2450448*x^5*y^10*z^3 +
+668304*x^5*y^11*z^2 + 111384*x^5*y^12*z + 8568*x^5*y^13 + 18564*x^6*z^12
++ 222768*x^6*y*z^11 + 1225224*x^6*y^2*z^10 + 4084080*x^6*y^3*z^9 +
+9189180*x^6*y^4*z^8 + 14702688*x^6*y^5*z^7 + 17153136*x^6*y^6*z^6 +
+14702688*x^6*y^7*z^5 + 9189180*x^6*y^8*z^4 + 4084080*x^6*y^9*z^3 +
+1225224*x^6*y^10*z^2 + 222768*x^6*y^11*z + 18564*x^6*y^12 + 31824*x^7*
+z^11 + 350064*x^7*y*z^10 + 1750320*x^7*y^2*z^9 + 5250960*x^7*y^3*z^8 +
+10501920*x^7*y^4*z^7 + 14702688*x^7*y^5*z^6 + 14702688*x^7*y^6*z^5 +
+10501920*x^7*y^7*z^4 + 5250960*x^7*y^8*z^3 + 1750320*x^7*y^9*z^2 +
+350064*x^7*y^10*z + 31824*x^7*y^11 + 43758*x^8*z^10 + 437580*x^8*y*z^9
++ 1969110*x^8*y^2*z^8 + 5250960*x^8*y^3*z^7 + 9189180*x^8*y^4*z^6 +
+11027016*x^8*y^5*z^5 + 9189180*x^8*y^6*z^4 + 5250960*x^8*y^7*z^3 +
+1969110*x^8*y^8*z^2 + 437580*x^8*y^9*z + 43758*x^8*y^10 + 48620*x^9*z^9
++ 437580*x^9*y*z^8 + 1750320*x^9*y^2*z^7 + 4084080*x^9*y^3*z^6 +
+6126120*x^9*y^4*z^5 + 6126120*x^9*y^5*z^4 + 4084080*x^9*y^6*z^3 +
+1750320*x^9*y^7*z^2 + 437580*x^9*y^8*z + 48620*x^9*y^9 + 43758*x^10*z^8
++ 350064*x^10*y*z^7 + 1225224*x^10*y^2*z^6 + 2450448*x^10*y^3*z^5 +
+3063060*x^10*y^4*z^4 + 2450448*x^10*y^5*z^3 + 1225224*x^10*y^6*z^2 +
+350064*x^10*y^7*z + 43758*x^10*y^8 + 31824*x^11*z^7 + 222768*x^11*y*z^6
++ 668304*x^11*y^2*z^5 + 1113840*x^11*y^3*z^4 + 1113840*x^11*y^4*z^3 +
+668304*x^11*y^5*z^2 + 222768*x^11*y^6*z + 31824*x^11*y^7 + 18564*x^12*
+z^6 + 111384*x^12*y*z^5 + 278460*x^12*y^2*z^4 + 371280*x^12*y^3*z^3 +
+278460*x^12*y^4*z^2 + 111384*x^12*y^5*z + 18564*x^12*y^6 + 8568*x^13*z^5
++ 42840*x^13*y*z^4 + 85680*x^13*y^2*z^3 + 85680*x^13*y^3*z^2 + 42840*
+x^13*y^4*z + 8568*x^13*y^5 + 3060*x^14*z^4 + 12240*x^14*y*z^3 + 18360*
+x^14*y^2*z^2 + 12240*x^14*y^3*z + 3060*x^14*y^4 + 816*x^15*z^3 + 2448*
+x^15*y*z^2 + 2448*x^15*y^2*z + 816*x^15*y^3 + 153*x^16*z^2 + 306*x^16*y*
+z + 153*x^16*y^2 + 18*x^17*z + 18*x^17*y + x^18")
+*--#] cov_thr_bucketsize :
+
+*--#[ cov_powden :
+* exponent wildcards matching negative powers via denominators
+* probe: clean
+* exponent wildcards matching negative powers via denominators
+Symbol x,y;
+CFunction f;
+Local t1 = 1/x^3;
+id x^n_ = f(n_);
+Local t2 = x^2/y^-4;
+id x^n_*y^n_ = f(n_);
+Local t3 = 1/(x^3*y^3);
+id x^n_*y^n_ = f(n_);
+Print +s;
+.end
+assert compile_error?('Undeclared variable n_')
+*--#] cov_powden :
+
+*--#[ cov_fill_warn :
+* bracket with out-of-range power should be skipped with a warning
+* probe: clean
+* bracket with out-of-range power should be skipped with a warning
+Symbol x,y;
+Table t(0:2,0:2);
+Local e = (x^5*y)*(1 + x*y);
+Keep Brackets;
+.sort
+FillExpression t = e(x,y);
+Local out = t(1,1);
+Print out;
+.end
+assert compile_error?('Specification out of')
+*--#] cov_fill_warn :
+
+*--#[ cov_ifelse :
+* farm probe 0012_ifelse_4 (+5 lines)
+* probe: clean
+Symbol x;
+Local t = 5;
+if ( count(x,1) > 0 ) id x = 1;
+else id t = 2;
+endif;
+Print t;
+.end
+Local u = 7;
+if ( 0 ) id u = 1;
+else id u = 2;
+endif;
+Print u;
+.end
+assert compile_error?('No extra text')
+*--#] cov_ifelse :
+
+*--#[ cov_wildsym :
+* target: findpat.c FindOnce wildcard symbol with wildcard power, SYMTOSYM + OnceL4a (508-560, 534-537, 528-531)
+* probe: clean
+* target: findpat.c FindOnce wildcard symbol with wildcard power, SYMTOSYM + OnceL4a (508-560, 534-537, 528-531)
+Symbol x,y;
+CFunction f;
+Local a = x^3;
+id, once, n1?^n2? = f(n1?,n2?);
+Print;
+Local b = x^(-3)*y^2;
+id, once, n1?^n2?*n3?^n2? = f(n1?,n3?);
+Print;
+Local c = x^3*y^(-2);
+id, once, n1?^n2?*n3?^n2? = f(n1?,n3?);
+Print;
+Local d = x^3*y^5;
+id, once, n1?^n2?*n1?^n2? = f(n1?);
+Print;
+.end
+assert compile_error?('Undeclared variable n1')
+*--#] cov_wildsym :
+
+*--#[ cov_dotail_flags :
+* Runs the coverage-instrumented binary as a child to exercise DoTail
+* probe: clean
+* Runs the coverage-instrumented binary as a child to exercise DoTail
+* option cases: c l L f F h W M and d (with and without '=')
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf1.frm; $FORM -c $TESTTMPDIR/cvf1.frm; $FORM -l $TESTTMPDIR/cvf1.frm; $FORM -L -C $TESTTMPDIR/cvlog1.frm $TESTTMPDIR/cvf1.frm; $FORM -f -C $TESTTMPDIR/cvlog2.frm $TESTTMPDIR/cvf1.frm; $FORM -F -C $TESTTMPDIR/cvlog3.frm $TESTTMPDIR/cvf1.frm; $FORM -h -W -M $TESTTMPDIR/cvf1.frm; true
+#system cd $TESTFILEDIR && $FORM -d foo=bar $TESTTMPDIR/cvf1.frm; $FORM -d bar $TESTTMPDIR/cvf1.frm; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_flags :
+
+*--#[ cov_typedwild :
+* typed wildcards in function arguments
+* probe: clean
+* typed wildcards in function arguments
+Symbols a,b;
+CFunction f,g,h;
+Local t1 = f(a,3,b);
+id f(x_,n?y_,x_) = h(x_,y_);
+Local t2 = f(a,b);
+id f(p?s_) = g(p?s_);
+Local t3 = f(3);
+id f(n?y_) = g(y_);
+Print +s;
+.end
+assert compile_error?('Undeclared variable x_')
+*--#] cov_typedwild :
+
+*--#[ cov_dotail_illegal :
+* DoTail illegal options: -Z, bare -i, -Q, and '/'-prefix branch of line 303
+* probe: clean
+* DoTail illegal options: -Z, bare -i, -Q, and '/'-prefix branch of line 303
+* expected child message fragment: Illegal option in call of FORM
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf6.frm; $FORM -Z $TESTTMPDIR/cvf6.frm; $FORM -i $TESTTMPDIR/cvf6.frm; $FORM -Q $TESTTMPDIR/cvf6.frm; $FORM /zz $TESTTMPDIR/cvf6.frm; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_illegal :
+
+*--#[ cov_08_genericarg :
+* named wildcard plus generic ? argument filler on a symmetric
+* probe: clean
+* named wildcard plus generic ? argument filler on a symmetric
+* function; hits the funnycount (ARGWILD) handling.
+Symbol a,b,c,x;
+CFunction f,g;
+Symmetric f;
+Local test = f(c,b,a);
+id f(x?,?) = g(x);
+Print;
+.end
+assert compile_error?('Unrecognized statement S')
+*--#] cov_08_genericarg :
+
+*--#[ cov_dotail_pipe :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe :
+
+*--#[ cov_dotail_bare :
+* DoTail with argc<1: goto printversion path (version banner, lines 297-300, 559-568)
+* probe: clean
+* DoTail with argc<1: goto printversion path (version banner, lines 297-300, 559-568)
+#system cd $TESTFILEDIR && $FORM < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_bare :
+
+*--#[ cov_setnocomma :
+* expected: should be followed by a comma
+* probe: error
+* expected: should be followed by a comma
+CFunction f;
+Transform,{f};
+.end
+assert compile_error?('f}: A set')
+*--#] cov_setnocomma :
+
+*--#[ cov_ifcomp :
+* target: if.c NOT/subexpression fast path, OR short-circuit, nested parens
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* target: if.c NOT/subexpression fast path, OR short-circuit, nested parens
+Symbol x,y,z;
+$a = 1;
+Local t = 3*x*y;
+If ( ! Occurrence(z) ) Multiply 2; EndIf;
+If ( $a > 0 || Coefficient(y) > 2 ) Multiply 3; EndIf;
+If ( ( Count(x,1,0) || Count(y,1,0) ) && Occurrence(x) ) Multiply 5; EndIf;
+Print;
+.end
+#pend_if threaded?
+assert compile_error?('Definition out of')
+*--#] cov_ifcomp :
+
