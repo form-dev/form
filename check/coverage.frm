@@ -4760,3 +4760,768 @@ Print;
 assert compile_error?('Undeclared variable x')
 *--#] cov_brk_delta :
 
+*--#[ cov_fac150 :
+* factorized expression with many brackets: ISFACTORIZED enlargement branch (index.c 409-410)
+* probe: clean
+* factorized expression with many brackets: ISFACTORIZED enlargement branch (index.c 409-410)
+AutoDeclare Symbol s;
+Local test = (s1+s2+s3+s4+s5+s6+s7+s8+s9+s10+s11+s12+s13+s14+s15+s16+s17+s18+s19+s20+s21+s22+s23+s24+s25+s26+s27+s28+s29+s30+s31+s32+s33+s34+s35+s36+s37+s38+s39+s40+s41+s42+s43+s44+s45+s46+s47+s48+s49+s50+s51+s52+s53+s54+s55+s56+s57+s58+s59+s60+s61+s62+s63+s64+s65+s66+s67+s68+s69+s70+s71+s72+s73+s74+s75+s76+s77+s78+s79+s80+s81+s82+s83+s84+s85+s86+s87+s88+s89+s90+s91+s92+s93+s94+s95+s96+s97+s98+s99+s100+s101+s102+s103+s104+s105+s106+s107+s108+s109+s110+s111+s112+s113+s114+s115+s116+s117+s118+s119+s120+s121+s122+s123+s124+s125+s126+s127+s128+s129+s130+s131+s132+s133+s134+s135+s136+s137+s138+s139+s140+s141+s142+s143+s144+s145+s146+s147+s148+s149+s150)^2;
+Bracket;
+Factorize test;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("( s150 + s149 + s148 + s147 + s146 + s145 + s144 + s143 + s142 + s141
++ s140 + s139 + s138 + s137 + s136 + s135 + s134 + s133 + s132 +
+s131 + s130 + s129 + s128 + s127 + s126 + s125 + s124 + s123 + s122
++ s121 + s120 + s119 + s118 + s117 + s116 + s115 + s114 + s113 +
+s112 + s111 + s110 + s109 + s108 + s107 + s106 + s105 + s104 + s103
++ s102 + s101 + s100 + s99 + s98 + s97 + s96 + s95 + s94 + s93 + s92
++ s91 + s90 + s89 + s88 + s87 + s86 + s85 + s84 + s83 + s82 + s81 +
+s80 + s79 + s78 + s77 + s76 + s75 + s74 + s73 + s72 + s71 + s70 + s69
++ s68 + s67 + s66 + s65 + s64 + s63 + s62 + s61 + s60 + s59 + s58 +
+s57 + s56 + s55 + s54 + s53 + s52 + s51 + s50 + s49 + s48 + s47 + s46
++ s45 + s44 + s43 + s42 + s41 + s40 + s39 + s38 + s37 + s36 + s35 +
+s34 + s33 + s32 + s31 + s30 + s29 + s28 + s27 + s26 + s25 + s24 + s23
++ s22 + s21 + s20 + s19 + s18 + s17 + s16 + s15 + s14 + s13 + s12 +
+s11 + s10 + s9 + s8 + s7 + s6 + s5 + s4 + s3 + s2 + s1 )
+* ( s150 + s149 + s148 + s147 + s146 + s145 + s144 + s143 + s142 + s141
++ s140 + s139 + s138 + s137 + s136 + s135 + s134 + s133 + s132 +
+s131 + s130 + s129 + s128 + s127 + s126 + s125 + s124 + s123 + s122
++ s121 + s120 + s119 + s118 + s117 + s116 + s115 + s114 + s113 +
+s112 + s111 + s110 + s109 + s108 + s107 + s106 + s105 + s104 + s103
++ s102 + s101 + s100 + s99 + s98 + s97 + s96 + s95 + s94 + s93 + s92
++ s91 + s90 + s89 + s88 + s87 + s86 + s85 + s84 + s83 + s82 + s81 +
+s80 + s79 + s78 + s77 + s76 + s75 + s74 + s73 + s72 + s71 + s70 + s69
++ s68 + s67 + s66 + s65 + s64 + s63 + s62 + s61 + s60 + s59 + s58 +
+s57 + s56 + s55 + s54 + s53 + s52 + s51 + s50 + s49 + s48 + s47 + s46
++ s45 + s44 + s43 + s42 + s41 + s40 + s39 + s38 + s37 + s36 + s35 +
+s34 + s33 + s32 + s31 + s30 + s29 + s28 + s27 + s26 + s25 + s24 + s23
++ s22 + s21 + s20 + s19 + s18 + s17 + s16 + s15 + s14 + s13 + s12 +
+s11 + s10 + s9 + s8 + s7 + s6 + s5 + s4 + s3 + s2 + s1 )")
+*--#] cov_fac150 :
+
+*--#[ cov_factdol_negpow :
+* Factorized dollar with negative power (power < 0 path)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* Factorized dollar with negative power (power < 0 path)
+Symbol x;
+Local F = (x+1)*(x-1);
+.sort
+$dd = F;
+.sort
+FactDollar,$dd;
+.sort
+Local G = $dd^-1;
+.sort
+Print;
+.end
+#pend_if threaded?
+assert succeeded?
+assert result("F") =~ expr("- 1 + x^2")
+assert result("G") =~ expr("1/( - 1 + x^2)")
+*--#] cov_factdol_negpow :
+
+*--#[ cov_bigtablefill :
+* long fill expression may push table into tree/boomlijst storage
+* probe: clean
+* long fill expression may push table into tree/boomlijst storage
+Symbol x;
+Table t(1:4);
+.sort
+Fill t(1) = (x+1)^10;
+.sort
+Fill t(2) = (x+2)^12;
+.sort
+Local u = t(1)+t(2);
+.sort
+Print;
+.clear
+.sort
+Local v = 2;
+Print;
+.end
+assert succeeded?
+assert result("v") =~ expr("2")
+*--#] cov_bigtablefill :
+
+*--#[ cov_clearall :
+* farm probe 0065_clearall_0 (+10 lines)
+* probe: clean
+Symbol x,y;
+Vector v;
+Index i;
+CFunction f;
+Set s: x,y;
+Table tb(1:2,1:2);
+.sort
+Fill tb(1,1) = 5;
+.sort
+Local t = f(x)*v(i) + tb(1,1);
+.sort
+Print;
+.clear
+.sort
+Local u = 1;
+Print;
+.end
+assert succeeded?
+assert result("u") =~ expr("1")
+*--#] cov_clearall :
+
+*--#[ cov_mixtyp :
+* wildcard bound as function arg, reused as power wildcard -> type clash
+* probe: clean
+* wildcard bound as function arg, reused as power wildcard -> type clash
+* at CheckWild (lines 482-484)
+Symbol x,n;
+Functions f;
+Local test = f(3)*x^-3;
+id f(n?)*x^-n? = 1;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("1")
+*--#] cov_mixtyp :
+
+*--#[ cov_vecmiss :
+* vector present in one term only: scratch-vector path
+* probe: clean
+* vector present in one term only: scratch-vector path
+Vector p,q,r;
+Index i,j,k;
+CFunction g;
+Symbol x,y;
+Local a = g(p(i),q(j))*x + g(q(j))*y;
+.sort
+Local b = factorin_(a);
+Print b;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("a") =~ expr("g(p(i),q(j))*x + g(q(j))*y")
+assert result("b") =~ expr("1")
+*--#] cov_vecmiss :
+
+*--#[ cov_bigexp :
+* large expansion inside Substitute; attempts workspace check path 654-658
+* probe: clean
+* large expansion inside Substitute; attempts workspace check path 654-658
+Symbol x,y;
+CFunction f;
+Local test = f(x);
+id f(x?) = (y+1)^50000;
+.end
+assert runtime_error?
+*--#] cov_bigexp :
+
+*--#[ cov_wc_symwild_all :
+* farm probe 0019_wc_symwild_all_37 (+14 lines)
+* probe: clean
+Symbol a,b,x;
+CFunction f;
+Local t = a^2*b^3;
+id x? = f(x);
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(a)^2*b^3")
+*--#] cov_wc_symwild_all :
+
+*--#[ cov_grepeat2 :
+* farm probe 0039_grepeat2_61 (+36 lines)
+* probe: clean
+Index mu,nu;
+Local test = g_(1,2)*g_(3,4);
+repeat id g_(mu?,nu?)*g_(mu,nu) = 1;
+Print test;
+.end
+assert succeeded?
+assert result("test") =~ expr("g_(1,2)*g_(3,4)")
+*--#] cov_grepeat2 :
+
+*--#[ cov_mkrat_basic :
+* target: notation.c NormPolyTerm via MakeRational_ normalization
+* probe: clean
+* target: notation.c NormPolyTerm via MakeRational_ normalization
+Symbol x;
+Local test = MakeRational_((x+1)^2,x+1);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("0/0")
+*--#] cov_mkrat_basic :
+
+*--#[ cov_autoclear :
+* farm probe 0065_autoclear_2 (+18 lines)
+* probe: clean
+AutoDeclare Symbol s;
+AutoDeclare Vector v;
+AutoDeclare Index i;
+AutoDeclare Function f;
+.sort
+Local t = f1(i1)*v(i1) + s2^2;
+.sort
+Print;
+.clear
+.sort
+Local u = 1;
+Print;
+.end
+assert succeeded?
+assert result("u") =~ expr("1")
+*--#] cov_autoclear :
+
+*--#[ cov_mkrat_pow2 :
+* attempts MakeLongRational failure (1026-1034) via huge common power of two
+* probe: clean
+* attempts MakeLongRational failure (1026-1034) via huge common power of two
+Local test = MakeRational_(3*2^320,5*2^320);
+Print;
+.end
+assert warning?('fraction could not')
+assert result("test") =~ expr("640796110776273024718506511850865634380811356706995830984112482346665917\\
+7341921650068886260809728")
+*--#] cov_mkrat_pow2 :
+
+*--#[ cov_pfortran :
+* farm probe 0079_pfortran_8 (+10 lines)
+* probe: clean
+Format PFortran;
+Symbol x,y,z;
+Local test = (x+y+z)^2*(x+2*y);
+Bracket x;
+Print test;
+.end
+assert succeeded?
+*--#] cov_pfortran :
+
+*--#[ cov_gwild1 :
+* farm probe 0039_gwild1_56 (+8 lines)
+* probe: clean
+Index mu;
+Local test = g_(1);
+id g_(mu?) = g_(mu,5);
+Print test;
+.end
+assert succeeded?
+assert result("test") =~ expr("g_(1,5)")
+*--#] cov_gwild1 :
+
+*--#[ cov_c_bracket :
+* farm probe 0079_c_bracket_2 (+6 lines)
+* probe: clean
+Format C;
+Symbol x,y,z;
+Local test = (x+y+z)^2*(x+2*y);
+Bracket x;
+Print test;
+.end
+assert succeeded?
+assert result("test") =~ expr("+ x * ( pow(z,2) + 6*y*z + 5*pow(y,2) )")
+*--#] cov_c_bracket :
+
+*--#[ cov_s2_argtoobig :
+* expected: Sorted function argument too long
+* probe: error
+* expected: Sorted function argument too long
+Symbol x;
+Function f;
+Local t = f;
+#do i = 1,9000
+    id,once f(?a) = f(?a,x);
+#enddo
+Print;
+.end
+assert runtime_error?
+*--#] cov_s2_argtoobig :
+
+*--#[ cov_biggcd :
+* kGCD > kLCM: long GCD numerator (10^30,10^12), short LCM denominator (15)
+* probe: clean
+* kGCD > kLCM: long GCD numerator (10^30,10^12), short LCM denominator (15)
+Symbol x;
+Local a = 1000000000000000000000000000000*x/3 + 1000000000000*x^2/5;
+.sort
+Local b = factorin_(a);
+Print b;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("a") =~ expr("1000000000000000000000000000000/3*x + 200000000000*x^2")
+assert result("b") =~ expr("200000000000/3*x")
+*--#] cov_biggcd :
+
+*--#[ cov_dotswap :
+* vector wildcard dot product matching swapped order (lines 749-757)
+* probe: clean
+* vector wildcard dot product matching swapped order (lines 749-757)
+Vector p,q;
+Local test = q.p + p.p;
+id p?.q = 1;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("1 + p.p")
+*--#] cov_dotswap :
+
+*--#[ cov_gslide :
+* farm probe 0039_gslide_59 (+7 lines)
+* probe: clean
+Index mu;
+Local test = g_(1,2,3);
+id g_(mu?,1) = g_(mu,9);
+Print test;
+.end
+assert succeeded?
+assert result("test") =~ expr("g_(1,2,3)")
+*--#] cov_gslide :
+
+*--#[ cov_mkrat_exprarg :
+* attempts expression argument (non-SNUMBER, non-general) -> normal.c 1009-1013
+* probe: clean
+* attempts expression argument (non-SNUMBER, non-general) -> normal.c 1009-1013
+Symbol x;
+Local F = x;
+.sort
+Local test = MakeRational_(3,F);
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("x")
+assert result("test") =~ expr("makerational_(3,x)")
+*--#] cov_mkrat_exprarg :
+
+*--#[ cov_biglcm :
+* kLCM > kGCD: short GCD numerator, long LCM denominator
+* probe: clean
+* kLCM > kGCD: short GCD numerator, long LCM denominator
+Symbol x;
+Local a = x/3 + x^2/1000000000000000000000000000000;
+.sort
+Local b = factorin_(a);
+Print b;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("a") =~ expr("1/3*x + 1/1000000000000000000000000000000*x^2")
+assert result("b") =~ expr("1/3000000000000000000000000000000*x")
+*--#] cov_biglcm :
+
+*--#[ cov_pgenidx :
+* farm probe 0022_pgenidx_9 (+31 lines)
+* probe: clean
+Vectors p;
+Indices i;
+Symbol x;
+Local t = p(i);
+id p(i?) = x;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("x")
+*--#] cov_pgenidx :
+
+*--#[ cov_min_zerobig :
+* targets normal.c 1897-1899 (zero via loadnew2) and 1914-1916 (n_llnum[0]==0, big subexpr arg, loadnew1)
+* probe: clean
+* targets normal.c 1897-1899 (zero via loadnew2) and 1914-1916 (n_llnum[0]==0, big subexpr arg, loadnew1)
+Symbol x;
+Local test = min_(0,-(3^100));
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("- 515377520732011331036461129765621272702107522001")
+*--#] cov_min_zerobig :
+
+*--#[ cov_gcd_expr :
+* targets ratio.c 886-897 (CreateExpression path over expression terms)
+* probe: clean
+* targets ratio.c 886-897 (CreateExpression path over expression terms)
+Symbol x;
+Local e = 1+6;
+Local test = gcd_(e,x);
+Print;
+.end
+assert succeeded?
+assert result("e") =~ expr("7")
+assert result("test") =~ expr("1")
+*--#] cov_gcd_expr :
+
+*--#[ cov_s6_absmix :
+* farm probe 0005_s6_absmix_11 (+17 lines)
+* probe: clean
+Symbol x;
+Local test = abs_(i_*x);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("abs_(i_*x)")
+*--#] cov_s6_absmix :
+
+*--#[ cov_autofunctable :
+* table declared on an auto-declared function name; may error if
+* probe: clean
+* table declared on an auto-declared function name; may error if
+* FORM refuses Table on an existing auto function - either way useful
+.global
+Symbol g;
+.sort
+AutoDeclare Function f;
+.sort
+Local t = f1(1);
+.sort
+Table f1(1:2);
+.sort
+Fill f1(1) = 4;
+.sort
+Print;
+.clear
+.sort
+Local u = g;
+Print;
+.end
+assert runtime_error?('Table now decl')
+*--#] cov_autofunctable :
+
+*--#[ cov_ab_vector_eps :
+* farm probe 0040_ab_vector_eps_17 (+8 lines)
+* probe: clean
+Vector p,q,r;
+Index i;
+Local F = e_(p,q)*e_(r,q);
+Bracket p;
+.sort
+AntiBracket, r;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("- e_(p,q)*e_(q,r)")
+*--#] cov_ab_vector_eps :
+
+*--#[ cov_gcd_numneg :
+* targets ratio.c GCDfunction 704-711 (both args negative, sign=-1)
+* probe: clean
+* targets ratio.c GCDfunction 704-711 (both args negative, sign=-1)
+Local test = gcd_(-12,-18,-24);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("- 6")
+*--#] cov_gcd_numneg :
+
+*--#[ cov_hideg_chain :
+* exercises redefinition replace-chain over hidden global/local expressions
+* probe: clean
+* exercises redefinition replace-chain over hidden global/local expressions
+Symbol x,y;
+Global f = x;
+Local g = y;
+.sort
+Hide f;
+Hide g;
+.sort
+Global f = x+1;
+Local g = y+1;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("f") =~ expr("1 + x")
+assert result("g") =~ expr("1 + y")
+*--#] cov_hideg_chain :
+
+*--#[ cov_binom_big :
+* target: notation.c NormPolyTerm LNUMBER/Mully (166-171) via big-number poly arithmetic
+* probe: clean
+* target: notation.c NormPolyTerm LNUMBER/Mully (166-171) via big-number poly arithmetic
+Local test = Binom_(300,150);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("937597027728274527931937544390640848792326557000813589204723527129751700\\
+21839591675861424")
+*--#] cov_binom_big :
+
+*--#[ cov_fbracket_plain :
+* FIRSTBRACKET variant: unbracketed single-term expression (1062-1064, 1078)
+* probe: clean
+* FIRSTBRACKET variant: unbracketed single-term expression (1062-1064, 1078)
+Symbol x;
+Local F = x;
+.sort
+Local test = firstbracket_(F);
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("x")
+assert result("test") =~ expr("1")
+*--#] cov_fbracket_plain :
+
+*--#[ cov_gcd_minvec :
+* targets ratio.c 693-694 (MINVECTOR promotion) and 765-767 output
+* probe: clean
+* targets ratio.c 693-694 (MINVECTOR promotion) and 765-767 output
+Vector p;
+Local test = gcd_(-p,p);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("p")
+*--#] cov_gcd_minvec :
+
+*--#[ cov_norm_divzero :
+* expected: Division by zero during normalization
+* probe: error
+* expected: Division by zero during normalization
+* target: normal.c 4215-4219 NormInf
+Symbol a;
+Local test = 1/(a-a);
+Print;
+.end
+assert runtime_error?
+*--#] cov_norm_divzero :
+
+*--#[ cov_expr_args :
+* expression definition with prototype arguments of all four types
+* probe: clean
+* expression definition with prototype arguments of all four types
+Symbol x;
+Index i;
+Vector p;
+Function g;
+Local f(x,i,p,g)=x;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("f(x,i,p,g)") =~ expr("x")
+*--#] cov_expr_args :
+
+*--#[ cov_goog_0000_funny_vector_self :
+* farm probe goog_0000_funny_vector_self_8 (+6 lines)
+* probe: clean
+Vector v;
+Local F = v(v);
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("v.v")
+*--#] cov_goog_0000_funny_vector_self :
+
+*--#[ cov_arg_powdiff :
+* farm probe 0013_arg_powdiff_24 (+5 lines)
+* probe: clean
+Symbol x;
+CFunction f;
+Local s = f(x^5,x^2,3*x^3);
+Argument f, x^2;
+  id x = x/2;
+EndArgument;
+Print;
+.end
+assert compile_error?('x is not')
+*--#] cov_arg_powdiff :
+
+*--#[ cov_dolzero :
+* farm probe 0099_dolzero_10 (+5 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x,y;
+CFunction f;
+$a = x*y;
+$b = 3;
+$c = (x - x);
+$d = 0;
+.sort
+Local t = $a + $b + $c + $d;
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_dolzero :
+
+*--#[ cov_dolidx :
+* farm probe 0099_dolidx_11 (+6 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Index i;
+CFunction f,g;
+$a = i;
+.sort
+Local t = f($a);
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_dolidx :
+
+*--#[ cov_isfact_notexpr :
+* expected: is not an expression
+* probe: error
+* expected: is not an expression
+Symbol q,x;
+Local t = x;
+If ( isfactorized(q) ) Id x = 1;
+.end
+assert compile_error?('q is not')
+*--#] cov_isfact_notexpr :
+
+*--#[ cov_fact_dollar :
+* farm probe 0096_fact_dollar_6 (+10 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x;
+Local t = 1;
+$a = factor_(x^2-1);
+id t = t*$a;
+Print t;
+.end
+#pend_if threaded?
+assert compile_error?('Illegal use of')
+*--#] cov_fact_dollar :
+
+*--#[ cov_copy_alt :
+* farm probe 0066_copy_alt_10 (+6 lines)
+* probe: clean
+Set sortsize 200;
+Set scratchsize 200;
+Symbol a1,a2,a3,a4,a5;
+Local F = (a1+a2+a3+a4+a5)^5;
+Local G = 1;
+.sort
+.copy F,G;
+.sort
+Print G;
+.end
+assert preprocess_error?('Unrecognized module terminat')
+*--#] cov_copy_alt :
+
+*--#[ cov_seteq_syntax :
+* farm probe 0066_seteq_syntax_15 (+10 lines)
+* probe: clean
+Set sortsize = 200;
+Set scratchsize = 200;
+Symbol a1,a2,a3;
+Local F = (a1+a2+a3)^5;
+Local G = 1;
+.sort
+.copy F to G;
+.sort
+Print G;
+.end
+assert preprocess_error?('Unrecognized module term')
+*--#] cov_seteq_syntax :
+
+*--#[ cov_divzero :
+* expected: Division by zero
+* probe: error
+* expected: Division by zero
+CFunction f;
+Local F = f(1);
+if ( 4/0 > 0 ) Print;
+.end
+assert compile_error?('Division by zero!')
+*--#] cov_divzero :
+
+*--#[ cov_dol_numfac_bad :
+* expected: Problems with argument of NumFactors_
+* runtime $-variables force sequential mode under threads
+* probe: error
+* expected: Problems with argument of NumFactors_
+Symbol x;
+Local test = x;
+$a = test;
+Local t = NumFactors_($a,x);
+Print;
+.end
+#pend_if threaded?
+assert compile_error?('Definition out of')
+*--#] cov_dol_numfac_bad :
+
+*--#[ cov_dotail_pipe_5 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_5 :
+
+*--#[ cov_divok :
+* farm probe 0058_divok_11 (+8 lines)
+* probe: clean
+Symbol x;
+Local t = x;
+If ( count(x) == 6/2 ) Id x = 1;
+Print;
+.end
+Symbol x;
+Local t = x;
+If ( count(x) == 1/2 ) Id x = 1;
+Print;
+.end
+Symbol x;
+Local t = x;
+If ( 6/2 == 3 ) Id x = 1;
+Print;
+.end
+assert compile_error?('Illegal sequence: f,(count,x)')
+*--#] cov_divok :
+
+*--#[ cov_dot_set :
+* expected: Illegally formed dotproduct
+* probe: error
+* expected: Illegally formed dotproduct
+Vectors p,q;
+Set v: q;
+Local t = p.v;
+Print;
+.end
+assert compile_error?('Set without argument')
+*--#] cov_dot_set :
+
+*--#[ cov_goog_0000_dimension_out_of_range :
+* expected: Dimension_ out of range
+* probe: error
+* expected: Dimension_ out of range
+Index mu = -1000000;
+Local F = d_(mu, mu);
+Print;
+.end
+assert compile_error?('Illegal di')
+*--#] cov_goog_0000_dimension_out_of_range :
+
+*--#[ cov_goog_0000_root_unity_overflow :
+* expected: Power overflow during normalization
+* probe: error
+* expected: Power overflow during normalization
+Symbol x(5);
+Local F = x^30000 * x^30000 * x^30000;
+Print;
+.end
+assert compile_error?('Undeclared va')
+*--#] cov_goog_0000_root_unity_overflow :
+
+*--#[ cov_pipe_from_stream :
+* target: alternative #fromexternal syntax (no filename); also hits do_run_cmd first
+* probe: error
+* target: alternative #fromexternal syntax (no filename); also hits do_run_cmd first
+* expected: Cannot open
+#pipe 1, /bin/echo "Local z = 9;"
+#fromexternal 1
+#closeexternal 1
+.end
+assert runtime_error?
+*--#] cov_pipe_from_stream :
+
