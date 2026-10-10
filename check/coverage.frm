@@ -4283,3 +4283,207 @@ Print;
 assert compile_error?('Definition out of')
 *--#] cov_ifcomp :
 
+*--#[ cov_dol_big :
+* farm probe 0066_dol_big_5 (+8 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12;
+CFunction f;
+Local test = x1*x2*x3*x4*x5*x6*x7*x8*x9*x10*x11*x12;
+$x = x1*x2*x3*x4*x5*x6*x7*x8*x9*x10*x11*x12;
+id $x = f(1,2,3,4,5,6,7,8,9);
+Print;
+.end
+#pend_if threaded?
+assert succeeded?
+assert result("test") =~ expr("f(1,2,3,4,5,6,7,8,9)")
+*--#] cov_dol_big :
+
+*--#[ cov_takearg_index_2 :
+* target: TakeArgContent INDEX branch, argument.c:2863-2903
+* probe: clean
+* target: TakeArgContent INDEX branch, argument.c:2863-2903
+Symbol x,y;
+Index i,j;
+Function f;
+Local test = f(x*i + y*i);
+FactArg f;
+Print +s;
+.end
+assert runtime_error?
+*--#] cov_takearg_index_2 :
+
+*--#[ cov_replmism :
+* expected: Replace
+* probe: error
+* expected: Replace
+CFunction f;
+Set funcs: f;
+Local test = f(1,2,3);
+Transform,funcs,replace(1,2)=(2);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(1,0,3)")
+*--#] cov_replmism :
+
+*--#[ cov_do_oneexpr :
+* #do over an existing expression name (ONEEXPRESSION loop type)
+* probe: clean
+* #do over an existing expression name (ONEEXPRESSION loop type)
+Symbol x;
+Local F = 3;
+.sort
+#do i = F
+#message loop over expression done
+#enddo
+.end
+assert succeeded?
+*--#] cov_do_oneexpr :
+
+*--#[ cov_pipe_echo2 :
+* channel output forming a full statement (output-consumption path)
+* probe: clean
+* channel output forming a full statement (output-consumption path)
+#pipe "echo" "Local t = 1;"
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("1")
+*--#] cov_pipe_echo2 :
+
+*--#[ cov_mod_noinv :
+* expected: Inverse in modulus arithmetic doesn't exist
+* probe: error
+* expected: Inverse in modulus arithmetic doesn't exist
+Modulus 6;
+Local test = 1/2;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("0")
+*--#] cov_mod_noinv :
+
+*--#[ cov_idall_sym_err :
+* expected: id,all can only be used with (products of) functions and/or tensors
+* probe: error
+* expected: id,all can only be used with (products of) functions and/or tensors
+Symbol x,y;
+Local test = x;
+id, all, x = y;
+.end
+assert runtime_error?
+*--#] cov_idall_sym_err :
+
+*--#[ cov_mod_divz :
+* expected: Division by zero in modulus arithmetic
+* probe: error
+* expected: Division by zero in modulus arithmetic
+Modulus 7;
+Local test = 1/7;
+Print;
+.end
+assert runtime_error?
+*--#] cov_mod_divz :
+
+*--#[ cov_do_dollar1_ok :
+* dollar variable as the FIRST parameter of #do (success path)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+* dollar variable as the FIRST parameter of #do (success path)
+Symbol x;
+$a = 3;
+.sort
+#do i = $a, 5
+#message i = `i'
+#enddo
+.end
+#pend_if threaded?
+assert preprocess_error?('$a does not')
+*--#] cov_do_dollar1_ok :
+
+*--#[ cov_to_inside :
+* farm probe 0058_to_inside_7 (+6 lines)
+* probe: clean
+CFunction f;
+Symbol q,qb;
+Local topo = f(1,2,3,4);
+ToDiagram topo: f(1,2,3,4): q,qb,q,qb;
+NumberofDiagrams;
+NextDiagram;
+if ( InsideDiagram(f(1,2)) ) Print;
+IdenticaltoDiagram topo;
+Print;
+.end
+assert compile_error?('Unrecognized statement ToDia')
+*--#] cov_to_inside :
+
+*--#[ cov_dotail_pipe_2 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_2 :
+
+*--#[ cov_rev_irrend :
+* unterminated string in reversed include hits tools.c 926 -> 871-874 irrend
+* probe: error
+* unterminated string in reversed include hits tools.c 926 -> 871-874 irrend
+* expected: Irregular end of reverse include file.
+Symbol z;
+Local keep = 1;
+#create revg
+Local y1 = 1;
+Print "unterminated
+Local y2 = 2;
+#endcreate
+#reverseinclude revg
+Print;
+.end
+assert preprocess_error?('Proper syntax is:')
+*--#] cov_rev_irrend :
+
+*--#[ cov_insideopen :
+* expected: endinside statement(s) missing
+* probe: error
+* expected: endinside statement(s) missing
+Symbol x;
+Local f = x^2;
+Inside f;
+.end
+assert compile_error?('Illegal object in')
+*--#] cov_insideopen :
+
+*--#[ cov_ifopen2 :
+* expected: endif statement(s) missing
+* runtime $-variables force sequential mode under threads
+* probe: error
+* expected: endif statement(s) missing
+$a = 1;
+If ($a > 0);
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_ifopen2 :
+
+*--#[ cov_rev_string :
+* quoted string with ; and backslash inside reversed include: tools.c 919-926
+* probe: clean
+* quoted string with ; and backslash inside reversed include: tools.c 919-926
+#create revf
+Local x1 = 1;
+Print "a;b\\c";
+Local x2 = 2;
+#endcreate
+#reverseinclude revf
+Print;
+.end
+assert preprocess_error?('Proper syntax is:')
+*--#] cov_rev_string :
+
