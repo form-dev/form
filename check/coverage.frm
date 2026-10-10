@@ -967,6 +967,73 @@ Format O2,horner=wrong,method=wrong,stats=wrong;
 .end
 assert compile_error?
 *--#] cov_opt_badopts :
+*--#[ cov_totensor :
+* ToTensor statement (FindAll in pattern.c): vector occurrences in
+* dotproducts, contractions and function arguments become tensor arguments
+Vectors p;
+CTensors t;
+Indices i,j;
+CFunction g;
+Local F = p(i)*p(i)*p(1)*p(j);
+ToTensor t,p;
+Print F;
+.end
+assert succeeded?
+assert result("F") == "t(1,j,N1_?,N1_?)"
+*--#] cov_totensor :
+*--#[ cov_totensor2 :
+* ToTensor statement: dotproduct conversion and function-argument vectors
+Vectors p,q;
+CTensors t;
+CFunction g;
+Indices i,j;
+Local F = g(p(i),p(j)) + p(i)*q(i)*q(j);
+ToTensor t,p;
+Print F;
+.end
+assert succeeded?
+assert result("F") == "t(q)*q(j)+g(p(i),p(j))"
+*--#] cov_totensor2 :
+*--#[ cov_contentexpr :
+* content_/firstterm_ expression functions (GetContent/GetFirstTerm in execute.c)
+Symbols x,y;
+Local F = (x/3+2/y)^2;
+.sort
+Local C = content_(F);
+Local T = firstterm_(F);
+Print C, T;
+.end
+assert succeeded?
+assert result("C") == "1/9*y^-2"
+assert result("T") == "4*y^-2"
+*--#] cov_contentexpr :
+*--#[ cov_tracengen :
+* tracen with 6 and 8 gamma matrices (TraceNgen recursion in opera.c)
+Indices m1,m2,m3,m4,m5,m6,m7,m8;
+Local F = g_(1,m1,m2,m3,m4,m5,m6);
+Local G = g_(1,m1,m2,m3,m4,m5,m6,m7,m8);
+tracen,1;
+.sort
+Local n1 = nterms_(F);
+Local n2 = nterms_(G);
+Print n1, n2;
+.end
+assert succeeded?
+assert result("n1") == "15"
+assert result("n2") == "105"
+*--#] cov_tracengen :
+*--#[ cov_bracketpow :
+* powers of bracketed expressions (DoOnePow/FindBracket in proces.c/index.c)
+Symbols x,y;
+Local F = (x+y)*(x+y);
+Bracket x;
+.sort
+Local G = F^2;
+Print G;
+.end
+assert succeeded?
+assert result("G") == "y^4+4*x*y^3+6*x^2*y^2+4*x^3*y+x^4"
+*--#] cov_bracketpow :
 *--#[ cov_printoptions :
 * covers option syntax and string form of Print/NPrint statements
 Symbols x;
