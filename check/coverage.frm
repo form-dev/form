@@ -8327,3 +8327,28 @@ assert succeeded?
 assert preprocess_error?('Illegal string for')
 *--#] cov_nsuse_6 :
 
+
+*--#[ cov_ifmatch_badpattern :
+* regression for 1594aba: If(Match(...)) with an uncompilable pattern
+* (dotproduct in the pattern) crashed CoIf with a garbage lhs copy
+* instead of reporting the compile error
+Symbol x,p;
+Function f;
+Local test = f(1);
+If ( Match(f(x.p)) ) Redo;
+Print;
+.end
+assert compile_error?("Illegal second element in dotproduct")
+*--#] cov_ifmatch_badpattern :
+
+*--#[ cov_transform_badset :
+* regression for 1594aba: Transform with a spec that is neither a function
+* nor a function set kept a garbage set number and crashed instead of
+* reporting the error
+Symbol x;
+Local t = x;
+Transform,x,dedup(1,last);
+Print;
+.end
+assert compile_error?("starts with sets of functions")
+*--#] cov_transform_badset :
