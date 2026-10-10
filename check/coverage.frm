@@ -1008,19 +1008,54 @@ assert result("C") == "1/9*y^-2"
 assert result("T") == "4*y^-2"
 *--#] cov_contentexpr :
 *--#[ cov_tracengen :
-* tracen with 6 and 8 gamma matrices (TraceNgen recursion in opera.c)
-Indices m1,m2,m3,m4,m5,m6,m7,m8;
+* tracen: recursion (6/8 gammas), n-4 dimension indices, repeated indices
+* (TraceNgen in opera.c)
+Symbols n;
+Symbols [n-4];
+Dimension n:[n-4];
+Indices ind,m1,m2,m3,m4,m5,m6,m7,m8;
 Local F = g_(1,m1,m2,m3,m4,m5,m6);
 Local G = g_(1,m1,m2,m3,m4,m5,m6,m7,m8);
+Local H = g_(ind,m1,m2,m1,m2);
+Local I = g_(ind,m1,m2,m1,m2,m3,m4,m5,m6);
+Local J = g_(ind,m1,m2,m3,m1,m2,m3,m4,m5);
+Local K = g_(ind,m1,m2,m3,m4,m1,m2,m3,m4);
+tracen,1;
+tracen,ind;
+.sort
+* switch to a symbolic dimension without the [n-4] companion: indices
+* declared from here on have no nmin4 (TraceNgen else-branches)
+Dimension n;
+Indices m11,m12,m13,m14,m15;
+Local L = g_(1,m11,m12,m13,m11,m12,m13,m14,m15);
+Local M = g_(1,m11,m12,m13,m14,m15,m11,m12,m13,m14,m15);
+Local N = g_(1,m1,m2,m3,m4,m1);
+Local O = g_(1,m1,m1,m2,m3);
 tracen,1;
 .sort
 Local n1 = nterms_(F);
 Local n2 = nterms_(G);
-Print n1, n2;
+Local n3 = nterms_(H);
+Local n4 = nterms_(I);
+Local n5 = nterms_(J);
+Local n6 = nterms_(K);
+Local n7 = nterms_(L);
+Local n8 = nterms_(M);
+Local n9 = nterms_(N);
+Local n10 = nterms_(O);
+Print n1, n2, n3, n4, n5, n6, n7, n8, n9, n10;
 .end
 assert succeeded?
 assert result("n1") == "15"
 assert result("n2") == "105"
+assert result("n3") == "2"
+assert result("n4") == "6"
+assert result("n5") == "3"
+assert result("n6") == "4"
+assert result("n7") == "3"
+assert result("n8") == "5"
+assert result("n9") == "0"
+assert result("n10") == "1"
 *--#] cov_tracengen :
 *--#[ cov_bracketpow :
 * powers of bracketed expressions (DoOnePow/FindBracket in proces.c/index.c)
