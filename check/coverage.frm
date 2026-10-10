@@ -4487,3 +4487,276 @@ Print;
 assert preprocess_error?('Proper syntax is:')
 *--#] cov_rev_string :
 
+*--#[ cov_takearg_index_3 :
+* target: TakeArgContent INDEX branch, argument.c:2863-2903
+* probe: clean
+* target: TakeArgContent INDEX branch, argument.c:2863-2903
+Symbol x,y;
+Index i,j;
+Function f;
+Local test = f(x*i + y*i);
+FactArg f;
+Print +s;
+.end
+assert runtime_error?
+*--#] cov_takearg_index_3 :
+
+*--#[ cov_replmism_2 :
+* expected: Replace
+* probe: error
+* expected: Replace
+CFunction f;
+Set funcs: f;
+Local test = f(1,2,3);
+Transform,funcs,replace(1,2)=(2);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(1,0,3)")
+*--#] cov_replmism_2 :
+
+*--#[ cov_cyc_zero :
+* farm probe 0045_cyc_zero_11 (+7 lines)
+* probe: clean
+Function h(cyclic);
+Symbol s;
+Local test = h;
+id h = s;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("s")
+*--#] cov_cyc_zero :
+
+*--#[ cov_dotail_pipe_3 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_3 :
+
+*--#[ cov_gamma2 :
+* expected: gamma with two arguments and momentum form
+* probe: clean
+* expected: gamma with two arguments and momentum form
+Vector p;
+Symbol x;
+Local F = gi_(1,2)*g5_(p)*x;
+if ( match(gi_(1,2)) ) Print "m1";
+if ( match(g5_(p)) ) Print "m2";
+Print F;
+.end
+assert succeeded?
+assert result("F") =~ expr("g_(p,5_)*g_(1,2)*x")
+*--#] cov_gamma2 :
+
+*--#[ cov_anti_fun :
+* farm probe 0038_anti_fun_32 (+8 lines)
+* probe: clean
+Functions f,g,h;
+Symbol x,y;
+Local F = f(x)*g(y)*h(x+y)*x;
+AntiBracket f;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("f(x)*g(y)*h(y + x)*x")
+*--#] cov_anti_fun :
+
+*--#[ cov_mod_frac :
+* farm probe 0006_mod_frac_14 (+27 lines)
+* probe: clean
+Local test = mod_(1/1234567890123456789012345678901234567890,97);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("52")
+*--#] cov_mod_frac :
+
+*--#[ cov_takearg_index_4 :
+* target: TakeArgContent INDEX branch, argument.c:2863-2903
+* probe: clean
+* target: TakeArgContent INDEX branch, argument.c:2863-2903
+Symbol x,y;
+Index i,j;
+Function f;
+Local test = f(x*i + y*i);
+FactArg f;
+Print +s;
+.end
+assert runtime_error?
+*--#] cov_takearg_index_4 :
+
+*--#[ cov_max_small_big :
+* farm probe 0006_max_small_big_17 (+10 lines)
+* probe: clean
+Local test = max_(5,1234567890123456789012345678901234567890);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("1234567890123456789012345678901234567890")
+*--#] cov_max_small_big :
+
+*--#[ cov_replmism_3 :
+* expected: Replace
+* probe: error
+* expected: Replace
+CFunction f;
+Set funcs: f;
+Local test = f(1,2,3);
+Transform,funcs,replace(1,2)=(2);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(1,0,3)")
+*--#] cov_replmism_3 :
+
+*--#[ cov_indexpat :
+* expected: vector-with-index pattern -> INDEX branch in FindAll
+* probe: clean
+* expected: vector-with-index pattern -> INDEX branch in FindAll
+Index i,j;
+Vector p,q;
+Local F = p(i)*q(j);
+if ( match(p(i)) ) Print "matched";
+Print F;
+.end
+assert succeeded?
+assert result("F") =~ expr("p(i)*q(j)")
+*--#] cov_indexpat :
+
+*--#[ cov_anti_funset :
+* farm probe 0038_anti_funset_33 (+11 lines)
+* probe: clean
+Functions f1,f2,g;
+Symbol x;
+Set fs: f1, f2;
+Local F = f1(x)*g(x)*f2(x)*x;
+AntiBracket fs;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("f1(x)*g(x)*f2(x)*x")
+*--#] cov_anti_funset :
+
+*--#[ cov_flagok :
+* valid flag(...) condition, big compile run 4510-4543
+* probe: clean
+* valid flag(...) condition, big compile run 4510-4543
+CFunction f;
+Local F = f(1);
+if ( flag(1,2) ) Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("f(1)")
+*--#] cov_flagok :
+
+*--#[ cov_brk_vecset :
+* farm probe 0038_brk_vecset_37 (+18 lines)
+* probe: clean
+Vectors p1,p2,q1,q2;
+Set vs: p1, p2;
+Local F = p1.p2*q1.q2;
+Bracket vs;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("p1.p2*q1.q2")
+*--#] cov_brk_vecset :
+
+*--#[ cov_expok :
+* valid expression(...) condition, compile run 4546-4591
+* probe: clean
+* valid expression(...) condition, compile run 4546-4591
+Symbol x;
+Local F = x;
+if ( expression(F) == 0 ) Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("x")
+*--#] cov_expok :
+
+*--#[ cov_isfactok :
+* valid isfactorized(...) condition, compile run 4595-4639
+* probe: clean
+* valid isfactorized(...) condition, compile run 4595-4639
+Symbol x;
+Local F = x;
+if ( isfactorized(F) ) Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("x")
+*--#] cov_isfactok :
+
+*--#[ cov_1102_dfill_neg :
+* d_ on RHS with wildcard-filled argument, negative power (DENOMINATOR path)
+* probe: clean
+* d_ on RHS with wildcard-filled argument, negative power (DENOMINATOR path)
+Symbol x,y;
+CFunction f,g;
+Local test = f(g(x));
+id f(y?) = d_(-2,f(y));
+Print;
+.end
+assert compile_error?('Illegal object in')
+*--#] cov_1102_dfill_neg :
+
+*--#[ cov_dotail_pipe_4 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_4 :
+
+*--#[ cov_brk_argwild :
+* farm probe 0038_brk_argwild_35 (+7 lines)
+* probe: clean
+Symbol x,y;
+Functions f,g;
+Local F = f(x,y)*g(x)*y;
+Bracket f(1?,...);
+.sort
+Print;
+.end
+assert compile_error?('Improper operators for')
+*--#] cov_brk_argwild :
+
+*--#[ cov_pr_pctd :
+* expected: !!!Wrong object in Print statement!!!
+* probe: error
+* expected: !!!Wrong object in Print statement!!!
+* expression object paired with numeric specifier should set specialerror
+Symbol x;
+Local F = x;
+Print "%d",F;
+.end
+assert compile_error?('Illegal object in')
+*--#] cov_pr_pctd :
+
+*--#[ cov_brk_delta :
+* farm probe 0038_brk_delta_36 (+5 lines)
+* probe: clean
+Symbol i,j;
+Local F = d_(i,j)*x*d_(i,i);
+Bracket d_;
+.sort
+Print;
+.end
+assert compile_error?('Undeclared variable x')
+*--#] cov_brk_delta :
+
