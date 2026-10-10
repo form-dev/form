@@ -2834,3 +2834,33 @@ assert result("F18") =~ expr("x^2*acc(4000000000)")
 assert result("F19") =~ expr("x^2*acc(-4000000000)")
 assert result("FN") =~ expr("x^2*acc(4000000000)")
 *--#] cov_polyfun :
+
+*--#[ cov_reset :
+* The .store module terminator: saves the state, globalizes all
+* declarations and then empties the memory (PopVariables -> ResetVariables
+* in names.c) so that the following modules start from scratch.
+Symbols a;
+Vectors v;
+Indices i;
+CFunction f;
+Table,sparse t(1);
+AutoDeclare Symbol az;
+Set vecs: v;
+Fill t(1) = 5;
+Local E = t(1) + f(a) + v(i) + az;
+.sort
+Print E;
+.store
+Symbols b;
+CFunction g;
+Local G = g(b);
+.sort
+Print G;
+* The .clear terminator frees everything, including tables (ResetVariables
+* with par = 2 in names.c).
+.clear
+.end
+assert succeeded?
+assert result("E") =~ expr("5 + az + v(i) + f(a)")
+assert result("G") =~ expr("g(b)")
+*--#] cov_reset :
