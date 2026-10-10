@@ -603,12 +603,14 @@ UBYTE *WriteDollarToBuffer(WORD numdollar, WORD par)
 	}
 	AO.OutInBuffer = 1;
 	switch ( d->type ) {
+/* UNFINISHED_FEATURE_EXCL_START */
 		case DOLARGUMENT:
 			WriteArgument(d->where);
 			break;
 		case DOLSUBTERM:
 			WriteSubTerm(d->where,1);
 			break;
+/* UNFINISHED_FEATURE_EXCL_STOP */
 		case DOLNUMBER:
 		case DOLTERMS:
 			t = d->where;
@@ -1097,10 +1099,12 @@ WORD DolToTensor(PHEAD WORD numdollar)
 		retval = d->where[1];
 	}
 	else if ( d->type == DOLARGUMENT &&
+/* UNFINISHED_FEATURE_EXCL_START */
 	d->where[0] <= -FUNCTION && d->where[0] > -FUNCTION-WILDOFFSET
 	&& functions[-d->where[0]-FUNCTION].spec >= TENSORFUNCTION ) {
 		retval = -d->where[0];
 	}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 	else if ( d->type == DOLWILDARGS && d->where[0] == 0
 	&& d->where[1] <= -FUNCTION && d->where[1] > -FUNCTION-WILDOFFSET
 	&& d->where[2] == 0
@@ -1108,10 +1112,12 @@ WORD DolToTensor(PHEAD WORD numdollar)
 		retval = -d->where[1];
 	}
 	else if ( d->type == DOLSUBTERM &&
+/* UNFINISHED_FEATURE_EXCL_START */
 	d->where[0] >= FUNCTION && d->where[0] < FUNCTION+WILDOFFSET
 	&& functions[d->where[0]-FUNCTION].spec >= TENSORFUNCTION ) {
 		retval = d->where[0];
 	}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 	else {
 		AN.ErrorInDollar = 1;
 		retval = 0;
@@ -1156,19 +1162,23 @@ WORD DolToFunction(PHEAD WORD numdollar)
 	d->where[1] >= FUNCTION && d->where[1] < FUNCTION+WILDOFFSET ) {
 		retval = d->where[1];
 	}
+/* UNFINISHED_FEATURE_EXCL_START */
 	else if ( d->type == DOLARGUMENT &&
 	d->where[0] <= -FUNCTION && d->where[0] > -FUNCTION-WILDOFFSET ) {
 		retval = -d->where[0];
 	}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 	else if ( d->type == DOLWILDARGS && d->where[0] == 0
 	&& d->where[1] <= -FUNCTION && d->where[1] > -FUNCTION-WILDOFFSET
 	&& d->where[2] == 0 ) {
 		retval = -d->where[1];
 	}
+/* UNFINISHED_FEATURE_EXCL_START */
 	else if ( d->type == DOLSUBTERM &&
 	d->where[0] >= FUNCTION && d->where[0] < FUNCTION+WILDOFFSET ) {
 		retval = d->where[0];
 	}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 	else {
 		AN.ErrorInDollar = 1;
 		retval = 0;
@@ -1210,6 +1220,7 @@ WORD DolToVector(PHEAD WORD numdollar)
 	if ( d->type == DOLINDEX && d->index < 0 ) {
 		retval = d->index;
 	}
+/* UNFINISHED_FEATURE_EXCL_START */
 	else if ( d->type == DOLARGUMENT && ( d->where[0] == -VECTOR
 	|| d->where[0] == -MINVECTOR ) ) {
 		retval = d->where[1];
@@ -1218,6 +1229,7 @@ WORD DolToVector(PHEAD WORD numdollar)
 	&& d->where[1] == 3 && d->where[2] < 0 ) {
 		retval = d->where[2];
 	}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 	else if ( d->type == DOLTERMS && d->where[0] == 7 &&
 	d->where[7] == 0 && d->where[6] == 3 &&
 	d->where[5] == 1 && d->where[4] == 1 &&
@@ -1275,12 +1287,16 @@ WORD DolToNumber(PHEAD WORD numdollar)
 		else return(-d->where[1]);
 	}
 	else if ( d->type == DOLARGUMENT && d->where[0] == -SNUMBER ) {
+/* UNFINISHED_FEATURE_EXCL_START */
 		return(d->where[1]);
 	}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 	else if ( d->type == DOLARGUMENT && d->where[0] == -INDEX
+/* UNFINISHED_FEATURE_EXCL_START */
 	&& d->where[1] >= 0 && d->where[1] < AM.OffsetIndex ) {
 		return(d->where[1]);
 	}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 	else if ( d->type == DOLZERO ) return(0);
 	else if ( d->type == DOLWILDARGS && d->where[0] == 0
 	&& d->where[1] == -SNUMBER && d->where[3] == 0 ) {
@@ -1335,6 +1351,7 @@ WORD DolToSymbol(PHEAD WORD numdollar)
 	 && d->where[5] == 1 && d->where[4] == 1 && d->where[1] == SYMBOL ) {
 		retval = d->where[3];
 	}
+/* UNFINISHED_FEATURE_EXCL_START */
 	else if ( d->type == DOLARGUMENT && d->where[0] == -SYMBOL ) {
 		retval = d->where[1];
 	}
@@ -1342,6 +1359,7 @@ WORD DolToSymbol(PHEAD WORD numdollar)
 	&& d->where[1] == 4 && d->where[3] == 1 ) {
 		retval = d->where[2];
 	}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 	else if ( d->type == DOLWILDARGS && d->where[0] == 0
 	&& d->where[1] == -SYMBOL && d->where[3] == 0 ) {
 		retval = d->where[2];
@@ -1390,13 +1408,17 @@ WORD DolToIndex(PHEAD WORD numdollar)
 		retval = d->where[3];
 	}
 	else if ( d->type == DOLARGUMENT && d->where[0] == -SNUMBER
+/* UNFINISHED_FEATURE_EXCL_START */
 	&& d->where[1] >= 0 && d->where[1] < AM.OffsetIndex ) {
 		retval = d->where[1];
 	}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 	else if ( d->type == DOLARGUMENT && d->where[0] == -INDEX
+/* UNFINISHED_FEATURE_EXCL_START */
 	&& d->where[1] >= 0 ) {
 		retval = d->where[1];
 	}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 	else if ( d->type == DOLZERO ) return(0);
 	else if ( d->type == DOLWILDARGS && d->where[0] == 0
 	&& d->where[1] == -SNUMBER && d->where[3] == 0 && d->where[2] >= 0
@@ -1414,10 +1436,12 @@ WORD DolToIndex(PHEAD WORD numdollar)
 	&& d->where[1] >= 0 ) {
 		retval = d->where[1];
 	}
+/* UNFINISHED_FEATURE_EXCL_START */
 	else if ( d->type == DOLSUBTERM && d->where[0] == INDEX
 	&& d->where[1] == 3 && d->where[2] >= 0 ) {
 		retval = d->where[2];
 	}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 	else if ( d->type == DOLWILDARGS && d->where[0] == 0
 	&& d->where[1] == -INDEX && d->where[3] == 0 && d->where[2] >= 0 ) {
 		retval = d->where[2];
@@ -1625,6 +1649,7 @@ LONG DolToLong(PHEAD WORD numdollar)
 		if ( d->where[5] > 0 ) return(x);
 		else return(-x);
 	}
+/* UNFINISHED_FEATURE_EXCL_START */
 	else if ( d->type == DOLARGUMENT && d->where[0] == -SNUMBER ) {
 		x = d->where[1];
 		return(x);
@@ -1634,6 +1659,7 @@ LONG DolToLong(PHEAD WORD numdollar)
 		x = d->where[1];
 		return(x);
 	}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 	else if ( d->type == DOLZERO ) return(0);
 	else if ( d->type == DOLWILDARGS && d->where[0] == 0
 	&& d->where[1] == -SNUMBER && d->where[3] == 0 ) {

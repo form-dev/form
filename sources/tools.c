@@ -3095,6 +3095,7 @@ int ToFast(WORD *r, WORD *m)
 	The new term overwrite the old.
 */
 
+/* UNFINISHED_FEATURE_EXCL_START */
 WORD ToPolyFunGeneral(PHEAD WORD *term)
 {
 	WORD *t = term+1, *tt, *to, *to1, *termout, *tstop, *tnext;
@@ -3136,12 +3137,14 @@ WORD ToPolyFunGeneral(PHEAD WORD *term)
 							tt += 2;
 						}
 						else {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 							MLOCK(ErrorMessageLock);
 							MesPrint("!>Internal error: Zero in PolyRatFun");
 							MUNLOCK(ErrorMessageLock);
 							Terminate(-1);
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START */
 						}
 					}
 				}
@@ -3161,6 +3164,7 @@ WORD ToPolyFunGeneral(PHEAD WORD *term)
 	}
 	return(change);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
  		#] ToPolyFunGeneral : 

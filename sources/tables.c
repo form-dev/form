@@ -1910,6 +1910,7 @@ int CoTBhelp(UBYTE *s)
 	This gains one space. Hence we have to be very careful
 */
 
+/* UNFINISHED_FEATURE_EXCL_START */
 void ReWorkT(WORD *term, WORD *funs, WORD numfuns)
 {
 	WORD *tstop, *tend, *m, *t, *tt, *mm, *mmm, *r, *rr;
@@ -2029,6 +2030,7 @@ void Apply(WORD *term, WORD level)
 */
 	ReWorkT(term,funs,numfuns);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
   	#] Apply : 

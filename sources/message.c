@@ -514,6 +514,7 @@ printterms:				first = 1;
 							term += *term;
 						} while ( *term );
 						AO.OutSkip = oldskip;
+/* UNFINISHED_FEATURE_EXCL_START */
 					}
 					else if ( d->type == DOLSUBTERM ) {
 						tt = d->where;
@@ -534,6 +535,7 @@ dosubterm:				if ( AC.LineLength > MAXLINELENGTH ) AC.LineLength = MAXLINELENGTH
 						t = Out;
 						u = (char *)AO.OutputLine;
 						*(AO.OutFill) = 0;
+/* UNFINISHED_FEATURE_EXCL_STOP */
 						while ( u < (char *)(AO.OutFill) ) *t++ = *u++;
 						*t = 0;
 						AO.OutSkip = oldskip;
@@ -553,6 +555,7 @@ dollarzero:				*t++ = '0'; *t = 0;
 						tt[1] = 3; tt[2] = d->index;
 						goto dosubterm;
 					}
+/* UNFINISHED_FEATURE_EXCL_START */
 					else if ( d->type == DOLARGUMENT ) {
 						if ( AC.LineLength > MAXLINELENGTH ) AC.LineLength = MAXLINELENGTH;
 						AO.IsBracket = 0;
@@ -574,6 +577,7 @@ dollarzero:				*t++ = '0'; *t = 0;
 						AC.LineLength = oldlength;
 						AO.OutStop = oldStop;
 					}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 					else if ( d->type == DOLWILDARGS ) {
 						tt = d->where;
 						if ( *tt == 0 ) { tt++;
