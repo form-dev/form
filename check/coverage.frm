@@ -2297,3 +2297,180 @@ assert stdout =~ /Contents of dictionary dic/
 assert stdout =~ /x_1/
 assert stdout =~ /\\ln/
 *--#] cov_dict :
+*--#[ cov_declmisc :
+* NTensors/CTensors/NFunctions/Commuting/Indexes declarations, ProcessBucketSize,
+* GFactorized and the NHide/NUnHide/NFactorize/NUnFactorize specification statements
+NTensors t1,t2;
+CTensors c1;
+NFunctions nf1;
+Commuting cf1;
+Indexes i,j;
+Symbols x,y;
+ProcessBucketSize 100;
+GFactorized GF = (x+1)*(x+2);
+Local F = t1(i,j)*nf1(x)*cf1(y);
+.sort
+NHide GF;
+NUnHide;
+NFactorize GF;
+NUnFactorize GF;
+.sort
+Print GF;
+.end
+assert succeeded?
+assert nterms("F") == 1
+assert result("GF") == "(1+x)*(2+x)"
+*--#] cov_declmisc :
+*--#[ cov_metric :
+* the metric statement is inactive and only issues a message
+Symbols x,y;
+Metric m;
+Local F = x+y;
+.sort
+Print F;
+.end
+assert compile_error? "does not do anything yet"
+*--#] cov_metric :
+*--#[ cov_cycsym :
+* CycleSymmetrize and RCycleSymmetrize canonicalize function arguments
+CFunction f,g,h;
+Symbols x,y,z;
+Local F = f(2,1)+f(1,2)+g(2,1)+g(1,2);
+.sort
+CycleSymmetrize f;
+RCycleSymmetrize g;
+Identify f(?a) = h(?a);
+Identify g(?a) = h(?a);
+.sort
+Print F;
+.end
+assert succeeded?
+assert result("F") == "4*h(1,2)"
+*--#] cov_cycsym :
+*--#[ cov_ifmatch :
+* ifmatch/ifnomatch shorthand with labels and the IdNew/IdOld statements
+#pend_if threaded?
+Symbols x,y;
+CFunction f,g;
+Local F = f(x)+g(x)+f(1)+g(y);
+.sort
+ifmatch-> gotit f(x?$a) = f($a);
+goto done;
+Label gotit;
+Label done;
+IdNew f(?a) = f(?a);
+IdOld g(?a) = g(?a);
+.sort
+Print F;
+.end
+assert succeeded?
+assert result("F") == "f(x)+f(1)+g(x)+g(y)"
+*--#] cov_ifmatch :
+*--#[ cov_spectator :
+* the full spectator cycle: CreateSpectator, ToSpectator, CopySpectator,
+* EmptySpectator, RemoveSpectator
+Symbols x,y;
+CreateSpectator S1,"s1.spec";
+Local F = x+y;
+Local H = x*3;
+.sort
+Drop F;
+ToSpectator S1;
+.sort
+CopySpectator NewE = S1;
+.sort
+EmptySpectator S1;
+RemoveSpectator S1;
+.sort
+Print NewE;
+.end
+assert succeeded?
+assert result("NewE") == "3*x"
+*--#] cov_spectator :
+*--#[ cov_globalmod :
+* the .global module terminator keeps declarations alive across a .sort
+Symbols x,y;
+Local F = x+y;
+.sort
+Symbols z;
+.global
+Local G = z+F;
+.sort
+Print G;
+.end
+assert succeeded?
+assert result("G") == "z+y+x"
+*--#] cov_globalmod :
+*--#[ cov_globalmod_err :
+* non-global expressions are removed by a .store after .global
+Symbols x,y;
+Local F = x+y;
+.global
+.store
+Symbols z;
+Local G = z+F;
+.end
+assert compile_error? "Undeclared variable F"
+*--#] cov_globalmod_err :
+*--#[ cov_polyratexp :
+* PolyRatFun with the expand option (relative)
+Symbol x,ep;
+CFunction rat;
+PolyRatFun rat(expand,x,2,relative);
+Local F = rat(x^3+1,x^5+x^2);
+Print F;
+.end
+assert succeeded?
+assert result("F") == "rat(x^-2)"
+*--#] cov_polyratexp :
+*--#[ cov_polyratexp2 :
+* PolyRatFun with the expand option (fixed) including a power of a ratio
+Symbol x,ep;
+CFunction rat;
+PolyRatFun rat(expand,x,2,fixed);
+Local F = rat(x^3+1,x^5+x^2);
+Local G = rat(x^2-1,x^4-1)^2;
+Print F;
+Print G;
+.end
+assert succeeded?
+assert result("F") == "rat(x^-2)"
+assert result("G") == "rat(1-2*x^2)"
+*--#] cov_polyratexp2 :
+*--#[ cov_polyratdiv :
+* PolyRatFun with the finddivergence option
+Symbol x,ep;
+CFunction rat;
+PolyRatFun rat(finddivergence,ep);
+Local F = rat(x^3+1,x^5+x^2);
+Print F;
+.end
+assert succeeded?
+assert result("F") == "rat(1,1)"
+*--#] cov_polyratdiv :
+*--#[ cov_polyratexp_err :
+* ExpandRat error path when the PolyRatFun is not expandable in the variable
+Symbol x,ep;
+CFunction rat;
+PolyRatFun rat(expand,x,3,fixed);
+Local F = rat(ep+x^2+x^3*ep^2, x+x^2*ep);
+.sort
+Print F;
+.end
+assert runtime_error? "incorrect variable inside"
+*--#] cov_polyratexp_err :
+*--#[ cov_abrackets :
+* ABrackets with AntiPutInside and PutInside
+Symbols x,y;
+CFunction f,g;
+Local F = f(x,y)*g(x,y)+f(y,x);
+.sort
+APutInside g,x;
+PutInside g;
+ABrackets f;
+.sort
+Print F;
+.end
+assert succeeded?
+assert result("F") == "g(g(f(x,y)*g(x,y)))+g(g(f(y,x)))"
+*--#] cov_abrackets :
