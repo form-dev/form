@@ -2746,3 +2746,34 @@ Print G;
 assert succeeded?
 assert result("G") == "h(4,5,6)+k(2,1)"
 *--#] cov_fmatchsy :
+*--#[ cov_select :
+* Select statement with sets (SUBSELECT idoption; TestSelect in pattern.c)
+* The substitution survives only on terms containing no element of the
+* listed sets; terms with a set element are restored.
+Symbols x,y,z,w,m,n;
+Vectors p,q,r,p2;
+Indices i,j,k2;
+Tensor t1;
+Functions f,g,f2,f3,f4,f5,f6,f7,f8,g2,f;
+#$x = 5;
+Set Ssym: x,y;
+Set Svec: p,q;
+Set Sidx: i,j;
+Set Sfun: f,g;
+Local F = x*z + w*z + p(i)*z + p.q*z + f(z)*w + g(z)*w;
+.sort
+Select Ssym, Svec, Sidx, Sfun, z = n;
+.sort
+Local G = w*p(i) + w*r(i) + w*p.q + w*d_(i,j) + w*f(z) + w*g_(1,i) + w*x
++ w*f2(z) + w*f3(p) + w*f4(-p) + w*f5(i) + w*f6(g2(z)) + w*f7(n)
++ w*r(k2) + w*r.p2 + w*f3(r) + w*f5(k2) + w*t1(-p) + w*t1(k2)
++ w*f7(g2) + w*f7($x) + w*i;
+Select Ssym, Svec, Sidx, Sfun, w = m;
+.sort
+Print F;
+Print G;
+.end
+assert succeeded?
+assert result("F") =~ expr("m*n + x*z + p.q*z + p(i)*z + f(z)*w + g(z)*w")
+assert result("G") =~ expr("x*w + p.q*w + r.p2*m + p(i)*w + r(i)*w + r(k2)*m + i*w + d_(i,j)*w - t1(p)*w + t1(k2)*m + g_(1,i)*w + f(z)*w + f2(z)*m + f3(p)*w + f3(r)*m + f4(-p)*w + f5(i)*w + f5(k2)*m + f6(g2(z))*m + f7(n)*m + f7(5)*m + f7(g2)*m")
+*--#] cov_select :
