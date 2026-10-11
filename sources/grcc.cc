@@ -286,6 +286,7 @@ void Options::setDefaultValues(void)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: only call site is under #ifdef OLDDEFAULT, which grcc.cc leaves commented out */
 void Options::setOldDefaultValues(void)
 {
     int j;
@@ -300,6 +301,7 @@ void Options::setOldDefaultValues(void)
     // print level
     prlevel = 1;
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 void Options::setOutMG(OutEGB *omg, void *pt)
@@ -309,11 +311,13 @@ void Options::setOutMG(OutEGB *omg, void *pt)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: Options callback setter never wired; diawrap.cc installs outmg/outag only */
 void Options::setEndMG(OutEGB *emg, void *pt)
 {
     endmg  = emg;
     argemg = pt;
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 void Options::setOutAG(OutEG *oag, void *pt)
@@ -323,11 +327,13 @@ void Options::setOutAG(OutEG *oag, void *pt)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: error-exit hook setter never wired; erExit stays NULL in every build */
 void Options::setErExit(ErExit *ere, void *erearg)
 {
     erExit    = ere;
     erExitArg = erearg;
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 void Options::printLevel(int l)
@@ -336,6 +342,7 @@ void Options::printLevel(int l)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: Options::setValue/getValue accessors have no call sites; diawrap.cc writes opt->values[] directly */
 void Options::setValue(int ind, int val)
 {
     if (0 <= ind && ind < GRCC_OPT_Size) {
@@ -360,6 +367,7 @@ int Options::getValue(int ind)
             grcc_fprintf(GRCC_Stderr, "*** Options::getValue : invalid index=%d\n", ind);
         }
         erEnd("Options::getValue : invalid index");
+/* UNFINISHED_FEATURE_EXCL_STOP */
     }
     return -1;
 }
@@ -440,6 +448,7 @@ void Options::setQGrafOpt(int *qg)
 }
 
 //--------------------------------------------------------------
+/* DEBUG_EXCL_START: Options state dump function (no call sites); also encloses the unused getDef/getOldDef/getQGDef accessors (no call sites) */
 void Options::print(void)
 {
     int j;
@@ -475,6 +484,7 @@ const OptDef *Options::getOldDef(void)
 const OptQGDef *Options::getQGDef(void)
 {
     return optQGDef;
+/* DEBUG_EXCL_STOP */
 }
 
 //--------------------------------------------------------------
@@ -492,6 +502,7 @@ void Options::setOutputP(Bool outp, const char *fname)
 }
 
 //--------------------------------------------------------------
+/* DEBUG_EXCL_START: Options model dump function (no call sites); also encloses the unused Options::outModel/Options::begin */
 void Options::printModel(void)
 {
     if (prlevel > 0) {
@@ -531,6 +542,7 @@ void Options::begin(Model *mdl)
         }
     }
 }
+/* DEBUG_EXCL_STOP */
 
 //--------------------------------------------------------------
 void Options::end(void)
@@ -1750,11 +1762,13 @@ Particle::Particle(Model *modl, int pid, PInput *pinp)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: Particle destructor: Model-owned particles are allocated once and never deleted (cf. already-marked Model::~Model) */
 Particle::~Particle(void)
 {
     free(aname);
     free(name);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 char *Particle::particleName(int p)
@@ -1767,12 +1781,14 @@ char *Particle::particleName(int p)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: particle code-query API; only call site is the dead Model::particleCode */
 int Particle::particleCode(int p)
 {
     if (p < 0) {
         return acode;
     } else {
         return pcode;
+/* UNFINISHED_FEATURE_EXCL_STOP */
     }
 }
 
@@ -1783,6 +1799,7 @@ int Particle::isNeutral(void)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: particle type-name query; only call site is Output::outModel, inside the already-excluded unwired model-file emission region */
 const char *Particle::typeName(void)
 {
     return ptypenames[ptype];
@@ -1817,6 +1834,7 @@ void Particle::prParticle(void)
     grcc_fprintf(GRCC_Stdout, "ptype=%s, pcode=%d, acode=%d, extonly=%d, cdeg=(%d,%d)\n", 
            ptypenames[ptype], pcode, acode, extonly, cmindeg, cmaxdeg);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //==============================================================
 // class Interaction
@@ -1945,6 +1963,7 @@ Interaction::Interaction(Model *modl, int iid, const char *nam, int icd, int *cp
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: Interaction destructor (Model-owned interactions are never deleted) plus Interaction::prInteraction dump, called only from an erEnd failure branch and the excluded model emission region */
 Interaction::~Interaction(void)
 {
     if (slist != NULL) {
@@ -1976,6 +1995,7 @@ void Interaction::prInteraction(void)
     grcc_fprintf(GRCC_Stdout, "];\n");
 
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //==============================================================
 // class Model
@@ -2467,6 +2487,7 @@ char *Model::particleName(int p)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: model/particle code-query API has no call sites anywhere in sources/ */
 int Model::particleCode(int p)
 {
     int q;
@@ -2482,6 +2503,7 @@ int Model::particleCode(int p)
         q = p;
     }
     return particles[q]->particleCode(p);
+/* UNFINISHED_FEATURE_EXCL_STOP */
 }
 
 //--------------------------------------------------------------
@@ -2577,6 +2599,7 @@ int Model::findInteractionCode(int icd)
 }
 
 //--------------------------------------------------------------
+/* DEBUG_EXCL_START: model-input dump functions printMInput/printPInput/printIInput; no call sites */
 void Model::printMInput(MInput *min)
 {
     grcc_fprintf(GRCC_Stdout, "  \"Model\": [\"%s\", %d, [",
@@ -2625,6 +2648,7 @@ void Model::printIInput(IInput *iin)
     }
     grcc_fprintf(GRCC_Stdout, "],\n");
 }
+/* DEBUG_EXCL_STOP */
 
 //**************************************************************
 // proc.cc
@@ -2799,6 +2823,7 @@ PNodeClass::~PNodeClass(void)
 }
 
 //--------------------------------------------------------------
+/* DEBUG_EXCL_START: node-class dump; only call site is the dead SProcess::prSProcess */
 void PNodeClass::prPNodeClass(void)
 {
     int j;
@@ -2829,6 +2854,7 @@ void PNodeClass::prElem(int j)
     grcc_fprintf(GRCC_Stdout, "\n");
 
 }
+/* DEBUG_EXCL_STOP */
 
 //==============================================================
 // class SProcess
@@ -3176,6 +3202,7 @@ SProcess::~SProcess(void)
 }
 
 //--------------------------------------------------------------
+/* DEBUG_EXCL_START: subprocess dump; only call site sits inside the already-excluded 15-arg SProcess ctor */
 void SProcess::prSProcess(void)
 {
     grcc_fprintf(GRCC_Stdout, "\n");
@@ -3186,6 +3213,7 @@ void SProcess::prSProcess(void)
         grcc_fprintf(GRCC_Stdout, "  pnclass = NULL\n");
    }
 }
+/* DEBUG_EXCL_STOP */
 
 //--------------------------------------------------------------
 BigInt SProcess::generate(void)
@@ -3897,6 +3925,7 @@ void MNodeClass::incMat(int nd, int td, int val)
 }
 
 //--------------------------------------------------------------
+/* INTERNAL_ERROR_EXCL_START: node-class matrix dump; call sites are only the dead MGraph::print and a commented-out line */
 void MNodeClass::printMat(void)
 {
     //  Print configuration matrix.
@@ -3926,6 +3955,7 @@ void MNodeClass::printMat(void)
         grcc_fprintf(GRCC_Stdout, "]\n");
     }
 }
+/* INTERNAL_ERROR_EXCL_STOP */
 
 //--------------------------------------------------------------
 int MNodeClass::cmpMNCArray(int *a0, int *a1, int ma)
@@ -3977,6 +4007,7 @@ void MNodeClass::reorder(MGraph *mg)
 //==============================================================
 // class MNode : nodes in MGraph
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: MNode ctor overload only called from the dead MGraph NCInput ctor */
 MNode::MNode(int vid, int vclss, NCInput *mgi)
 {
     // Arguments
@@ -3993,6 +4024,7 @@ MNode::MNode(int vid, int vclss, NCInput *mgi)
     cmindeg = mgi->cmind;    // min(deg of connectable vertex)
     cmaxdeg = mgi->cmaxd;    // max(deg of connectable vertex)
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 MNode::MNode(int vid, int vdeg, int vextlp, int vclss, int cmin, int cmax)
@@ -4083,6 +4115,7 @@ MGraph::MGraph(int pid, int ncl, int *cldeg, int *clnum, int *cltyp, int *cmind,
 }
 
 //---------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: MGraph ctor overload with no call sites; diawrap.cc/grcc.cc use the array-based ctor */
 MGraph::MGraph(int pid, int ncl, NCInput *mgi, Options *opts)
 {
     int nn, ne, j, k;
@@ -4153,6 +4186,7 @@ MGraph::MGraph(int pid, int ncl, NCInput *mgi, Options *opts)
 
     init();
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //---------------------------------------------------------------
 void MGraph::init(void)
@@ -4229,6 +4263,7 @@ MGraph::~MGraph(void)
 }
   
 //---------------------------------------------------------------
+/* INTERNAL_ERROR_EXCL_START: graph dump diagnostics; call sites sit only in erEnd() internal-error paths */
 void MGraph::printAdjMat(MNodeClass *cl)
 {
     int j1, j2;
@@ -4270,8 +4305,10 @@ void MGraph::print(void)
  
     printAdjMat(curcl);
 }
+/* INTERNAL_ERROR_EXCL_STOP */
 
 //---------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: python-format graph output; only caller EGraph::printPy is reachable solely via #ifdef NEWOUTPY (commented out), cf. the already-excluded .f/.p emission */
 void MGraph::printPy(FILE *fp, long mId)
 {
     fprintf(fp, "#TGraph : (gseq, gid, nodes, amat)\n");
@@ -4301,6 +4338,7 @@ void MGraph::printPy(FILE *fp, long mId)
     fprintf(fp, "  ], # group\n");
     fprintf(fp, ")\n");
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //---------------------------------------------------------------
 Bool MGraph::isConnected(void)
@@ -4630,10 +4668,12 @@ void MGraph::biconnME(void)
                 ok = False;
             }
             if (! ok) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
                 print();
                 egraph->print();
                 mconn->print();
                 erEnd("biconnME: illegal connection");
+/* INTERNAL_ERROR_EXCL_STOP */
             }
         }
 #endif
@@ -4823,6 +4863,7 @@ void MGraph::bisearchME(int nd, int pd, int ned,  int col,
                     }
                 }
                 if (cn != conn) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
                     grcc_fprintf(GRCC_Stdout, "*** revisit back-ed (%d --> %d) cn=%d != conn=%d\n",
                            nd, td, cn, conn);
                     grcc_fprintf(GRCC_Stdout, "    sedges = %d\n", mconn->sedges);
@@ -4837,6 +4878,7 @@ void MGraph::bisearchME(int nd, int pd, int ned,  int col,
                     egraph->print();
                     mconn->print();
                     erEnd("bisearchME: illegal connection");
+/* INTERNAL_ERROR_EXCL_STOP */
                 }
             }
 
@@ -5147,10 +5189,12 @@ void MGraph::connectLeg(int so, int sn, int to, int ts, MNodeClass *cl)
 #ifdef CHECK
                 if ((adjMat[sn][tn] != 0) || 
                     (adjMat[sn][tn] != adjMat[tn][sn])) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
                     grcc_fprintf(GRCC_Stdout, "*** inconsistent connection: sn=%d, tn=%d",
                            sn, tn);
                     printAdjMat(cl);
                     erEnd("inconsistent connection ");
+/* INTERNAL_ERROR_EXCL_STOP */
                 }
 #endif
       
@@ -5365,6 +5409,7 @@ void MGraph::newGraph(MNodeClass *cl)
 //==============================================================
 // class MOrbits: orbits of nodes
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: MOrbits orbit-enumeration machinery, instantiated only under #ifdef ORBITS which is commented out (grcc.cc:69) */
 MOrbits::MOrbits(void)
 {
     nOrbits = 0;
@@ -5462,6 +5507,7 @@ void MOrbits::toOrbits(void)
     }
     flist[nOrbits] = nNodes;
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //**************************************************************
 // n-edge connected components
@@ -5911,6 +5957,7 @@ SGroup::~SGroup(void)
 }
 
 //------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: SGroup::print has no call sites */
 void SGroup::print(void)
 {
     int j;
@@ -5924,6 +5971,7 @@ void SGroup::print(void)
         prIntArray(nnodes, elem[j], "\n");
     }
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //------------------------------------------------------------
 void SGroup::newGroup(int nnd, int nclss, int *clss)
@@ -5959,6 +6007,7 @@ void SGroup::clearGroup(void)
 }
 
 //------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: SGroup::delGroup: only call site is commented out */
 void SGroup::delGroup(void)
 {
     int j;
@@ -5973,6 +6022,7 @@ void SGroup::delGroup(void)
     elem = NULL;
     clearGroup();
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //------------------------------------------------------------
 int *SGroup::genNext(void)
@@ -6008,6 +6058,7 @@ BigInt SGroup::nElem(void)
 }
 
 //------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: SGroup::nextElem: only call site is commented out */
 int *SGroup::nextElem(void)
 {
     if (nelem < 0) {
@@ -6049,6 +6100,7 @@ ENode::ENode(void)
 
     intrct  = -1;
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 ENode::ENode(EGraph *egrph, int loops, int sdeg)
@@ -6082,6 +6134,7 @@ ENode::~ENode(void)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: ENode::copy is called only by the dead EGraph::copy */
 void ENode::copy(ENode *en)
 { 
     int d;
@@ -6093,6 +6146,7 @@ void ENode::copy(ENode *en)
         edges[d] = en->edges[d];
     }
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 void ENode::initAss(EGraph *egrph, int nid, int sdg)
@@ -6136,6 +6190,7 @@ void ENode::setType(int typ)
 }
 
 //--------------------------------------------------------------
+/* INTERNAL_ERROR_EXCL_START: callees of the already-excluded EGraph::print diagnostics; reachable only via erEnd() paths */
 void ENode::print(void)
 {
     int j;
@@ -6175,6 +6230,7 @@ EEdge::EEdge(void)
     momset = 0;
     momdir = 0;
 }
+/* INTERNAL_ERROR_EXCL_STOP */
 
 //--------------------------------------------------------------
 EEdge::EEdge(EGraph *egrph, int nedges, int nloops)
@@ -6255,6 +6311,7 @@ void EEdge::setLMom(int k, int dir)
 }
 
 //--------------------------------------------------------------
+/* INTERNAL_ERROR_EXCL_START: callees of the already-excluded EGraph::print diagnostics; reachable only via erEnd() paths */
 void EEdge::print(void)
 {
     int zero, n, k;
@@ -6302,6 +6359,7 @@ void EEdge::print(void)
     }
     grcc_fprintf(GRCC_Stdout, "\n");
 }
+/* INTERNAL_ERROR_EXCL_STOP */
 
 //==============================================================
 // class EFLine
@@ -6314,6 +6372,7 @@ EFLine::EFLine(void)
 }
 
 //--------------------------------------------------------------
+/* INTERNAL_ERROR_EXCL_START: callees of the already-excluded EGraph::print diagnostics; reachable only via erEnd() paths */
 void EFLine::print(const char *msg)
 {
     if (ftype == FL_Open) {
@@ -6335,6 +6394,7 @@ void EFLine::print(const char *msg)
     grcc_fprintf(GRCC_Stdout, " len=%d ", nlist);
     prIntArray(nlist, elist, msg);
 }
+/* INTERNAL_ERROR_EXCL_STOP */
 
 //==============================================================
 // class EGraph
@@ -6430,6 +6490,7 @@ EGraph::~EGraph(void)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: EGraph::copy has no call sites */
 void EGraph::copy(EGraph *eg)
 {
     int nd, ed;
@@ -6470,6 +6531,7 @@ void EGraph::copy(EGraph *eg)
     
     bicount = -1;
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 void EGraph::setExtLoop(int nd, int val)
@@ -6494,6 +6556,7 @@ void EGraph::endSetExtLoop(void)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: DGraph->EGraph input path declared in the grcc API but never wired into diawrap.cc; no call sites anywhere in sources/ */
 void EGraph::fromDGraph(DGraph *dg)
 {
     int deg[GRCC_MAXNODES];
@@ -6597,6 +6660,7 @@ void EGraph::fromDGraph(DGraph *dg)
 
     bicount = -1;
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 
 //--------------------------------------------------------------
@@ -7457,6 +7521,7 @@ int EGraph::findRoot(void)
 }
 
 //---------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: EGraph::connComp is called only by the never-wired EGraph::fromDGraph */
 int EGraph::connComp(void)
 {
     //  Count the number of connected component
@@ -7507,6 +7572,7 @@ int EGraph::connVisit(int nd, int ncc)
         }
     }
     return nelem;
+/* UNFINISHED_FEATURE_EXCL_STOP */
 }
 
 //--------------------------------------------------------------
@@ -7962,10 +8028,12 @@ int  EGraph::fltrace(int fk, int nd0, int *fl)
         el = V2Ileg(e);
 #ifdef CHECK
         if (ed > nEdges) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
             grcc_fprintf(GRCC_Stderr, "*** fltrace: ed=%d > nEdges=%d, fl=",
                     ed, nEdges);
             prIntArray(nNodes, fl, "\n");
             erEnd("fltrace: illegal fl");
+/* INTERNAL_ERROR_EXCL_STOP */
         }
 #endif
         nd = edges[ed]->nodes[el];
@@ -8030,10 +8098,12 @@ int  EGraph::fltrace(int fk, int nd0, int *fl)
         }
     }
     if (k >= nEdges || k >= nfl) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
         grcc_fprintf(GRCC_Stdout, "*** fline: illegal control\n");
         grcc_fprintf(GRCC_Stdout, "    nEdges=%d, nfl=%d, k=%d, ", nEdges, nfl, k);
         prIntArray(nfl, fl, "\n");
         erEnd("fline: illegal control");
+/* INTERNAL_ERROR_EXCL_STOP */
     }
     return nfl;
 }
@@ -8195,11 +8265,13 @@ NCand::~NCand(void)
 }
 
 //---------------------------------------------------------------
+/* INTERNAL_ERROR_EXCL_START: candidate dump used only by erEnd() paths and the marked Assign::prCand */
 void NCand::prNCand(const char* msg)
 {
     grcc_fprintf(GRCC_Stdout, "%d %d ",  st, deg);
     prIntArray(nilist, ilist, msg);
 }
+/* INTERNAL_ERROR_EXCL_STOP */
 
 //===============================================================
 // class ECand
@@ -8228,11 +8300,13 @@ ECand::~ECand(void)
 }
 
 //---------------------------------------------------------------
+/* INTERNAL_ERROR_EXCL_START: candidate dump used only by erEnd() paths and the marked Assign::prCand */
 void ECand::prECand(const char *msg)
 {
     prIntArray(nplist, plist, "");
     grcc_fprintf(GRCC_Stdout, " (det=%d)%s", det, msg);
 }
+/* INTERNAL_ERROR_EXCL_STOP */
 
 //===============================================================
 // class ANode
@@ -8407,6 +8481,7 @@ Assign::~Assign(void)
 }
 
 //---------------------------------------------------------------
+/* INTERNAL_ERROR_EXCL_START: candidate-table dump used only by erEnd() internal-error paths */
 void Assign::prCand(const char *msg)
 {
     //  Print candidate table
@@ -8441,6 +8516,7 @@ void Assign::prCand(const char *msg)
        }
     }
 }
+/* INTERNAL_ERROR_EXCL_STOP */
 
 //===============================================================
 void Assign::checkAG(const char *msg)
@@ -8451,15 +8527,19 @@ void Assign::checkAG(const char *msg)
     for (n = 0; n < nNodes; n++) {
         for (lg = 0; lg < nodes[n]->deg; lg++) {
             if (nodes[n]->aedges[lg] < 0) {
+/* INTERNAL_ERROR_EXCL_START: diagnostic print in a consistency-check failure path (feeds ok=False; the path aborts via erEnd()) */
                 grcc_fprintf(GRCC_Stdout, "*** checkAG:%s: n=%d, lg=%d, aedges=%d\n",
                        msg, n, lg, nodes[n]->aedges[lg]);
                 ok = False;
+/* INTERNAL_ERROR_EXCL_STOP */
             }
         }
     }
     if (!ok) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
         prCand("checkAG");
         erEnd("checkAG: failed");
+/* INTERNAL_ERROR_EXCL_STOP */
     }
 }
 
@@ -8530,6 +8610,7 @@ Bool Assign::selectVertexSimp(int lastv)
 }
 
 //---------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: non-SIMPSEL vertex-selection alternative; its only call sites sit in #else branches of #ifdef SIMPSEL (SIMPSEL defined at grcc.cc:51) */
 Bool Assign::selectVertex(void)
 {
     //  Select a vertex for assignment of particles to legs
@@ -8566,6 +8647,7 @@ Bool Assign::selectVertex(void)
     ok = selectLeg(v, -1);
 
     return ok;
+/* UNFINISHED_FEATURE_EXCL_STOP */
 }
 
 //---------------------------------------------------------------
@@ -8907,11 +8989,13 @@ Bool Assign::fromMGraph(void)
 
 #ifdef CHECK
             if (mgraph->nodes[n]->deg != 1) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
                 grcc_fprintf(GRCC_Stdout, "*** assign:fromMGraph : "
                        "external but deg[%d] = %d != 1, type=%d\n",
                        n, mgraph->nodes[n]->deg, typ);
                 mgraph->print();
                 erEnd("assign:fromMGraph : illegal external particle");
+/* INTERNAL_ERROR_EXCL_STOP */
             }
 #endif
             np[0] = pnclass->particle[cl];
@@ -9135,9 +9219,11 @@ Bool Assign::fillEGraph(int aid, BigInt nsym, BigInt esym, BigInt nsym1)
         if (isATExternal(pnclass->type[cl])) {
             ;
         } else if (nodes[n]->cand->st != AS_Assigned) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
             grcc_fprintf(GRCC_Stdout, "*** fillEGraph : node %d is not assigned", n);
             prCand("fillEGraph: node");
             erEnd("fillEGraph : node is not assigned");
+/* INTERNAL_ERROR_EXCL_STOP */
         }
 #endif
 
@@ -9156,9 +9242,11 @@ Bool Assign::fillEGraph(int aid, BigInt nsym, BigInt esym, BigInt nsym1)
             }
 #ifdef CHECK
             if (lg < 0 || lg >= nodes[n]->deg) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
                 grcc_fprintf(GRCC_Stdout, "*** fillEGraph: n=%d, lr=%d: 0 <= lg=%d < %d\n",
                        n, lr, lg, nodes[n]->deg);
                 erEnd("fillEGraph: illegal reordering");
+/* INTERNAL_ERROR_EXCL_STOP */
             }
 #endif
             ed = an->aedges[lg];
@@ -9174,9 +9262,11 @@ Bool Assign::fillEGraph(int aid, BigInt nsym, BigInt esym, BigInt nsym1)
     for (e = 0; e < nEdges; e++) {
 #ifdef CHECK
         if (edges[e]->cand->nplist != 1) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
             grcc_fprintf(GRCC_Stdout, "*** fillEGraph : edge %d is not assigned", e);
             prCand("fillEGraph: edge");
             erEnd("fillEGraph : edge is not assigned");
+/* INTERNAL_ERROR_EXCL_STOP */
         }
 #endif
         egraph->edges[e]->ptcl = edges[e]->cand->plist[0];
@@ -9291,6 +9381,7 @@ int *Assign::reordLeg(int n, int *reord, int *plist, int *used)
 
 #ifdef CHECK
         if (!found) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
             grcc_fprintf(GRCC_Stdout, "*** reordLeg: illegal list of particles:"
                    "interaction %d ", ia);
             prIntArray(deg, ilegs, "; ");
@@ -9298,6 +9389,7 @@ int *Assign::reordLeg(int n, int *reord, int *plist, int *used)
             prIntArray(deg, plist, "\n");
             prCand("reordLeg");
             erEnd("reordLeg: illegal list of particles");
+/* INTERNAL_ERROR_EXCL_STOP */
         }
 #endif
     }
@@ -9384,6 +9476,7 @@ int Assign::candPart(int v, int ln, int *plist, const int size)
 
 #ifdef CHECK
     if (edges[en]->cand->det) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
         grcc_fprintf(GRCC_Stdout, "*** candPart : particle of leg (%d, %d) "
                "is assigned to %d\n",
                v, ln, edges[en]->cand->plist[0]);
@@ -9391,6 +9484,7 @@ int Assign::candPart(int v, int ln, int *plist, const int size)
         mgraph->printAdjMat(mgraph->curcl);
         prCand("candPart");
         erEnd("candPart : particle of leg is assigned");
+/* INTERNAL_ERROR_EXCL_STOP */
     }
 #endif
 
@@ -9570,11 +9664,13 @@ Bool Assign::assignPLeg(int n, int ln, int pt)
 
 #ifdef CHECK
     if (!isIn(edges[e]->cand->nplist, edges[e]->cand->plist, ept)) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
         grcc_fprintf(GRCC_Stdout, "*** assignPLeg: particle %d is not in the cand. of e=%d",
                 ept, e);
         edges[e]->cand->prECand("\n");
         prCand("assignPLeg");
         erEnd("assignPLeg: particle is not in the cand.");
+/* INTERNAL_ERROR_EXCL_STOP */
     }
 #endif
 
@@ -9716,9 +9812,11 @@ Bool Assign::updateCandNode(int v)
 #ifdef CHECK
         e = nodes[v]->aedges[0];
         if (e < 0 || edges[e]->cand->nplist != 1) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
             grcc_fprintf(GRCC_Stdout, "*** illegal external node: v=%d e=%d :", v, e);
             prCand("updateCandNode");
             erEnd("illegal external node");
+/* INTERNAL_ERROR_EXCL_STOP */
         }
 #endif
 
@@ -9925,10 +10023,12 @@ Bool Assign::isIsomorphic(MNodeClass *cl, BigInt *nsym, BigInt *esym, BigInt *ns
     ngelem = mgraph->group->nElem();
 #ifdef CHECK
     if (mgraph->nsym > 1 && ngelem <= 1) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
         grcc_fprintf(GRCC_Stdout, "*** isIsomorphic: illegal group: "
                "ngelem=%ld, mgraph->sym=(%ld, %ld)\n",
                ngelem, mgraph->nsym, mgraph->esym);
         erEnd("Assign::isIsomorphic: illegal group");
+/* INTERNAL_ERROR_EXCL_STOP */
     }
 #endif
     if (ngelem == 0) {
@@ -10167,22 +10267,26 @@ Bool Assign::checkCand(const char *msg)
         // check assigned vertex
         } else if (nc->st == AS_Assigned) {
             if (nc->nilist < 1) {
+/* INTERNAL_ERROR_EXCL_START: diagnostic print in a consistency-check failure path (feeds ok=False; the path aborts via erEnd()) */
                 grcc_fprintf(GRCC_Stdout, "*** checkCand:7:%s:status (%d) of node %d says"
                        " interaction is assigned to %d but ilist=",
                        msg, nc->st, n, nc->st);
                 prIntArray(nc->nilist, nc->ilist, "\n");
                 ok = False;
+/* INTERNAL_ERROR_EXCL_STOP */
             }
 
             for (lg = 0; lg < nc->deg; lg++) {
                 e  = na->aedges[lg];
                 ec = edges[e]->cand;
                 if (ec->nplist != 1) {
+/* INTERNAL_ERROR_EXCL_START: diagnostic print in a consistency-check failure path (feeds ok=False; the path aborts via erEnd()) */
                     grcc_fprintf(GRCC_Stdout, "*** checkCand:8:%s:status (%d) of node %d says"
                           " interaction is assigned "
                           " but unassigned edge %d is found\n",
                           msg, nc->st, n, e);
                     ok = False;
+/* INTERNAL_ERROR_EXCL_STOP */
                 }
             }
 
@@ -10191,9 +10295,11 @@ Bool Assign::checkCand(const char *msg)
             // pt  = nc->ilist[0];
             // *** pte = legEdgeParticle(n, 0, - pt);
         } else {
+/* INTERNAL_ERROR_EXCL_START: diagnostic print in a consistency-check failure path (feeds ok=False; the path aborts via erEnd()) */
             grcc_fprintf(GRCC_Stdout, "*** checkCand:10:%s:illegal status of node %d : %d",
                    msg, n, nc->st);
             ok = False;
+/* INTERNAL_ERROR_EXCL_STOP */
         }
     }
 
@@ -10202,16 +10308,20 @@ Bool Assign::checkCand(const char *msg)
     for (e = 0; e < nEdges; e++) {
         ec = edges[e]->cand;
         if (ec != NULL && ec->nplist < 1) {
+/* INTERNAL_ERROR_EXCL_START: diagnostic print in a consistency-check failure path (feeds ok=False; the path aborts via erEnd()) */
             grcc_fprintf(GRCC_Stdout, "*** checkCand:12:%s:illegal edge %d\n", msg, e);
             ok = False;
+/* INTERNAL_ERROR_EXCL_STOP */
         }
     }
 
     if (!ok) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
         grcc_fprintf(GRCC_Stdout, "*** checkCand:15:%s:illegal configuration\n", msg);
         prCand("checkCand");
         grcc_fprintf(GRCC_Stdout, "*** checkCand:16:illegal configuration\n");
         erEnd("checkCand:16:illegal configuration");
+/* INTERNAL_ERROR_EXCL_STOP */
     }
     return ok;
 }
@@ -10224,10 +10334,12 @@ void Assign::checkNode(int n, const char *msg)
     for (j = 0; j < nodes[n]->cand->nilist; j++) {
         it = nodes[n]->cand->ilist[j];
         if (Abs(it) >= GRCC_MAXMINTERACT) {
+/* INTERNAL_ERROR_EXCL_START: consistency-check failure report ending in erEnd(), which aborts FORM; cannot fire in correct runs */
             grcc_fprintf(GRCC_Stdout, "*** %s: n=%d, j=%d, it=%d\n", msg, n, j, it);
             nodes[n]->cand->prNCand(msg);
             grcc_fprintf(GRCC_Stdout, "\n");
             erEnd("checkNode:illegal it");
+/* INTERNAL_ERROR_EXCL_STOP */
         }
     }
 }
@@ -10242,6 +10354,7 @@ void Assign::checkNode(int n, const char *msg)
 //=============================================================
 // stack operations
 //--------------------------------------------------------------
+/* DEBUG_EXCL_START: node/edge stack dump functions; their only caller AStack::prStack has no call sites */
 void NStack::print(const char *msg)
 {
     grcc_fprintf(GRCC_Stdout, "  node=%d, deg=%d, st=%d, ilist=", noden, deg, st);
@@ -10254,6 +10367,7 @@ void EStack::print(const char *msg)
     grcc_fprintf(GRCC_Stdout, "  edge=%d, det=%d, plist=", edgen, det);
     prilist(nplist, plist, msg);
 }
+/* DEBUG_EXCL_STOP */
 
 //--------------------------------------------------------------
 AStack::AStack(int nsize, int esize)
@@ -10448,6 +10562,7 @@ void AStack::restoreMsg(CheckPt sav, const char *msg)
 #endif
 
 //--------------------------------------------------------------
+/* DEBUG_EXCL_START: stack dump function; no call sites */
 void AStack::prStack(void)
 {
     int j;
@@ -10462,6 +10577,7 @@ void AStack::prStack(void)
         eStack[j]->print("\n");
     }
 }
+/* DEBUG_EXCL_STOP */
 
 //**************************************************************
 // class Fraction
@@ -10497,12 +10613,14 @@ void Fraction::setValue(BigInt n, BigInt d)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: Fraction copy-setter overload has no call sites */
 void  Fraction::setValue(Fraction &f) 
 { 
     num   = f.num;  
     den   = f.den; 
     ratio = f.ratio; 
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 BigInt Fraction::gcd(BigInt n0, BigInt n1)
@@ -10525,6 +10643,7 @@ BigInt Fraction::gcd(BigInt n0, BigInt n1)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: Fraction::normal has no call sites; add() normalizes inline */
 void Fraction::normal(void)
 {
     BigInt g;
@@ -10540,6 +10659,7 @@ void Fraction::normal(void)
         den = - den;
     }
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 void Fraction::add(BigInt n, BigInt d)
@@ -10574,6 +10694,7 @@ void Fraction::add(Fraction f)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: Fraction::sub has no call sites */
 void Fraction::sub(Fraction f)
 {
     double r = ratio - f.ratio;
@@ -10581,11 +10702,14 @@ void Fraction::sub(Fraction f)
     add(-f.num, f.den);
     ratio = r;
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: Fraction::isEq has no call sites */
 Bool Fraction::isEq(Fraction f)
 {
     return (num == f.num && den == f.den);
+/* UNFINISHED_FEATURE_EXCL_STOP */
 }
 
 //**************************************************************
@@ -10704,6 +10828,7 @@ static int   *delintdup(int *a)
 }
 
 //------------------------------------------------------------
+/* DEBUG_EXCL_START: integer-list printer used only by the dead stack dump functions */
 static void   prilist(int n, const int *a, const char *msg)
 {
     grcc_fprintf(GRCC_Stdout, "[");
@@ -10713,6 +10838,7 @@ static void   prilist(int n, const int *a, const char *msg)
     }
     grcc_fprintf(GRCC_Stdout, "]%s", msg);
 }
+/* DEBUG_EXCL_STOP */
 
 //------------------------------------------------------------
 static int nextPerm(int nelem, int nclass, int *cl, int *r, int *q, int *p, int count)
@@ -10863,6 +10989,7 @@ static void bsort(int n, int *ord, int *a)
 }
 
 //--------------------------------------------------------------
+/* INTERNAL_ERROR_EXCL_START: callees of the already-excluded EGraph::print diagnostics; reachable only via erEnd() paths */
 static void prMomStr(int mom, const char *ms, int mn)
 {
     if (mom == 0) {
@@ -10905,6 +11032,7 @@ static void prIntArrayErr(int n, int *p, const char *msg)
     }
     grcc_fprintf(GRCC_Stderr, "]%s", msg);
 }
+/* INTERNAL_ERROR_EXCL_STOP */
 
 //--------------------------------------------------------------
 static void sortrec(int l, int r, int *a)
