@@ -9369,3 +9369,311 @@ assert compile_error?('Illegal value for')
 assert preprocess_error?('Illegal string for')
 *--#] cov_nsuse_7 :
 
+*--#[ cov_powset_6 :
+* farm probe 0025_powset_15 (+5 lines)
+* probe: clean
+Symbol x,a,b,n;
+Set s: a,b;
+CFunction f,g;
+Local t = f(x^a) + f(x^b) + f(x^3);
+id f(x^n?s) = g(x^n);
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(x^3) + f((x)^(a)) + f((x)^(b))")
+*--#] cov_powset_6 :
+
+*--#[ cov_bigexp_9 :
+* large expansion inside Substitute; attempts workspace check path 654-658
+* probe: clean
+* large expansion inside Substitute; attempts workspace check path 654-658
+Symbol x,y;
+CFunction f;
+Local test = f(x);
+id f(x?) = (y+1)^50000;
+.end
+assert runtime_error?
+*--#] cov_bigexp_9 :
+
+*--#[ cov_0017_ns_fn_2 :
+* farm probe 0127_0017_ns_fn_42 (+39 lines)
+* probe: clean
+#namespace wrk
+Symbol x,y;
+CFunction f,g;
+Local test = f(x,y);
+id f(x?,y?) = g(y,x);
+Print;
+#endnamespace
+.end
+assert succeeded?
+assert result("test") =~ expr("g(y,x)")
+*--#] cov_0017_ns_fn_2 :
+
+*--#[ cov_trace_n_g6g7 :
+* farm probe 0157_trace_n_g6g7_53 (+18 lines)
+* probe: clean
+Vector p1,p2,p3,p4;
+Local F = g_(1,6,p1,p2,p3,p4)*g_(1,7,p1,p2,p3,p4);
+tracen,1;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("- 8*p1(6)*p1(7)*p2.p2*p3.p3*p4.p4 + 16*p1(6)*p1(7)*p2.p2*p3.p4^2 - 32* p1(6)*p1(7)*p2.p3*p2.p4*p3.p4 + 16*p1(6)*p1(7)*p2.p3^2*p4.p4 + 16*p1(6)* p1(7)*p2.p4^2*p3.p3 + 8*p1(6)*p2(7)*p1.p2*p3.p3*p4.p4 - 16*p1(6)*p2(7)* p1.p2*p3.p4^2 - 16*p1(6)*p2(7)*p1.p3*p2.p3*p4.p4 + 16*p1(6)*p2(7)*p1.p3* p2.p4*p3.p4 + 16*p1(6)*p2(7)*p1.p4*p2.p3*p3.p4 - 16*p1(6)*p2(7)*p1.p4* p2.p4*p3.p3 + 16*p1(6)*p3(7)*p1.p2*p2.p4*p3.p4 + 8*p1(6)*p3(7)*p1.p3* p2.p2*p4.p4 - 16*p1(6)*p3(7)*p1.p3*p2.p4^2 - 16*p1(6)*p3(7)*p1.p4*p2.p2* p3.p4 + 16*p1(6)*p3(7)*p1.p4*p2.p3*p2.p4 - 16*p1(6)*p4(7)*p1.p2*p2.p3* p3.p4 + 16*p1(6)*p4(7)*p1.p3*p2.p3*p2.p4 + 8*p1(6)*p4(7)*p1.p4*p2.p2* p3.p3 - 16*p1(6)*p4(7)*p1.p4*p2.p3^2 + 8*p1(7)*p2(6)*p1.p2*p3.p3*p4.p4 - 16*p1(7)*p2(6)*p1.p2*p3.p4^2 - 16*p1(7)*p2(6)*p1.p3*p2.p3*p4.p4 + 16* p1(7)*p2(6)*p1.p3*p2.p4*p3.p4 + 16*p1(7)*p2(6)*p1.p4*p2.p3*p3.p4 - 16* p1(7)*p2(6)*p1.p4*p2.p4*p3.p3 + 16*p1(7)*p3(6)*p1.p2*p2.p4*p3.p4 + 8* p1(7)*p3(6)*p1.p3*p2.p2*p4.p4 - 16*p1(7)*p3(6)*p1.p3*p2.p4^2 - 16*p1(7)* p3(6)*p1.p4*p2.p2*p3.p4 + 16*p1(7)*p3(6)*p1.p4*p2.p3*p2.p4 - 16*p1(7)* p4(6)*p1.p2*p2.p3*p3.p4 + 16*p1(7)*p4(6)*p1.p3*p2.p3*p2.p4 + 8*p1(7)* p4(6)*p1.p4*p2.p2*p3.p3 - 16*p1(7)*p4(6)*p1.p4*p2.p3^2 - 8*p2(6)*p2(7)* p1.p1*p3.p3*p4.p4 + 16*p2(6)*p2(7)*p1.p1*p3.p4^2 - 32*p2(6)*p2(7)*p1.p3* p1.p4*p3.p4 + 16*p2(6)*p2(7)*p1.p3^2*p4.p4 + 16*p2(6)*p2(7)*p1.p4^2* p3.p3 + 8*p2(6)*p3(7)*p1.p1*p2.p3*p4.p4 - 16*p2(6)*p3(7)*p1.p1*p2.p4* p3.p4 - 16*p2(6)*p3(7)*p1.p2*p1.p3*p4.p4 + 16*p2(6)*p3(7)*p1.p2*p1.p4* p3.p4 + 16*p2(6)*p3(7)*p1.p3*p1.p4*p2.p4 - 16*p2(6)*p3(7)*p1.p4^2*p2.p3 + 8*p2(6)*p4(7)*p1.p1*p2.p4*p3.p3 + 16*p2(6)*p4(7)*p1.p2*p1.p3*p3.p4 - 16*p2(6)*p4(7)*p1.p2*p1.p4*p3.p3 + 16*p2(6)*p4(7)*p1.p3*p1.p4*p2.p3 - 16 *p2(6)*p4(7)*p1.p3^2*p2.p4 + 8*p2(7)*p3(6)*p1.p1*p2.p3*p4.p4 - 16*p2(7)* p3(6)*p1.p1*p2.p4*p3.p4 - 16*p2(7)*p3(6)*p1.p2*p1.p3*p4.p4 + 16*p2(7)* p3(6)*p1.p2*p1.p4*p3.p4 + 16*p2(7)*p3(6)*p1.p3*p1.p4*p2.p4 - 16*p2(7)* p3(6)*p1.p4^2*p2.p3 + 8*p2(7)*p4(6)*p1.p1*p2.p4*p3.p3 + 16*p2(7)*p4(6)* p1.p2*p1.p3*p3.p4 - 16*p2(7)*p4(6)*p1.p2*p1.p4*p3.p3 + 16*p2(7)*p4(6)* p1.p3*p1.p4*p2.p3 - 16*p2(7)*p4(6)*p1.p3^2*p2.p4 - 8*p3(6)*p3(7)*p1.p1* p2.p2*p4.p4 + 16*p3(6)*p3(7)*p1.p1*p2.p4^2 - 32*p3(6)*p3(7)*p1.p2*p1.p4* p2.p4 + 16*p3(6)*p3(7)*p1.p2^2*p4.p4 + 16*p3(6)*p3(7)*p1.p4^2*p2.p2 + 8* p3(6)*p4(7)*p1.p1*p2.p2*p3.p4 - 16*p3(6)*p4(7)*p1.p1*p2.p3*p2.p4 + 16* p3(6)*p4(7)*p1.p2*p1.p3*p2.p4 + 16*p3(6)*p4(7)*p1.p2*p1.p4*p2.p3 - 16* p3(6)*p4(7)*p1.p2^2*p3.p4 - 16*p3(6)*p4(7)*p1.p3*p1.p4*p2.p2 + 8*p3(7)* p4(6)*p1.p1*p2.p2*p3.p4 - 16*p3(7)*p4(6)*p1.p1*p2.p3*p2.p4 + 16*p3(7)* p4(6)*p1.p2*p1.p3*p2.p4 + 16*p3(7)*p4(6)*p1.p2*p1.p4*p2.p3 - 16*p3(7)* p4(6)*p1.p2^2*p3.p4 - 16*p3(7)*p4(6)*p1.p3*p1.p4*p2.p2 - 8*p4(6)*p4(7)* p1.p1*p2.p2*p3.p3 + 16*p4(6)*p4(7)*p1.p1*p2.p3^2 - 32*p4(6)*p4(7)*p1.p2* p1.p3*p2.p3 + 16*p4(6)*p4(7)*p1.p2^2*p3.p3 + 16*p4(6)*p4(7)*p1.p3^2* p2.p2")
+*--#] cov_trace_n_g6g7 :
+
+*--#[ cov_tib_keep :
+* expected clean: prints count of terms in the kept bracket
+* probe: clean
+* expected clean: prints count of terms in the kept bracket
+Symbol x;
+Local F = (1+x)^2;
+Bracket x;
+.sort
+Keep Brackets;
+Local G = termsinbracket_;
+Print G;
+.end
+assert succeeded?
+assert result("G") =~ expr("1")
+*--#] cov_tib_keep :
+
+*--#[ cov_arg_vector :
+* farm probe 0226_arg_vector_42 (+6 lines)
+* probe: clean
+Vector p,q;
+Function f;
+Local test = f(p);
+Argument f;
+  id p = p + q;
+EndArgument;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(p + q)")
+*--#] cov_arg_vector :
+
+*--#[ cov_dfortcont :
+* target: sch.c overflow refill in doublefortran mode
+* probe: clean
+* target: sch.c overflow refill in doublefortran mode
+Symbol a,b,c,d,e;
+Format Doublefortran;
+Local t = (a+b+c+d+e)^20;
+Print;
+.end
+assert succeeded?
+*--#] cov_dfortcont :
+
+*--#[ cov_prfinddiv_clean_3 :
+* farm probe 0176_prfinddiv_clean_27 (+21 lines)
+* probe: clean
+Symbol x;
+CFunction rat,den;
+PolyRatFun rat,den(finddivergence,x);
+Local test = rat(x,1);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("rat(x,1)")
+*--#] cov_prfinddiv_clean_3 :
+
+*--#[ cov_bigidx_do :
+* expected: $-variable is not a short number in do loop
+* runtime $-variables force sequential mode under threads
+* probe: error
+* expected: $-variable is not a short number in do loop
+Symbol x;
+Local test = x;
+$b = 12345678901234567890;
+.sort
+#do i = $b,10
+id x = 1;
+#enddo
+Print test;
+.end
+#pend_if threaded?
+assert preprocess_error?('$b does not')
+*--#] cov_bigidx_do :
+
+*--#[ cov_conv_g2l_skipdrop :
+* farm probe 0087_conv_g2l_skipdrop_45 (+9 lines)
+* probe: clean
+Symbol x;
+Global a = x;
+Global b = x;
+.sort
+Skip a;
+Drop b;
+.sort
+Local a,b,c = 3*x;
+Print;
+.sort
+.end
+assert compile_error?('Illegal LHS for')
+*--#] cov_conv_g2l_skipdrop :
+
+*--#[ cov_ifc_wildargs :
+* farm probe 0055_ifc_wildargs_81 (+5 lines)
+* probe: clean
+Symbol x,y,z;
+CFunction f;
+Local test = f(x,y);
+If ( Match(f(?a)) ) $b = ?a;
+If ( $b == f(x,y) ) Multiply 2;
+If ( $b == f(x,y,z) ) Multiply 3;
+If ( $b == f(x,x) ) Multiply 5;
+If ( $b == 0 ) Multiply 7;
+Print;
+.end
+assert compile_error?('Illegal character at')
+*--#] cov_ifc_wildargs :
+
+*--#[ cov_gamma6_7_contraction :
+* Contract gamma6/gamma7 with odd nnum, hitting sign flip path
+* probe: clean
+* Contract gamma6/gamma7 with odd nnum, hitting sign flip path
+Symbol x,y;
+AutoDeclare Vector v;
+Index mu;
+Local F = g6_(mu)*g7_(mu);
+Contract;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("0")
+*--#] cov_gamma6_7_contraction :
+
+*--#[ cov_pat_eps_w :
+* farm probe 0199_pat_eps_w_65 (+5 lines)
+* probe: clean
+Symbols n;
+Vectors p1,p2,p3;
+Local test = e_(n,p1,p2,p3)*e_(p2,n,p1,p3);
+id e_(?a)*e_(?a) = 1;
+Print;
+.end
+assert compile_error?('Illegal object in')
+*--#] cov_pat_eps_w :
+
+*--#[ cov_modrat_invnoexist :
+* expected: Denominator and modulus are not relative prime
+* probe: error
+* expected: Denominator and modulus are not relative prime
+Symbol x;
+Modulus 8589934582;
+Local test = x/2;
+Print;
+.end
+assert runtime_error?
+*--#] cov_modrat_invnoexist :
+
+*--#[ cov_invalid_set_arg :
+* expected: @Improper use of special keyword in $( ) option
+* probe: error
+* expected: @Improper use of special keyword in $( ) option
+Symbol x;
+#if $(x = set_({x} junk))
+Local F = 1;
+#endif
+.end
+assert preprocess_error?('Argument of set_')
+*--#] cov_invalid_set_arg :
+
+*--#[ cov_multibracket_b_2 :
+* alternative MultiBracket syntax attempt
+* probe: clean
+* alternative MultiBracket syntax attempt
+Symbols x,y;
+CFunction f;
+Local t = f(x,y);
+MultiBracket;
+Bracket x,y;
+Print;
+.sort
+.end
+assert compile_error?('Illegal Multiple Brack')
+*--#] cov_multibracket_b_2 :
+
+*--#[ cov_seteq_syntax_9 :
+* farm probe 0066_seteq_syntax_15 (+10 lines)
+* probe: clean
+Set sortsize = 200;
+Set scratchsize = 200;
+Symbol a1,a2,a3;
+Local F = (a1+a2+a3)^5;
+Local G = 1;
+.sort
+.copy F to G;
+.sort
+Print G;
+.end
+assert preprocess_error?('Unrecognized module term')
+*--#] cov_seteq_syntax_9 :
+
+*--#[ cov_dotail_pipe_13 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_13 :
+
+*--#[ cov_012_name_string_particle :
+* farm probe 0170_012_name_string_particle_71 (+6 lines)
+* probe: clean
+Particle e1 = "e", -2, 1;
+Particle eb1 = "eb", 2, 1;
+Particle v1 = "v", 3, 0;
+Couple c1 = {e1,eb1,v1}, order = 1;
+Vertex vt1 = {e1,eb1,v1}, {c1};
+Model mtest, byname;
+Local test = 1;
+Print;
+.end
+assert compile_error?('No open mode')
+*--#] cov_012_name_string_particle :
+
+*--#[ cov_trace_n_nocontract :
+* farm probe 0157_trace_n_nocontract_52 (+6 lines)
+* probe: clean
+Vector p1,p2,p3,p4,p5,p6;
+Local F = g_(1,p1,p2,p3,p4,p5,p6);
+tracen,nocontract,j;
+Print;
+.end
+assert compile_error?('nocontract,j has n')
+*--#] cov_trace_n_nocontract :
+
+*--#[ cov_improper_special :
+* expected: @Improper operator for special keyword in $( ) option
+* probe: error
+* expected: @Improper operator for special keyword in $( ) option
+Symbol x;
+Set v: x;
+#if $(x > set_(v))
+Local F = 1;
+#endif
+.end
+assert preprocess_error?('Improper operator fo')
+*--#] cov_improper_special :
+
+*--#[ cov_nsuse_8 :
+* guess at #use directive to expose namespace names outside
+* probe: clean
+* guess at #use directive to expose namespace names outside
+#namespace nsuse
+#define w 4
+#endnamespace
+#use nsuse
+#message `w'
+#end
+.end
+assert preprocess_error?('Illegal string for')
+*--#] cov_nsuse_8 :
+
