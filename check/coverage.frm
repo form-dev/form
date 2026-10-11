@@ -10103,3 +10103,241 @@ Print;
 assert preprocess_error?('Improper syntax fo')
 *--#] cov_setup_incdir_comma :
 
+*--#[ cov_powset_8 :
+* farm probe 0025_powset_15 (+5 lines)
+* probe: clean
+Symbol x,a,b,n;
+Set s: a,b;
+CFunction f,g;
+Local t = f(x^a) + f(x^b) + f(x^3);
+id f(x^n?s) = g(x^n);
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(x^3) + f((x)^(a)) + f((x)^(b))")
+*--#] cov_powset_8 :
+
+*--#[ cov_neg_minvector :
+* farm probe 0015_neg_minvector_92 (+7 lines)
+* probe: clean
+Symbol x;
+Vector v;
+CFunction f;
+Local expr = f(v(1), v(2));
+id f(v?(1), v?(2)) = v(1) + v(2);
+Print;
+.end
+assert succeeded?
+assert result("expr") =~ expr("v(1) + v(2)")
+*--#] cov_neg_minvector :
+
+*--#[ cov_factdollar_comma :
+* farm probe 0128_factdollar_comma_92 (+6 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol a,b,x;
+Local e = x;
+$x = a*b;
+FactDollar,$x;
+If ( $x[0] > 0 ) id x = 1;
+Print;
+.end
+#pend_if threaded?
+assert succeeded?
+assert result("e") =~ expr("1")
+*--#] cov_factdollar_comma :
+
+*--#[ cov_failargs :
+* farm probe 0080_failargs_72 (+16 lines)
+* probe: clean
+Symbol x,y;
+Function f;
+Local test = f(x^2,x+y,12345678901234*x,x/2);
+Transform f implode(1,last);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(x^2,y + x,12345678901234*x,1/2*x)")
+*--#] cov_failargs :
+
+*--#[ cov_makerat_sub :
+* farm probe 0175_makerat_sub_75 (+7 lines)
+* probe: clean
+Symbol x,y;
+Local test = MakeRational_((x+y)*(x-y), x+y) + MakeRational_(x^2-1, x-1);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("0/0 + makerational_( - y^2 + x^2,y + x)")
+*--#] cov_makerat_sub :
+
+*--#[ cov_0017_ns_fn_4 :
+* farm probe 0127_0017_ns_fn_42 (+39 lines)
+* probe: clean
+#namespace wrk
+Symbol x,y;
+CFunction f,g;
+Local test = f(x,y);
+id f(x?,y?) = g(y,x);
+Print;
+#endnamespace
+.end
+assert succeeded?
+assert result("test") =~ expr("g(y,x)")
+*--#] cov_0017_ns_fn_4 :
+
+*--#[ cov_range2 :
+* farm probe 0080_range2_70 (+14 lines)
+* probe: clean
+Symbol x,y;
+Function f;
+Local test = f(x,y,2,3*x,-4*y);
+Transform f implode(2,last);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(x,y,2,3*x, - 4*y)")
+*--#] cov_range2 :
+
+*--#[ cov_zeroargs :
+* farm probe 0080_zeroargs_69 (+8 lines)
+* probe: clean
+Symbol x;
+Function f;
+Local test = f(0,x,0,0,3*x,1);
+Transform f implode(1,last);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(2*x,5*x,1)")
+*--#] cov_zeroargs :
+
+*--#[ cov_dot_swappow :
+* farm probe 0040_dot_swappow_109 (+7 lines)
+* probe: clean
+Vector p,q;
+Symbol n;
+Local t = p.q^3;
+id q.p?^n? = 1;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("1")
+*--#] cov_dot_swappow :
+
+*--#[ cov_trace4_dim2_repeat2 :
+* trace4, 2-dim, repeated indices at specific distance
+* probe: clean
+* trace4, 2-dim, repeated indices at specific distance
+Symbol a1,a2,a3;
+Vectors p1,p2;
+Dimension 2;
+Index i1,i2;
+CFunction g;
+Local F = g_(1,i1,i2,i1,i2);
+trace4,1;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("0")
+*--#] cov_trace4_dim2_repeat2 :
+
+*--#[ cov_factdollar_numfactor :
+* farm probe 0128_factdollar_numfactor_94 (+5 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol a,x;
+Local e = x;
+$x = 3*a;
+FactDollar $x;
+If ( $x[1] == 3 ) id x = 1;
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_factdollar_numfactor :
+
+*--#[ cov_prfinddiv_clean_5 :
+* farm probe 0176_prfinddiv_clean_27 (+21 lines)
+* probe: clean
+Symbol x;
+CFunction rat,den;
+PolyRatFun rat,den(finddivergence,x);
+Local test = rat(x,1);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("rat(x,1)")
+*--#] cov_prfinddiv_clean_5 :
+
+*--#[ cov_09ad0cf7_ns_use_2 :
+* alternative syntax guess for the usename mechanism
+* probe: clean
+* alternative syntax guess for the usename mechanism
+#namespace ns
+#use x
+Symbol x;
+Local test = x;
+Print;
+#endnamespace
+.end
+assert succeeded?
+assert result("test") =~ expr("x")
+*--#] cov_09ad0cf7_ns_use_2 :
+
+*--#[ cov_sym_dline :
+* farm probe 0090_sym_dline_104 (+6 lines)
+* probe: clean
+Symbol n;
+Index i1,i2;
+Local test = d_(1,1)*d_(2,2);
+id d_(i1?,i1?) = n;
+Print;
+.end
+assert compile_error?('Coefficient in LHS')
+*--#] cov_sym_dline :
+
+*--#[ cov_multibracket_b_4 :
+* alternative MultiBracket syntax attempt
+* probe: clean
+* alternative MultiBracket syntax attempt
+Symbols x,y;
+CFunction f;
+Local t = f(x,y);
+MultiBracket;
+Bracket x,y;
+Print;
+.sort
+.end
+assert compile_error?('Illegal Multiple Brack')
+*--#] cov_multibracket_b_4 :
+
+*--#[ cov_seteq_syntax_11 :
+* farm probe 0066_seteq_syntax_15 (+10 lines)
+* probe: clean
+Set sortsize = 200;
+Set scratchsize = 200;
+Symbol a1,a2,a3;
+Local F = (a1+a2+a3)^5;
+Local G = 1;
+.sort
+.copy F to G;
+.sort
+Print G;
+.end
+assert preprocess_error?('Unrecognized module term')
+*--#] cov_seteq_syntax_11 :
+
+*--#[ cov_dotail_pipe_15 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_15 :
+
