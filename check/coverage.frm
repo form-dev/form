@@ -12621,3 +12621,4499 @@ Print t;
 assert runtime_error?('illegal Dirac/Majorana/Ghost interaction')
 *--#] cov_gdiag_ferm_ghost_open :
 
+*---[ Kit2-tail composite batch: farm probes (clean composites + individually-asserted error probes) ]---
+*--#[ cov_k2tail_a1 :
+* kit2-tail composite: clean probes, 8 programs
+* farm probe 0005_minpowerof_67 (+3 lines, kit2 tail)
+* probe: clean
+Symbol x;
+Local F = minpowerof_(x,x);
+Print;
+.end
+* farm probe 0006_normalize_ratroot_nested_46 (+3 lines, kit2 tail)
+* probe: clean
+Symbol x;
+CFunction f;
+Local F = f(root_(3,27),x);
+Print;
+.end
+* farm probe 0010_delta_contraction_97 (+3 lines, kit2 tail)
+* probe: clean
+* DELTA contraction path (r7 = *t == DELTA)
+Vector v;
+Index i,j;
+CFunction f;
+Local expr = f(v(i)) * d_(i,j) * v(j);
+Print;
+.end
+* farm probe 0014_fa_dp_miss_95 (+3 lines, kit2 tail)
+* probe: clean
+* FactArg dotproduct absent in one term -> pow=0 (argument.c:1369,1378-1382)
+Vector p,q;
+Symbol x;
+Function f;
+Local test = f((p.q)^2 + x);
+FactArg f;
+Print;
+.end
+* farm probe 0037_bad_expr_param_109 (+3 lines, kit2 tail)
+* probe: error
+* expected: Illegal expression parameter:
+Symbol x;
+Local F = x;
+Local G = F(x, x);
+Print;
+.end
+* farm probe 0041_vec_sub_62 (+3 lines, kit2 tail)
+* probe: clean
+* target: symmetr.c MatchArgument VECTOSUB (vector wildcard vs subexpression argument)
+Vectors p;
+CFunction f,g;
+Local F = f(g(1));
+id f(p?) = g(p);
+Print;
+.end
+* farm probe 0073_hide_g2l_103 (+3 lines, kit2 tail)
+* probe: clean
+Symbol x;
+Global g = x;
+.sort
+Hide g;
+.sort
+Local g;
+.sort
+Print;
+.end
+* farm probe 0073_hide_l2g_106 (+3 lines, kit2 tail)
+* probe: clean
+Symbol x;
+Local g = x;
+.sort
+Hide g;
+.sort
+Global g;
+.sort
+Print;
+.end
+assert succeeded?
+*--#] cov_k2tail_a1 :
+
+*--#[ cov_k2tail_a2 :
+* kit2-tail composite: clean probes, 8 programs
+* farm probe 0091_0004_vecidx_reuse_3 (+3 lines, kit2 tail)
+* probe: clean
+* same vector wildcard in dot product and as plain argument
+Vectors p,q,r;
+CFunction f,g;
+Local test = f(p.q, p);
+id f(p?.q, p?) = g(p);
+Print;
+.end
+* farm probe 0119_sqrt_small_32 (+3 lines, kit2 tail)
+* probe: clean
+#do i = 1, 5^/
+  #message sqrt5 = `i'
+#enddo
+#do j = 1, 3^/
+  #message sqrt3 = `j'
+#enddo
+.end
+* farm probe 0122_idall_43 (+3 lines, kit2 tail)
+* probe: clean
+Symbol x,y;
+CFunction f,g;
+Local test = f(x)*f(y)*f(x)*f(y);
+id, all f(x?) = g(x);
+Print;
+.end
+* farm probe 0143_dotheta_num_12 (+3 lines, kit2 tail)
+* probe: clean
+Local t1 = theta_(2,1);
+Local t2 = theta_(1,2);
+Local t3 = theta_(1,1);
+Local t4 = theta_(-1,-2);
+Local t5 = theta_(-2,-1);
+Local t6 = theta_(-1,1);
+Print;
+.end
+* farm probe 0143_dotheta_sub_17 (+3 lines, kit2 tail)
+* probe: clean
+Symbol x,y;
+Local t1 = theta_(x+y,x);
+Local t2 = theta_(x+1,x+y);
+Local t3 = theta_(x^2,x);
+Local t4 = theta_(x+y,x+y);
+Print;
+.end
+* farm probe 0147_fmt_bare_0 (+3 lines, kit2 tail)
+* probe: clean
+* bare Format statement -> CoFormat empty-argument path (compcomm.c 163-166)
+Symbol x;
+Local t = x;
+Format;
+Print;
+.end
+* farm probe 0208_c_num_15 (+3 lines, kit2 tail)
+* probe: clean
+Tensor t;
+Index i1,i2,i3,i4;
+Local F = t(i1,i2)*t(i2,i3)*t(i3,i4)*t(i4,i1);
+Contract 2;
+Print;
+.end
+* farm probe 0221_argcmp_gt_22 (+3 lines, kit2 tail)
+* probe: clean
+Symbol a,b;
+CFunction f;
+On properorder;
+Local test = f(2,2) - f(2,1);
+Print;
+.end
+assert succeeded?
+*--#] cov_k2tail_a2 :
+
+*--#[ cov_k2tail_a3 :
+* kit2-tail composite: clean probes, 8 programs
+* farm probe 0002_rational_big2_57 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x,y;
+Local F = MakeRational_(99999999999999999999*x, 2);
+Print;
+.end
+* farm probe 0003_sig_single_31 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x,y;
+Local t = 2 + sig_(x) + sig_(-x*y);
+Print t;
+.end
+* farm probe 0003_signbig_78 (+2 lines, kit2 tail)
+* probe: clean
+* sign_ with big rational full arguments: odd big, even big, odd/2 fraction
+Local test = sign_((12345678901234567890123456789012345))
+ + sign_((123456789012345678901234567890123456))
+ + sign_((12345678901234567890123456789012345/2));
+Print;
+.end
+* farm probe 0004_commutepow_128 (+2 lines, kit2 tail)
+* probe: clean
+Function f,g;
+Local test = f(g^3);
+Print;
+.end
+* farm probe 0005_maxpowerof_66 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x;
+Local F = maxpowerof_(x,x);
+Print;
+.end
+* farm probe 0006_putfirst_func_57 (+2 lines, kit2 tail)
+* probe: clean
+* Trigger PUTFIRST case with function and number
+Symbol x;
+CFunction f,g;
+Local expr = putfirst_(f(x),2);
+Print;
+.end
+* farm probe 0006_ranperm_empty_41 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x;
+Local F = ranperm_(0);
+Print;
+.end
+* farm probe 0008_arg_minvec_162 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x;
+Vector p,q;
+CFunction f;
+Local test = f(-p,2*q,p);
+Argument f;
+  id, q = 3*q;
+EndArgument;
+Print;
+.end
+assert succeeded?
+*--#] cov_k2tail_a3 :
+
+*--#[ cov_k2tail_a4 :
+* kit2-tail composite: clean probes, 8 programs
+* farm probe 0010_delta_unequal_78 (+2 lines, kit2 tail)
+* probe: clean
+Symbol a,b,c,d,i,j;
+Local F = delta_(a,b) + delta_(b,c);
+id delta_(a,b) = 1;
+Print;
+.end
+* farm probe 0014_gcd_dotproduct_mult_pow_83 (+2 lines, kit2 tail)
+* probe: clean
+Vector p,q;
+Local F = gcd_(p.q^2 + p.q, p.q + 1);
+Print;
+.end
+* farm probe 0017_factarg_symcoef_pow_16 (+2 lines, kit2 tail)
+* probe: clean
+* FactArg with symbolic term factor and powered function
+Symbol x,y;
+Function f;
+Local test = x^2*f(2*x+4*y)**2;
+FactArg f;
+Print;
+.end
+* farm probe 0018_setindex_126 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x;
+Set A: 3, 5;
+Set B: 1, 2;
+CFunction f;
+Local expr = f(A, 3);
+* SETTONUM with SETTONUM branch - sets the proto index
+id f(A, 3) = f(B, 0);
+Print;
+.end
+* farm probe 0021_numfactors_bad_43 (+2 lines, kit2 tail)
+* probe: error
+* expected: Problems with argument of NumFactors_
+Symbol x;
+Local F = NumFactors_(x+1);
+Print;
+.end
+* farm probe 0024_tablefun_83 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x;
+CFunction g;
+Table tab(1:1);
+Fill tab(1) = g(x);
+Local test = table_(tab,g(x));
+Print test;
+.end
+* farm probe 0031_pct_amp_34 (+2 lines, kit2 tail)
+* probe: clean
+* tries MesPrint '%&' branch (message.c:769-771)
+Symbol x;
+Local e = x;
+Print "a%&b";
+Print;
+.end
+* farm probe 0038_chisholm_sep_213 (+2 lines, kit2 tail)
+* probe: error
+* expected: Illegal separator in Chisholm statement
+Index i,j;
+Chisholm i,j;
+.end
+assert succeeded?
+*--#] cov_k2tail_a4 :
+
+*--#[ cov_k2tail_a5 :
+* kit2-tail composite: clean probes, 8 programs
+* farm probe 0039_powcond_mix_140 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x,y,n,z;
+Local test = x^-4*y^2;
+id x^-n?*y^n?{>2} = z;
+Print;
+.end
+* farm probe 0044_in_set_member_index_108 (+2 lines, kit2 tail)
+* probe: clean
+I i;
+L F = i;
+if ( match(i) ) id i = 1;
+Print;
+.end
+* farm probe 0047_delta_mix_92 (+2 lines, kit2 tail)
+* probe: clean
+* target: sch.c 1700-1726 DELTA branches: FindIndex second arg, numeric args
+Indices i,j;
+Local t = d_(i,j) + d_(1,i) + d_(i,1);
+Print;
+.end
+* farm probe 0057_fx_fillsym_21 (+2 lines, kit2 tail)
+* probe: clean
+Symbol a,b,x;
+Table t(0:2,0:2);
+Local e = (1+a*x)*(1+b);
+Bracket a,b;
+.sort
+FillExpression t = e(a,b);
+Print;
+.end
+* farm probe 0074_cache_28 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x,y;
+Local g = (x+y)*(x+2);
+.sort
+Local F = x*factorin_(g)*factorin_(g);
+Print F;
+.end
+* farm probe 0074_negpow2_57 (+2 lines, kit2 tail)
+* probe: clean
+Symbol a,b,x;
+Local ex = a*x^-2 + b*x^-1;
+.sort;
+Local test = factorin_(ex);
+Print test;
+.end
+* farm probe 0105_gamma1_87 (+2 lines, kit2 tail)
+* probe: clean
+Vector p;
+Symbol a,b,x,y;
+CFunction f,h;
+Local test = g_(1,p)*f(a)*f(b);
+id f(x?,y?)*g_(1,p) = h(x,y);
+Print;
+.end
+* farm probe 0114_dim_conflict_145 (+2 lines, kit2 tail)
+* probe: clean
+Index i = 4;
+Index i = 5;
+Local test = d_(i,i);
+Print;
+.end
+assert succeeded?
+*--#] cov_k2tail_a5 :
+
+*--#[ cov_k2tail_a6 :
+* kit2-tail composite: clean probes, 8 programs
+* farm probe 0124_sym_fix_4 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x;
+CFunction f;
+Local test = f(1,2);
+Symmetrize f:2;
+Print;
+.end
+* farm probe 0126_rat_pow_85 (+2 lines, kit2 tail)
+* probe: clean
+* targets ratio.c MergeSymbolLists: rational raised to positive and negative powers
+Symbol x,y;
+Local test = MakeRational_(x,y)^3;
+Local test2 = MakeRational_(x^2,y)^-2;
+Print;
+.end
+* farm probe 0134_ren_trace_53 (+2 lines, kit2 tail)
+* probe: clean
+* trace4 with sum over index j generates dummy indices, then Renumber
+Symbol x;
+Vector p,q;
+Index i1,i2,j;
+Local test = g_(i1,p,i2,q,i1,q,i2,p)*x;
+trace4,j;
+.sort
+Renumber;
+Print;
+.end
+* farm probe 0143_theta_bignum_single_35 (+2 lines, kit2 tail)
+* probe: clean
+Local t = theta_(12345678901234567890);
+Local u = theta_(-98765432109876543210);
+Print;
+.end
+* farm probe 0147_fmt_f90bad_7 (+2 lines, kit2 tail)
+* probe: error
+* expected: Illegal option in Format FloatPrecision
+* Fortran90 kind starting with 'd' but trailing junk -> WrongOption via
+* the *s != 0 test (compcomm.c 405-406, 409-411), then kind 'x' via 404
+Symbol x;
+Local t = x;
+Format Fortran90,dx;
+Format Fortran90,x;
+Print;
+.end
+* farm probe 0147_fmt_o_1 (+2 lines, kit2 tail)
+* probe: clean
+* Format O optimization-level parsing, digit and '=' forms (compcomm.c 171-176)
+* O0/O1/O2/O3 walk the switch cases including the saMaxT/saMinT case (217-221)
+Symbol x;
+Local t = x;
+Format O1;
+Format O2;
+Format O3;
+Format O0;
+Format O=3;
+Print;
+.end
+* farm probe 0150_setnum_function_15 (+2 lines, kit2 tail)
+* probe: clean
+CFunction f1,...,f20;
+Set s: f1,...,f20;
+Local F = s[2];
+Print;
+.end
+* farm probe 0165_dc21_expcont_66 (+2 lines, kit2 tail)
+* probe: clean
+* Print expr[] sets printflag PRINTCONTENTS
+Symbol x;
+Local test = x^2;
+Print test[];
+.end
+assert succeeded?
+*--#] cov_k2tail_a6 :
+
+*--#[ cov_k2tail_a7 :
+* kit2-tail composite: clean probes, 5 programs
+* farm probe 0184_sym_rev_9 (+2 lines, kit2 tail)
+* probe: clean
+* target: names.c:1505-1511 reverse order symmetry (-cyclic)
+Function f(-cyclic);
+Local test = f(1,2,3);
+Print;
+.end
+* farm probe 0204_br_delta_18 (+2 lines, kit2 tail)
+* probe: clean
+Index i,j;
+Local F = d_(i,j);
+Bracket d_;
+Print;
+.sort
+Print;
+.end
+* farm probe 0204_br_zero2_14 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x,y;
+Local F = x*y;
+Bracket x,0,y,00;
+Print;
+.sort
+Print;
+.end
+* farm probe 0206_delta_sums_40 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x,y,z;
+Local test = delta_(x+y,x+y) + delta_(x+y,x+z);
+Print;
+.end
+* farm probe 0210_proc_do_27 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x;
+#procedure q(n)
+    #do k = 1,`n'
+        Local s`k' = x^`k';
+    #enddo
+    Print;
+#endprocedure
+#call q(3)
+.sort
+.clear
+Symbol y;
+Local w = y;
+Print w;
+.end
+assert succeeded?
+*--#] cov_k2tail_a7 :
+
+*--#[ cov_opt_minus_48_0187_opt_minus_48 :
+* farm probe 0187_opt_minus_48 (+2 lines, kit2 tail)
+* probe: error
+* expected: Illegal option in (n)print statement
+* empirically: program 3 (Print -q) prints a compile error and exits 0;
+* programs 1-2 are clean
+Symbol x;
+Local test = x;
+Print -sss test;
+.end
+Symbol x;
+Local test = x;
+Print -ss test;
+.end
+Symbol x;
+Local test = x;
+Print -q test;
+.end
+assert compile_error?
+*--#] cov_opt_minus_48_0187_opt_minus_48 :
+
+*--#[ cov_k2tail_dollar :
+* kit2-tail composite: clean $-variable probes (tvorm skips: sequential-mode warnings)
+#pend_if threaded?
+* farm probe 0163_dollar_huge_70 (+3 lines, kit2 tail)
+* probe: clean
+Symbol x;
+Local F = x;
+$z = 10^50 + 1;
+.sort
+#if ( $z > 0 )
+#message ok
+#endif
+Print F;
+.end
+* farm probe 0202_dol_mkrat_42 (+2 lines, kit2 tail)
+* probe: clean
+Symbol x;
+Local t = x;
+$n = MakeRational_(1,3);
+.sort
+$n = $n + 2;
+.sort
+$n = $n - 7/3;
+.sort
+Print;
+.end
+assert succeeded?
+*--#] cov_k2tail_dollar :
+
+*--#[ cov_if_occ_call_116_0006_if_occ_call_116 :
+* farm probe 0006_if_occ_call_116 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal object f in occurs condition in if statement
+Symbol x;
+CFunction f;
+Local t = f(x);
+if ( occurs(f(x)) ) id t = 1; endif;
+.end
+assert compile_error?
+*--#] cov_if_occ_call_116_0006_if_occ_call_116 :
+
+*--#[ cov_gcd_factor_zero_139_0011_gcd_factor_zero_139 :
+* farm probe 0011_gcd_factor_zero_139 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+Local F = 0*x*y;
+id 0*x? * y? = 1;
+Print;
+.end
+assert compile_error?
+*--#] cov_gcd_factor_zero_139_0011_gcd_factor_zero_139 :
+
+*--#[ cov_sum_dollar_undef_141_0011_sum_dollar_undef_141 :
+* farm probe 0011_sum_dollar_undef_141 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Undefined variable $zz
+Symbol i;
+CFunction f;
+Local t = f(i);
+Sum $zz;
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_sum_dollar_undef_141_0011_sum_dollar_undef_141 :
+
+*--#[ cov_arg_sub_prod_25_0014_arg_sub_prod_25 :
+* farm probe 0014_arg_sub_prod_25 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+Local test = f(2*x*y,3,2*x,x*y*z);
+Argument f,2*x;
+  id x = 1;
+EndArgument;
+Print;
+.end
+assert compile_error?
+*--#] cov_arg_sub_prod_25_0014_arg_sub_prod_25 :
+
+*--#[ cov_setfindall_notflag_40_0027_setfindall_notflag_40 :
+* farm probe 0027_setfindall_notflag_40 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* FindAll set with negated set wildcard (notflag1=1)
+Symbol x,y,n;
+Vector v1,v2;
+Set S: v1(1), v1(2), v1(3);
+CFunction f;
+Local expr = f(v1(1?), v1(2?), v1(3?));
+id f(?a) = 0;
+id f(v1(1?), v1(2?), v1(3?)) = 1;
+Print;
+.end
+assert compile_error?
+*--#] cov_setfindall_notflag_40_0027_setfindall_notflag_40 :
+
+*--#[ cov_topo_err_44_0031_topo_err_44 :
+* farm probe 0031_topo_err_44 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: The topologies_ function was removed in FORM 5.0
+Symbol x;
+CFunction f,g;
+Local test = f(topologies_(1));
+id f(x?) = g(1);
+Print;
+.end
+assert compile_error?
+*--#] cov_topo_err_44_0031_topo_err_44 :
+
+*--#[ cov_dollar_undef_239_0034_dollar_undef_239 :
+* farm probe 0034_dollar_undef_239 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Undefined variable $q in range
+Symbol x;
+CFunction f;
+Local test = f(1,2,3);
+Transform f dedup($q,2);
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_dollar_undef_239_0034_dollar_undef_239 :
+
+*--#[ cov_endrepeat_noc_134_0040_endrepeat_noc_134 :
+* farm probe 0040_endrepeat_noc_134 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: EndRepeat without Repeat
+EndRepeat;
+.end
+assert compile_error?
+*--#] cov_endrepeat_noc_134_0040_endrepeat_noc_134 :
+
+*--#[ cov_ts_power_wildcard_88_0040_ts_power_wildcard_88 :
+* farm probe 0040_ts_power_wildcard_88 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Dubious notation with power of power
+Symbol x;
+CFunction f;
+Local expr = f(x^2^3);
+Print;
+.end
+assert compile_error?
+*--#] cov_ts_power_wildcard_88_0040_ts_power_wildcard_88 :
+
+*--#[ cov_fixindex_range_128_0041_fixindex_range_128 :
+* farm probe 0041_fixindex_range_128 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Fixed index out of allowed range
+Symbol x;
+FixIndex 1000:1;
+Local t = x;
+Print;
+.end
+assert compile_error?
+*--#] cov_fixindex_range_128_0041_fixindex_range_128 :
+
+*--#[ cov_nofindloop_6_0041_nofindloop_6 :
+* farm probe 0041_nofindloop_6 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: no ( after findloop
+CFunction f;
+Local F = f(1);
+if ( findloop ) Print;
+.end
+assert compile_error?
+*--#] cov_nofindloop_6_0041_nofindloop_6 :
+
+*--#[ cov_nooccurs_14_0041_nooccurs_14 :
+* farm probe 0041_nooccurs_14 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: no ( after occurs
+CFunction f;
+Local F = f(1);
+if ( occurs ) Print;
+.end
+assert compile_error?
+*--#] cov_nooccurs_14_0041_nooccurs_14 :
+
+*--#[ cov_onflag_range_109_0042_onflag_range_109 :
+* farm probe 0042_onflag_range_109 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: The number of a flag in On/Off Flag should be in the range
+On Flag,100;
+Print;
+.end
+assert compile_error?
+*--#] cov_onflag_range_109_0042_onflag_range_109 :
+
+*--#[ cov_badchar_3_0044_badchar_3 :
+* farm probe 0044_badchar_3 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal character in Transform statement
+CFunction f;
+Set funcs: f;
+Local test = f(1,2,3);
+Transform,funcs,[x];
+Print;
+.end
+assert compile_error?
+*--#] cov_badchar_3_0044_badchar_3 :
+
+*--#[ cov_redef_args_121_0045_redef_args_121 :
+* farm probe 0045_redef_args_121 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegally formed arguments
+Redefine x(a b) "5";
+.end
+assert compile_error?
+*--#] cov_redef_args_121_0045_redef_args_121 :
+
+*--#[ cov_totensor_badopt_103_0046_totensor_badopt_103 :
+* farm probe 0046_totensor_badopt_103 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Unrecognized option in ToTensor statement
+CFunction f;
+Vector v;
+ToTensor f,v,badopt;
+.end
+assert compile_error?
+*--#] cov_totensor_badopt_103_0046_totensor_badopt_103 :
+
+*--#[ cov_tr4_dollarundef_121_0047_tr4_dollarundef_121 :
+* farm probe 0047_tr4_dollarundef_121 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: is undefined
+Trace4, $x;
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_tr4_dollarundef_121_0047_tr4_dollarundef_121 :
+
+*--#[ cov_unittrace_value_113_0048_unittrace_value_113 :
+* farm probe 0048_unittrace_value_113 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Value of UnitTrace should be a (positive) number or a symbol
+Symbol x;
+UnitTrace y;
+.end
+assert compile_error?
+*--#] cov_unittrace_value_113_0048_unittrace_value_113 :
+
+*--#[ cov_expression_no_paren_95_0049_expression_no_paren_95 :
+* farm probe 0049_expression_no_paren_95 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: no ( after expression
+Symbol x;
+Local F = x;
+if ( expression x ) discard;
+Print;
+.end
+assert compile_error?
+*--#] cov_expression_no_paren_95_0049_expression_no_paren_95 :
+
+*--#[ cov_flag_no_paren_92_0049_flag_no_paren_92 :
+* farm probe 0049_flag_no_paren_92 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: no ( after flag
+Symbol x;
+Local F = x;
+if ( flag x ) discard;
+Print;
+.end
+assert compile_error?
+*--#] cov_flag_no_paren_92_0049_flag_no_paren_92 :
+
+*--#[ cov_putinside_sym_103_0050_putinside_sym_103 :
+* farm probe 0050_putinside_sym_103 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: PutInside/AntiPutInside expects a regular function
+Symbol x;
+Vector p,q;
+Local t = p.q;
+PutInside x,p.q;
+Print t;
+.end
+assert compile_error?
+*--#] cov_putinside_sym_103_0050_putinside_sym_103 :
+
+*--#[ cov_anti_rep_44_0053_anti_rep_44 :
+* farm probe 0053_anti_rep_44 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+CFunction a1(antisymmetric);
+CFunction gg;
+Local test = a1(1,2) + a1(2,1);
+id a1(n?,m?) = gg(n,m);
+id a1(n?,n?) = gg(0);
+Print;
+.end
+assert compile_error?
+*--#] cov_anti_rep_44_0053_anti_rep_44 :
+
+*--#[ cov_perm0_97_0060_perm0_97 :
+* farm probe 0060_perm0_97 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: value 0 in permute transformation not allowed
+Symbol x,y;
+CFunction f,g;
+Local t = f(1,2,3);
+Transform f,permute(0);
+.end
+assert compile_error?
+*--#] cov_perm0_97_0060_perm0_97 :
+
+*--#[ cov_permbig_98_0060_permbig_98 :
+* farm probe 0060_permbig_98 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: value in permute transformation too large
+Symbol x,y;
+CFunction f,g;
+Local t = f(1,2,3);
+Transform f,permute(12345678901234567890);
+.end
+assert compile_error?
+*--#] cov_permbig_98_0060_permbig_98 :
+
+*--#[ cov_count_no_parenthesis_42_0061_count_no_parenthesis_42 :
+* farm probe 0061_count_no_parenthesis_42 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: &no ( after count
+Symbol x;
+Local F = x;
+if ( count x ) discard;
+Print;
+.end
+assert compile_error?
+*--#] cov_count_no_parenthesis_42_0061_count_no_parenthesis_42 :
+
+*--#[ cov_store_bigterm_59_0067_store_bigterm_59 :
+* farm probe 0067_store_bigterm_59 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+AutoDeclare Function f;
+Local big = f(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30) + f(31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60) + f(61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90);
+.store big
+Local test = big*big;
+Print;
+.end
+assert compile_error?
+*--#] cov_store_bigterm_59_0067_store_bigterm_59 :
+
+*--#[ cov_perm_end_43_0073_perm_end_43 :
+* farm probe 0073_perm_end_43 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal ending in permute transformation
+CFunction f;
+Transform f permute(1,2)x;
+.end
+assert compile_error?
+*--#] cov_perm_end_43_0073_perm_end_43 :
+
+*--#[ cov_particle_after_vertex_114_0074_particle_after_vertex_114 :
+* farm probe 0074_particle_after_vertex_114 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Particle statements should be before Vertex statements
+Model qcd;
+Particle a: spin=2;
+Vertex a,a: g;
+Particle b: spin=1;
+.end
+assert compile_error?
+*--#] cov_particle_after_vertex_114_0074_particle_after_vertex_114 :
+
+*--#[ cov_numspec3_39_0077_numspec3_39 :
+* farm probe 0077_numspec3_39 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* test intermediate non-tensor spec=0
+AutoDeclare Symbol x;
+AutoDeclare Vector v;
+CFunction f;
+Local expr = f(0,0,v(1,v(1),v(1)),0,0);
+id f(x1?,x2?,v?,x3?,x4?) = g_(v1,v2,v3);
+.end
+assert compile_error?
+*--#] cov_numspec3_39_0077_numspec3_39 :
+
+*--#[ cov_collect_2br_3_0092_collect_2br_3 :
+* farm probe 0092_collect_2br_3 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y,z1,z2,z3,z4,z5,z6,z7,z8;
+CFunction g;
+Local F = (x+y)*g(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+          *(z1+z2+z3+z4+z5+z6+z7+z8)^5;
+Bracket x,y;
+.sort
+Collect;
+Print;
+.sort
+Print;
+.end
+assert compile_error?
+*--#] cov_collect_2br_3_0092_collect_2br_3 :
+
+*--#[ cov_par_spectator_36_0102_par_spectator_36 :
+* farm probe 0102_par_spectator_36 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+On parallel;
+Spectator s;
+Symbol x;
+Local t = x;
+ToSpectator s,x;
+Print t;
+.end
+assert compile_error?
+*--#] cov_par_spectator_36_0102_par_spectator_36 :
+
+*--#[ cov_spectator_b_60_0102_spectator_b_60 :
+* farm probe 0102_spectator_b_60 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: (syntax probe for CopySpectator path)
+Symbols x;
+Local t = x^2;
+Spectator $s;
+$s = 0;
+CopySpectator $s,t;
+Print t;
+.sort
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_spectator_b_60_0102_spectator_b_60 :
+
+*--#[ cov_emptyreset_47_0131_emptyreset_47 :
+* farm probe 0131_emptyreset_47 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+Set s: x;
+Set s:;
+Set s: y;
+Local test = 1;
+Print;
+.end
+assert compile_error?
+*--#] cov_emptyreset_47_0131_emptyreset_47 :
+
+*--#[ cov_comm_nobrace_37_0152_comm_nobrace_37 :
+* farm probe 0152_comm_nobrace_37 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+Function f1,f2;
+Set A1: f1;
+CommuteInSet A1,f2;
+Local t = f1(1)*f2(2);
+.sort
+Print t;
+.store
+Local u = 1;
+.sort
+Print u;
+.end
+assert compile_error?
+*--#] cov_comm_nobrace_37_0152_comm_nobrace_37 :
+
+*--#[ cov_argmatch_26_0154_argmatch_26 :
+* farm probe 0154_argmatch_26 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+AutoDeclare Symbol x;
+CFunction f,g;
+Local test = f(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15);
+If ( Match f(x1?,x2?,?a) );
+  id f(?a) = g(x1,x2,?a);
+EndIf;
+Print test;
+.end
+assert compile_error?
+*--#] cov_argmatch_26_0154_argmatch_26 :
+
+*--#[ cov_mixnum_86_0155_mixnum_86 :
+* farm probe 0155_mixnum_86 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal mixture of element types in set
+Vector p1;
+Set s: p1,3;
+Print;
+.end
+assert compile_error?
+*--#] cov_mixnum_86_0155_mixnum_86 :
+
+*--#[ cov_err_already_hidden_9_0173_err_already_hidden_9 :
+* farm probe 0173_err_already_hidden_9 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Expression is already hidden
+Symbol x;
+Local f = x;
+.sort
+Hide f;
+.sort
+IntoHide f;
+.end
+assert compile_error?
+*--#] cov_err_already_hidden_9_0173_err_already_hidden_9 :
+
+*--#[ cov_redefine_illarg_num_66_0182_redefine_illarg_num_66 :
+* farm probe 0182_redefine_illarg_num_66 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegally formed name in argument of redefine statement
+#define ff(a) "a"
+Redefine ff(1) = "2";
+.end
+assert compile_error?
+*--#] cov_redefine_illarg_num_66_0182_redefine_illarg_num_66 :
+
+*--#[ cov_set_illegaldim_9_0193_set_illegaldim_9 :
+* farm probe 0193_set_illegaldim_9 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal dimension field for set
+Symbol a;
+Set v{x}: a;
+.end
+assert compile_error?
+*--#] cov_set_illegaldim_9_0193_set_illegaldim_9 :
+
+*--#[ cov_set_twooptions_6_0193_set_twooptions_6 :
+* farm probe 0193_set_twooptions_6 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: only one option allowed
+Symbol a;
+Set v(ordered,foo): a;
+.end
+assert compile_error?
+*--#] cov_set_twooptions_6_0193_set_twooptions_6 :
+
+*--#[ cov_pbtbl_fileadd_6_0195_pbtbl_fileadd_6 :
+* farm probe 0195_pbtbl_fileadd_6 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Table t(1:2);
+Fill t(1,1)=1;
+PrintTable t >> tbl_add.txt;
+PrintTable t >> tbl_add.txt;
+.end
+assert compile_error?
+*--#] cov_pbtbl_fileadd_6_0195_pbtbl_fileadd_6 :
+
+*--#[ cov_totensor_dim_10_0196_totensor_dim_10 :
+* farm probe 0196_totensor_dim_10 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Vector p1,p2;
+Function DimEx,f;
+Local F = DimEx(p1.p2);
+ToTensor f,p1,{p1,4};
+Print;
+.end
+assert compile_error?
+*--#] cov_totensor_dim_10_0196_totensor_dim_10 :
+
+*--#[ cov_err_default_index_12_0216_err_default_index_12 :
+* farm probe 0216_err_default_index_12 (+3 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal variable request
+Index i;
+Function f;
+PutInside f, i;
+.end
+assert compile_error?
+*--#] cov_err_default_index_12_0216_err_default_index_12 :
+
+*--#[ cov_denormal_dim_positive_51_0000_denormal_dim_positive_51 :
+* farm probe 0000_denormal_dim_positive_51 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,p1;
+Dimension p1 = 3;
+Local F = x^2*p1;
+id p1 = p1^2;
+Print;
+.end
+assert compile_error?
+*--#] cov_denormal_dim_positive_51_0000_denormal_dim_positive_51 :
+
+*--#[ cov_ifmatch_if_121_0002_ifmatch_if_121 :
+* farm probe 0002_ifmatch_if_121 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: The if[no]match->label option is not allowed in an if statement
+Symbol x,y;
+Label lab;
+Local a = x;
+If (Match(x)) id,ifmatch(lab),x = y; Endif;
+Print a;
+.end
+assert compile_error?
+*--#] cov_ifmatch_if_121_0002_ifmatch_if_121 :
+
+*--#[ cov_cg_vecnum_err_4_0003_cg_vecnum_err_4 :
+* farm probe 0003_cg_vecnum_err_4 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Fixed index in vector greater than
+Index i1;
+Vector p;
+Local test = p(999);
+.end
+assert compile_error?
+*--#] cov_cg_vecnum_err_4_0003_cg_vecnum_err_4 :
+
+*--#[ cov_fixtrace_74_0006_fixtrace_74 :
+* farm probe 0006_fixtrace_74 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Vector p1,p2,p3,p4;
+Index i,j;
+Fix,i,j;
+Local test = g_(1,p1,i,p2)*g_(1,p2,j,p3)*g_(1,p3,i,p4)*g_(1,p4,j,p1);
+trace4,1;
+Print;
+.end
+assert compile_error?
+*--#] cov_fixtrace_74_0006_fixtrace_74 :
+
+*--#[ cov_on_zstd_bad_116_0007_on_zstd_bad_116 :
+* farm probe 0007_on_zstd_bad_116 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Unrecognized option in ON compress gzip/zstd statement
+On compress zstd zzzz;
+.end
+assert compile_error?
+*--#] cov_on_zstd_bad_116_0007_on_zstd_bad_116 :
+
+*--#[ cov_sum_sep_143_0011_sum_sep_143 :
+* farm probe 0011_sum_sep_143 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal separator between objects in sum statement
+Symbol i,j;
+CFunction f;
+Local t = f(i,j);
+Sum i + j;
+Print;
+.end
+assert compile_error?
+*--#] cov_sum_sep_143_0011_sum_sep_143 :
+
+*--#[ cov_fun2tensor_146_0018_fun2tensor_146 :
+* farm probe 0018_fun2tensor_146 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* expected: Function f changed to tensor
+Symbol x;
+Function f;
+Tensor f;
+Local test = f(1,2);
+Print;
+.end
+assert compile_error?
+*--#] cov_fun2tensor_146_0018_fun2tensor_146 :
+
+*--#[ cov_table2func_145_0018_table2func_145 :
+* farm probe 0018_table2func_145 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal attempt to change table into function
+Symbol x;
+Table t(1);
+Function t;
+Local test = t(1);
+Print;
+.end
+assert compile_error?
+*--#] cov_table2func_145_0018_table2func_145 :
+
+*--#[ cov_tensor2fun_147_0018_tensor2fun_147 :
+* farm probe 0018_tensor2fun_147 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* expected: Tensor f changed to function
+Symbol x;
+Tensor f;
+Function f;
+Local test = f(x);
+Print;
+.end
+assert compile_error?
+*--#] cov_tensor2fun_147_0018_tensor2fun_147 :
+
+*--#[ cov_pr_fac_84_0020_pr_fac_84 :
+* farm probe 0020_pr_fac_84 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* Print variant of factor dollar access
+Symbol a,b;
+CFunction f;
+Local t = f(a)*f(b);
+$x = f(a)*f(b);
+Print "f1 = %$",$x(1);
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_pr_fac_84_0020_pr_fac_84 :
+
+*--#[ cov_pr_wildargs_83_0020_pr_wildargs_83 :
+* farm probe 0020_pr_wildargs_83 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* Print variant of DOLWILDARGS printing
+Symbol a,b,c;
+CFunction f,g;
+Local t = f(a,b,c);
+id f(?x) = g(?x);
+Print "wildargs = %$",$x;
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_pr_wildargs_83_0020_pr_wildargs_83 :
+
+*--#[ cov_delta_bare_98_0022_delta_bare_98 :
+* farm probe 0022_delta_bare_98 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: d_ needs two arguments
+Symbol x;
+Local test = x*d_;
+Print test;
+.end
+assert compile_error?
+*--#] cov_delta_bare_98_0022_delta_bare_98 :
+
+*--#[ cov_gamma_bigidx_104_0022_gamma_bigidx_104 :
+* farm probe 0022_gamma_bigidx_104 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Value of constant index in tensor too large
+Local test = g_(10000,1);
+Print test;
+.end
+assert compile_error?
+*--#] cov_gamma_bigidx_104_0022_gamma_bigidx_104 :
+
+*--#[ cov_tensor_dargs_23_0022_tensor_dargs_23 :
+* farm probe 0022_tensor_dargs_23 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: &d_ needs exactly two arguments
+Symbol x,y;
+CFunction d_,f;
+Local test = f(x,y);
+Drop f;
+Print;
+.end
+assert compile_error?
+*--#] cov_tensor_dargs_23_0022_tensor_dargs_23 :
+
+*--#[ cov_negative_power_zero_compile_74_0023_negative_power_zero_ :
+* farm probe 0023_negative_power_zero_compile_74 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Division by zero during compilation (0 to the power negative number)
+Symbol x;
+Local expr = 0^-1;
+Print;
+.end
+assert compile_error?
+*--#] cov_negative_power_zero_compile_74_0023_negative_power_zero_ :
+
+*--#[ cov_only_pow_6_0027_only_pow_6 :
+* farm probe 0027_only_pow_6 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* target: findpat.c FindOnce via id,once,only with wildcard powers
+Symbol x,y;
+CFunction f;
+Local a = x^3*y^3;
+id, once, only, x^n?*y^n? = f(n?);
+Print;
+.end
+assert compile_error?
+*--#] cov_only_pow_6_0027_only_pow_6 :
+
+*--#[ cov_dotail_threads_2_0029_dotail_threads_2 :
+* farm probe 0029_dotail_threads_2 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* DoTail m/w option parsing: legal thread counts then illegal values
+* expected child stderr fragment: Illegal value for option m or w
+#system V=$(readlink /proc/$PPID/exe 2>/dev/null); case "$V" in *form*) ;; *) V=vorm;; esac; echo .end > /tmp/cvf3.frm; $V -m2 /tmp/cvf3.frm; $V -w3 /tmp/cvf3.frm; true
+#system V=$(readlink /proc/$PPID/exe 2>/dev/null); case "$V" in *form*) ;; *) V=vorm;; esac; $V -m2x /tmp/cvf3.frm; $V -w4x /tmp/cvf3.frm; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_dotail_threads_2_0029_dotail_threads_2 :
+
+*--#[ cov_set_crange_symtonum_oob_56_0029_set_crange_symtonum_oob_ :
+* farm probe 0029_set_crange_symtonum_oob_56 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+Set s: {1,3};
+Local F = x;
+id x = y / 0;
+.end
+assert compile_error?
+*--#] cov_set_crange_symtonum_oob_56_0029_set_crange_symtonum_oob_ :
+
+*--#[ cov_cs_existvar_747_0031_cs_existvar_747 :
+* farm probe 0031_cs_existvar_747 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: is the name of an existing variable.
+Symbol test;
+Local foo = 1;
+CopySpectator,test=sp;
+Print;
+.end
+assert compile_error?
+*--#] cov_cs_existvar_747_0031_cs_existvar_747 :
+
+*--#[ cov_cs_illegalexpr2_752_0031_cs_illegalexpr2_752 :
+* farm probe 0031_cs_illegalexpr2_752 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal name for expression
+Local foo = 1;
+CopySpectator,1foo=sp;
+Print;
+.end
+assert compile_error?
+*--#] cov_cs_illegalexpr2_752_0031_cs_illegalexpr2_752 :
+
+*--#[ cov_badkeyword_240_0034_badkeyword_240 :
+* farm probe 0034_badkeyword_240 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal keyword inside range specification
+Symbol x,foo;
+CFunction f;
+Local test = f(1,2,3);
+Transform f dedup(1,foo);
+Print;
+.end
+assert compile_error?
+*--#] cov_badkeyword_240_0034_badkeyword_240 :
+
+*--#[ cov_bigfix_from_230_0034_bigfix_from_230 :
+* farm probe 0034_bigfix_from_230 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Fixed range indicator bigger than
+Symbol x;
+CFunction f;
+Local test = f(1,2,3);
+Transform f dedup(99999999999999999999,2);
+Print;
+.end
+assert compile_error?
+*--#] cov_bigfix_from_230_0034_bigfix_from_230 :
+
+*--#[ cov_bigfix_to_231_0034_bigfix_to_231 :
+* farm probe 0034_bigfix_to_231 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Fixed range indicator bigger than
+Symbol x;
+CFunction f;
+Local test = f(1,2,3);
+Transform f dedup(2,99999999999999999999);
+Print;
+.end
+assert compile_error?
+*--#] cov_bigfix_to_231_0034_bigfix_to_231 :
+
+*--#[ cov_eos_num_238_0034_eos_num_238 :
+* farm probe 0034_eos_num_238 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: should be followed by a comma or end-of-statement
+Symbol x;
+CFunction f;
+Local test = f(1,2,3);
+Transform f dedup(1,2) 3;
+Print;
+.end
+assert compile_error?
+*--#] cov_eos_num_238_0034_eos_num_238 :
+
+*--#[ cov_mult_opt_146_0036_mult_opt_146 :
+* farm probe 0036_mult_opt_146 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal option in multiply statement
+Symbol x;
+Local q = 1;
+Multiply x,3;
+.end
+assert compile_error?
+*--#] cov_mult_opt_146_0036_mult_opt_146 :
+
+*--#[ cov_argext_factarg2_208_0038_argext_factarg2_208 :
+* farm probe 0038_argext_factarg2_208 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: ArgToExtraSymbol statement and FactArg statement are not allowed in the same module
+Symbol x;
+Function f;
+ArgToExtraSymbol 1;
+FactArg f;
+Local test = f(x);
+.end
+assert compile_error?
+*--#] cov_argext_factarg2_208_0038_argext_factarg2_208 :
+
+*--#[ cov_argext_factarg_207_0038_argext_factarg_207 :
+* farm probe 0038_argext_factarg_207 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: ArgToExtraSymbol statement and FactArg statement are not allowed in the same module
+Symbol x;
+Function f;
+FactArg f;
+ArgToExtraSymbol,1;
+Local test = f(x);
+.end
+assert compile_error?
+*--#] cov_argext_factarg_207_0038_argext_factarg_207 :
+
+*--#[ cov_chisholm_fixedidx_212_0038_chisholm_fixedidx_212 :
+* farm probe 0038_chisholm_fixedidx_212 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: fixed index >=
+Chisholm 9999;
+.end
+assert compile_error?
+*--#] cov_chisholm_fixedidx_212_0038_chisholm_fixedidx_212 :
+
+*--#[ cov_chisholm_noargs_209_0038_chisholm_noargs_209 :
+* farm probe 0038_chisholm_noargs_209 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Proper syntax for Chisholm is
+Chisholm;
+.end
+assert compile_error?
+*--#] cov_chisholm_noargs_209_0038_chisholm_noargs_209 :
+
+*--#[ cov_cleartable_noarg_203_0038_cleartable_noarg_203 :
+* farm probe 0038_cleartable_noarg_203 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: The ClearTable statement needs at least one (table) argument.
+ClearTable;
+.end
+assert compile_error?
+*--#] cov_cleartable_noarg_203_0038_cleartable_noarg_203 :
+
+*--#[ cov_dolaarg_15_0039_dolaarg_15 :
+* farm probe 0039_dolaarg_15 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+CFunction f;
+Local t = f(1,2,3);
+$a = 2;
+Transform,f,replace(1)=($a,0,0,0);
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_dolaarg_15_0039_dolaarg_15 :
+
+*--#[ cov_discard_num_137_0040_discard_num_137 :
+* farm probe 0040_discard_num_137 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal argument in discard statement
+Symbol x;
+Local t = x;
+Discard 5;
+.end
+assert compile_error?
+*--#] cov_discard_num_137_0040_discard_num_137 :
+
+*--#[ cov_dropcoeff_num_139_0040_dropcoeff_num_139 :
+* farm probe 0040_dropcoeff_num_139 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal argument in DropCoefficient statement
+Symbol x;
+Local t = x;
+DropCoefficient 5;
+.end
+assert compile_error?
+*--#] cov_dropcoeff_num_139_0040_dropcoeff_num_139 :
+
+*--#[ cov_dropsym_num_140_0040_dropsym_num_140 :
+* farm probe 0040_dropsym_num_140 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal argument in DropSymbols statement
+Symbol x;
+Local t = x;
+DropSymbols 5;
+.end
+assert compile_error?
+*--#] cov_dropsym_num_140_0040_dropsym_num_140 :
+
+*--#[ cov_endarg_syn_127_0040_endarg_syn_127 :
+* farm probe 0040_endarg_syn_127 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal syntax for EndArgument statement
+Symbol x;
+Local t = x;
+EndArgument x;
+.end
+assert compile_error?
+*--#] cov_endarg_syn_127_0040_endarg_syn_127 :
+
+*--#[ cov_enddo_syn_131_0040_enddo_syn_131 :
+* farm probe 0040_enddo_syn_131 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal syntax for EndDo statement
+Symbol x;
+Local t = x;
+EndDo x;
+.end
+assert compile_error?
+*--#] cov_enddo_syn_131_0040_enddo_syn_131 :
+
+*--#[ cov_endinexp_syn_133_0040_endinexp_syn_133 :
+* farm probe 0040_endinexp_syn_133 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal syntax for EndInExpression statement
+Symbol x;
+Local t = x;
+EndInExpression x;
+.end
+assert compile_error?
+*--#] cov_endinexp_syn_133_0040_endinexp_syn_133 :
+
+*--#[ cov_endinside_noc_128_0040_endinside_noc_128 :
+* farm probe 0040_endinside_noc_128 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: EndInside without corresponding Inside statement
+EndInside;
+.end
+assert compile_error?
+*--#] cov_endinside_noc_128_0040_endinside_noc_128 :
+
+*--#[ cov_endinside_syn_129_0040_endinside_syn_129 :
+* farm probe 0040_endinside_syn_129 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal syntax for EndInside statement
+Symbol x;
+Local t = x;
+EndInside x;
+.end
+assert compile_error?
+*--#] cov_endinside_syn_129_0040_endinside_syn_129 :
+
+*--#[ cov_ts_vector_dot_set_92_0040_ts_vector_dot_set_92 :
+* farm probe 0040_ts_vector_dot_set_92 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+Vector v;
+Set s: x;
+CFunction f;
+Local expr = f(v.s);
+Print;
+.end
+assert compile_error?
+*--#] cov_ts_vector_dot_set_92_0040_ts_vector_dot_set_92 :
+
+*--#[ cov_endterm_extra_117_0041_endterm_extra_117 :
+* farm probe 0041_endterm_extra_117 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal syntax for EndTerm statement
+Symbol x;
+Local t = x;
+EndTerm x;
+Print;
+.end
+assert compile_error?
+*--#] cov_endterm_extra_117_0041_endterm_extra_117 :
+
+*--#[ cov_exsym_index_124_0041_exsym_index_124 :
+* farm probe 0041_exsym_index_124 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: creates conflicts with summed indices
+Symbol x;
+Index i;
+CFunction f,g;
+Local t = f(i)*g(i);
+.sort
+ExtraSymbols array,i;
+Local u = x;
+.sort
+Print;
+.end
+assert compile_error?
+*--#] cov_exsym_index_124_0041_exsym_index_124 :
+
+*--#[ cov_exsym_noarg_121_0041_exsym_noarg_121 :
+* farm probe 0041_exsym_noarg_121 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal argument in ExtraSymbols statement
+Symbol x;
+ExtraSymbols array;
+Local t = x;
+Print;
+.end
+assert compile_error?
+*--#] cov_exsym_noarg_121_0041_exsym_noarg_121 :
+
+*--#[ cov_exsym_trail_122_0041_exsym_trail_122 :
+* farm probe 0041_exsym_trail_122 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal end of ExtraSymbols statement
+Symbol x;
+ExtraSymbols array,x,y;
+Local t = x;
+Print;
+.end
+assert compile_error?
+*--#] cov_exsym_trail_122_0041_exsym_trail_122 :
+
+*--#[ cov_nomulof_4_0041_nomulof_4 :
+* farm probe 0041_nomulof_4 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: no ( after multipleof
+CFunction f;
+Local F = f(1);
+if ( multipleof ) Print;
+.end
+assert compile_error?
+*--#] cov_nomulof_4_0041_nomulof_4 :
+
+*--#[ cov_setbraces_multiline_105_0041_setbraces_multiline_105 :
+* farm probe 0041_setbraces_multiline_105 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: This type of usage of sets is not allowed
+Symbol x;
+Set myset(A{1});
+Local F = a_{myset}{b,c};
+Print;
+.end
+assert compile_error?
+*--#] cov_setbraces_multiline_105_0041_setbraces_multiline_105 :
+
+*--#[ cov_fmt_floatprec_114_0042_fmt_floatprec_114 :
+* farm probe 0042_fmt_floatprec_114 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal option in Format FloatPrecision
+Format FloatPrecision,abc;
+Print;
+.end
+assert compile_error?
+*--#] cov_fmt_floatprec_114_0042_fmt_floatprec_114 :
+
+*--#[ cov_frompoly_active_115_0042_frompoly_active_115 :
+* farm probe 0042_frompoly_active_115 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* expected: Using FromPolynomial statement when there are still optimization results active
+Symbol x;
+Local f = x^2+x;
+Optimize f;
+FromPolynomial f;
+Print;
+.end
+assert compile_error?
+*--#] cov_frompoly_active_115_0042_frompoly_active_115 :
+
+*--#[ cov_funpow_opt_118_0042_funpow_opt_118 :
+* farm probe 0042_funpow_opt_118 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal option in FunPowers statement
+FunPowers,blah;
+Print;
+.end
+assert compile_error?
+*--#] cov_funpow_opt_118_0042_funpow_opt_118 :
+
+*--#[ cov_onflag_noargs_107_0042_onflag_noargs_107 :
+* farm probe 0042_onflag_noargs_107 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Proper syntax is: On/Off Flag,number[s];
+On Flag;
+Print;
+.end
+assert compile_error?
+*--#] cov_onflag_noargs_107_0042_onflag_noargs_107 :
+
+*--#[ cov_goto_bad_130_0043_goto_bad_130 :
+* farm probe 0043_goto_bad_130 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Label should be an alpha-numeric string
+Symbol x;
+Local e1 = x;
+Goto +;
+Print;
+.end
+assert compile_error?
+*--#] cov_goto_bad_130_0043_goto_bad_130 :
+
+*--#[ cov_inex_nest_131_0043_inex_nest_131 :
+* farm probe 0043_inex_nest_131 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Nesting of inexpression statements more than
+Symbol x;
+Local e1 = x;
+InExpression e1:
+InExpression e1:
+InExpression e1:
+InExpression e1:
+id x = 1;
+EndInExpression;
+EndInExpression;
+EndInExpression;
+EndInExpression;
+Print;
+.end
+assert compile_error?
+*--#] cov_inex_nest_131_0043_inex_nest_131 :
+
+*--#[ cov_spectator_probe_116_0043_spectator_probe_116 :
+* farm probe 0043_spectator_probe_116 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+CFunction f;
+Local expr = f(x,y);
+ToSpectator x;
+Print;
+.end
+assert compile_error?
+*--#] cov_spectator_probe_116_0043_spectator_probe_116 :
+
+*--#[ cov_stuffle_probe_106_0043_stuffle_probe_106 :
+* farm probe 0043_stuffle_probe_106 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+CFunction f;
+Local expr = f(x,y) + f(y,x);
+Stuffle f;
+Print;
+.end
+assert compile_error?
+*--#] cov_stuffle_probe_106_0043_stuffle_probe_106 :
+
+*--#[ cov_switch_probe_108_0043_switch_probe_108 :
+* farm probe 0043_switch_probe_108 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+Local expr = x + y;
+Switch;
+Print;
+.end
+assert compile_error?
+*--#] cov_switch_probe_108_0043_switch_probe_108 :
+
+*--#[ cov_nwrite_noarg_135_0044_nwrite_noarg_135 :
+* farm probe 0044_nwrite_noarg_135 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Proper use of nwrite statement is: nwrite option
+nwrite;
+.end
+assert compile_error?
+*--#] cov_nwrite_noarg_135_0044_nwrite_noarg_135 :
+
+*--#[ cov_off_illegalchar_136_0044_off_illegalchar_136 :
+* farm probe 0044_off_illegalchar_136 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal character or option encountered in OFF statement
+Off 1;
+.end
+assert compile_error?
+*--#] cov_off_illegalchar_136_0044_off_illegalchar_136 :
+
+*--#[ cov_pushpop_args_141_0044_pushpop_args_141 :
+* farm probe 0044_pushpop_args_141 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: PopHide statement should have no arguments
+Symbol x;
+PushHide;
+PopHide x;
+.end
+assert compile_error?
+*--#] cov_pushpop_args_141_0044_pushpop_args_141 :
+
+*--#[ cov_renumber2_123_0045_renumber2_123 :
+* farm probe 0045_renumber2_123 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal argument in Renumber statement
+Renumber qqq;
+.end
+assert compile_error?
+*--#] cov_renumber2_123_0045_renumber2_123 :
+
+*--#[ cov_set_fixed_single_expr_97_0045_set_fixed_single_expr_97 :
+* farm probe 0045_set_fixed_single_expr_97 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+Set S:C : {0};
+Local F = x+y;
+if ( match(x+y) ) discard;
+Print;
+.end
+assert compile_error?
+*--#] cov_set_fixed_single_expr_97_0045_set_fixed_single_expr_97 :
+
+*--#[ cov_setexitflag2_126_0045_setexitflag2_126 :
+* farm probe 0045_setexitflag2_126 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal syntax for the SetExitFlag statement
+SetExitFlag 1 2;
+.end
+assert compile_error?
+*--#] cov_setexitflag2_126_0045_setexitflag2_126 :
+
+*--#[ cov_threadbucket_nonnum_95_0046_threadbucket_nonnum_95 :
+* farm probe 0046_threadbucket_nonnum_95 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Numerical value expected for ThreadBucketSize
+Symbol x;
+ThreadBucketSize x;
+.end
+assert compile_error?
+*--#] cov_threadbucket_nonnum_95_0046_threadbucket_nonnum_95 :
+
+*--#[ cov_tovec_onearg_114_0047_tovec_onearg_114 :
+* farm probe 0047_tovec_onearg_114 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: ToVector statement needs a vector and a tensor
+Vector p;
+ToVector, p;
+Print;
+.end
+assert compile_error?
+*--#] cov_tovec_onearg_114_0047_tovec_onearg_114 :
+
+*--#[ cov_tr4_bigfixed_117_0047_tr4_bigfixed_117 :
+* farm probe 0047_tr4_bigfixed_117 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Change value of OffsetIndex
+Trace4, 999999;
+Print;
+.end
+assert compile_error?
+*--#] cov_tr4_bigfixed_117_0047_tr4_bigfixed_117 :
+
+*--#[ cov_trn_notindex_124_0047_trn_notindex_124 :
+* farm probe 0047_trn_notindex_124 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: is not an index
+Symbol x;
+TraceN, 4, x;
+Print;
+.end
+assert compile_error?
+*--#] cov_trn_notindex_124_0047_trn_notindex_124 :
+
+*--#[ cov_285_countbig_83_0048_285_countbig_83 :
+* farm probe 0048_285_countbig_83 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* best-effort: count with many-digit number, hits zero-padding branch 4361-4365
+Symbol x;
+Local ff = x;
+.sort
+if ( count(x,123456789012345678) ) Print;
+endif
+Print ff;
+.end
+assert compile_error?
+*--#] cov_285_countbig_83_0048_285_countbig_83 :
+
+*--#[ cov_occurs_dot_vec_108_0049_occurs_dot_vec_108 :
+* farm probe 0049_occurs_dot_vec_108 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Not a vector in dotproduct in if statement
+Vector v;
+Symbol b;
+Local F = v(1);
+If (occurs(v.b)) Print;
+.end
+assert compile_error?
+*--#] cov_occurs_dot_vec_108_0049_occurs_dot_vec_108 :
+
+*--#[ cov_antiputinside_104_0050_antiputinside_104 :
+* farm probe 0050_antiputinside_104 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: AntiPutInside needs inside information
+CFunction f;
+Vector p,q;
+Local t = f(p.q);
+AntiPutInside f;
+Print t;
+.end
+assert compile_error?
+*--#] cov_antiputinside_104_0050_antiputinside_104 :
+
+*--#[ cov_bad_expr_name_120_0051_bad_expr_name_120 :
+* farm probe 0051_bad_expr_name_120 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Improper name for an expression
+CFunction f;
+Local x = f(1);
+UnHide 3x;
+Print;
+.end
+assert compile_error?
+*--#] cov_bad_expr_name_120_0051_bad_expr_name_120 :
+
+*--#[ cov_sym_num2_52_0051_sym_num2_52 :
+* farm probe 0051_sym_num2_52 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol a,b,x,y;
+CFunction f,g,h;
+Local F = f(h(g(b,a)));
+Symmetrize 2, f, g(x?,y?), g(y?,x?);
+Print;
+.end
+assert compile_error?
+*--#] cov_sym_num2_52_0051_sym_num2_52 :
+
+*--#[ cov_inside_exec_98_0052_inside_exec_98 :
+* farm probe 0052_inside_exec_98 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Only executable and print statements are allowed in an %#inside/%#endinside construction
+Symbol x;
+Local F = x;
+#inside
+Bracket x;
+#endinside
+Print;
+.end
+assert compile_error?
+*--#] cov_inside_exec_98_0052_inside_exec_98 :
+
+*--#[ cov_ext2pair_87_0059_ext2pair_87 :
+* farm probe 0059_ext2pair_87 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbols a1,a2;
+CFunction phi,v3;
+Model v3;
+Local test = phi(1)+phi(2);
+Generate diagrams, test, "dg2p", all;
+Print;
+.end
+assert compile_error?
+*--#] cov_ext2pair_87_0059_ext2pair_87 :
+
+*--#[ cov_coif_flgrange_22_0061_coif_flgrange_22 :
+* farm probe 0061_coif_flgrange_22 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Flag number
+Symbol x;
+Local test = x;
+if ( flag(0) ) id x = 1;
+Print;
+.end
+assert compile_error?
+*--#] cov_coif_flgrange_22_0061_coif_flgrange_22 :
+
+*--#[ cov_if_flannoarg_81_0061_if_flannoarg_81 :
+* farm probe 0061_if_flannoarg_81 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: userflag condition in the if statement needs arguments
+Symbol x;
+Local t = x;
+If ( flag() ) id x = 1;
+.end
+assert compile_error?
+*--#] cov_if_flannoarg_81_0061_if_flannoarg_81 :
+
+*--#[ cov_negset_member_50_0063_negset_member_50 :
+* farm probe 0063_negset_member_50 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+Set S: -x;
+Local F = -x;
+if ( member(S, -x) ) Print;
+.end
+assert compile_error?
+*--#] cov_negset_member_50_0063_negset_member_50 :
+
+*--#[ cov_all_illegal_idold_80_0070_all_illegal_idold_80 :
+* farm probe 0070_all_illegal_idold_80 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Requested ALL option not allowed in idold/also statement.
+Symbol x;
+Local F = x;
+id,all x = x;
+idold x = y;
+Print;
+.end
+assert compile_error?
+*--#] cov_all_illegal_idold_80_0070_all_illegal_idold_80 :
+
+*--#[ cov_missing_equal_after_set_114_0070_missing_equal_after_set :
+* farm probe 0070_missing_equal_after_set_114 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: id-statement without = sign
+Symbol x,y;
+Set s;
+Local F = x;
+id x, select s;
+Print;
+.end
+assert compile_error?
+*--#] cov_missing_equal_after_set_114_0070_missing_equal_after_set :
+
+*--#[ cov_tr_revread_73_0073_tr_revread_73 :
+* farm probe 0073_tr_revread_73 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+CFunction f;
+Transform f reverse(x);
+.end
+assert compile_error?
+*--#] cov_tr_revread_73_0073_tr_revread_73 :
+
+*--#[ cov_endmodel_orphan_107_0074_endmodel_orphan_107 :
+* farm probe 0074_endmodel_orphan_107 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: EndModel statement without matching Model statement
+EndModel;
+.end
+assert compile_error?
+*--#] cov_endmodel_orphan_107_0074_endmodel_orphan_107 :
+
+*--#[ cov_bucket_nonnum_125_0076_bucket_nonnum_125 :
+* farm probe 0076_bucket_nonnum_125 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Numerical value expected for ProcessBucketSize
+Symbol x;
+ProcessBucketSize abc;
+Local test = x;
+Print;
+.end
+assert compile_error?
+*--#] cov_bucket_nonnum_125_0076_bucket_nonnum_125 :
+
+*--#[ cov_numspec13_49_0077_numspec13_49 :
+* farm probe 0077_numspec13_49 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* test 3-element run with first two equal, third different, vector filter
+AutoDeclare Symbol x;
+AutoDeclare Vector v;
+CFunction f;
+Local expr = f(0,0,v(v1,v1,v2),0,0);
+id f(x1?,x2?,v?,x3?,x4?) = g_(v1,v2,v3);
+.end
+assert compile_error?
+*--#] cov_numspec13_49_0077_numspec13_49 :
+
+*--#[ cov_dollarfac_185_0079_dollarfac_185 :
+* farm probe 0079_dollarfac_185 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol a,b;
+Local f = (a+b)*(a-b);
+Factorize f;
+.sort
+$x = f;
+Factorize $x;
+.sort
+Local g = $x^2;
+Factorize g;
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_dollarfac_185_0079_dollarfac_185 :
+
+*--#[ cov_endjunk_720_0079_endjunk_720 :
+* farm probe 0079_endjunk_720 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal end of FillExpression statement
+Symbol x,y;
+Table tab(1:3);
+Local e = 1;
+.sort
+FillExpression tab = e(x)y;
+.end
+assert compile_error?
+*--#] cov_endjunk_720_0079_endjunk_720 :
+
+*--#[ cov_exprpower_182_0079_exprpower_182 :
+* farm probe 0079_exprpower_182 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol a,b;
+Local f = (a+b)*(a-b);
+Factorize f;
+.sort
+Local g = f^3 + f^(-1);
+Factorize g;
+Print;
+.end
+assert compile_error?
+*--#] cov_exprpower_182_0079_exprpower_182 :
+
+*--#[ cov_inmem_redef_207_0079_inmem_redef_207 :
+* farm probe 0079_inmem_redef_207 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: cannot be used in a FillExpression statement
+Symbol x;
+Table tab(1);
+Local e1 = x;
+.sort
+Local e1 = x^2;
+FillExpression tab = e1(x);
+.end
+assert compile_error?
+*--#] cov_inmem_redef_207_0079_inmem_redef_207 :
+
+*--#[ cov_no_paren_206_0079_no_paren_206 :
+* farm probe 0079_no_paren_206 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: should be an active expression with arguments
+Symbol x;
+Table tab(1);
+Local e1 = x;
+.sort
+FillExpression tab = e1;
+.end
+assert compile_error?
+*--#] cov_no_paren_206_0079_no_paren_206 :
+
+*--#[ cov_print_contents_11_0079_print_contents_11 :
+* farm probe 0079_print_contents_11 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+Local test = (x+y)^2*(y+3*x);
+Bracket x;
+Print +c test;
+.end
+assert compile_error?
+*--#] cov_print_contents_11_0079_print_contents_11 :
+
+*--#[ cov_undecl_arg_208_0079_undecl_arg_208 :
+* farm probe 0079_undecl_arg_208 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: should be a previously declared symbol or function
+Symbol x;
+Table tab(1);
+Local e1 = x;
+.sort
+FillExpression tab = e1(y);
+.end
+assert compile_error?
+*--#] cov_undecl_arg_208_0079_undecl_arg_208 :
+
+*--#[ cov_vect_arg_209_0079_vect_arg_209 :
+* farm probe 0079_vect_arg_209 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: should be a previously declared symbol or function
+Symbol x;
+Vector v;
+Table tab(1);
+Local e1 = x;
+.sort
+FillExpression tab = e1(v);
+.end
+assert compile_error?
+*--#] cov_vect_arg_209_0079_vect_arg_209 :
+
+*--#[ cov_term_overflow_39_0082_term_overflow_39 :
+* farm probe 0082_term_overflow_39 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: NormPolyTerm
+Symbol x;
+PolyRatFun rat;
+Term 40;
+Local F = rat(2^5000*x + 1);
+Print;
+.end
+assert compile_error?
+*--#] cov_term_overflow_39_0082_term_overflow_39 :
+
+*--#[ cov_autotable_decl_61_0084_autotable_decl_61 :
+* farm probe 0084_autotable_decl_61 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+AutoDeclare Table t(5);
+Fill t(1) = 1;
+Fill t(4) = 2;
+Local test = t(1) + t(4);
+Print test;
+.end
+Fill t(2) = 3;
+Local test2 = t(2) + t(1);
+Print test2;
+.end
+assert compile_error?
+*--#] cov_autotable_decl_61_0084_autotable_decl_61 :
+
+*--#[ cov_bigtable_spare_12_0084_bigtable_spare_12 :
+* farm probe 0084_bigtable_spare_12 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* many entries -> multiple table buffers; refill after use -> spare;
+* freed at .end
+Symbol x;
+Table f(1:20);
+#do i = 1,60
+    Fill f(i) = (x+1)^i;
+#enddo
+Local F = f(5) + f(50);
+Print F;
+.end
+Symbol x;
+Fill f(1) = x;
+Fill f(2) = x;
+Print F;
+.end
+assert compile_error?
+*--#] cov_bigtable_spare_12_0084_bigtable_spare_12 :
+
+*--#[ cov_fillexpr_75_0084_fillexpr_75 :
+* farm probe 0084_fillexpr_75 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+Table t(5);
+Local e = x^2 + t(3);
+FillExpression t,e;
+Print e;
+.sort
+Print;
+.end
+assert compile_error?
+*--#] cov_fillexpr_75_0084_fillexpr_75 :
+
+*--#[ cov_gtable_23_0084_gtable_23 :
+* farm probe 0084_gtable_23 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* targets names.c ~2984-2995: global reset freeing a Global Table (+ spare)
+Symbol a;
+Global Table gt(5);
+Fill gt(2) = 3*a;
+Local e = gt(2) + gt(4);
+Print e;
+.end
+.clear
+Local q = 1;
+Print q;
+.end
+assert compile_error?
+*--#] cov_gtable_23_0084_gtable_23 :
+
+*--#[ cov_table_extend_15_0084_table_extend_15 :
+* farm probe 0084_table_extend_15 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* Fill beyond declared table size: table must grow
+Symbol x;
+Table f(1:2);
+Fill f(1) = x;
+Fill f(5) = x^2;
+Fill f(10) = x^3;
+Local F = f(10) + f(5);
+Print F;
+.end
+assert compile_error?
+*--#] cov_table_extend_15_0084_table_extend_15 :
+
+*--#[ cov_tbl_trailcomma_2_0084_tbl_trailcomma_2 :
+* farm probe 0084_tbl_trailcomma_2 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal name or option in table declaration
+Table strict,;
+Print;
+.end
+assert compile_error?
+*--#] cov_tbl_trailcomma_2_0084_tbl_trailcomma_2 :
+
+*--#[ cov_spectator_97_0085_spectator_97 :
+* farm probe 0085_spectator_97 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+Spectator s;
+On parallel;
+Local t = x^2;
+.sort
+CopySpectator s = t;
+Print t;
+.end
+assert compile_error?
+*--#] cov_spectator_97_0085_spectator_97 :
+
+*--#[ cov_polyfun_70_0086_polyfun_70 :
+* farm probe 0086_polyfun_70 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+Function p;
+PolyFun p,2;
+Local test = p(x+1)^2;
+Print;
+.end
+assert compile_error?
+*--#] cov_polyfun_70_0086_polyfun_70 :
+
+*--#[ cov_sparsevar_28_0093_sparsevar_28 :
+* farm probe 0093_sparsevar_28 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+Table q(1:1,1:1);
+Tablebase tbt10;
+  Table q(1:1,1:1);
+  Fill q(1,1) = 8;
+EndTablebase;
+Benter tbt10,q;
+Local tst = q(1,1);
+Print tst;
+.end
+assert compile_error?
+*--#] cov_sparsevar_28_0093_sparsevar_28 :
+
+*--#[ cov_dollar_assign_expr_54_0096_dollar_assign_expr_54 :
+* farm probe 0096_dollar_assign_expr_54 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+Local F = x + y;
+.sort
+$d = F;
+$e = $d + 1;
+#$max $e = $d;
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_dollar_assign_expr_54_0096_dollar_assign_expr_54 :
+
+*--#[ cov_proc_rat_38_0099_proc_rat_38 :
+* farm probe 0099_proc_rat_38 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* Dictionary element type DICT_RATIONALNUMBER via dollar-valued prevar
+Symbol x;
+#system echo "Print; .end" > sub.frm
+$r = 3/4;
+Local F = `$r'*x;
+ToProcess F;
+Process "sub.frm";
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_proc_rat_38_0099_proc_rat_38 :
+
+*--#[ cov_dealloc_cfunc_76_0109_dealloc_cfunc_76 :
+* farm probe 0109_dealloc_cfunc_76 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: should be a previously declared table
+* name is a declared CFunction but functions[funnum].tabl == 0
+CFunction f;
+Local F = f(1);
+Print F;
+DeallocateTable f;
+.end
+assert compile_error?
+*--#] cov_dealloc_cfunc_76_0109_dealloc_cfunc_76 :
+
+*--#[ cov_em_notfound_110_0109_em_notfound_110 :
+* farm probe 0109_em_notfound_110 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Spectator nospec not found.
+EmptySpectator nospec;
+Print;
+.end
+assert compile_error?
+*--#] cov_em_notfound_110_0109_em_notfound_110 :
+
+*--#[ cov_em_notsp_111_0109_em_notsp_111 :
+* farm probe 0109_em_notsp_111 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: is not a spectator
+Local e = 1;
+EmptySpectator e;
+Print;
+.end
+assert compile_error?
+*--#] cov_em_notsp_111_0109_em_notsp_111 :
+
+*--#[ cov_em_syntax_109_0109_em_syntax_109 :
+* farm probe 0109_em_syntax_109 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Proper syntax is: EmptySpectator,exprname;
+EmptySpectator;
+Print;
+.end
+assert compile_error?
+*--#] cov_em_syntax_109_0109_em_syntax_109 :
+
+*--#[ cov_rm_notexpr_108_0109_rm_notexpr_108 :
+* farm probe 0109_rm_notexpr_108 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: is not a valid expression
+Symbol q;
+RemoveSpectator q;
+Print;
+.end
+assert compile_error?
+*--#] cov_rm_notexpr_108_0109_rm_notexpr_108 :
+
+*--#[ cov_rm_syntax_106_0109_rm_syntax_106 :
+* farm probe 0109_rm_syntax_106 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Proper syntax is: RemoveSpectator,exprname;
+RemoveSpectator;
+Print;
+.end
+assert compile_error?
+*--#] cov_rm_syntax_106_0109_rm_syntax_106 :
+
+*--#[ cov_spect_illname2_105_0109_spect_illname2_105 :
+* farm probe 0109_spect_illname2_105 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal name for expression
+CreateSpectator "abc","spc.tmp";
+Print;
+.end
+assert compile_error?
+*--#] cov_spect_illname2_105_0109_spect_illname2_105 :
+
+*--#[ cov_spect_to1arg_90_0110_spect_to1arg_90 :
+* farm probe 0110_spect_to1arg_90 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Proper syntax is: ToSpectator
+Symbol x;
+Spectator s;
+Local e1 = x;
+ToSpectator e1;
+.end
+assert compile_error?
+*--#] cov_spect_to1arg_90_0110_spect_to1arg_90 :
+
+*--#[ cov_unusable_dollar_set_31_0112_unusable_dollar_set_31 :
+* farm probe 0112_unusable_dollar_set_31 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Unusable type of variable $v in set substitution
+Symbol x;
+CFunction f;
+Set myseq: x;
+$v = x^2;
+Local F = f(x);
+id f(s1?) = <myseq> $v^s1?;
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_unusable_dollar_set_31_0112_unusable_dollar_set_31 :
+
+*--#[ cov_bad_symmetry_27_0114_bad_symmetry_27 :
+* farm probe 0114_bad_symmetry_27 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Functions with nontrivial symmetrization properties cannot become tables
+Symbol x;
+CFunction f(symmetric);
+Table f(2);
+.end
+assert compile_error?
+*--#] cov_bad_symmetry_27_0114_bad_symmetry_27 :
+
+*--#[ cov_bad_tensor_29_0114_bad_tensor_29 :
+* farm probe 0114_bad_tensor_29 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Tensors cannot become tables
+Symbol x;
+Tensor f;
+Table f(2);
+.end
+assert compile_error?
+*--#] cov_bad_tensor_29_0114_bad_tensor_29 :
+
+*--#[ cov_star2_3_0114_star2_3 :
+* farm probe 0114_star2_3 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* star-table fill, syntax variant B: trailing star
+Table t(1:10)*;
+Fill t(1,5)=25;
+Fill t(2,3,4)=12;
+Local z = 1;
+Print z;
+.end
+assert compile_error?
+*--#] cov_star2_3_0114_star2_3 :
+
+*--#[ cov_tbl_funconflict_95_0114_tbl_funconflict_95 :
+* farm probe 0114_tbl_funconflict_95 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: error: name f already exists as a symbol (EntVar failure path)
+Symbol f;
+Table f(2,3);
+Print;
+.end
+assert compile_error?
+*--#] cov_tbl_funconflict_95_0114_tbl_funconflict_95 :
+
+*--#[ cov_desc5_1_0115_desc5_1 :
+* farm probe 0115_desc5_1 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* sparse table, descending fills: right-side insert branch (tables.c 141-154), walk-up else branch (186), single rotation right
+Symbol n;
+Table t(1:n);
+Fill t(5) = 50;
+Fill t(4) = 40;
+Fill t(3) = 30;
+Fill t(2) = 20;
+Fill t(1) = 10;
+Local test = t(4);
+Print;
+.end
+assert compile_error?
+*--#] cov_desc5_1_0115_desc5_1 :
+
+*--#[ cov_sy_match2_83_0115_sy_match2_83 :
+* farm probe 0115_sy_match2_83 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: no argument field wildcards yet
+CFunction f,g;
+Symbol x,y;
+Symmetrize f(1,2), f(2,1);
+Local test = f(1,2);
+id f(x?,y?) = g(x,y);
+.end
+assert compile_error?
+*--#] cov_sy_match2_83_0115_sy_match2_83 :
+
+*--#[ cov_redecl_size_88_0116_redecl_size_88 :
+* farm probe 0116_redecl_size_88 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+Symbol x;
+Table t1,10;
+Local test = t1(1);
+Print;
+.end
+Table t1,20;
+Local test2 = t1(1);
+Print;
+.end
+* expected: different from previous declaration
+.end
+assert compile_error?
+*--#] cov_redecl_size_88_0116_redecl_size_88 :
+
+*--#[ cov_fact_parenid_75_0119_fact_parenid_75 :
+* farm probe 0119_fact_parenid_75 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* target: subexpression argument created in an id RHS (negative cache branch)
+Symbol x;
+CFunction f;
+Local temp = f(1);
+id f(1) = f((x^2-1));
+Factorize,f;
+Print;
+.end
+assert compile_error?
+*--#] cov_fact_parenid_75_0119_fact_parenid_75 :
+
+*--#[ cov_model_power_illegal_94_0119_model_power_illegal_94 :
+* farm probe 0119_model_power_illegal_94 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: A model to a power or in denominator is illegal
+Model m;
+Local F = m^(-1);
+Print;
+.end
+assert compile_error?
+*--#] cov_model_power_illegal_94_0119_model_power_illegal_94 :
+
+*--#[ cov_cycexpr_100_0122_cycexpr_100 :
+* farm probe 0122_cycexpr_100 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Error in Dollar variable in transform,cycle
+Symbol x,y;
+CFunction f;
+Local test = f(x,x,x);
+$n = x + y;
+Transform f,cycle($n);
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_cycexpr_100_0122_cycexpr_100 :
+
+*--#[ cov_sym_badcolon_9_0124_sym_badcolon_9 :
+* farm probe 0124_sym_badcolon_9 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal character after :
+CFunction f;
+Symmetrize f:x;
+.end
+assert compile_error?
+*--#] cov_sym_badcolon_9_0124_sym_badcolon_9 :
+
+*--#[ cov_on_chkpt_run_58_0125_on_chkpt_run_58 :
+* farm probe 0125_on_chkpt_run_58 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+Local test = x;
+On checkpoint run=echo probe2,100m;
+Print;
+.end
+assert compile_error?
+*--#] cov_on_chkpt_run_58_0125_on_chkpt_run_58 :
+
+*--#[ cov_on_compress_twoargs_54_0125_on_compress_twoargs_54 :
+* farm probe 0125_on_compress_twoargs_54 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Unrecognized option in ON compress gzip/zstd statement
+Symbol x;
+Local test = x;
+On compress gzip 3,7;
+Print;
+.end
+assert compile_error?
+*--#] cov_on_compress_twoargs_54_0125_on_compress_twoargs_54 :
+
+*--#[ cov_modinverse_denom_noposneg_38_0129_modinverse_denom_nopos :
+* farm probe 0129_modinverse_denom_noposneg_38 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+Local F = 2*x^3;
+Modulus 7;
+Off POSNEG;
+Print;
+.end
+assert compile_error?
+*--#] cov_modinverse_denom_noposneg_38_0129_modinverse_denom_nopos :
+
+*--#[ cov_n1_illegal_generated_index_1_0134_n1_illegal_generated_i :
+* farm probe 0134_n1_illegal_generated_index_1 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Generated indices should be of the type Nnumber_?
+Symbol x;
+CFunction N1_?;
+Local F = N1_(x);
+Print;
+.end
+assert compile_error?
+*--#] cov_n1_illegal_generated_index_1_0134_n1_illegal_generated_i :
+
+*--#[ cov_neg_index_renumber_64_0134_neg_index_renumber_64 :
+* farm probe 0134_neg_index_renumber_64 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol i1,i2;
+Index j1,j2;
+Local F = 1/j1(i1);
+id j1(i1?) = j2(i1);
+Print;
+.end
+assert compile_error?
+*--#] cov_neg_index_renumber_64_0134_neg_index_renumber_64 :
+
+*--#[ cov_xs_wild3k_34_0142_xs_wild3k_34 :
+* farm probe 0142_xs_wild3k_34 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* ExtraSymbols wildcard mode; then use x-names directly in a second module
+ExtraSymbols,wildcard;
+#do i = 1,3000
+Symbol s`i';
+#enddo
+Local test = s1*s2*s3 + s4^2;
+.sort
+Print;
+.end
+Local test2 = x1*x2 + x3;
+Print;
+.end
+assert compile_error?
+*--#] cov_xs_wild3k_34_0142_xs_wild3k_34 :
+
+*--#[ cov_settype_pow_denom_67_0143_settype_pow_denom_67 :
+* farm probe 0143_settype_pow_denom_67 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: A set without type to a power or in denominator is illegal
+Set s;
+Symbol x;
+Local F = s^2;
+Print;
+.end
+assert compile_error?
+*--#] cov_settype_pow_denom_67_0143_settype_pow_denom_67 :
+
+*--#[ cov_fill_overwrite_keep_57_0148_fill_overwrite_keep_57 :
+* farm probe 0148_fill_overwrite_keep_57 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Table element was already defined. New definition will be used
+Table t(2:3);
+Fill t(2) = 1;
+Keep;
+Fill t(2) = 2;
+Print;
+.end
+assert compile_error?
+*--#] cov_fill_overwrite_keep_57_0148_fill_overwrite_keep_57 :
+
+*--#[ cov_float_as_arg_fun_11_0148_float_as_arg_fun_11 :
+* farm probe 0148_float_as_arg_fun_11 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal use of argument environment and float_
+Symbol x;
+Argument float_;
+.end
+assert compile_error?
+*--#] cov_float_as_arg_fun_11_0148_float_as_arg_fun_11 :
+
+*--#[ cov_illegal_paren_arg_1_0148_illegal_paren_arg_1 :
+* farm probe 0148_illegal_paren_arg_1 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal () entry in argument statement
+Symbol x;
+Argument (x);
+.end
+assert compile_error?
+*--#] cov_illegal_paren_arg_1_0148_illegal_paren_arg_1 :
+
+*--#[ cov_illegal_paren_splitfirst_2_0148_illegal_paren_splitfirst :
+* farm probe 0148_illegal_paren_splitfirst_2 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal () entry in splitfirstarg statement
+Symbol x,y;
+SplitFirstArg (x,y);
+.end
+assert compile_error?
+*--#] cov_illegal_paren_splitfirst_2_0148_illegal_paren_splitfirst :
+
+*--#[ cov_illegal_paren_splitlast_3_0148_illegal_paren_splitlast_3 :
+* farm probe 0148_illegal_paren_splitlast_3 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal () entry in splitlastarg statement
+Symbol x,y;
+SplitLastArg (x,y);
+.end
+assert compile_error?
+*--#] cov_illegal_paren_splitlast_3_0148_illegal_paren_splitlast_3 :
+
+*--#[ cov_split_with_paren_expr_4_0148_split_with_paren_expr_4 :
+* farm probe 0148_split_with_paren_expr_4 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+SplitArg (x+y);
+Print;
+.end
+assert compile_error?
+*--#] cov_split_with_paren_expr_4_0148_split_with_paren_expr_4 :
+
+*--#[ cov_model_fcolon_80_0150_model_fcolon_80 :
+* farm probe 0150_model_fcolon_80 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Graph gr;
+CFunction q,qbar,g,G;
+Model m;
+q: Fermion qbar;
+g: Vector;
+Vertex G: q qbar g;
+Process q qbar -> g g;
+Draw;
+.end
+assert compile_error?
+*--#] cov_model_fcolon_80_0150_model_fcolon_80 :
+
+*--#[ cov_hide_bigfill_41_0166_hide_bigfill_41 :
+* farm probe 0166_hide_bigfill_41 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+Local big = (x+y)^12;
+.sort
+Hide big;
+Local acc = 1;
+.sort
+FillExpression acc,big;
+Print acc;
+.end
+assert compile_error?
+*--#] cov_hide_bigfill_41_0166_hide_bigfill_41 :
+
+*--#[ cov_topol_autoerr_9_0167_topol_autoerr_9 :
+* farm probe 0167_topol_autoerr_9 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: is not a function in ToPolynomial statement
+Symbol x;
+CFunction f;
+ToPolynomial onlyfunctions f,zz;
+.end
+assert compile_error?
+*--#] cov_topol_autoerr_9_0167_topol_autoerr_9 :
+
+*--#[ cov_topol_factarg_2_0167_topol_factarg_2 :
+* farm probe 0167_topol_factarg_2 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: ToPolynomial statement and FactArg statement are not allowed in the same module
+Symbol x;
+CFunction f;
+FactArg f;
+ToPolynomial;
+Local t = f(x);
+Print;
+.end
+assert compile_error?
+*--#] cov_topol_factarg_2_0167_topol_factarg_2 :
+
+*--#[ cov_ifeq_71_0173_ifeq_71 :
+* farm probe 0173_ifeq_71 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* attempt to reach FROMPOINTINSTRUCTION branch (466-474) via runtime if
+CFunction rat;
+Symbol x;
+Local t = x;
+if ( Match(x) ) PolyRatFun=rat; endif;
+.sort
+Print;
+.end
+assert compile_error?
+*--#] cov_ifeq_71_0173_ifeq_71 :
+
+*--#[ cov_div_nocomma_40_0176_div_nocomma_40 :
+* farm probe 0176_div_nocomma_40 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal option field in PolyRatFun statement
+* divergence option without a following comma: compcomm.c 5493-5496
+CFunction f;
+PolyRatFun f(divergence);
+.end
+assert compile_error?
+*--#] cov_div_nocomma_40_0176_div_nocomma_40 :
+
+*--#[ cov_polyexpnocomma_17_0176_polyexpnocomma_17 :
+* farm probe 0176_polyexpnocomma_17 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal option field in PolyRatFun statement
+CFunction f;
+PolyRatFun f(expand);
+.end
+assert compile_error?
+*--#] cov_polyexpnocomma_17_0176_polyexpnocomma_17 :
+
+*--#[ cov_prdiv_badterm_29_0176_prdiv_badterm_29 :
+* farm probe 0176_prdiv_badterm_29 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal termination of option in PolyRatFun statement
+Symbol x,y;
+CFunction rat,den;
+PolyRatFun rat,den(divergence,x,y);
+.end
+assert compile_error?
+*--#] cov_prdiv_badterm_29_0176_prdiv_badterm_29 :
+
+*--#[ cov_prexpand_nodigit_32_0176_prexpand_nodigit_32 :
+* farm probe 0176_prexpand_nodigit_32 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal option field in PolyRatFun statement
+Symbol x,n;
+CFunction rat,den;
+PolyRatFun rat,den(expand,x,n);
+.end
+assert compile_error?
+*--#] cov_prexpand_nodigit_32_0176_prexpand_nodigit_32 :
+
+*--#[ cov_prf_expandabs_61_0176_prf_expandabs_61 :
+* farm probe 0176_prf_expandabs_61 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+CFunction f;
+PolyRatFun f(expand,x,3,absolute);
+Local test = 1;
+Print test;
+.end
+assert compile_error?
+*--#] cov_prf_expandabs_61_0176_prf_expandabs_61 :
+
+*--#[ cov_prf_expsym_63_0176_prf_expsym_63 :
+* farm probe 0176_prf_expsym_63 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal symbol q in option field in PolyRatFun statement
+CFunction f,q;
+PolyRatFun f(expand,q,2);
+.end
+assert compile_error?
+*--#] cov_prf_expsym_63_0176_prf_expsym_63 :
+
+*--#[ cov_prparerr_34_0176_prparerr_34 :
+* farm probe 0176_prparerr_34 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal option x in PolyRatFun statement
+Symbol x;
+CFunction rat,den;
+PolyRatFun rat,den(x);
+.end
+assert compile_error?
+*--#] cov_prparerr_34_0176_prparerr_34 :
+
+*--#[ cov_prskipfail_35_0176_prskipfail_35 :
+* farm probe 0176_prskipfail_35 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: PolyRatFun statement needs one or two commuting function(s)
+CFunction rat,den;
+PolyRatFun rat,den(divergence,,x);
+.end
+assert compile_error?
+*--#] cov_prskipfail_35_0176_prskipfail_35 :
+
+*--#[ cov_intohide_twice_19_0179_intohide_twice_19 :
+* farm probe 0179_intohide_twice_19 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Expression is already hidden
+Symbol x;
+Global g1 = x;
+IntoHide g1;
+IntoHide g1;
+.end
+assert compile_error?
+*--#] cov_intohide_twice_19_0179_intohide_twice_19 :
+
+*--#[ cov_tr_negsym_7_0180_tr_negsym_7 :
+* farm probe 0180_tr_negsym_7 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Currently a - sign can be used only with a vector in TryReplace
+Vector p;
+Symbol x;
+CFunction f;
+Local test = f(p);
+TryReplace p, -x;
+Print;
+.end
+assert compile_error?
+*--#] cov_tr_negsym_7_0180_tr_negsym_7 :
+
+*--#[ cov_try_indexwild_17_0180_try_indexwild_17 :
+* farm probe 0180_try_indexwild_17 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Index i?,j;
+CFunction f;
+Local test = f(i);
+TryReplace i?,j;
+Print;
+.end
+assert compile_error?
+*--#] cov_try_indexwild_17_0180_try_indexwild_17 :
+
+*--#[ cov_redefine_badname_61_0182_redefine_badname_61 :
+* farm probe 0182_redefine_badname_61 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal name for preprocessor variable in redefine statement
+Redefine x_ = "1";
+.end
+assert compile_error?
+*--#] cov_redefine_badname_61_0182_redefine_badname_61 :
+
+*--#[ cov_checkpoint_missing_equals_88_0185_checkpoint_missing_equ :
+* farm probe 0185_checkpoint_missing_equals_88 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Unrecognized option in ON Checkpoint statement
+On checkpoint, runbefore foo;
+Print;
+.end
+assert compile_error?
+*--#] cov_checkpoint_missing_equals_88_0185_checkpoint_missing_equ :
+
+*--#[ cov_compunknown_76_0185_compunknown_76 :
+* farm probe 0185_compunknown_76 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Unrecognized option in ON compress statement
+Symbol x;
+Local t = x;
+Print t;
+On compress zzz;
+.end
+assert compile_error?
+*--#] cov_compunknown_76_0185_compunknown_76 :
+
+*--#[ cov_onbadchar_75_0185_onbadchar_75 :
+* farm probe 0185_onbadchar_75 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal character or option encountered in ON statement
+Symbol x;
+Local t = x;
+Print t;
+On @;
+.end
+assert compile_error?
+*--#] cov_onbadchar_75_0185_onbadchar_75 :
+
+*--#[ cov_2739_write_bigscratch_26_0191_2739_write_bigscratch_26 :
+* farm probe 0191_2739_write_bigscratch_26 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+AutoDeclare Symbol x;
+Local test = (x1+x2+x3+x4+x5+x6+x7+x8+x9+x10)^5;
+.sort
+Write test;
+.end
+assert compile_error?
+*--#] cov_2739_write_bigscratch_26_0191_2739_write_bigscratch_26 :
+
+*--#[ cov_2740_write_all_27_0191_2740_write_all_27 :
+* farm probe 0191_2740_write_all_27 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+Local a = x;
+Local b = x^2;
+.sort
+Write;
+.end
+assert compile_error?
+*--#] cov_2740_write_all_27_0191_2740_write_all_27 :
+
+*--#[ cov_pbtbl_badfile_7_0195_pbtbl_badfile_7 :
+* farm probe 0195_pbtbl_badfile_7 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Cannot open file
+Table t(1:2);
+PrintTable t > /nosuchdir9/x.txt;
+.end
+assert compile_error?
+*--#] cov_pbtbl_badfile_7_0195_pbtbl_badfile_7 :
+
+*--#[ cov_pbtbl_badopt_9_0195_pbtbl_badopt_9 :
+* farm probe 0195_pbtbl_badopt_9 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal + option in PrintTable statement
+Table t(1:2);
+Fill t(1,1)=1;
+PrintTable +q t;
+.end
+assert compile_error?
+*--#] cov_pbtbl_badopt_9_0195_pbtbl_badopt_9 :
+
+*--#[ cov_pbtbl_nottable_8_0195_pbtbl_nottable_8 :
+* farm probe 0195_pbtbl_nottable_8 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: should be a previously declared table
+Symbol x;
+Local e = x;
+PrintTable e;
+.end
+assert compile_error?
+*--#] cov_pbtbl_nottable_8_0195_pbtbl_nottable_8 :
+
+*--#[ cov_all_vecgam_51_0199_all_vecgam_51 :
+* farm probe 0199_all_vecgam_51 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* target: SubsInAll with vector replacement inside gamma/e_/dot
+Vector p,q;
+Symbol j,k;
+Local test = g_(p,j,q,j) + e_(p,q) + p.q;
+id, all, p = q;
+Print;
+.end
+assert compile_error?
+*--#] cov_all_vecgam_51_0199_all_vecgam_51 :
+
+*--#[ cov_multipleof_rat_30_0201_multipleof_rat_30 :
+* farm probe 0201_multipleof_rat_30 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+Local F = 3/2*x + 6*y;
+Local G = 1/2*x + 2*y;
+if ( multipleof(F, G) ) print +s;
+.end
+assert compile_error?
+*--#] cov_multipleof_rat_30_0201_multipleof_rat_30 :
+
+*--#[ cov_brk_dotnotvec_1_0204_brk_dotnotvec_1 :
+* farm probe 0204_brk_dotnotvec_1 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Not a vector in dotproduct in bracket statement: s
+Vector p;
+Symbol s;
+Local e = p.p;
+Bracket p.s;
+Print;
+.end
+assert compile_error?
+*--#] cov_brk_dotnotvec_1_0204_brk_dotnotvec_1 :
+
+*--#[ cov_sum_fixbad_8_0209_sum_fixbad_8 :
+* farm probe 0209_sum_fixbad_8 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: is not a legal fixed index
+Index i;
+Sum i,5x;
+.end
+assert compile_error?
+*--#] cov_sum_fixbad_8_0209_sum_fixbad_8 :
+
+*--#[ cov_sum_fixbig_9_0209_sum_fixbig_9 :
+* farm probe 0209_sum_fixbig_9 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: is too large to be a fixed index
+Index i;
+Sum i,99999;
+.end
+assert compile_error?
+*--#] cov_sum_fixbig_9_0209_sum_fixbig_9 :
+
+*--#[ cov_sum_illobj_10_0209_sum_illobj_10 :
+* farm probe 0209_sum_illobj_10 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal object in sum statement
+Index i,j;
+Sum i,-j;
+.end
+assert compile_error?
+*--#] cov_sum_illobj_10_0209_sum_illobj_10 :
+
+*--#[ cov_sum_sep2_7_0209_sum_sep2_7 :
+* farm probe 0209_sum_sep2_7 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal separator between objects in sum statement.
+Index i,j,k;
+Sum i,j+k;
+.end
+assert compile_error?
+*--#] cov_sum_sep2_7_0209_sum_sep2_7 :
+
+*--#[ cov_pre_pctdollarvar_30_0215_pre_pctdollarvar_30 :
+* farm probe 0215_pre_pctdollarvar_30 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+Local t = x;
+%#do $i = 1,3
+id x = x;
+#enddo
+.sort
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_pre_pctdollarvar_30_0215_pre_pctdollarvar_30 :
+
+*--#[ cov_err_dot_second_10_0216_err_dot_second_10 :
+* farm probe 0216_err_dot_second_10 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Not a vector in dotproduct in PutInside
+Vector p;
+Symbol a;
+Function f;
+PutInside f, p.a;
+.end
+assert compile_error?
+*--#] cov_err_dot_second_10_0216_err_dot_second_10 :
+
+*--#[ cov_moddollar_loop_36_0219_moddollar_loop_36 :
+* farm probe 0219_moddollar_loop_36 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: clean
+* preprocessor loop generating several modular dollar assignments
+Symbol x;
+Modulus cmod=17;
+#do i = 1,3
+  Local t`i' = x^`i' + `i';
+  $a`i' = t`i';
+#enddo
+Print;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_moddollar_loop_36_0219_moddollar_loop_36 :
+
+*--#[ cov_symfactor_2_0234_symfactor_2 :
+* farm probe 0234_symfactor_2 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Factor indicator for $-variable should be a number or a $-variable.
+Symbol y,x;
+$i = 1;
+Local test = x;
+if ( $i[y] > 0 ) id x = 1;
+Print test;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_symfactor_2_0234_symfactor_2 :
+
+*--#[ cov_undefdollar_4_0234_undefdollar_4 :
+* farm probe 0234_undefdollar_4 (+2 lines, kit2 tail)
+* empirically compile error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: dollar in if statement should have been defined previously
+Symbol x;
+$i = 5;
+Local test = x;
+if ( $i[$q] > 0 ) id x = 1;
+Print test;
+.end
+#pend_if threaded?
+assert compile_error?
+*--#] cov_undefdollar_4_0234_undefdollar_4 :
+
+*--#[ cov_termsin_undef_dol_2_0023_termsin_undef_dol_2 :
+* farm probe 0023_termsin_undef_dol_2 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: has not (yet) been defined
+#if ( termsin($nosuchdol) > 0 )
+  #message yes
+#endif
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_termsin_undef_dol_2_0023_termsin_undef_dol_2 :
+
+*--#[ cov_termsin_undef_expr_3_0023_termsin_undef_expr_3 :
+* farm probe 0023_termsin_undef_expr_3 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: has not (yet) been defined
+#if ( termsin(nosuchexpr) > 0 )
+  #message yes
+#endif
+.end
+assert preprocess_error?
+*--#] cov_termsin_undef_expr_3_0023_termsin_undef_expr_3 :
+
+*--#[ cov_maxpow_notsym_103_0024_maxpow_notsym_103 :
+* farm probe 0024_maxpow_notsym_103 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: f should be a symbol
+Function f;
+#if maxpowerof(f) > 0
+#endif
+.end
+assert preprocess_error?
+*--#] cov_maxpow_notsym_103_0024_maxpow_notsym_103 :
+
+*--#[ cov_minpow_notsym_105_0024_minpow_notsym_105 :
+* farm probe 0024_minpow_notsym_105 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: g should be a symbol
+Function g;
+#if minpowerof(g) > 0
+#endif
+.end
+assert preprocess_error?
+*--#] cov_minpow_notsym_105_0024_minpow_notsym_105 :
+
+*--#[ cov_maxpowerof_undef_80_0037_maxpowerof_undef_80 :
+* farm probe 0037_maxpowerof_undef_80 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: @x has not (yet) been defined
+#if maxpowerof(undefined_sym)
+.end
+assert preprocess_error?
+*--#] cov_maxpowerof_undef_80_0037_maxpowerof_undef_80 :
+
+*--#[ cov_minpowerof_notsym_188_0038_minpowerof_notsym_188 :
+* farm probe 0038_minpowerof_notsym_188 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: @ should be a symbol
+#If minpowerof(x + y) > 0
+.end
+assert preprocess_error?
+*--#] cov_minpowerof_notsym_188_0038_minpowerof_notsym_188 :
+
+*--#[ cov_switch_nest_pp_186_0039_switch_nest_pp_186 :
+* farm probe 0039_switch_nest_pp_186 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal nesting of switch
+#do i = 1,1
+#switch `i'
+#case 1
+#enddo
+.end
+assert preprocess_error?
+*--#] cov_switch_nest_pp_186_0039_switch_nest_pp_186 :
+
+*--#[ cov_pre_terms_improper_42_0046_pre_terms_improper_42 :
+* farm probe 0046_pre_terms_improper_42 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Improper use of terms($var) or terms(expr)
+Symbol x;
+Local e = x;
+.sort
+#if ( terms(e x) > 0 )
+#endif
+Print;
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_pre_terms_improper_42_0046_pre_terms_improper_42 :
+
+*--#[ cov_breakdo_syntax_76_0087_breakdo_syntax_76 :
+* farm probe 0087_breakdo_syntax_76 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Improper syntax of
+#do i = 1,1
+#breakdo q
+#enddo
+.end
+assert preprocess_error?
+*--#] cov_breakdo_syntax_76_0087_breakdo_syntax_76 :
+
+*--#[ cov_debug_bad_83_0087_debug_bad_83 :
+* farm probe 0087_debug_bad_83 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal argument for debug
+#debug blah
+.end
+assert preprocess_error?
+*--#] cov_debug_bad_83_0087_debug_bad_83 :
+
+*--#[ cov_endfloat_bad_87_0087_endfloat_bad_87 :
+* farm probe 0087_endfloat_bad_87 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal parameter in
+#endfloat xyz
+.end
+assert preprocess_error?
+*--#] cov_endfloat_bad_87_0087_endfloat_bad_87 :
+
+*--#[ cov_factdollar_name_108_0088_factdollar_name_108 :
+* farm probe 0088_factdollar_name_108 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: #FactDollar should have a single $variable for its argument
+#factdollar x
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_factdollar_name_108_0088_factdollar_name_108 :
+
+*--#[ cov_inside_undef_131_0089_inside_undef_131 :
+* farm probe 0089_inside_undef_131 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: has not (yet) been defined
+Symbol x;
+Local f = x;
+.sort
+#inside $qq
+#message nope
+#endinside
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_inside_undef_131_0089_inside_undef_131 :
+
+*--#[ cov_break_in_do_122_0090_break_in_do_122 :
+* farm probe 0090_break_in_do_122 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Break without corresponding Switch
+#do i = 1,1
+#break
+#enddo
+.end
+assert preprocess_error?
+*--#] cov_break_in_do_122_0090_break_in_do_122 :
+
+*--#[ cov_default_no_switch_120_0090_default_no_switch_120 :
+* farm probe 0090_default_no_switch_120 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Default without corresponding Switch
+#default
+.end
+assert preprocess_error?
+*--#] cov_default_no_switch_120_0090_default_no_switch_120 :
+
+*--#[ cov_exch_syntax_93_0091_exch_syntax_93 :
+* farm probe 0091_exch_syntax_93 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: exchange expr1,expr2
+Symbol x;
+Local ex1 = x;
+#exchange ex1
+.end
+assert preprocess_error?
+*--#] cov_exch_syntax_93_0091_exch_syntax_93 :
+
+*--#[ cov_undefine_syntax_121_0092_undefine_syntax_121 :
+* farm probe 0092_undefine_syntax_121 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Undefine should just have a variable name
+#define v 1
+#undefine v+1
+.end
+assert preprocess_error?
+*--#] cov_undefine_syntax_121_0092_undefine_syntax_121 :
+
+*--#[ cov_proc_default_43_0099_proc_default_43 :
+* farm probe 0099_proc_default_43 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+* Dictionary default element type: prevar holding a parenthesized expression
+Symbol x,y;
+#system echo "Print; .end" > sub.frm
+#define ex (x+y)
+Local F = x+y;
+ToProcess F;
+Process "sub.frm";
+Print;
+.end
+assert preprocess_error?
+*--#] cov_proc_default_43_0099_proc_default_43 :
+
+*--#[ cov_illop_single_21_0111_illop_single_21 :
+* farm probe 0111_illop_single_21 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: @Illegal operator in $( option of #if
+#if $x = 1 <> 2 )
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_illop_single_21_0111_illop_single_21 :
+
+*--#[ cov_brkjunk_1_0123_brkjunk_1 :
+* farm probe 0123_brkjunk_1 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegally formed name
+Local ok = 1;
+#define [a b]x 3
+.end
+assert preprocess_error?
+*--#] cov_brkjunk_1_0123_brkjunk_1 :
+
+*--#[ cov_rr_err_mode_9_0137_rr_err_mode_9 :
+* farm probe 0137_rr_err_mode_9 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal mode argument in macro RANDOM_
+Symbol x;
+Local t = 1;
+Print;
+#define v`RANDOM_(foo,0,1)'
+.end
+assert preprocess_error?
+*--#] cov_rr_err_mode_9_0137_rr_err_mode_9 :
+
+*--#[ cov_save_manyapp_80_0159_save_manyapp_80 :
+* farm probe 0159_save_manyapp_80 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+* variant of save_many using #append to build the expression list
+Symbol x;
+#define lst ""
+#do i = 1,300
+Local e`i' = x;
+.sort;
+.store e`i';
+#append lst,e`i',
+#enddo
+.save `lst'saveapp.dat;
+.end
+assert preprocess_error?
+*--#] cov_save_manyapp_80_0159_save_manyapp_80 :
+
+*--#[ cov_ext_attrs_clean_48_0168_ext_attrs_clean_48 :
+* farm probe 0168_ext_attrs_clean_48 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+#external c1 "cat" shell=sh;
+#external c2 "cat" daemon=false;
+#external c3 "cat" killall=true;
+#external c4 "cat" kill=15;
+#external c5 "cat" stderr=terminal;
+#external c6 "cat" stderr=a.log;
+#external c7 "cat" stderr=b.log;
+#external c8 "cat" shell=sh,kill=9,stderr=c.log;
+#rmexternal c1;
+#rmexternal c2;
+#rmexternal c3;
+#rmexternal c4;
+#rmexternal c5;
+#rmexternal c6;
+#rmexternal c7;
+#rmexternal c8;
+Local test = x;
+Print;
+.end
+assert preprocess_error?
+*--#] cov_ext_attrs_clean_48_0168_ext_attrs_clean_48 :
+
+*--#[ cov_red_illarg_62_0188_red_illarg_62 :
+* farm probe 0188_red_illarg_62 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegally formed name in argument of redefine statement
+#define f 1
+#redefine f(1a) "x"
+Local test = 1;
+Print;
+.end
+assert preprocess_error?
+*--#] cov_red_illarg_62_0188_red_illarg_62 :
+
+*--#[ cov_do_dollarlist_8_0239_do_dollarlist_8 :
+* farm probe 0239_do_dollarlist_8 (+3 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: does not evaluate into a valid loop parameter
+Symbol x;
+Local t = x;
+$list = x;
+.sort
+#do $d = $list
+#enddo
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_do_dollarlist_8_0239_do_dollarlist_8 :
+
+*--#[ cov_dodound3_108_0023_dodound3_108 :
+* farm probe 0023_dodound3_108 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: is undefined in third parameter in %#do instruction
+Symbol x;
+#do i = 1,2,$undef
+#enddo
+Print x;
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_dodound3_108_0023_dodound3_108 :
+
+*--#[ cov_isnum_undexpr_100_0024_isnum_undexpr_100 :
+* farm probe 0024_isnum_undexpr_100 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: expression in isnumerical(nosuchexpr) does not exist
+#if isnumerical(nosuchexpr)
+#endif
+.end
+assert preprocess_error?
+*--#] cov_isnum_undexpr_100_0024_isnum_undexpr_100 :
+
+*--#[ cov_fact_symbol_100_0025_fact_symbol_100 :
+* farm probe 0025_fact_symbol_100 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Improper use of isfactorized
+Symbol x;
+#if ( isfactorized(x) )
+#endif
+.end
+assert preprocess_error?
+*--#] cov_fact_symbol_100_0025_fact_symbol_100 :
+
+*--#[ cov_flag_badnum_103_0025_flag_badnum_103 :
+* farm probe 0025_flag_badnum_103 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: for flag in flag condition
+Local expr = 1;
+#if ( flag(99,expr) )
+#endif
+.end
+assert preprocess_error?
+*--#] cov_flag_badnum_103_0025_flag_badnum_103 :
+
+*--#[ cov_illend_cond_71_0037_illend_cond_71 :
+* farm probe 0037_illend_cond_71 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: @illegal end of condition
+#do i = 1,2
+#else
+#enddo
+.end
+assert preprocess_error?
+*--#] cov_illend_cond_71_0037_illend_cond_71 :
+
+*--#[ cov_exists_file_16_0046_exists_file_16 :
+* farm probe 0046_exists_file_16 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+#if exists("/dev/null") == 1
+#message devnull
+#endif
+#system "echo x > tmp_cov_file.txt"
+#if exists("tmp_cov_file.txt") == 1
+#message file exists
+#endif
+Print;
+.end
+assert preprocess_error?
+*--#] cov_exists_file_16_0046_exists_file_16 :
+
+*--#[ cov_pre_exists_improper_44_0046_pre_exists_improper_44 :
+* farm probe 0046_pre_exists_improper_44 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Improper use of exists($var) or exists(expr)
+Symbol x;
+Local e = x;
+.sort
+#if ( exists(e x) == 1 )
+#endif
+Print;
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_pre_exists_improper_44_0046_pre_exists_improper_44 :
+
+*--#[ cov_pre_isnum_undef_48_0046_pre_isnum_undef_48 :
+* farm probe 0046_pre_isnum_undef_48 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: $ variable in isnumerical
+Symbol x;
+#if ( isnumerical($nosuchdol) == 1 )
+#endif
+Print;
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_pre_isnum_undef_48_0046_pre_isnum_undef_48 :
+
+*--#[ cov_add_brack_106_0057_add_brack_106 :
+* farm probe 0057_add_brack_106 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: unmatched brackets in #add instruction
+#opendictionary mydict
+#add foo(bar:"x"
+.end
+assert preprocess_error?
+*--#] cov_add_brack_106_0057_add_brack_106 :
+
+*--#[ cov_close_unknown_113_0057_close_unknown_113 :
+* farm probe 0057_close_unknown_113 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Dictionary not found in RemoveDictionary
+#closedictionary nosuchdict
+.end
+assert preprocess_error?
+*--#] cov_close_unknown_113_0057_close_unknown_113 :
+
+*--#[ cov_use_unknown_112_0057_use_unknown_112 :
+* farm probe 0057_use_unknown_112 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: There is no dictionary with the name
+#usedictionary nosuchdict
+.end
+assert preprocess_error?
+*--#] cov_use_unknown_112_0057_use_unknown_112 :
+
+*--#[ cov_sys_redirect_80_0076_sys_redirect_80 :
+* farm probe 0076_sys_redirect_80 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+#system echo formprobe_data > formprobe_tmp.txt
+#remove formprobe_tmp.txt
+.end
+assert preprocess_error?
+*--#] cov_sys_redirect_80_0076_sys_redirect_80 :
+
+*--#[ cov_breakdo_nodo_75_0087_breakdo_nodo_75 :
+* farm probe 0087_breakdo_nodo_75 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: breakdo without do
+#breakdo
+.end
+assert preprocess_error?
+*--#] cov_breakdo_nodo_75_0087_breakdo_nodo_75 :
+
+*--#[ cov_commentchar_multi_82_0087_commentchar_multi_82 :
+* farm probe 0087_commentchar_multi_82 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Comment character should be a single
+#commentchar xy
+.end
+assert preprocess_error?
+*--#] cov_commentchar_multi_82_0087_commentchar_multi_82 :
+
+*--#[ cov_commentchar_none_81_0087_commentchar_none_81 :
+* farm probe 0087_commentchar_none_81 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: No valid comment character
+#commentchar
+.end
+assert preprocess_error?
+*--#] cov_commentchar_none_81_0087_commentchar_none_81 :
+
+*--#[ cov_elseif_naked_85_0087_elseif_naked_85 :
+* farm probe 0087_elseif_naked_85 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: elseif without corresponding
+#elseif 1 > 2
+.end
+assert preprocess_error?
+*--#] cov_elseif_naked_85_0087_elseif_naked_85 :
+
+*--#[ cov_endinside_unterm_89_0087_endinside_unterm_89 :
+* farm probe 0087_endinside_unterm_89 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: not terminated
+#inside
+Local f = x
+#endinside
+.end
+assert preprocess_error?
+*--#] cov_endinside_unterm_89_0087_endinside_unterm_89 :
+
+*--#[ cov_endif_alone_102_0088_endif_alone_102 :
+* farm probe 0088_endif_alone_102 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: #endif without corresponding #if
+#endif
+.end
+assert preprocess_error?
+*--#] cov_endif_alone_102_0088_endif_alone_102 :
+
+*--#[ cov_factdollar_undef_109_0088_factdollar_undef_109 :
+* farm probe 0088_factdollar_undef_109 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: is undefined
+#factdollar $q
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_factdollar_undef_109_0088_factdollar_undef_109 :
+
+*--#[ cov_inside_nest_130_0089_inside_nest_130 :
+* farm probe 0089_inside_nest_130 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal nesting of %#inside/%#endinside
+Symbol x;
+Local f = x;
+.sort
+$x = 1;
+$y = 2;
+#inside $x
+#inside $y
+#message nested
+#endinside
+#endinside
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_inside_nest_130_0089_inside_nest_130 :
+
+*--#[ cov_opt_inactive_134_0089_opt_inactive_134 :
+* farm probe 0089_opt_inactive_134 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: is not an active unhidden
+Symbol x;
+Local f = x;
+.sort
+#Optimize nosuch
+.end
+assert preprocess_error?
+*--#] cov_opt_inactive_134_0089_opt_inactive_134 :
+
+*--#[ cov_procext_none_135_0089_procext_none_135 :
+* farm probe 0089_procext_none_135 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: No valid procedure extension specified
+#procedureextension
+.end
+assert preprocess_error?
+*--#] cov_procext_none_135_0089_procext_none_135 :
+
+*--#[ cov_dollar_undef_127_0090_dollar_undef_127 :
+* farm probe 0090_dollar_undef_127 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: has not been defined (yet)
+#assign x = $q + 1
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_dollar_undef_127_0090_dollar_undef_127 :
+
+*--#[ cov_preout_opt_94_0091_preout_opt_94 :
+* farm probe 0091_preout_opt_94 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal option in PreOut
+#preout xyz
+.end
+assert preprocess_error?
+*--#] cov_preout_opt_94_0091_preout_opt_94 :
+
+*--#[ cov_proc_badname_98_0091_proc_badname_98 :
+* farm probe 0091_proc_badname_98 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal name for procedure
+#procedure 9lives
+#endprocedure
+.end
+assert preprocess_error?
+*--#] cov_proc_badname_98_0091_proc_badname_98 :
+
+*--#[ cov_setrandom_114_0092_setrandom_114 :
+* farm probe 0092_setrandom_114 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: proper syntax is #SetRandom number
+#SetRandom abc
+.end
+assert preprocess_error?
+*--#] cov_setrandom_114_0092_setrandom_114 :
+
+*--#[ cov_timeoutafter_bad_120_0092_timeoutafter_bad_120 :
+* farm probe 0092_timeoutafter_bad_120 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: proper syntax is #TimeoutAfter number
+#TimeoutAfter abc
+.end
+assert preprocess_error?
+*--#] cov_timeoutafter_bad_120_0092_timeoutafter_bad_120 :
+
+*--#[ cov_w_openfile2_110_0096_w_openfile2_110 :
+* farm probe 0096_w_openfile2_110 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: could not open file
+Symbol x;
+Local t = x;
+#write < "/dev/null/nope.txt" "hello"
+Print;
+.end
+assert preprocess_error?
+*--#] cov_w_openfile2_110_0096_w_openfile2_110 :
+
+*--#[ cov_pipe_from_5_0098_pipe_from_5 :
+* farm probe 0098_pipe_from_5 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+* target: do_run_cmd + #fromexternal into generated include file
+#pipe 1, /bin/echo "Symbol s; Local q = 7; Print;"
+#fromexternal 1, extgen.inc
+#include extgen.inc
+#closeexternal 1
+.end
+assert preprocess_error?
+*--#] cov_pipe_from_5_0098_pipe_from_5 :
+
+*--#[ cov_deftermsif_9_0103_deftermsif_9 :
+* farm probe 0103_deftermsif_9 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbols x,y;
+Local F = (x-y)^3;
+Bracket x;
+.sort;
+Keep Brackets;
+id y = 2;
+.sort;
+#if ( terms_(F) >= 2 )
+Print;
+#else
+Print "tiny";
+#endif
+.end
+assert preprocess_error?
+*--#] cov_deftermsif_9_0103_deftermsif_9 :
+
+*--#[ cov_patch_len4_8_0107_patch_len4_8 :
+* farm probe 0107_patch_len4_8 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+* note: patches lenWORD from 8 down to 4, for builds where WORD is
+* 8 bytes; forces lenW<sizeof(WORD) resize path (store.c 5322-5331).
+Symbol x;
+Local f = (x+1)^2;
+.store out.dat f
+#system python3 -c 'd=open("out.dat","rb").read(); h=d[:128]; p=(chr(8)+chr(0)*3).encode(); q=(chr(4)+chr(0)*3).encode(); h=h.replace(p,q,1); open("out.dat","wb").write(h+d[128:])'
+.load out.dat
+Print f;
+.end
+assert preprocess_error?
+*--#] cov_patch_len4_8_0107_patch_len4_8 :
+
+*--#[ cov_div_zero_38_0119_div_zero_38 :
+* farm probe 0119_div_zero_38 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Division by zero in preprocessor calculator
+#do i = 1, 7/0
+  #message never = `i'
+#enddo
+.end
+assert preprocess_error?
+*--#] cov_div_zero_38_0119_div_zero_38 :
+
+*--#[ cov_fact_neg_27_0119_fact_neg_27 :
+* farm probe 0119_fact_neg_27 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Negative value in preprocessor factorial
+#do i = 1, (2-5)!
+  #message never = `i'
+#enddo
+.end
+assert preprocess_error?
+*--#] cov_fact_neg_27_0119_fact_neg_27 :
+
+*--#[ cov_sqrt_err_33_0119_sqrt_err_33 :
+* farm probe 0119_sqrt_err_33 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal value in preprocessor square root
+#do i = 1, 0^/
+  #message never = `i'
+#enddo
+.end
+assert preprocess_error?
+*--#] cov_sqrt_err_33_0119_sqrt_err_33 :
+
+*--#[ cov_bad_namespace_builtin_32_0123_bad_namespace_builtin_32 :
+* farm probe 0123_bad_namespace_builtin_32 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Built in objects cannot be part of namespaces
+Symbol x;
+#namespace abc_
+Local F = x^2;
+.end
+assert preprocess_error?
+*--#] cov_bad_namespace_builtin_32_0123_bad_namespace_builtin_32 :
+
+*--#[ cov_external_channel_set_86_0129_external_channel_set_86 :
+* farm probe 0129_external_channel_set_86 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+* Set an external channel first then use it, covering 503-510
+#external 1
+Local F = 1;
+#external
+Print;
+.end
+assert preprocess_error?
+*--#] cov_external_channel_set_86_0129_external_channel_set_86 :
+
+*--#[ cov_rr_err_args_10_0137_rr_err_args_10 :
+* farm probe 0137_rr_err_args_10 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal arguments in macro RANDOM_
+Symbol x;
+Local t = 1;
+Print;
+#define v`RANDOM_(lin,0,1,2)'
+.end
+assert preprocess_error?
+*--#] cov_rr_err_args_10_0137_rr_err_args_10 :
+
+*--#[ cov_ext_combo_68_0138_ext_combo_68 :
+* farm probe 0138_ext_combo_68 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+#external mychan, "true", kill = 9, stderr = myerr.txt, shell = /bin/sh
+Local test = x;
+Print;
+#close mychan
+.end
+assert preprocess_error?
+*--#] cov_ext_combo_68_0138_ext_combo_68 :
+
+*--#[ cov_nsuse_7_0138_nsuse_7 :
+* farm probe 0138_nsuse_7 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+* guess at #use directive to expose namespace names outside
+#namespace nsuse
+#define w 4
+#endnamespace
+#use nsuse
+#message `w'
+#end
+.end
+assert preprocess_error?
+*--#] cov_nsuse_7_0138_nsuse_7 :
+
+*--#[ cov_dfac_missing_16_0159_dfac_missing_16 :
+* farm probe 0159_dfac_missing_16 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal factor number for $ variable
+Symbol x;
+$x = x^2+3*x+7;
+.sort
+Local u = `$x[2';
+Print u;
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_dfac_missing_16_0159_dfac_missing_16 :
+
+*--#[ cov_badfac_do_41_0163_badfac_do_41 :
+* farm probe 0163_badfac_do_41 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Not a valid factor number for $-variable in do loop
+Symbol x;
+Local test = x;
+$a = 1+2;
+.sort
+#do i = $a[7],10
+id x = 1;
+#enddo
+Print test;
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_badfac_do_41_0163_badfac_do_41 :
+
+*--#[ cov_dol_fact0_do_17_0163_dol_fact0_do_17 :
+* farm probe 0163_dol_fact0_do_17 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+* factor index 0 should give the number of factors (num == 0 path)
+Symbol x,y;
+$a = x*y;
+#do i = 1,$a0
+    #message cnt
+#enddo
+.end
+#pend_if threaded?
+assert preprocess_error?
+*--#] cov_dol_fact0_do_17_0163_dol_fact0_do_17 :
+
+*--#[ cov_inc_loop_51_0171_inc_loop_51 :
+* farm probe 0171_inc_loop_51 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+* same small file included repeatedly in a #do loop; stream reopen paths
+Symbol x;
+Local test = 7;
+#write <incG.txt> {"#message hi"}
+#do i = 1,5
+#include incG.txt
+#enddo
+Print test;
+.end
+assert preprocess_error?
+*--#] cov_inc_loop_51_0171_inc_loop_51 :
+
+*--#[ cov_toexternal_guess_55_0171_toexternal_guess_55 :
+* farm probe 0171_toexternal_guess_55 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Unknown preprocessor statement
+* speculative attempt to reach EXTERNALCHANNELSTREAM code in ReadFromStream
+Symbol x;
+Local test = 11;
+Print test;
+#toexternal "hello"
+.end
+assert preprocess_error?
+*--#] cov_toexternal_guess_55_0171_toexternal_guess_55 :
+
+*--#[ cov_preset_quoted_90_0178_preset_quoted_90 :
+* farm probe 0178_preset_quoted_90 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: external
+* Syntax hedge: same numeric list but quoted, in case #external wants
+* a string argument form.
+#external "999,999"
+.end
+assert preprocess_error?
+*--#] cov_preset_quoted_90_0178_preset_quoted_90 :
+
+*--#[ cov_reset_bare_0_0198_reset_bare_0 :
+* farm probe 0198_reset_bare_0 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: clean
+* trigger: WriteSetup via bare #reset (prints all setup parameters)
+#reset
+Symbol x;
+Local test = x^2+1;
+Print;
+.end
+assert preprocess_error?
+*--#] cov_reset_bare_0_0198_reset_bare_0 :
+
+*--#[ cov_opt_predebug_45_0200_opt_predebug_45 :
+* farm probe 0200_opt_predebug_45 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* speculative: debug argument to #optimize
+* expected: syntax error near "debug"
+Symbol x,y;
+Local F = (x+y)^2;
+.sort
+#optimize F, debug
+#ifdef OPTIMIZED
+Local G = `OPTIMIZED';
+#endif
+.sort
+Print;
+.end
+assert preprocess_error?
+*--#] cov_opt_predebug_45_0200_opt_predebug_45 :
+
+*--#[ cov_endnamespace_digit_6_27_endnamespace_digit_6 :
+* farm probe 27_endnamespace_digit_6 (+2 lines, kit2 tail)
+* empirically preprocess error in vorm and tvorm (standalone validated)
+* probe: error
+* expected: namespace
+#endnamespace 1
+.end
+assert preprocess_error?
+*--#] cov_endnamespace_digit_6_27_endnamespace_digit_6 :
+
+*--#[ cov_sorttype_118_0105_sorttype_118 :
+* farm probe 0105_sorttype_118 (+3 lines, kit2 tail)
+* empirically terminate in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal SortType specification
+#: sorttype = bogus
+Symbol x;
+Local t = x;
+Print t;
+.end
+assert runtime_error?
+*--#] cov_sorttype_118_0105_sorttype_118 :
+
+*--#[ cov_endinside_missing_68_0102_endinside_missing_68 :
+* farm probe 0102_endinside_missing_68 (+2 lines, kit2 tail)
+* empirically terminate in vorm and tvorm (standalone validated)
+* probe: error
+* expected: 1 endinside statement(s) missing
+inside ;
+.end
+assert runtime_error?
+*--#] cov_endinside_missing_68_0102_endinside_missing_68 :
+
+*--#[ cov_inexpr_open_29_0102_inexpr_open_29 :
+* farm probe 0102_inexpr_open_29 (+2 lines, kit2 tail)
+* empirically terminate in vorm and tvorm (standalone validated)
+* probe: error
+* expected: endinexpression statement(s) missing
+Symbol x;
+Local t = x^2;
+InExpression t;
+id x = 3;
+Print t;
+.end
+assert runtime_error?
+*--#] cov_inexpr_open_29_0102_inexpr_open_29 :
+
+*--#[ cov_missing_endargument_16_0102_missing_endargument_16 :
+* farm probe 0102_missing_endargument_16 (+2 lines, kit2 tail)
+* empirically terminate in vorm and tvorm (standalone validated)
+* probe: error
+* expected: endargument statement(s) missing
+CFunction f;
+Symbol x;
+Local t = f(x);
+Argument f;
+  id x = x + 1;
+.end
+assert runtime_error?
+*--#] cov_missing_endargument_16_0102_missing_endargument_16 :
+
+*--#[ cov_no_label_44_0102_no_label_44 :
+* farm probe 0102_no_label_44 (+2 lines, kit2 tail)
+* empirically terminate in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Label skip missing
+Symbol x,y;
+CFunction f,g;
+Local F = f(x);
+If ( Match(g(y)) ) Goto skip;
+Print;
+.end
+assert runtime_error?
+*--#] cov_no_label_44_0102_no_label_44 :
+
+*--#[ cov_numval_eq_111_0105_numval_eq_111 :
+* farm probe 0105_numval_eq_111 (+2 lines, kit2 tail)
+* empirically terminate in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Numerical value expected for parameter
+#: maxtermsize = abc
+Symbol x;
+Local t = x;
+Print t;
+.end
+assert runtime_error?
+*--#] cov_numval_eq_111_0105_numval_eq_111 :
+
+*--#[ cov_procext_dot_117_0105_procext_dot_117 :
+* farm probe 0105_procext_dot_117 (+2 lines, kit2 tail)
+* empirically terminate in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Illegal string for procedure extension
+#: procedureextension = .#
+Symbol x;
+Local t = x;
+Print t;
+.end
+assert runtime_error?
+*--#] cov_procext_dot_117_0105_procext_dot_117 :
+
+*--#[ cov_ac_bigrep2_37_0154_ac_bigrep2_37 :
+* farm probe 0154_ac_bigrep2_37 (+2 lines, kit2 tail)
+* empirically terminate in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+CFunction f,g;
+Local test = f(
+#do i = 1,400
+(x*`i'+y*`i'+`i'),(x*`i'+y*`i'+`i'),(x*`i'+y*`i'+`i'),(x*`i'+y*`i'+`i'),
+#enddo
+g(x));
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_ac_bigrep2_37_0154_ac_bigrep2_37 :
+
+*--#[ cov_save_twice_36_0197_save_twice_36 :
+* farm probe 0197_save_twice_36 (+2 lines, kit2 tail)
+* empirically terminate in vorm and tvorm (standalone validated)
+* probe: clean
+* Same expression saved twice to same file (index chain update)
+Symbol x;
+Local e1 = (x+2)^2;
+Print;
+.sort
+Save probe_chain.dat, e1;
+Print;
+.sort
+Save probe_chain.dat, e1;
+Print;
+.end
+assert runtime_error?
+*--#] cov_save_twice_36_0197_save_twice_36 :
+
+*--#[ cov_pgcd_fact_bigcoef_48_0216_pgcd_fact_bigcoef_48 :
+* farm probe 0216_pgcd_fact_bigcoef_48 (+2 lines, kit2 tail)
+* empirically terminate in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x,y;
+Local t = (999999999999999999999999999999*(x+2*y+1)*(x^2+y+3)*(3*x+y))/((x+2*y+1)*(x^2+y+3)*(2*x+7*y+5));
+Factorize t;
+Print;
+.end
+assert runtime_error?
+*--#] cov_pgcd_fact_bigcoef_48_0216_pgcd_fact_bigcoef_48 :
+
+*--#[ cov_multiexpr_7_0218_multiexpr_7 :
+* farm probe 0218_multiexpr_7 (+2 lines, kit2 tail)
+* empirically terminate in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+Local e1 = (x+1)^5;
+Local e2 = x^3 + x;
+Local e3 = 7 - x^4;
+.store
+Save smul.dat,e1,e2,e3;
+Print;
+.end
+assert runtime_error?
+*--#] cov_multiexpr_7_0218_multiexpr_7 :
+
+*--#[ cov_illend_string_1_0023_illend_string_1 :
+* farm probe 0023_illend_string_1 (+2 lines, kit2 tail)
+* empirically warning in vorm and tvorm (standalone validated)
+* probe: error
+* expected: illegal end of condition
+#if ( "unterminated string > 0 )
+  #message yes
+#endif
+.end
+assert warning?
+*--#] cov_illend_string_1_0023_illend_string_1 :
+
+*--#[ cov_add_quote_105_0057_add_quote_105 :
+* farm probe 0057_add_quote_105 (+2 lines, kit2 tail)
+* empirically warning in vorm and tvorm (standalone validated)
+* probe: error
+* expected: Irregular use of double quotes in #add instruction
+#opendictionary mydict
+#add foo:"bar
+.end
+assert warning?
+*--#] cov_add_quote_105_0057_add_quote_105 :
+
+*--#[ cov_ckpt_units_28_0125_ckpt_units_28 :
+* farm probe 0125_ckpt_units_28 (+2 lines, kit2 tail)
+* empirically warning in vorm and tvorm (standalone validated)
+* probe: clean
+* covers checkpoint time interval units s/m/h/d; if units are mandatory
+* this may instead error with "Unrecognized time interval in ON Checkpoint statement"
+Symbol x;
+On checkpoint 5s;
+On checkpoint 3m;
+On checkpoint 2h;
+On checkpoint 4d;
+Local res = x;
+Print;
+.end
+assert warning?
+*--#] cov_ckpt_units_28_0125_ckpt_units_28 :
+
+*--#[ cov_dolarg_recursive_chain_101_0132_dolarg_recursive_chain_1 :
+* farm probe 0132_dolarg_recursive_chain_101 (+2 lines, kit2 tail)
+* empirically warning in vorm and tvorm (standalone validated)
+* probe: clean
+Symbol x;
+Local F = x;
+$j = 2;
+$i = $j + 1;
+#do i = 1,$i
+Print;
+.enddo
+.end
+#pend_if threaded?
+assert warning?
+*--#] cov_dolarg_recursive_chain_101_0132_dolarg_recursive_chain_1 :
