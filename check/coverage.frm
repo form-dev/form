@@ -9954,6 +9954,7 @@ Local t = x*y;
 id, all(normalize), x = y;
 Print;
 .end
+#pend_if threaded?
 assert runtime_error?
 *--#] cov_all_norm :
 
@@ -10340,4 +10341,595 @@ Print;
 .end
 assert compile_error?('name of expression')
 *--#] cov_dotail_pipe_15 :
+
+*--#[ cov_powset_9 :
+* farm probe 0025_powset_15 (+5 lines)
+* probe: clean
+Symbol x,a,b,n;
+Set s: a,b;
+CFunction f,g;
+Local t = f(x^a) + f(x^b) + f(x^3);
+id f(x^n?s) = g(x^n);
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(x^3) + f((x)^(a)) + f((x)^(b))")
+*--#] cov_powset_9 :
+
+*--#[ cov_gcd_fun_pow :
+* farm probe 0175_gcd_fun_pow_82 (+5 lines)
+* probe: clean
+CFunction f;
+Symbol x,y;
+Local test = gcd_(f(x)^2*y,f(x)*y);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("f(x)*y")
+*--#] cov_gcd_fun_pow :
+
+*--#[ cov_makerat_sub_2 :
+* farm probe 0175_makerat_sub_75 (+7 lines)
+* probe: clean
+Symbol x,y;
+Local test = MakeRational_((x+y)*(x-y), x+y) + MakeRational_(x^2-1, x-1);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("0/0 + makerational_( - y^2 + x^2,y + x)")
+*--#] cov_makerat_sub_2 :
+
+*--#[ cov_0017_ns_fn_5 :
+* farm probe 0127_0017_ns_fn_42 (+39 lines)
+* probe: clean
+#namespace wrk
+Symbol x,y;
+CFunction f,g;
+Local test = f(x,y);
+id f(x?,y?) = g(y,x);
+Print;
+#endnamespace
+.end
+assert succeeded?
+assert result("test") =~ expr("g(y,x)")
+*--#] cov_0017_ns_fn_5 :
+
+*--#[ cov_function_wildcard :
+* farm probe 0027_function_wildcard_93 (+5 lines)
+* probe: clean
+CFunction f,g;
+Local F = f(g);
+id f(g?) = 1;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("1")
+*--#] cov_function_wildcard :
+
+*--#[ cov_longsub2 :
+* farm probe 0024_longsub2_87 (+6 lines)
+* probe: clean
+Symbol x;
+CFunction f;
+Local a = (1+x)^1500;
+.sort
+Local test = f((a));
+Print;
+.end
+assert runtime_error?
+*--#] cov_longsub2 :
+
+*--#[ cov_idall_nomatch :
+* id,all where pattern never matches
+* probe: clean
+* id,all where pattern never matches
+Symbol x;
+CFunction f,g;
+Local t = g(1)*g(2);
+id, all f(x?) = g(x);
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("g(1)*g(2)")
+*--#] cov_idall_nomatch :
+
+*--#[ cov_trace4a :
+* farm probe 0056_trace4a_85 (+5 lines)
+* probe: clean
+Index i,j,k,l;
+Local t = g_(1,i,j)*g_(2,j,k)*g_(3,k,l)*g_(4,l,i);
+Trace4,1;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("4*g_(2,j,k)*g_(3,k,l)*g_(4,l,j)")
+*--#] cov_trace4a :
+
+*--#[ cov_w_after :
+* farm probe 26_w_after_8 (+18 lines)
+* probe: clean
+Symbol x,y;
+#:Optimize
+#:sort
+Local test = (x+y)^2;
+#:endOptimize
+#write "done: %e",test;
+Print test;
+.end
+assert preprocess_error?('#:Optimize')
+*--#] cov_w_after :
+
+*--#[ cov_wmulti_a :
+* expected: Trying to convert a $ with an argument field into an expression
+* probe: error
+* expected: Trying to convert a $ with an argument field into an expression
+Symbol x,y;
+CFunction ff;
+Local e = ff(x,y);
+id ff(?a$w) = $w;
+Print;
+.end
+assert runtime_error?
+*--#] cov_wmulti_a :
+
+*--#[ cov_prfinddiv_clean_6 :
+* farm probe 0176_prfinddiv_clean_27 (+21 lines)
+* probe: clean
+Symbol x;
+CFunction rat,den;
+PolyRatFun rat,den(finddivergence,x);
+Local test = rat(x,1);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("rat(x,1)")
+*--#] cov_prfinddiv_clean_6 :
+
+*--#[ cov_vec_set1 :
+* target: execute.c PutBracket VECTOR branch with vector set (bset), 1501-1516
+* probe: clean
+* target: execute.c PutBracket VECTOR branch with vector set (bset), 1501-1516
+Symbol i;
+Vector p,q,r;
+Set vs: q,r;
+Local test = p(1)*q(2)*r(3);
+Bracket p,vs;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("p(1)*q(2)*r(3)")
+*--#] cov_vec_set1 :
+
+*--#[ cov_dot_set1 :
+* target: execute.c PutBracket DOTPRODUCT with bset walk, 1582-1592
+* probe: clean
+* target: execute.c PutBracket DOTPRODUCT with bset walk, 1582-1592
+Vector p,q,r;
+Set vs: r;
+Local test = p.q*p.r;
+Bracket q,vs;
+.sort
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("p.q*p.r")
+*--#] cov_dot_set1 :
+
+*--#[ cov_rngdollar :
+* expected: Illegal $ value in range while executing transform statement
+* runtime $-variables force sequential mode under threads
+* probe: error
+* expected: Illegal $ value in range while executing transform statement
+Symbol x;
+CFunction f;
+Local test = f(x,x,x);
+$n = x;
+Transform f,addargs(1,$n);
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_rngdollar :
+
+*--#[ cov_dodonum3 :
+* expected: does not evaluate into a valid loop parameter
+* runtime $-variables force sequential mode under threads
+* probe: error
+* expected: does not evaluate into a valid loop parameter
+Symbol x;
+Local tmp = x;
+$d = x;
+.sort
+#do i = 1,2,$d
+#enddo
+Print tmp;
+.end
+#pend_if threaded?
+assert preprocess_error?('$d does not')
+*--#] cov_dodonum3 :
+
+*--#[ cov_permute_dollar :
+* expected: Illegal type of $-variable in RunPermute
+* runtime $-variables force sequential mode under threads
+* probe: error
+* expected: Illegal type of $-variable in RunPermute
+Symbol x,y;
+Function f;
+Local test = f(1,2,3);
+$a = x+y;
+Transform f,permute($a);
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_permute_dollar :
+
+*--#[ cov_09ad0cf7_ns_use_3 :
+* alternative syntax guess for the usename mechanism
+* probe: clean
+* alternative syntax guess for the usename mechanism
+#namespace ns
+#use x
+Symbol x;
+Local test = x;
+Print;
+#endnamespace
+.end
+assert succeeded?
+assert result("test") =~ expr("x")
+*--#] cov_09ad0cf7_ns_use_3 :
+
+*--#[ cov_errormodmax :
+* expected: Illegal attempt to change $-variable in multi-threaded module
+* runtime $-variables force sequential mode under threads
+* probe: error
+* expected: Illegal attempt to change $-variable in multi-threaded module
+SymmetricMod;
+Symbol x, y;
+Local F = x^2 + y^2;
+$.min = 0;
+#do i = 1,5
+  id x = x + 1;
+  if ( count(x,1) > 3 ) $.min = $.min + 1;
+#enddo
+.end
+#pend_if threaded?
+assert compile_error?('Unrecognized statement Sy')
+*--#] cov_errormodmax :
+
+*--#[ cov_endsort_verbose :
+* farm probe 0061_endsort_verbose_108 (+10 lines)
+* probe: clean
+On sortverbose;
+Symbol x;
+Local F = x^1000;
+.sort
+.end
+assert succeeded?
+*--#] cov_endsort_verbose :
+
+*--#[ cov_range_last_dollar :
+* farm probe 0109_range_last_dollar_92 (+11 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x;
+CFunction f;
+$n = 3;
+Local expr = f(1,1,1);
+Transform f dedup(last-$n,last);
+Print;
+.end
+#pend_if threaded?
+assert compile_error?('Definition out of')
+*--#] cov_range_last_dollar :
+
+*--#[ cov_if_occ_set :
+* expected: Illegal variable s in occurs condition in if statement
+* probe: error
+* expected: Illegal variable s in occurs condition in if statement
+Symbol x;
+Set s: x;
+Local t = x;
+if ( occurs(s) ) id t = 1; endif;
+.end
+assert compile_error?('Illegal variable s)')
+*--#] cov_if_occ_set :
+
+*--#[ cov_seteq_syntax_12 :
+* farm probe 0066_seteq_syntax_15 (+10 lines)
+* probe: clean
+Set sortsize = 200;
+Set scratchsize = 200;
+Symbol a1,a2,a3;
+Local F = (a1+a2+a3)^5;
+Local G = 1;
+.sort
+.copy F to G;
+.sort
+Print G;
+.end
+assert preprocess_error?('Unrecognized module term')
+*--#] cov_seteq_syntax_12 :
+
+*--#[ cov_range_last_fixed_big :
+* expected: Fixed range indicator bigger than
+* probe: error
+* expected: Fixed range indicator bigger than
+Symbol x;
+CFunction f;
+Local expr = f(1,1,1);
+Transform f dedup(last-999999999999,last);
+Print;
+.end
+assert compile_error?('Fixed range indi')
+*--#] cov_range_last_fixed_big :
+
+*--#[ cov_wrfac_big :
+* #write %$ on an unfactorized dollar variable; error at preprocessor stage
+* runtime $-variables force sequential mode under threads
+* probe: error
+* expected: $a has not been factorized
+Symbol x;
+Local e = x^2;
+$a = e;
+#write "%$" $a[999999999]
+.end
+#pend_if threaded?
+assert preprocess_error?('$a has not been factorized')
+*--#] cov_wrfac_big :
+
+*--#[ cov_dotail_pipe_16 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_16 :
+
+*--#[ cov_tovec_symfirst :
+* expected: ToVector statement needs a vector and a tensor
+* probe: error
+* expected: ToVector statement needs a vector and a tensor
+Symbol x;
+CFunction f;
+Local test = f(x);
+ToVector, x, f;
+Print;
+.end
+assert compile_error?('x is not')
+*--#] cov_tovec_symfirst :
+
+*--#[ cov_idold_all :
+* expected: Requested ALL option not allowed in idold/also statement
+* probe: error
+* expected: Requested ALL option not allowed in idold/also statement
+Symbol x,y;
+Local a = x + y;
+idold,all:2,x = y;
+Print a;
+.end
+assert compile_error?('Requested ALL option')
+*--#] cov_idold_all :
+
+*--#[ cov_flag_badexpr :
+* expected: should be the name of an expression
+* probe: error
+* expected: should be the name of an expression
+Symbol x;
+Local expr = 1;
+#if ( flag(1,x) )
+#endif
+.end
+assert preprocess_error?('x should be')
+*--#] cov_flag_badexpr :
+
+*--#[ cov_inex_comma :
+* expected: Illegal object in InExpression statement
+* probe: error
+* expected: Illegal object in InExpression statement
+Symbol x;
+Local e1 = x;
+InExpression e1,5:
+id x = 1;
+EndInExpression;
+Print;
+.end
+assert compile_error?('Illegal object in')
+*--#] cov_inex_comma :
+
+*--#[ cov_compress_gzip :
+* expected: Unknown gzip option
+* probe: error
+* expected: Unknown gzip option
+Symbol x;
+Local t = x;
+Compress gzip,x;
+.end
+assert compile_error?('Declaration out of')
+*--#] cov_compress_gzip :
+
+*--#[ cov_argclose :
+* expected: Illegal use of arguments for expression
+* probe: error
+* expected: Illegal use of arguments for expression
+Symbol x;
+Local b = x;
+Local e(b+1) = x;
+.end
+assert compile_error?('Illegal expression paramete')
+*--#] cov_argclose :
+
+*--#[ cov_denom_sym :
+* expected: Denominators statement needs one regular function for its argument
+* probe: error
+* expected: Denominators statement needs one regular function for its argument
+Symbol x;
+Local t = x;
+Denominators x;
+.end
+assert compile_error?('Denominators statement nee')
+*--#] cov_denom_sym :
+
+*--#[ cov_spect_clean :
+* farm probe 0109_spect_clean_112 (+6 lines)
+* probe: clean
+CreateSpectator spc,"spc.tmp";
+EmptySpectator spc;
+RemoveSpectator spc;
+Print;
+.end
+assert succeeded?
+*--#] cov_spect_clean :
+
+*--#[ cov_ext_eof :
+* target: cc == EOF branch, tools.c:214-215 (ENDOFSTREAM from external channel)
+* probe: error
+* target: cc == EOF branch, tools.c:214-215 (ENDOFSTREAM from external channel)
+* command exits immediately: channel is at EOF when we read
+#external true
+#fromexternal
+Print;
+.end
+assert succeeded?
+*--#] cov_ext_eof :
+
+*--#[ cov_mixedelem :
+* expected: is not a function or tensor
+* probe: error
+* expected: is not a function or tensor
+Symbol x;
+CFunction g;
+Set A1: x,g;
+CommuteInSet{A1},{A1};
+Print;
+.end
+assert compile_error?('g has not')
+*--#] cov_mixedelem :
+
+*--#[ cov_off_checkpoint :
+* farm probe 0044_off_checkpoint_138 (+5 lines)
+* probe: clean
+Off checkpoint;
+.end
+assert warning?('We are considering')
+*--#] cov_off_checkpoint :
+
+*--#[ cov_totensor_notvec :
+* expected: is not a vector or a tensor
+* probe: error
+* expected: is not a vector or a tensor
+Symbol x;
+CFunction f;
+ToTensor f,x;
+.end
+assert compile_error?('f is not')
+*--#] cov_totensor_notvec :
+
+*--#[ cov_chisholm_lastarg :
+* expected: Last argument of Chisholm should be an index
+* probe: error
+* expected: Last argument of Chisholm should be an index
+Function f;
+Chisholm [x],f;
+.end
+assert compile_error?('[x] has not')
+*--#] cov_chisholm_lastarg :
+
+*--#[ cov_onflag_badnum :
+* expected: Proper syntax is: On/Off Flag,number[s];
+* probe: error
+* expected: Proper syntax is: On/Off Flag,number[s];
+Symbol x;
+On Flag,x;
+Print;
+.end
+assert compile_error?('Proper syntax is:')
+*--#] cov_onflag_badnum :
+
+*--#[ cov_on_chk_opt2 :
+* expected: Unrecognized option in ON Checkpoint statement
+* probe: error
+* expected: Unrecognized option in ON Checkpoint statement
+On Checkpoint 5m, zzz;
+.end
+assert compile_error?('Unrecognized option in')
+*--#] cov_on_chk_opt2 :
+
+*--#[ cov_breakdo_levels :
+* expected: Too many loop levels
+* probe: error
+* expected: Too many loop levels
+#do i = 1,1
+#breakdo 3
+#enddo
+.end
+assert preprocess_error?('Too many loop')
+*--#] cov_breakdo_levels :
+
+*--#[ cov_ns_long :
+* three namespaces with long names: fullname grows past buffer size
+* probe: clean
+* three namespaces with long names: fullname grows past buffer size
+#namespace aaLongName0000000000000000000000000000000000000000
+#define dummy1 1
+#namespace bbLongName0000000000000000000000000000000000000000
+#define dummy2 1
+#namespace ccLongName0000000000000000000000000000000000000000
+#define vv 1
+#namespace
+#use ccLongName0000000000000000000000000000000000000000
+Local t = vv;
+Print;
+.end
+assert preprocess_error?('Illegal string for')
+*--#] cov_ns_long :
+
+*--#[ cov_procext_badquoted :
+* expected: should be a string starting with an alphabetic character
+* probe: error
+* expected: should be a string starting with an alphabetic character
+#procedureextension "9abc"
+.end
+assert preprocess_error?('Procedure extensio')
+*--#] cov_procext_badquoted :
+
+*--#[ cov_endswitch_case_outside :
+* expected: #endswitch
+* probe: error
+* expected: #endswitch
+#case 1
+#endswitch
+.end
+assert preprocess_error?('Case without corr')
+*--#] cov_endswitch_case_outside :
+
+*--#[ cov_procext_many :
+* expected: Too many parameters in ProcedureExtension instruction
+* probe: error
+* expected: Too many parameters in ProcedureExtension instruction
+#procedureextension abc def
+.end
+assert preprocess_error?('Too many parameters')
+*--#] cov_procext_many :
+
+*--#[ cov_multibracket_b_5 :
+* alternative MultiBracket syntax attempt
+* probe: clean
+* alternative MultiBracket syntax attempt
+Symbols x,y;
+CFunction f;
+Local t = f(x,y);
+MultiBracket;
+Bracket x,y;
+Print;
+.sort
+.end
+assert compile_error?('Illegal Multiple Brack')
+*--#] cov_multibracket_b_5 :
 
