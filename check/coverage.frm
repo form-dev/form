@@ -11195,3 +11195,846 @@ Print;
 assert succeeded?
 assert result("F") =~ expr("z + y")
 *--#] cov_symbolssetwild :
+
+*---[ L0 rescore round: folds from discarded kit/census probe corpora, rescoring vs 78.6% baseline (NEWMIN=2) ]---
+
+*--#[ cov_pg_modeldecl_5 :
+* farm probe 0143_pg_modeldecl_5 (+4 lines, L0 rescore census)
+* probe: error
+* attempt: grcc-style Model/Particle/Vertex block before ProcessGraph
+Model qed;
+Particle e;
+Vertex e,e,e;
+EndModel;
+ProcessGraph dag = $d;
+Print $d;
+.end
+#pend_if threaded?
+assert runtime_error?('A vertex statement')
+*--#] cov_pg_modeldecl_5 :
+
+*--#[ cov_pf_factarg_denbig_4 :
+* farm probe 0166_pf_factarg_denbig_4 (+4 lines, L0 rescore census)
+* probe: clean
+Symbol x;
+CFunction f;
+Local F = f(x/(10^100+1));
+FactArg f;
+Print;
+.end
+assert succeeded?
+*--#] cov_pf_factarg_denbig_4 :
+
+*--#[ cov_e893_cfun_6 :
+* farm probe 0070_e893_cfun_6 (+3 lines, L0 rescore census)
+* probe: clean
+* C output with nested functions and brackets
+Format C;
+Symbol x,y,z;
+CFunction f,g;
+Local test = g(f(x+y+z)^2,(x-y)^3)*(z+1)^4;
+.sort
+Print;
+.end
+assert succeeded?
+*--#] cov_e893_cfun_6 :
+
+*--#[ cov_multi_funw_gamma_12 :
+* farm probe 0156_multi_funw_gamma_12 (+3 lines, L0 rescore census)
+* probe: clean
+Vector p;
+Symbol n,m;
+Function h;
+Local test = g_(1)*g_(2)*g_(1,p);
+Multi f?(n?) = h(n);
+Print;
+.end
+assert runtime_error?('Undeclared va')
+*--#] cov_multi_funw_gamma_12 :
+
+*--#[ cov_tensor_tsetcode_gamma2_37 :
+* farm probe 0022_tensor_tsetcode_gamma2_37 (+2 lines, L0 rescore census)
+* probe: clean
+Symbol x,y,z;
+Vector v;
+Index i;
+CFunction g_;
+Set s: i;
+Local expr = g_(s(5_,5_),s(5_,5_));
+Print;
+.end
+assert runtime_error?('Illegally formed function/tensor name')
+*--#] cov_tensor_tsetcode_gamma2_37 :
+
+*--#[ cov_wnodollar_5 :
+* farm probe 0024_wnodollar_5 (+2 lines, L0 rescore census)
+* probe: error
+* expected: $-variable expected in #write instruction
+#write "%5x"
+.end
+assert succeeded?
+*--#] cov_wnodollar_5 :
+
+*--#[ cov_autoindex_dubious_7 :
+* farm probe 0065_autoindex_dubious_7 (+2 lines, L0 rescore census)
+* probe: clean
+AutoDeclare Index i;
+Index j;
+Local expr = i + j;
+id i = j;
+Print;
+.end
+assert succeeded?
+*--#] cov_autoindex_dubious_7 :
+
+*--#[ cov_err_sep_13 :
+* farm probe 0076_err_sep_13 (+2 lines, L0 rescore census)
+* probe: error
+* expected: Illegal separator in FillExpression statement
+Symbol a;
+Table t(1);
+Local x = a;
+.sort
+FillExpression t = x(a+a);
+.end
+assert runtime_error?('Illegal separator in F')
+*--#] cov_err_sep_13 :
+
+*--#[ cov_parfact_multivar_16 :
+* farm probe 0172_parfact_multivar_16 (+2 lines, L0 rescore census)
+* probe: clean
+* target: tostring multi-factor loop with several symbols, parallel send path
+On parallel;
+Symbol x,y,z;
+Local f = (2*x-y+3*z)*(x^2-y^2)*(x+y)^2;
+Factorize f;
+Print;
+.sort
+Local g = (2*x-y+3*z)*(x^2-y^2)*(x+y)^2*(z+1)*(z-1);
+Factorize g;
+Print;
+.end
+assert succeeded?
+*--#] cov_parfact_multivar_16 :
+
+*--#[ cov_badchar1_3 :
+* farm probe 0176_badchar1_3 (+2 lines, L0 rescore census)
+* probe: error
+* expected: Illegal character in range specification
+Symbol a;
+CFunction f;
+Local test = f(1,2,3);
+Print;
+Transform f dedup(@,2);
+.end
+assert runtime_error?('Illegal character in r')
+*--#] cov_badchar1_3 :
+
+*--#[ cov_badchar2_8 :
+* farm probe 0176_badchar2_8 (+2 lines, L0 rescore census)
+* probe: error
+* expected: Illegal character in range specification
+Symbol a;
+CFunction f;
+Local test = f(1,2,3);
+Print;
+Transform f dedup(1,%);
+.end
+assert runtime_error?('Illegal character in r')
+*--#] cov_badchar2_8 :
+
+*--#[ cov_first2_0 :
+* farm probe 0176_first2_0 (+2 lines, L0 rescore census)
+* probe: clean
+Symbol a,b;
+CFunction f,g;
+Local test = f(1,2,3,f(4,5));
+Transform f dedup(1,first);
+Print;
+.end
+assert succeeded?
+*--#] cov_first2_0 :
+
+*--#[ cov_modppogen_6 :
+* farm probe 0199_modppogen_6 (+2 lines, L0 rescore census)
+* probe: error
+* expected: Bad syntax in argument of PrintPowersOf(number) in Modulus statement
+Modulus printpowersof(x) 5;
+.end
+assert runtime_error?('Bad syntax in argumen')
+*--#] cov_modppogen_6 :
+
+*--#[ cov_badspecname2_3 :
+* farm probe 0209_badspecname2_3 (+2 lines, L0 rescore census)
+* probe: error
+* expected: Illegal name for spectator expression
+* variant: name ending in underscore (q[-1]=='_' at line 490)
+CopySpectator,newexp = sp_;
+.end
+assert runtime_error?('Illegal name for s')
+*--#] cov_badspecname2_3 :
+
+*--#[ cov_09ad0cf7_ns_use_82 :
+* farm probe 0102_09ad0cf7_ns_use_82 (+55 lines, L0 rescore kit)
+* probe: clean
+* alternative syntax guess for the usename mechanism
+#namespace ns
+#use x
+Symbol x;
+Local test = x;
+Print;
+#endnamespace
+.end
+assert succeeded?
+*--#] cov_09ad0cf7_ns_use_82 :
+
+*--#[ cov_div_ok_39 :
+* farm probe 0176_div_ok_39 (+19 lines, L0 rescore kit)
+* probe: clean
+* divergence option accepted: compcomm.c 5493-5517
+Symbol x,z;
+CFunction f;
+PolyRatFun f(divergence,z);
+Local test = f(x,1);
+Print;
+.end
+assert succeeded?
+*--#] cov_div_ok_39 :
+
+*--#[ cov_dotail_pipe_3_2 :
+* farm probe 0029_dotail_pipe_3 (+16 lines, L0 rescore kit)
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system V=$(readlink /proc/$PPID/exe 2>/dev/null); case "$V" in *form*) ;; *) V=vorm;; esac; echo .end > /tmp/cvf4.frm; $V -pipe /tmp/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?('name of expression is also')
+*--#] cov_dotail_pipe_3_2 :
+
+*--#[ cov_conflict_select_63 :
+* farm probe 0054_conflict_select_63 (+9 lines, L0 rescore kit)
+* probe: error
+* expected: Conflicting options in id-statement
+Set ss: x;
+Symbol x,y;
+Local t = x;
+id, all(1), select, ss, x = y;
+.end
+assert runtime_error?('x has not been declar')
+*--#] cov_conflict_select_63 :
+
+*--#[ cov_takearg_index_2_2 :
+* farm probe 0015_takearg_index_2 (+7 lines, L0 rescore kit)
+* probe: clean
+* target: TakeArgContent INDEX branch, argument.c:2863-2903
+Symbol x,y;
+Index i,j;
+Function f;
+Local test = f(x*i + y*i);
+FactArg f;
+Print +s;
+.end
+assert runtime_error?
+*--#] cov_takearg_index_2_2 :
+
+*--#[ cov_multibracket_b_64 :
+* farm probe 0102_multibracket_b_64 (+7 lines, L0 rescore kit)
+* probe: clean
+* alternative MultiBracket syntax attempt
+Symbols x,y;
+CFunction f;
+Local t = f(x,y);
+MultiBracket;
+Bracket x,y;
+Print;
+.sort
+.end
+assert runtime_error?('Illegal Multiple Brack')
+*--#] cov_multibracket_b_64 :
+
+*--#[ cov_if_funcbare_112 :
+* farm probe 0006_if_funcbare_112 (+6 lines, L0 rescore kit)
+* probe: error
+* expected: f is not a properly declared variable
+CFunction f;
+Symbol x;
+Local t = f(x);
+if ( f ) id t = 1; endif;
+.end
+assert runtime_error?('Unrecognized word: f')
+*--#] cov_if_funcbare_112 :
+
+*--#[ cov_0042_abs_symbol_73 :
+* farm probe 0004_0042_abs_symbol_73 (+4 lines, L0 rescore kit)
+* probe: clean
+* abs_ of plain symbol: not root of unity -> absnogood (normal.c 1398-1402, 1434)
+Symbol x;
+Local test = abs_(x);
+Print;
+.end
+assert succeeded?
+*--#] cov_0042_abs_symbol_73 :
+
+*--#[ cov_max_zeroafter_neg_29 :
+* farm probe 0006_max_zeroafter_neg_29 (+4 lines, L0 rescore kit)
+* probe: clean
+* targets normal.c 1903 (loadnew2 negative) and 1937-1938 (simple zero replaces negative max)
+Symbol x;
+Local test = max_(-5,0);
+Print;
+.end
+assert succeeded?
+*--#] cov_max_zeroafter_neg_29 :
+
+*--#[ cov_sum_undecl_145 :
+* farm probe 0011_sum_undecl_145 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: is not a legal fixed index
+Symbol i;
+CFunction f;
+Local t = f(i);
+Sum q;
+Print;
+.end
+assert runtime_error?('q should have been declar')
+*--#] cov_sum_undecl_145 :
+
+*--#[ cov_argwildmulti_130 :
+* farm probe 0012_argwildmulti_130 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Wildcarding not allowed in this type of statement
+Function f,g;
+Symbol x;
+Local test = f(g(x),g(x));
+id f:argument(g(x?x_));
+id x = 1;
+endargument;
+Print;
+.end
+assert runtime_error?('id-statement without =')
+*--#] cov_argwildmulti_130 :
+
+*--#[ cov_dodonum2_109 :
+* farm probe 0023_dodonum2_109 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: does not evaluate into a valid loop parameter
+Symbol x;
+Local tmp = x;
+$d = x;
+.sort
+#do i = 1,$d
+#enddo
+Print tmp;
+.end
+#pend_if threaded?
+assert preprocess_error?('$d does not evaluate into a')
+*--#] cov_dodonum2_109 :
+
+*--#[ cov_exprargs_6 :
+* farm probe 0023_exprargs_6 (+4 lines, L0 rescore kit)
+* probe: clean
+Symbol x,y;
+Vector v;
+Index i;
+Function f;
+Local ee(x,y,v,f,i,3) = x*y*f(v(i));
+Print;
+.end
+assert runtime_error?('Illegal name: \'3)=x*y*f(v(i))\'')
+*--#] cov_exprargs_6 :
+
+*--#[ cov_match_idx_sub_75 :
+* farm probe 0029_match_idx_sub_75 (+4 lines, L0 rescore kit)
+* probe: clean
+* Test: index wildcard substitution
+Index i,j;
+Local expr = i*j;
+id i? = j;
+Print;
+.end
+assert succeeded?
+*--#] cov_match_idx_sub_75 :
+
+*--#[ cov_write_plus_minus_sign_33 :
+* farm probe 0033_write_plus_minus_sign_33 (+4 lines, L0 rescore kit)
+* probe: clean
+#write "%+d", 5
+.end
+assert succeeded?
+*--#] cov_write_plus_minus_sign_33 :
+
+*--#[ cov_repcond_neg_141 :
+* farm probe 0039_repcond_neg_141 (+4 lines, L0 rescore kit)
+* probe: clean
+Symbol x,y,n,z;
+Local test = x^-4*y^-9;
+id x^-n?{<5}*y^-n?{<3} = z;
+Print;
+.end
+assert runtime_error?
+*--#] cov_repcond_neg_141 :
+
+*--#[ cov_tenarg_60 :
+* farm probe 0043_tenarg_60 (+4 lines, L0 rescore kit)
+* probe: clean
+Vector pv,qv,rv;
+Local test = d_(pv,qv);
+id d_(pv,qv,rv) = 1;
+Print;
+.end
+assert runtime_error?('d_ needs exactly two arguments')
+*--#] cov_tenarg_60 :
+
+*--#[ cov_bigexp_11 :
+* farm probe 0046_bigexp_11 (+4 lines, L0 rescore kit)
+* probe: clean
+* large expansion inside Substitute; attempts workspace check path 654-658
+Symbol x,y;
+CFunction f;
+Local test = f(x);
+id f(x?) = (y+1)^50000;
+.end
+assert runtime_error?
+*--#] cov_bigexp_11 :
+
+*--#[ cov_argimplode_bad_char_122 :
+* farm probe 0048_argimplode_bad_char_122 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Illegal character in ArgImplode/ArgExplode statement
+Symbol x;
+CFunction f;
+Local F = f(x);
+ArgImplode F from 1;
+.end
+assert runtime_error?('F has not been d')
+*--#] cov_argimplode_bad_char_122 :
+
+*--#[ cov_putinside_vec_105 :
+* farm probe 0050_putinside_vec_105 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Not a vector in dotproduct
+Symbol x,y;
+CFunction f;
+Local t = x;
+PutInside f,x.y;
+Print t;
+.end
+assert runtime_error?('Illegal use of . after')
+*--#] cov_putinside_vec_105 :
+
+*--#[ cov_open_nest_108 :
+* farm probe 0057_open_nest_108 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: you cannot nest #opendictionary instructions
+#opendictionary aa
+#opendictionary bb
+.end
+assert preprocess_error?('you cannot nest')
+*--#] cov_open_nest_108 :
+
+*--#[ cov_expression_badobj_67 :
+* farm probe 0061_expression_badobj_67 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Illegal object in Expression in if-statement
+Symbol x;
+if ( expression(3) ) id x = 1;
+.end
+assert runtime_error?('Illegal object in E')
+*--#] cov_expression_badobj_67 :
+
+*--#[ cov_chainin_num_358 :
+* farm probe 0068_chainin_num_358 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Dollar variable does not evaluate to function in ChainIn statement
+$f = 5;
+ChainIn $f,3;
+.end
+#pend_if threaded?
+assert runtime_error?('$f,3 is undefined')
+*--#] cov_chainin_num_358 :
+
+*--#[ cov_vertex_toomany2_122 :
+* farm probe 0074_vertex_toomany2_122 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: MAXCOUPLINGS
+Model qcd;
+Particle a: spin=1;
+Particle b: spin=1;
+Vertex a,b: c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25;
+.end
+assert runtime_error?('More than 20 couplin')
+*--#] cov_vertex_toomany2_122 :
+
+*--#[ cov_tbenter_enter3_84 :
+* farm probe 0077_tbenter_enter3_84 (+4 lines, L0 rescore kit)
+* probe: clean
+S x;
+TableBase T;
+TableBaseIn T, myfile;
+CFunction mytable;
+Table mytable, sparse;
+Local F = mytable(x);
+id mytable(x) = x;
+Enter T, mytable(x) = x;
+Print;
+.end
+assert runtime_error?('Proper syntax: TableBa')
+*--#] cov_tbenter_enter3_84 :
+
+*--#[ cov_setidx_bad_rhs_52 :
+* farm probe 0081_setidx_bad_rhs_52 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Improper set argument in RHS
+Symbol x,n;
+CFunction f;
+Set v: x;
+Local F = f(v[n+]);
+Print;
+.end
+assert runtime_error?('Improper set argument')
+*--#] cov_setidx_bad_rhs_52 :
+
+*--#[ cov_dictopen_93 :
+* farm probe 0085_dictopen_93 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Dictionary mydict has not been closed.
+#opendictionary mydict
+Symbol x;
+Local t = x;
+.sort
+Print t;
+.end
+assert runtime_error?
+*--#] cov_dictopen_93 :
+
+*--#[ cov_exch_notexpr_92 :
+* farm probe 0091_exch_notexpr_92 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: is not an expression
+Symbol x,y;
+Local ex1 = x;
+#exchange x,y
+.end
+assert preprocess_error?('x is not an expression')
+*--#] cov_exch_notexpr_92 :
+
+*--#[ cov_encode_big_number_78 :
+* farm probe 0093_encode_big_number_78 (+4 lines, L0 rescore kit)
+* probe: clean
+Symbol x;
+CFunction f;
+Local expr = f(12345678901234567890,x);
+Transform f encode(1,2);
+Print;
+.end
+assert runtime_error?('A range in this typ')
+*--#] cov_encode_big_number_78 :
+
+*--#[ cov_mod_notcoprime_109 :
+* farm probe 0101_mod_notcoprime_109 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Denominator and modulus are not relative prime
+Modulus 6;
+Symbol x;
+Local t = x/4;
+Print;
+.end
+assert succeeded?
+*--#] cov_mod_notcoprime_109 :
+
+*--#[ cov_ns_proc_95 :
+* farm probe 0101_ns_proc_95 (+4 lines, L0 rescore kit)
+* probe: clean
+* speculative: procedure call with arguments under an active namespace
+#namespace nsp
+#define gv 5
+#namespace
+#use nsp
+#procedure psub
+#message `1'
+#endprocedure
+#call psub(3)
+.end
+assert preprocess_error?('Illegal string for preprocess')
+*--#] cov_ns_proc_95 :
+
+*--#[ cov_spect_usedname_103 :
+* farm probe 0109_spect_usedname_103 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: The name e has been used already.
+Local e = 1;
+CreateSpectator e,"spc.tmp";
+Print;
+.end
+assert runtime_error?('Declaration out of or')
+*--#] cov_spect_usedname_103 :
+
+*--#[ cov_dq_rbra_9 :
+* farm probe 0111_dq_rbra_9 (+4 lines, L0 rescore kit)
+* probe: error
+#if ( $(1 = 2]) )
+#endif
+* expected: Improper brackets in #if
+.end
+#pend_if threaded?
+assert preprocess_error?('Improper brackets in')
+*--#] cov_dq_rbra_9 :
+
+*--#[ cov_dol_index_big_20 :
+* farm probe 0117_dol_index_big_20 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Attempt to use an nonexisting factor of a $-variable
+$x = 3;
+$x = 5;
+$i = 123456789012345678901234567890;
+.sort
+Local F = $x[$i];
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_dol_index_big_20 :
+
+*--#[ cov_illegal_factor_type_branch_40 :
+* farm probe 0117_illegal_factor_type_branch_40 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Illegal type of factor number of a $-variable
+Symbol x,y;
+CFunction f;
+Local F = f(x,y);
+$mydollar = F;
+id f(x,y) = $mydollar[2*x];
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?('Improper u')
+*--#] cov_illegal_factor_type_branch_40 :
+
+*--#[ cov_rngzero_98 :
+* farm probe 0122_rngzero_98 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Illegal non-positive value in range (0) while executing transform statement
+Symbol x;
+CFunction f;
+Local test = f(x,x,x);
+$n = 0;
+Transform f,addargs(1,$n);
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_rngzero_98 :
+
+*--#[ cov_implode_hi_93 :
+* farm probe 0123_implode_hi_93 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Illegal range encountered in RunImplode
+Symbol x;
+Function f;
+Local test = f(1,2,3);
+Transform f,implode(1,2,9);
+Print;
+.end
+assert runtime_error?('A range is two indicators,')
+*--#] cov_implode_hi_93 :
+
+*--#[ cov_ns_deepexpr_21 :
+* farm probe 0127_ns_deepexpr_21 (+4 lines, L0 rescore kit)
+* probe: clean
+* target: ConstructName with namespace names inside function args and powers
+#namespace k1
+#namespace k2
+AutoDeclare Symbol s;
+CFunction f;
+Local t = f(s1^2,s2)*s3;
+Print t;
+#endnamespace
+#endnamespace
+.end
+assert succeeded?
+*--#] cov_ns_deepexpr_21 :
+
+*--#[ cov_ext_echo_66 :
+* farm probe 0141_ext_echo_66 (+4 lines, L0 rescore kit)
+* probe: clean
+* target: tools.c ReadFromStream EXTERNALCHANNELSTREAM branch (209-227)
+* external command output is read back via the external channel stream
+#external echo Symbol x;
+#fromexternal
+Local t = x;
+Print;
+.end
+assert runtime_error?('Illegal name: \'=x\'')
+*--#] cov_ext_echo_66 :
+
+*--#[ cov_fmt_float2_5 :
+* farm probe 0147_fmt_float2_5 (+4 lines, L0 rescore kit)
+* probe: clean
+* Format Float with too-large precision (compcomm.c 345-348)
+* and non-numeric specifier after comma (compcomm.c 336-339)
+Symbol x;
+Local t = x;
+Format Float,200;
+Format Float,q;
+Print;
+.end
+assert runtime_error?('... float format value cor')
+*--#] cov_fmt_float2_5 :
+
+*--#[ cov_setelement_symbol_neg_23 :
+* farm probe 0150_setelement_symbol_neg_23 (+4 lines, L0 rescore kit)
+* probe: clean
+Symbol a,b;
+Set myset: a,b;
+Local F = myset[-1];
+Print;
+.end
+assert runtime_error?('Set index in RH')
+*--#] cov_setelement_symbol_neg_23 :
+
+*--#[ cov_setnum_index_13 :
+* farm probe 0150_setnum_index_13 (+4 lines, L0 rescore kit)
+* probe: clean
+Index i1,...,i20;
+Set s: i1,...,i20;
+Local F = s[5];
+Print;
+.end
+assert succeeded?
+*--#] cov_setnum_index_13 :
+
+*--#[ cov_comp_thread_pound_79 :
+* farm probe 0164_comp_thread_pound_79 (+4 lines, L0 rescore kit)
+* probe: clean
+#:threadsortfilecompress yes
+#:threadsortfilesynch yes
+On parallel;
+Symbol x,y,z,n,t;
+Local F = sum(n,1,700,(x+y+z)^n);
+.sort
+Local tiny = x;
+Print tiny;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_comp_thread_pound_79 :
+
+*--#[ cov_illdim_6 :
+* farm probe 0164_illdim_6 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Illegal dimension field for variable
+Symbol x{w=4};
+.end
+assert runtime_error?('Error: Illegal dimension field')
+*--#] cov_illdim_6 :
+
+*--#[ cov_dc21_impname_67 :
+* farm probe 0165_dc21_impname_67 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Improper name in (n)print statement
+Symbol x;
+Local test = x;
+Print [test;
+.end
+assert runtime_error?('Illegal name: \'[test\'')
+*--#] cov_dc21_impname_67 :
+
+*--#[ cov_promptread_43 :
+* farm probe 0171_promptread_43 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: error or EOF handling from #prompt reading the input stream
+Symbol x;
+Local t = x;
+Print t;
+#prompt "give" pv
+.end
+assert succeeded?
+*--#] cov_promptread_43 :
+
+*--#[ cov_err_unhide_intohide_10 :
+* farm probe 0173_err_unhide_intohide_10 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Cannot unhide/drop and put intohide expression in the same module
+Symbol x;
+Local f = x;
+.sort
+Hide f;
+.sort
+UnHide f;
+IntoHide f;
+.end
+assert runtime_error?('Cannot unhide/dro')
+*--#] cov_err_unhide_intohide_10 :
+
+*--#[ cov_dim_badword_6 :
+* farm probe 0184_dim_badword_6 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: Illegal dimension field for variable f
+Function f{x=3};
+.end
+assert runtime_error?('Error: Illegal dimension f')
+*--#] cov_dim_badword_6 :
+
+*--#[ cov_mod2word_fact_7 :
+* farm probe 0191_mod2word_fact_7 (+4 lines, L0 rescore kit)
+* probe: clean
+Symbol x;
+Modulus 4294967311;
+Local f = x^3+x+1;
+Factorize f;
+Print;
+.end
+assert runtime_error?
+*--#] cov_mod2word_fact_7 :
+
+*--#[ cov_reset_paren_2 :
+* farm probe 0198_reset_paren_2 (+4 lines, L0 rescore kit)
+* probe: clean
+* variant syntax attempt for bare #reset
+#reset()
+Symbol x;
+Local test = x;
+Print;
+.end
+assert preprocess_error?('proper syntax is')
+*--#] cov_reset_paren_2 :
+
+*--#[ cov_brk_dubdot_42 :
+* farm probe 0204_brk_dubdot_42 (+4 lines, L0 rescore kit)
+* probe: clean
+* target: compcomm.c DoBrackets 3821-3833: CDUBIOUS auto names in dotproduct bracket
+Bracket x.y;
+Local test = 1;
+.sort
+Print;
+.end
+assert runtime_error?('Illegal use of . after x i')
+*--#] cov_brk_dubdot_42 :
+
+*--#[ cov_sum_loopundecl_11 :
+* farm probe 0209_sum_loopundecl_11 (+4 lines, L0 rescore kit)
+* probe: error
+* expected: should have been declared as an index
+Index i;
+Sum i,zz;
+.end
+assert runtime_error?('zz should have been de')
+*--#] cov_sum_loopundecl_11 :
+
+*--#[ cov_dots_types_30 :
+* farm probe 0212_dots_types_30 (+4 lines, L0 rescore kit)
+* probe: clean
+Vectors p,q;
+Index i;
+Symbol a,x,y,z;
+CFunction f,g,h;
+Local test = f(1,i,x,p,g(x,y),x^2,h(3));
+id f(a?,...?) = g(a,...,q);
+Print;
+.end
+assert runtime_error?('Improper operators for ...')
+*--#] cov_dots_types_30 :
