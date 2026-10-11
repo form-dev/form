@@ -12038,3 +12038,586 @@ Print;
 .end
 assert runtime_error?('Improper operators for ...')
 *--#] cov_dots_types_30 :
+
+*--#[ cov_gdiag_topo_blocks_edges :
+* diagrams_ option battery: TopologiesOnly_+WithEdges_+WithBlocks_+WithOnePISets_ on QCD glu-glu 2 loops: ProcessTopology block_/onepi_ emission loops
+Model QCD;
+   Particle qua,QUA,  -2;
+   Particle gho,GHO,  -1;
+   Particle glu,      +3;
+   Vertex QUA,qua,glu: g;
+   Vertex GHO,gho,glu: g;
+   Vertex glu,glu,glu: g;
+   Vertex glu,glu,glu,glu: g^2;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(QCD,{glu},{glu},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12},2, `TopologiesOnly_'+`WithEdges_'+`WithBlocks_'+`WithOnePISets_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 29
+*--#] cov_gdiag_topo_blocks_edges :
+
+*--#[ cov_gdiag_symmif_onshell :
+* diagrams_ option battery: WithSymmetrizeI_+WithSymmetrizeF_+OnShell_ with 4 externals (g^4, 1 loop): cmind Max(...,3) lines in symm blocks
+Model QCD;
+   Particle qua,QUA,  -2;
+   Particle gho,GHO,  -1;
+   Particle glu,      +3;
+   Vertex QUA,qua,glu: g;
+   Vertex GHO,gho,glu: g;
+   Vertex glu,glu,glu: g;
+   Vertex glu,glu,glu,glu: g^2;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12,q13,q14,q15,q16,q17,q18,q19,q20,q21,q22,q23,q24;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24;
+
+Local t = diagrams_(QCD,{glu,glu},{glu,glu},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12,q13,q14,q15,q16,q17,q18,q19,q20,q21,q22,q23,q24},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24},g^4, `WithSymmetrizeI_'+`WithSymmetrizeF_'+`OnShell_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 52
+*--#] cov_gdiag_symmif_onshell :
+
+*--#[ cov_gdiag_dupcontent_nondet :
+* diagrams_ option battery: MIX3 with both couplings g^1*gw^1: identical-content vertices become multi-candidate -> assignVertex multi-candidate / ECand paths
+Model MIX3;
+   Particle phi, +1;
+   Vertex phi,phi,phi: g;
+   Vertex phi,phi,phi: gw;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(MIX3,{phi},{phi},{q1,q2,q3,q4},{p1,p2,p3,p4},g*gw, 0);
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 4
+*--#] cov_gdiag_dupcontent_nondet :
+
+*--#[ cov_gdiag_sigma_sigma_2ext :
+* diagrams_ option battery: Sigma_ (dual) keeps the sigma graph: NOSIGMA<0 nExtern==2 return-False-suppression path
+Model PHI3;
+   Particle phi, +1;
+   Vertex phi,phi,phi: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(PHI3,{phi},{phi},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12},1, `Sigma_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 0
+*--#] cov_gdiag_sigma_sigma_2ext :
+
+*--#[ cov_gdiag_ferm_majorana_split :
+* diagrams_ option battery: Majorana pair non-adjacent in vertex -> error
+Model ERRF;
+   Particle maj, -2;
+   Particle glu, +3;
+   Vertex maj,glu,maj: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = 1;
+Print t;
+.end
+assert runtime_error?('illegal Dirac/Majorana/Ghost interaction')
+*--#] cov_gdiag_ferm_majorana_split :
+
+*--#[ cov_gdiag_ferm_dirac_split :
+* diagrams_ option battery: Dirac pair appearing non-adjacent in vertex (qua,glu,QUA) -> error
+Model ERRF;
+   Particle qua,QUA, -2;
+   Particle glu, +3;
+   Vertex qua,glu,QUA: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = 1;
+Print t;
+.end
+assert runtime_error?('illegal Dirac/Majorana/Ghost interaction')
+*--#] cov_gdiag_ferm_dirac_split :
+
+*--#[ cov_gdiag_combo_all :
+* diagrams_ option battery: Combined qgraf-style filters OnShell_+NoTadpole_+NoSnail_+NoSigma_+OnePI_ on QCD glu-glu 2 loops
+Model QCD;
+   Particle qua,QUA,  -2;
+   Particle gho,GHO,  -1;
+   Particle glu,      +3;
+   Vertex QUA,qua,glu: g;
+   Vertex GHO,gho,glu: g;
+   Vertex glu,glu,glu: g;
+   Vertex glu,glu,glu,glu: g^2;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(QCD,{glu},{glu},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12},2, `OnShell_'+`NoTadpole_'+`NoSnail_'+`NoSigma_'+`OnePI_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 11
+*--#] cov_gdiag_combo_all :
+
+*--#[ cov_gdiag_err_vac_odd :
+* diagrams_ option battery: Vacuum with odd coupling order ({} -> {}, g^1): lp2 odd -> cannot generate / Process: illegal input
+Model QCD;
+   Particle qua,QUA,  -2;
+   Particle gho,GHO,  -1;
+   Particle glu,      +3;
+   Vertex QUA,qua,glu: g;
+   Vertex GHO,gho,glu: g;
+   Vertex glu,glu,glu: g;
+   Vertex glu,glu,glu,glu: g^2;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+On GrccVerbose;
+Local t = diagrams_(QCD,{},{},{q1,q2},{p1,p2},g,0);
+Print t;
+.end
+assert runtime_error?('Process: illegal input')
+*--#] cov_gdiag_err_vac_odd :
+
+*--#[ cov_gdiag_cyclr :
+* diagrams_ option battery: CyclR_ dual on QCD glu-glu 2 loops (CYCLR branch)
+Model QCD;
+   Particle qua,QUA,  -2;
+   Particle gho,GHO,  -1;
+   Particle glu,      +3;
+   Vertex QUA,qua,glu: g;
+   Vertex GHO,gho,glu: g;
+   Vertex glu,glu,glu: g;
+   Vertex glu,glu,glu,glu: g^2;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(QCD,{glu},{glu},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12},2, `CyclR_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 101
+*--#] cov_gdiag_cyclr :
+
+*--#[ cov_gdiag_snail_2ext :
+* diagrams_ option battery: Snail_ dual with nExtern==2 (phi3 2 loops): SNAIL<0 requires snails, rejecting snail-free graphs
+Model PHI3;
+   Particle phi, +1;
+   Vertex phi,phi,phi: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(PHI3,{phi},{phi},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12},2, `Snail_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 7
+*--#] cov_gdiag_snail_2ext :
+
+*--#[ cov_gdiag_onshell_offshell_1ext :
+* diagrams_ option battery: OnShell_/OffShell_ with nExtern==1 (phi3 phi->nothing 1 loop): ONSHELL/OFFSHELL single-external branches
+Model PHI3;
+   Particle phi, +1;
+   Vertex phi,phi,phi: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local a = diagrams_(PHI3,{phi},{},{q1},{p1},1,`OnShell_');
+Local b = diagrams_(PHI3,{phi},{},{q1},{p1},1,`OffShell_');
+Local c = diagrams_(PHI3,{phi},{},{q1},{p1},1,0);
+Print a; Print b; Print c;
+.end
+assert succeeded?
+*--#] cov_gdiag_onshell_offshell_1ext :
+
+*--#[ cov_gdiag_cycli :
+* diagrams_ option battery: CyclI_ on QCD glu-glu 2 loops: keep only internally cyclic graphs (CYCLI branches)
+Model QCD;
+   Particle qua,QUA,  -2;
+   Particle gho,GHO,  -1;
+   Particle glu,      +3;
+   Vertex QUA,qua,glu: g;
+   Vertex GHO,gho,glu: g;
+   Vertex glu,glu,glu: g;
+   Vertex glu,glu,glu,glu: g^2;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(QCD,{glu},{glu},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12},2, `CyclI_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 26
+*--#] cov_gdiag_cycli :
+
+*--#[ cov_gdiag_q_noargs :
+* diagrams_ option battery: diagrams_ called with 6 arguments (no options argument)
+Model PHI3;
+   Particle phi, +1;
+   Vertex phi,phi,phi: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(PHI3,{phi},{phi},{q1,q2},{p1,p2},1);
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 2
+*--#] cov_gdiag_q_noargs :
+
+*--#[ cov_gdiag_spin2_maj :
+* diagrams_ option battery: Particle with spin +2 type 0 (Majorana): LoadModel spin-2 case, 2 loops
+Model SP2;
+   Particle maj, +2;
+   Particle gam, +3;
+   Vertex maj,maj,gam: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12,q13,q14,q15,q16,q17,q18,q19,q20,q21,q22,q23,q24;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24;
+
+Local t = diagrams_(SP2,{maj},{maj},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12,q13,q14,q15,q16,q17,q18,q19,q20,q21,q22,q23,q24},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24},2, 0);
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 10
+*--#] cov_gdiag_spin2_maj :
+
+*--#[ cov_gdiag_tadpole_1ext :
+* diagrams_ option battery: Tadpole_ dual with nExtern==1: nopic==1 graph rejected (NOTADPOLE<0 single-external return False)
+Model PHI3;
+   Particle phi, +1;
+   Vertex phi,phi,phi: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(PHI3,{phi},{},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12},1, `Tadpole_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 0
+*--#] cov_gdiag_tadpole_1ext :
+
+*--#[ cov_gdiag_ferm_fourf :
+* diagrams_ option battery: Vertex with 4 fermions (Dirac pair + ghost pair, order 2): more-than-2-fermions warning path (once), generation still succeeds
+Model FF;
+   Particle qua,QUA, -2;
+   Particle gho,GHO, -1;
+   Particle glu, +3;
+   Vertex qua,QUA,gho,GHO: g^2;
+   Vertex QUA,qua,glu: g;
+   Vertex GHO,gho,glu: g;
+   Vertex glu,glu,glu: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(FF,{glu},{glu},{q1,q2,q3,q4,q5,q6},{p1,p2,p3,p4,p5,p6},2, 0);
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 93
+*--#] cov_gdiag_ferm_fourf :
+
+*--#[ cov_gdiag_offshell_2ext :
+* diagrams_ option battery: OffShell_ with nExtern>1 on QCD glu-glu 2 loops: OFFSHELL nExtern!=1 ne0bridges<=0 rejection path
+Model QCD;
+   Particle qua,QUA,  -2;
+   Particle gho,GHO,  -1;
+   Particle glu,      +3;
+   Vertex QUA,qua,glu: g;
+   Vertex GHO,gho,glu: g;
+   Vertex glu,glu,glu: g;
+   Vertex glu,glu,glu,glu: g^2;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(QCD,{glu},{glu},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12},2, `OffShell_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 49
+*--#] cov_gdiag_offshell_2ext :
+
+*--#[ cov_gdiag_tadpole_2ext :
+* diagrams_ option battery: Tadpole_ dual with nExtern==2 (phi3 2 loops): keep only graphs with tadpoles (dual tadpole branch)
+Model PHI3;
+   Particle phi, +1;
+   Vertex phi,phi,phi: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(PHI3,{phi},{phi},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12},2, `Tadpole_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 7
+*--#] cov_gdiag_tadpole_2ext :
+
+*--#[ cov_gdiag_simple_phi4 :
+* diagrams_ option battery: Simple_ on phi4 2-vertex 1-loop (2 parallel internal lines, multi-edge): SIMPLE>0 rejects multi-edge graph
+Model PHI4;
+   Particle phi, +1;
+   Vertex phi,phi,phi,phi: g^2;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(PHI4,{phi},{phi},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12},2, `Simple_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 0
+*--#] cov_gdiag_simple_phi4 :
+
+*--#[ cov_gdiag_notsimple_phi4 :
+* diagrams_ option battery: NotSimple_ keeps the multi-edge phi4 graph, rejects simple ones (SIMPLE<0 branch)
+Model PHI4;
+   Particle phi, +1;
+   Vertex phi,phi,phi,phi: g^2;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(PHI4,{phi},{phi},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12},2, `NotSimple_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 3
+*--#] cov_gdiag_notsimple_phi4 :
+
+*--#[ cov_gdiag_q_conflict :
+* diagrams_ option battery: Conflicting dual filters OnePI_+OnePR_: 'Conflicting diagram filters' error
+Model PHI3;
+   Particle phi, +1;
+   Vertex phi,phi,phi: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(PHI3,{phi},{phi},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12},1, `OnePI_'+`OnePR_');
+Print t;
+.end
+assert runtime_error?('Conflicting diagram filters')
+*--#] cov_gdiag_q_conflict :
+
+*--#[ cov_gdiag_err_many_couplings :
+* diagrams_ option battery: Model with 16 coupling symbols in one vertex (> GRCC_MAXNCPLG=15): too many coupling constants
+Model MC;
+   Particle phi, +1;
+   Vertex phi,phi,phi: c1*c2*c3*c4*c5*c6*c7*c8*c9*c10*c11*c12*c13*c14*c15*c16;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(MC,{phi},{phi},{q1,q2},{p1,p2},1,0);
+Print t;
+.end
+assert runtime_error?('Too many coupling constants in model')
+*--#] cov_gdiag_err_many_couplings :
+
+*--#[ cov_gdiag_onepr :
+* diagrams_ option battery: OnePR_ on QCD glu-glu 2 loops: only non-1PI graphs kept (ONEPI<0 M-level + EGraph nopic<2 no-return path)
+Model QCD;
+   Particle qua,QUA,  -2;
+   Particle gho,GHO,  -1;
+   Particle glu,      +3;
+   Vertex QUA,qua,glu: g;
+   Vertex GHO,gho,glu: g;
+   Vertex glu,glu,glu: g;
+   Vertex glu,glu,glu,glu: g^2;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(QCD,{glu},{glu},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12},2, `OnePR_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 104
+*--#] cov_gdiag_onepr :
+
+*--#[ cov_gdiag_onshell_4ext :
+* diagrams_ option battery: OnShell_ alone with 4 externals (g^4): else-branch cmind Max(...,3) in mkSProcess
+Model QCD;
+   Particle qua,QUA,  -2;
+   Particle gho,GHO,  -1;
+   Particle glu,      +3;
+   Vertex QUA,qua,glu: g;
+   Vertex GHO,gho,glu: g;
+   Vertex glu,glu,glu: g;
+   Vertex glu,glu,glu,glu: g^2;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12,q13,q14,q15,q16,q17,q18,q19,q20,q21,q22,q23,q24;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24;
+
+Local t = diagrams_(QCD,{glu,glu},{glu,glu},{q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12,q13,q14,q15,q16,q17,q18,q19,q20,q21,q22,q23,q24},{p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24},g^4, `OnShell_');
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 111
+*--#] cov_gdiag_onshell_4ext :
+
+*--#[ cov_gdiag_err_novertex :
+* diagrams_ option battery: Model with no Vertex, diagrams_ with numeric loop count: ncplgcp<1 -> erEnd in Process/mkSProcess
+Model NOV;
+   Particle phi, +1;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(NOV,{phi},{phi},{q1,q2},{p1,p2},1,0);
+Print t;
+.end
+assert runtime_error?('Process: coupling constant = 0')
+*--#] cov_gdiag_err_novertex :
+
+*--#[ cov_gdiag_err_ext_momenta :
+* diagrams_ option battery: External particle defined via ,external flag used in in-set: extonly/extern handling
+Model QEDE;
+   Particle e,AE,   -2;
+   Particle gam,    +3;
+   Particle ee,AEE, -2, external;
+   Vertex e,AE,gam: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12;
+
+Local t = diagrams_(QEDE,{e,ee},{AE,gam},{q1,q2,q3,q4},{p1,p2,p3,p4},1,0);
+Print t;
+.end
+assert succeeded?
+assert nterms("t") == 0
+*--#] cov_gdiag_err_ext_momenta :
+
+*--#[ cov_gdiag_err_particle_overflow :
+* diagrams_ option battery: Model with 52 particles (> GRCC_MAXMPARTICLES=50): particle table overflow
+Model OV;
+   Particle p1, +1;
+   Particle p2, +1;
+   Particle p3, +1;
+   Particle p4, +1;
+   Particle p5, +1;
+   Particle p6, +1;
+   Particle p7, +1;
+   Particle p8, +1;
+   Particle p9, +1;
+   Particle p10, +1;
+   Particle p11, +1;
+   Particle p12, +1;
+   Particle p13, +1;
+   Particle p14, +1;
+   Particle p15, +1;
+   Particle p16, +1;
+   Particle p17, +1;
+   Particle p18, +1;
+   Particle p19, +1;
+   Particle p20, +1;
+   Particle p21, +1;
+   Particle p22, +1;
+   Particle p23, +1;
+   Particle p24, +1;
+   Particle p25, +1;
+   Particle p26, +1;
+   Particle p27, +1;
+   Particle p28, +1;
+   Particle p29, +1;
+   Particle p30, +1;
+   Particle p31, +1;
+   Particle p32, +1;
+   Particle p33, +1;
+   Particle p34, +1;
+   Particle p35, +1;
+   Particle p36, +1;
+   Particle p37, +1;
+   Particle p38, +1;
+   Particle p39, +1;
+   Particle p40, +1;
+   Particle p41, +1;
+   Particle p42, +1;
+   Particle p43, +1;
+   Particle p44, +1;
+   Particle p45, +1;
+   Particle p46, +1;
+   Particle p47, +1;
+   Particle p48, +1;
+   Particle p49, +1;
+   Particle p50, +1;
+   Particle p51, +1;
+   Particle p52, +1;
+EndModel;
+Print t;
+.end
+assert runtime_error?('particle table overflow')
+*--#] cov_gdiag_err_particle_overflow :
+
+*--#[ cov_gdiag_ferm_majorana_odd :
+* diagrams_ option battery: Vertex with an odd number of Majorana fermions (maj,glu,glu) -> error
+Model ERRF;
+   Particle qua,QUA, -2;
+   Particle gho,GHO, -1;
+   Particle maj, -2;
+   Particle glu, +3;
+   Vertex maj,glu,glu: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12,q13,q14,q15,q16,q17,q18,q19,q20,q21,q22,q23,q24;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24;
+
+Local t = 1;
+Print t;
+.end
+assert runtime_error?('illegal Dirac/Majorana/Ghost interaction')
+*--#] cov_gdiag_ferm_majorana_odd :
+
+*--#[ cov_gdiag_ferm_dirac_open :
+* diagrams_ option battery: Vertex with a lone Dirac fermion (qua,glu,glu): Dirac number not conserved -> error
+Model ERRF;
+   Particle qua,QUA, -2;
+   Particle gho,GHO, -1;
+   Particle maj, -2;
+   Particle glu, +3;
+   Vertex qua,glu,glu: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12,q13,q14,q15,q16,q17,q18,q19,q20,q21,q22,q23,q24;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24;
+
+Local t = 1;
+Print t;
+.end
+assert runtime_error?('illegal Dirac/Majorana/Ghost interaction')
+*--#] cov_gdiag_ferm_dirac_open :
+
+*--#[ cov_gdiag_ferm_ghost_open :
+* diagrams_ option battery: Vertex with a lone ghost (gho,glu,glu): ghost number not conserved -> error
+Model ERRF;
+   Particle qua,QUA, -2;
+   Particle gho,GHO, -1;
+   Particle maj, -2;
+   Particle glu, +3;
+   Vertex gho,glu,glu: g;
+EndModel;
+Vector q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12,q13,q14,q15,q16,q17,q18,q19,q20,q21,q22,q23,q24;
+Vector p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19,p20,p21,p22,p23,p24;
+
+Local t = 1;
+Print t;
+.end
+assert runtime_error?('illegal Dirac/Majorana/Ghost interaction')
+*--#] cov_gdiag_ferm_ghost_open :
+
