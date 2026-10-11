@@ -9677,3 +9677,429 @@ assert preprocess_error?('Improper operator fo')
 assert preprocess_error?('Illegal string for')
 *--#] cov_nsuse_8 :
 
+*--#[ cov_powset_7 :
+* farm probe 0025_powset_15 (+5 lines)
+* probe: clean
+Symbol x,a,b,n;
+Set s: a,b;
+CFunction f,g;
+Local t = f(x^a) + f(x^b) + f(x^3);
+id f(x^n?s) = g(x^n);
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("f(x^3) + f((x)^(a)) + f((x)^(b))")
+*--#] cov_powset_7 :
+
+*--#[ cov_epstrace :
+* farm probe 0006_epstrace_81 (+15 lines)
+* probe: clean
+AutoDeclare Vector p;
+Local test = e_(p1,p2,p3,p4)*g_(1,p1,p2,p3,p4)*g_(1,p1,p2,p3,p4);
+trace4,1;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("4*e_(p1,p2,p3,p4)*p1.p1*p2.p2*p3.p3*p4.p4 - 8*e_(p1,p2,p3,p4)*p1.p1* p2.p2*p3.p4^2 + 16*e_(p1,p2,p3,p4)*p1.p1*p2.p3*p2.p4*p3.p4 - 8*e_(p1,p2, p3,p4)*p1.p1*p2.p3^2*p4.p4 - 8*e_(p1,p2,p3,p4)*p1.p1*p2.p4^2*p3.p3 + 16* e_(p1,p2,p3,p4)*p1.p2*p1.p3*p2.p3*p4.p4 - 32*e_(p1,p2,p3,p4)*p1.p2*p1.p3 *p2.p4*p3.p4 + 16*e_(p1,p2,p3,p4)*p1.p2*p1.p4*p2.p4*p3.p3 - 8*e_(p1,p2, p3,p4)*p1.p2^2*p3.p3*p4.p4 + 16*e_(p1,p2,p3,p4)*p1.p2^2*p3.p4^2 + 16*e_( p1,p2,p3,p4)*p1.p3*p1.p4*p2.p2*p3.p4 - 32*e_(p1,p2,p3,p4)*p1.p3*p1.p4* p2.p3*p2.p4 - 8*e_(p1,p2,p3,p4)*p1.p3^2*p2.p2*p4.p4 + 16*e_(p1,p2,p3,p4) *p1.p3^2*p2.p4^2 - 8*e_(p1,p2,p3,p4)*p1.p4^2*p2.p2*p3.p3 + 16*e_(p1,p2, p3,p4)*p1.p4^2*p2.p3^2")
+*--#] cov_epstrace :
+
+*--#[ cov_bigtrace :
+* farm probe 0006_bigtrace_82 (+17 lines)
+* probe: clean
+AutoDeclare Vector p;
+Local test = g_(1,p1,p2,p1,p2,p3,p4,p3,p4,p1,p2);
+trace4,1;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("12*p1.p1*p1.p2*p2.p2*p3.p3*p4.p4 - 24*p1.p1*p1.p2*p2.p2*p3.p4^2 + 8* p1.p1*p1.p3*p2.p2*p2.p4*p3.p4 - 8*p1.p1*p1.p4*p2.p2*p2.p3*p3.p4 - 32* p1.p2^2*p1.p3*p2.p4*p3.p4 + 32*p1.p2^2*p1.p4*p2.p3*p3.p4 - 16*p1.p2^3* p3.p3*p4.p4 + 32*p1.p2^3*p3.p4^2")
+*--#] cov_bigtrace :
+
+*--#[ cov_mkint_big :
+* farm probe 0008_mkint_big_63 (+5 lines)
+* probe: clean
+CFunction f,g;
+Local test = f(1/1000000000000000000000)*g(1/999999999999999999997);
+MakeInteger f,g;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("1/999999999999999999997000000000000000000000*f(1)*g(1)")
+*--#] cov_mkint_big :
+
+*--#[ cov_bigexp_10 :
+* large expansion inside Substitute; attempts workspace check path 654-658
+* probe: clean
+* large expansion inside Substitute; attempts workspace check path 654-658
+Symbol x,y;
+CFunction f;
+Local test = f(x);
+id f(x?) = (y+1)^50000;
+.end
+assert runtime_error?
+*--#] cov_bigexp_10 :
+
+*--#[ cov_g5g7 :
+* farm probe 0006_g5g7_71 (+7 lines)
+* probe: clean
+AutoDeclare Vector p;
+Local test = g5_(1,p1,p2)*g7_(1,p3,p4);
+trace4,1;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("- 4*p1.p2*p3.p4 + 4*p1.p3*p2.p4 - 4*p1.p4*p2.p3 + 4*e_(p1,p2,p3,p4)")
+*--#] cov_g5g7 :
+
+*--#[ cov_g6g6 :
+* farm probe 0006_g6g6_72 (+8 lines)
+* probe: clean
+AutoDeclare Vector p;
+Local test = g6_(1,p1,p2)*g6_(1,p3,p4);
+trace4,1;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("8*p1.p2*p3.p4 - 8*p1.p3*p2.p4 + 8*p1.p4*p2.p3 + 8*e_(p1,p2,p3,p4)")
+*--#] cov_g6g6 :
+
+*--#[ cov_0017_ns_fn_3 :
+* farm probe 0127_0017_ns_fn_42 (+39 lines)
+* probe: clean
+#namespace wrk
+Symbol x,y;
+CFunction f,g;
+Local test = f(x,y);
+id f(x?,y?) = g(y,x);
+Print;
+#endnamespace
+.end
+assert succeeded?
+assert result("test") =~ expr("g(y,x)")
+*--#] cov_0017_ns_fn_3 :
+
+*--#[ cov_brmixed :
+* farm probe 0053_brmixed_94 (+12 lines)
+* probe: clean
+Symbol x,y,z;
+Vector p,q,r;
+Index i1,i2;
+CFunction f,g;
+Set v: p,q;
+Set s: x,y;
+Set F: f;
+Local t = f(x)*p.q*r(i1)*g(z)*x;
+Bracket s,v,F;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("+ f(x)*p.q*x * ( g(z)*r(i1) )")
+*--#] cov_brmixed :
+
+*--#[ cov_dolfact_count :
+* farm probe 0052_dolfact_count_66 (+8 lines)
+* runtime $-variables force sequential mode under threads
+* probe: clean
+Symbol x;
+CFunction f;
+Local test = f(1,2,3);
+$x = f(1,2,3);
+Print;
+.sort
+If ( $x[0] == 1 ) Print "nf";
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?
+*--#] cov_dolfact_count :
+
+*--#[ cov_sub_loopcounter_index :
+* farm probe 0023_sub_loopcounter_index_81 (+9 lines)
+* probe: clean
+Symbol x;
+Index i;
+Local F = sum_(i,1,10,x^i);
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("x + x^2 + x^3 + x^4 + x^5 + x^6 + x^7 + x^8 + x^9 + x^10")
+*--#] cov_sub_loopcounter_index :
+
+*--#[ cov_abs_num :
+* farm probe 0003_abs_num_88 (+8 lines)
+* probe: clean
+Local test = abs_(-2/3);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("2/3")
+*--#] cov_abs_num :
+
+*--#[ cov_select_tempset :
+* farm probe 0054_select_tempset_60 (+8 lines)
+* probe: clean
+Symbol x,y;
+Local t = x;
+id, select, {x,y}, x = y;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("y")
+*--#] cov_select_tempset :
+
+*--#[ cov_brfuncnc :
+* farm probe 0053_brfuncnc_87 (+8 lines)
+* probe: clean
+Symbol x,y,z;
+Function f,g,h;
+Set F: f,g;
+Local t = f(x)*g(y)*h(z);
+Bracket F;
+Print;
+.end
+assert succeeded?
+assert result("t") =~ expr("+ f(x)*g(y) * ( h(z) )")
+*--#] cov_brfuncnc :
+
+*--#[ cov_20b4_tablerange :
+* expected: table index out of range error
+* probe: error
+* expected: table index out of range error
+Symbol i;
+Table t(1:3);
+Local test = t(7);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("t(7)")
+*--#] cov_20b4_tablerange :
+
+*--#[ cov_prfinddiv_clean_4 :
+* farm probe 0176_prfinddiv_clean_27 (+21 lines)
+* probe: clean
+Symbol x;
+CFunction rat,den;
+PolyRatFun rat,den(finddivergence,x);
+Local test = rat(x,1);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("rat(x,1)")
+*--#] cov_prfinddiv_clean_4 :
+
+*--#[ cov_hide_copy :
+* copy from a hidden (file based) expression into a memory expression
+* probe: clean
+* copy from a hidden (file based) expression into a memory expression
+#:scratchsize 1000
+Symbol x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,x18,x19,x20,x21,x22,x23,x24;
+Local a = (x1+x2)^2*(x3+x4)^2*(x5+x6)^2*(x7+x8)^2*(x9+x10)^2*(x11+x12)^2*(x13+x14)^2*(x15+x16)^2*(x17+x18)^2*(x19+x20)^2*(x21+x22)^2*(x23+x24)^2;
+Local b = 0;
+.sort
+.hide a;
+.copy a b;
+.sort
+Print;
+.end
+assert preprocess_error?('Unrecognized module termina')
+*--#] cov_hide_copy :
+
+*--#[ cov_setup_basic :
+* trigger WriteSetup via the 'setup' on/off setup parameter
+* probe: clean
+* trigger WriteSetup via the 'setup' on/off setup parameter
+On setup;
+Symbol x;
+Local test = x^2+1;
+Print test;
+.end
+assert succeeded?
+assert result("test") =~ expr("1 + x^2")
+*--#] cov_setup_basic :
+
+*--#[ cov_illegal_param_type :
+* expected: Illegal expression parameter
+* probe: error
+* expected: Illegal expression parameter
+Symbol x,y;
+Local F = x;
+Local G = F(1);
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("x")
+assert result("G") =~ expr("x")
+*--#] cov_illegal_param_type :
+
+*--#[ cov_09ad0cf7_ns_use :
+* alternative syntax guess for the usename mechanism
+* probe: clean
+* alternative syntax guess for the usename mechanism
+#namespace ns
+#use x
+Symbol x;
+Local test = x;
+Print;
+#endnamespace
+.end
+assert succeeded?
+assert result("test") =~ expr("x")
+*--#] cov_09ad0cf7_ns_use :
+
+*--#[ cov_all_norm :
+* farm probe 0054_all_norm_65 (+6 lines)
+* probe: clean
+Symbol x,y;
+Local t = x*y;
+id, all(normalize), x = y;
+Print;
+.end
+assert runtime_error?
+*--#] cov_all_norm :
+
+*--#[ cov_dealloc_sparse_1neg :
+* alternative sparse syntax hedge: Table s(1,-5)
+* probe: clean
+* alternative sparse syntax hedge: Table s(1,-5)
+Symbol x;
+Table s(1,-5);
+Fill s(3) = x;
+Local F = s(3);
+Print F;
+DeallocateTable s;
+Print F;
+.end
+assert compile_error?('s( should be')
+*--#] cov_dealloc_sparse_1neg :
+
+*--#[ cov_rat_gambit_ratiostmt :
+* farm probe 0128_rat_gambit_ratiostmt_85 (+7 lines)
+* probe: clean
+Symbol x,y;
+Local t1 = (x+1)/(x^2+1);
+Ratio t1;
+Print t1;
+.end
+assert compile_error?('t1 is not')
+*--#] cov_rat_gambit_ratiostmt :
+
+*--#[ cov_redefine_args :
+* farm probe 0182_redefine_args_59 (+15 lines)
+* probe: clean
+#define ff(a,b) "a+b"
+Symbol x;
+Local g = ff(2,3)*x;
+Redefine ff(a , b ) = "a-b";
+Local h = ff(2,3)*x;
+Print;
+.end
+assert compile_error?('Undeclared variable ff')
+*--#] cov_redefine_args :
+
+*--#[ cov_multibracket_b_3 :
+* alternative MultiBracket syntax attempt
+* probe: clean
+* alternative MultiBracket syntax attempt
+Symbols x,y;
+CFunction f;
+Local t = f(x,y);
+MultiBracket;
+Bracket x,y;
+Print;
+.sort
+.end
+assert compile_error?('Illegal Multiple Brack')
+*--#] cov_multibracket_b_3 :
+
+*--#[ cov_seteq_syntax_10 :
+* farm probe 0066_seteq_syntax_15 (+10 lines)
+* probe: clean
+Set sortsize = 200;
+Set scratchsize = 200;
+Symbol a1,a2,a3;
+Local F = (a1+a2+a3)^5;
+Local G = 1;
+.sort
+.copy F to G;
+.sort
+Print G;
+.end
+assert preprocess_error?('Unrecognized module term')
+*--#] cov_seteq_syntax_10 :
+
+*--#[ cov_dotail_pipe_14 :
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* probe: clean
+* DoTail -pipe option; child hits initPresetExternalChannels error path
+* expected child message fragment: Error initializing preset external channels
+#system cd $TESTFILEDIR && echo .end > $TESTTMPDIR/cvf4.frm; $FORM -pipe $TESTTMPDIR/cvf4.frm < /dev/null; true
+Symbol ok;
+Local ok = 1;
+Print;
+.end
+assert compile_error?('name of expression')
+*--#] cov_dotail_pipe_14 :
+
+*--#[ cov_setidx_cvector_type :
+* farm probe 0081_setidx_cvector_type_59 (+12 lines)
+* probe: clean
+Symbol n;
+Vector v;
+CFunction f;
+Set s: v;
+Local F = f(s[n]);
+Print;
+.end
+assert compile_error?('Set index in')
+*--#] cov_setidx_cvector_type :
+
+*--#[ cov_setidx_paren_scan :
+* farm probe 0081_setidx_paren_scan_56 (+7 lines)
+* probe: clean
+Symbol x,n;
+CFunction f;
+Set v: x;
+Local F = f(v[n]+v[n]);
+Print;
+.end
+assert compile_error?('Set index in')
+*--#] cov_setidx_paren_scan :
+
+*--#[ cov_setidx_rbrace_scan :
+* farm probe 0081_setidx_rbrace_scan_55 (+5 lines)
+* probe: clean
+Symbol x,n;
+CFunction f;
+Set v: x;
+Local F = f(v[n],v[n]);
+Print;
+.end
+assert compile_error?('Set index in')
+*--#] cov_setidx_rbrace_scan :
+
+*--#[ cov_clear_dict :
+* farm probe 0175_clear_dict_63 (+25 lines)
+* probe: clean
+#OpenDictionary dc
+#define y 5
+#CloseDictionary
+Local test = y;
+Print;
+.clear
+.end
+assert preprocess_error?('Illegal string for')
+*--#] cov_clear_dict :
+
+*--#[ cov_setup_incdir_comma :
+* set incdir via #appendpath so the incdir branch of WriteSetup is hit
+* probe: clean
+* set incdir via #appendpath so the incdir branch of WriteSetup is hit
+#appendpath "incdir",/tmp;
+On setup;
+Symbol x;
+Local test = x;
+Print;
+.end
+assert preprocess_error?('Improper syntax fo')
+*--#] cov_setup_incdir_comma :
+
