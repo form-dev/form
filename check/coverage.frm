@@ -10933,3 +10933,265 @@ Print;
 assert compile_error?('Illegal Multiple Brack')
 *--#] cov_multibracket_b_5 :
 
+*---[ Census round S5: folds from scored probes (census deck + covfix batch) ]---
+
+*--#[ cov_bernpair :
+* bernoulli_: large one-argument form, two-argument signed form, symbol argument
+Symbol x;
+Local a = bernoulli_(10);
+Local b = bernoulli_(1,-1);
+Local c = bernoulli_(2,1);
+Local d = bernoulli_(x);
+Print;
+.end
+assert succeeded?
+assert result("a") =~ expr("1/47900160")
+assert result("b") =~ expr("-1/2")
+assert result("c") =~ expr("1/12")
+assert result("d") =~ expr("bernoulli_(x)")
+*--#] cov_bernpair :
+
+*--#[ cov_gammapatsubset :
+* gamma_ pattern matching only a subset of the arguments
+Vector p,q,r;
+Function h;
+Local test = g_(1,p,q,r);
+id g_(1,p?) = h(p);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("h(p)*h(q)*h(r)")
+*--#] cov_gammapatsubset :
+
+*--#[ cov_tabledealloc :
+* sparse table filled via FillExpression, then freed by DeallocateTable
+Symbol x,y;
+Table sparse t(2);
+Local e = (x*y)*(1+x+y);
+Bracket x,y;
+.sort
+FillExpression t = e(x,y);
+Local f = t(1,1)+t(1,2)+t(2,1);
+Print f;
+.sort
+DeallocateTable t;
+.end
+assert succeeded?
+assert result("f") =~ expr("3")
+*--#] cov_tabledealloc :
+
+*--#[ cov_factoroptchar :
+* illegal option character in a Factorize statement
+Symbol x;
+Local test = x^2;
+Factorize(zero+);
+.end
+assert compile_error?('Illegal character in option')
+*--#] cov_factoroptchar :
+
+*--#[ cov_ncfunterm :
+* commuting and noncommuting functions mixed in one term
+Symbol x,y,z;
+CFunction f;
+NFunction g;
+Local expr = f(x,y) + g(z,x) + f(y,x);
+id f(x,y) = f(x,z);
+id g(z,x) = g(x,y);
+Print;
+.end
+assert succeeded?
+assert result("expr") =~ expr("f(x,z) + f(y,x) + g(x,y)")
+*--#] cov_ncfunterm :
+
+*--#[ cov_isdefined :
+* isdefined() in #if with a defined and an undefined preprocessor variable
+#define pv 7
+#if isdefined(pv) == 1
+#message pv is defined
+#endif
+#if isdefined(zzqnovar) == 0
+#message zzqnovar is not defined
+#endif
+.end
+assert preprocess_error?('Illegal string for')
+*--#] cov_isdefined :
+
+*--#[ cov_isfactorizedillegal :
+* illegal object in isfactorized() runtime condition
+Symbol x;
+Local F = x;
+if ( isfactorized(123) ) F = 1;
+.end
+assert compile_error?('Illegal object in IsFactorized')
+*--#] cov_isfactorizedillegal :
+
+*--#[ cov_longstr :
+* very long string constant in a #write instruction
+#write "abcdefghijklmnopqrstuvwxyz0123456789ABCDabcdefghijklmnopqrstuvwxyz0123456789ABCDabcdefghijklmnopqrstuvwxyz0123456789ABCDabcdefghijklmnopqrstuvwxyz0123456789ABCDabcdefghijklmnopqrstuvwxyz0123456789ABCDabcdefghijklmnopqrstuvwxyz0123456789ABCDabcdefghijklmnopqrstuvwxyz0123456789ABCDabcdefghijklmnopqrstuvwxyz0123456789ABCDabcdefghijklmnopqrstuvwxyz0123456789ABCDabcdefghijklmnopqrstuvwxyz0123456789ABCD"
+.end
+assert succeeded?
+*--#] cov_longstr :
+
+*--#[ cov_modalsofun :
+* Modulus alsofunctions: modulus applied to function arguments
+CFunction f;
+Modulus alsofunctions,5;
+Local test = f(8)+2;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("2 + f(3)")
+*--#] cov_modalsofun :
+
+*--#[ cov_modminus :
+* illegal (non-positive) value in a Modulus statement
+Modulus -x;
+.end
+assert compile_error?('Invalid value for modulus')
+*--#] cov_modminus :
+
+*--#[ cov_nslongname :
+* namespace and preprocessor variable names long enough to overflow the fullname buffer
+#namespace aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+#define vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv 1
+#endnamespace
+Local t = 1;
+Print;
+.end
+assert preprocess_error?('Illegal string for')
+*--#] cov_nslongname :
+
+*--#[ cov_repfunantisym :
+* replacing antisymmetric functions with reversed argument patterns
+Functions f(antisymmetric), g;
+Symbol x,y,z,w;
+Local test = f(2,1)*f(4,3);
+id f?(x?,y?)*f?(z?,w?) = g(x,y,z,w);
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("g(2,1,4,3)")
+*--#] cov_repfunantisym :
+
+*--#[ cov_tfseterr :
+* set of non-function objects in a Transform statement
+Set myset: x,y;
+Symbol x,y;
+Local F = f(1,2);
+Transform myset f;
+Print;
+.end
+assert compile_error?('should be a set of functions')
+*--#] cov_tfseterr :
+
+*--#[ cov_setskipagain :
+* set declaration plus an id pattern whose second template starts at a fixed argument
+Symbol a,b,c;
+CFunction f;
+Set s1: a,b;
+Local expr = f(a,c,a);
+id f(a?, c, a?) = 1;
+Print;
+.end
+assert succeeded?
+assert result("expr") =~ expr("1")
+*--#] cov_setskipagain :
+
+*--#[ cov_unfactorall :
+* bare UnFactorize statement without arguments: loops over all expressions
+Symbol x,y;
+Local test = x^2*y + y^3;
+UnFactorize;
+Print;
+.end
+assert succeeded?
+assert result("test") =~ expr("y^3 + x^2*y")
+*--#] cov_unfactorall :
+
+*--#[ cov_wmissquote :
+* unterminated string in a #write instruction at end of program
+#write "%s" "abc
+.end
+assert warning?('end instruction generated')
+*--#] cov_wmissquote :
+
+*--#[ cov_factargdeltavec :
+* FactArg on terms with a delta and a vector index in every argument
+Symbol x,y;
+Vector v;
+Index i,j,k;
+CFunction f;
+Local F = f(d_(i,j)*v(k)*x + d_(i,j)*v(k)*y);
+FactArg f;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("f(y + x,v(k),d_(i,j))")
+*--#] cov_factargdeltavec :
+
+*--#[ cov_setmemberidx :
+* IsSetMember via preprocessor $( ): index fixed sets
+Vector v;
+Index i,j;
+#if $( i == set_(index_) )
+Local A = 1;
+#endif
+#if $( i == set_(fixed_) )
+Local B = 1;
+#endif
+#if $( i == set_(dummyindices_) )
+Local C = 1;
+#endif
+#if $( v(i) == set_(vector_) )
+Local D = 1;
+#endif
+Print;
+.end
+assert succeeded?
+assert result("A") =~ expr("1")
+*--#] cov_setmemberidx :
+
+*--#[ cov_setmembernum :
+* IsSetMember via preprocessor $( ): integer fixed sets
+#if $( 5 == set_(pos_) )
+Local A = 1;
+#endif
+#if $( -5 == set_(neg_) )
+Local B = 1;
+#endif
+#if $( 0 == set_(pos0_) )
+Local C = 1;
+#endif
+#if $( -2 == set_(neg0_) )
+Local D = 1;
+#endif
+#if $( 4 == set_(even_) )
+Local E = 1;
+#endif
+#if $( 3 == set_(odd_) )
+Local F = 1;
+#endif
+#if $( 7 == set_(int_) )
+Local G = 1;
+#endif
+#if $( 3/2 == set_(number_) )
+Local H = 1;
+#endif
+Print;
+.end
+assert succeeded?
+assert result("A") =~ expr("1")
+assert result("H") =~ expr("1")
+*--#] cov_setmembernum :
+
+*--#[ cov_symbolssetwild :
+* symbol wildcard replacement with a declared symbol set present
+Symbol x,y,z;
+Set S: x;
+Local F = x*y + z*y;
+id y? = 1;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("z + y")
+*--#] cov_symbolssetwild :
