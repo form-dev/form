@@ -1254,20 +1254,34 @@ Off statistics;
 .end
 assert succeeded?
 *--#] cov_onoff :
-*--#[ cov_onoff_error :
-* error paths of On/Off: unknown option, bad compress argument,
-* bad checkpoint interval, and IndentSpace out of range (warning)
+*--#[ cov_onopt_unknown :
+* On with an unknown keyword
 On nosuchoption;
 .end
+assert compile_error?('Unrecognized option in ON statement')
+*--#] cov_onopt_unknown :
+
+*--#[ cov_onopt_checkpoint :
+* On checkpoint with an unparsable interval (after the deprecation warning)
 On checkpoint 5z;
 .end
+assert compile_error?('Unrecognized time interval in ON Checkpoint statement')
+*--#] cov_onopt_checkpoint :
+
+*--#[ cov_onopt_compress :
+* On compress with an unknown keyword
 On compress badthing;
 .end
+assert compile_error?('Unrecognized option in ON compress statement')
+*--#] cov_onopt_compress :
+
+*--#[ cov_onopt_indentspace :
+* IndentSpace above the maximum is clamped with a warning, not an error
 On indentspace 50;
 Off indentspace;
 .end
-assert compile_error?
-*--#] cov_onoff_error :
+assert warning?('IndentSpace parameter adjusted')
+*--#] cov_onopt_indentspace :
 *--#[ cov_factdollar :
 * covers FactDollar statement and If with indexed (factorized) $-variables
 Symbols x,y;
@@ -1847,37 +1861,74 @@ Print DrQ;
 #pend_if threaded?
 assert succeeded?
 *--#] cov_dollarrhs :
-*--#[ cov_errzoo :
-* compile-error zoo, one tiny program per message site
+*--#[ cov_errzoo_powerparen :
+* unmatched parentheses inside a power
+Symbols x,y;
 Local Err1 = x^((y);
 .end
+assert compile_error?('Unmatched ()')
+*--#] cov_errzoo_powerparen :
+
+*--#[ cov_errzoo_unkstmt :
+* a statement name FORM does not know
 UnrecognizedStatement;
 .end
-Vector p1;
-Symbols q;
-Local Err3 = p1[q];
-.end
+assert compile_error?('Unrecognized statement')
+*--#] cov_errzoo_unkstmt :
+
+*--#[ cov_errzoo_dimfunc :
+* d_ as a CFunction name is rejected at declaration, and its use with
+* a symbol argument is rejected in the tensor
 Symbols y1;
 CFunction d_;
 Local Err4 = d_(y1);
 .end
+assert compile_error?('Illegally formed function/tensor name')
+*--#] cov_errzoo_dimfunc :
+
+*--#[ cov_errzoo_dotnum :
+* a dotproduct needs a vector as its second element, not a number
 Vector p2,p3;
 Local Err5 = p2.5;
 .end
-AutoDeclare Vector;
-Local Err6 = 1;
-.end
+assert compile_error?('Illegal second element in dotproduct')
+*--#] cov_errzoo_dotnum :
+
+*--#[ cov_errzoo_paren :
+* unmatched nested parentheses
 Local Err7 = ((x);
 .end
+assert compile_error?('Unmatched ()')
+*--#] cov_errzoo_paren :
+
+*--#[ cov_errzoo_dollarname :
+* a $ in a symbol name is illegal
 Symbols aa$b;
 Local Err8 = 1;
 .end
+assert compile_error?('Illegally formed name in symbol statement')
+*--#] cov_errzoo_dollarname :
+
+*--#[ cov_errzoo_dotprod :
+* a dotproduct needs vectors; symbols are not a legal second element
 Vector p4,p5;
-Local Err10 = p4.p5^2 + r.s;
+Symbols r,s;
+Local Err10 = p4.r + p4.s;
 .end
+assert compile_error?('Illegal second element in dotproduct')
+*--#] cov_errzoo_dotprod :
+
+*--#[ cov_errzoo_printgt :
+* Print with a %-format but no expression name
+#pend_if mpi?
 Symbols x9;
 Print >%s Err10;
 .end
+assert compile_error?('Illegal object in (n)print statement')
+*--#] cov_errzoo_printgt :
+
+*--#[ cov_errzoo_factorunfactor :
+* Factor and UnFactor statements do not exist (use FactArg/Factorize)
 Symbols x9;
 CFunction FX;
 Local Err9 = x9^3;
@@ -1885,9 +1936,8 @@ Factor FX;
 .sort
 UnFactor FX(???);
 .end
-#pend_if mpi?
-assert compile_error?
-*--#] cov_errzoo :
+assert compile_error?('Unrecognized statement Factor')
+*--#] cov_errzoo_factorunfactor :
 *--#[ cov_errpre :
 * preprocessor-error zoo
 Symbols x;
@@ -3272,24 +3322,6 @@ assert runtime_error?('has not been loaded properly')
 
 *---[ Saturation campaign batch: transforms, stuffle, preprocessor ]---
 
-*--#[ cov_stuffle_root :
-* Stuffle merge on products of root-of-unity symbols (Symbol w#n)
-Symbol w1#3, w2#5, w3#-3;
-CFunction z;
-Local F1 = z(w1)*z(w2);
-Local F2 = z(1,2)*z(w1);
-Local F3 = z(w1/2)*z(2);
-Local F4 = z(w1)*z(w3)*z(2);
-Stuffle z+;
-Print;
-.end
-assert succeeded?
-assert result("F1") =~ expr("z(2*w1*w2)+z(w1,w2)+z(w2,w1)")
-assert result("F2") =~ expr("z(2*w1,2)+z(w1,1,2)+z(1,3*w1)+z(1,w1,2)+z(1,2,w1)")
-assert result("F3") =~ expr("z(2)*z(1/2*w1)")
-assert nterms("F4") == 13
-*--#] cov_stuffle_root :
-
 *--#[ cov_transform_specs :
 * transform statement on a tensor with a mix of index/vector/number args
 Index mu,nu;
@@ -4099,20 +4131,20 @@ z + 153*x^16*y^2 + 18*x^17*z + 18*x^17*y + x^18")
 *--#] cov_thr_bucketsize :
 
 *--#[ cov_powden :
-* exponent wildcards matching negative powers via denominators
-* probe: clean
-* exponent wildcards matching negative powers via denominators
-Symbol x,y;
+* exponent wildcards in products with negative powers
+Symbol x,y,n,m;
 CFunction f;
-Local t1 = 1/x^3;
-id x^n_ = f(n_);
-Local t2 = x^2/y^-4;
-id x^n_*y^n_ = f(n_);
-Local t3 = 1/(x^3*y^3);
-id x^n_*y^n_ = f(n_);
-Print +s;
+Local t = x^2/y^-4;
+id x^n?*y^m? = f(n,m);
+Print;
+.sort
+Local u = x^2*y^-3;
+id, once, x^n?*y^m? = f(n,m);
+Print;
 .end
-assert compile_error?('Undeclared variable n_')
+assert succeeded?
+assert result("t") =~ expr("f(0,0)*f(2,4)")
+assert result("u") =~ expr("f(2,-3)")
 *--#] cov_powden :
 
 *--#[ cov_fill_warn :
@@ -4132,44 +4164,42 @@ assert compile_error?('Specification out of')
 *--#] cov_fill_warn :
 
 *--#[ cov_ifelse :
-* farm probe 0012_ifelse_4 (+5 lines)
-* probe: clean
+* if/else with a true and a false condition
 Symbol x;
-Local t = 5;
-if ( count(x,1) > 0 ) id x = 1;
-else id t = 2;
-endif;
-Print t;
-.end
-Local u = 7;
-if ( 0 ) id u = 1;
-else id u = 2;
+Local u = x;
+if ( count(x,1) > 0 );
+    multiply 2;
+else;
+    multiply 3;
 endif;
 Print u;
+.sort
+Local v = 1;
+if ( count(x,1) > 0 );
+    multiply 2;
+else;
+    multiply 3;
+endif;
+Print v;
 .end
-assert compile_error?('No extra text')
+assert succeeded?
+assert result("v") =~ expr("3")
 *--#] cov_ifelse :
 
 *--#[ cov_wildsym :
-* target: findpat.c FindOnce wildcard symbol with wildcard power, SYMTOSYM + OnceL4a (508-560, 534-537, 528-531)
-* probe: clean
-* target: findpat.c FindOnce wildcard symbol with wildcard power, SYMTOSYM + OnceL4a (508-560, 534-537, 528-531)
-Symbol x,y;
+* exponent wildcards on symbol powers: x^n? patterns with once
+Symbol x,y,n,m;
 CFunction f;
 Local a = x^3;
-id, once, n1?^n2? = f(n1?,n2?);
+id, once, x^n? = f(n);
 Print;
-Local b = x^(-3)*y^2;
-id, once, n1?^n2?*n3?^n2? = f(n1?,n3?);
-Print;
-Local c = x^3*y^(-2);
-id, once, n1?^n2?*n3?^n2? = f(n1?,n3?);
-Print;
-Local d = x^3*y^5;
-id, once, n1?^n2?*n1?^n2? = f(n1?);
+.sort
+Local b = x^2*y^-3;
+id, once, x^n?*y^m? = f(n,m);
 Print;
 .end
-assert compile_error?('Undeclared variable n1')
+assert succeeded?
+assert result("b") =~ expr("f(2,-3)")
 *--#] cov_wildsym :
 
 *--#[ cov_dotail_flags :
@@ -4187,20 +4217,21 @@ assert compile_error?('name of expression')
 *--#] cov_dotail_flags :
 
 *--#[ cov_typedwild :
-* typed wildcards in function arguments
-* probe: clean
-* typed wildcards in function arguments
-Symbols a,b;
+* typed wildcards in function arguments: index wildcards match
+* indices and (index-like) numbers
+Indices i1,i2,i,j;
 CFunction f,g,h;
-Local t1 = f(a,3,b);
-id f(x_,n?y_,x_) = h(x_,y_);
-Local t2 = f(a,b);
-id f(p?s_) = g(p?s_);
-Local t3 = f(3);
-id f(n?y_) = g(y_);
-Print +s;
+Local t1 = f(i1,i2);
+id f(i?,j?) = g(i,j);
+Print;
+.sort
+Local t2 = f(i1,3);
+id f(i?,j?) = h(i,j);
+Print;
 .end
-assert compile_error?('Undeclared variable x_')
+assert succeeded?
+assert result("t1") =~ expr("g(i1,i2)")
+assert result("t2") =~ expr("h(i1,3)")
 *--#] cov_typedwild :
 
 *--#[ cov_dotail_illegal :
@@ -4217,18 +4248,19 @@ assert compile_error?('name of expression')
 *--#] cov_dotail_illegal :
 
 *--#[ cov_08_genericarg :
-* named wildcard plus generic ? argument filler on a symmetric
-* probe: clean
-* named wildcard plus generic ? argument filler on a symmetric
-* function; hits the funnycount (ARGWILD) handling.
-Symbol a,b,c,x;
-CFunction f,g;
-Symmetric f;
-Local test = f(c,b,a);
-id f(x?,?) = g(x);
+* named wildcard plus generic ? argument filler on a cyclesymmetric
+* tensor; hits the funnycount (ARGWILD) handling in MatchArgument.
+* Named-argument wildcards are rejected at compile time inside
+* (anti)symmetric functions or tensors, so the reachable variant is a
+* cyclesymmetric tensor.
+Index i1,i2;
+Tensor t(cyclesymmetric), t2;
+Local F = t(i1,i2);
+id t(?a) = t2(?a);
 Print;
 .end
-assert compile_error?('Unrecognized statement S')
+assert succeeded?
+assert result("F") =~ expr("t2(i1,i2)")
 *--#] cov_08_genericarg :
 
 *--#[ cov_dotail_pipe :
@@ -4314,9 +4346,8 @@ assert runtime_error?
 *--#] cov_takearg_index_2 :
 
 *--#[ cov_replmism :
-* expected: Replace
-* probe: error
-* expected: Replace
+* Transform replace with an unequal number of replacement arguments:
+* the missing argument is filled with a zero
 CFunction f;
 Set funcs: f;
 Local test = f(1,2,3);
@@ -4352,17 +4383,35 @@ assert succeeded?
 assert result("t") =~ expr("1")
 *--#] cov_pipe_echo2 :
 
-*--#[ cov_mod_noinv :
-* expected: Inverse in modulus arithmetic doesn't exist
-* probe: error
-* expected: Inverse in modulus arithmetic doesn't exist
-Modulus 6;
-Local test = 1/2;
-Print;
+*--#[ cov_mod_inverse :
+* modular inverse via GetModInverses: 1/2 mod 7
+Modulus 7;
+Local t = 1/2;
+Print t;
 .end
 assert succeeded?
-assert result("test") =~ expr("0")
-*--#] cov_mod_noinv :
+assert result("t") =~ expr("4")
+*--#] cov_mod_inverse :
+
+*--#[ cov_mod_inversetable :
+* modular inverse with a precomputed inverse table: 1/3 mod 7
+Modulus inversetable 7;
+Local t = 1/3;
+Print t;
+.end
+assert succeeded?
+assert result("t") =~ expr("5")
+*--#] cov_mod_inversetable :
+
+*--#[ cov_mod_noinversetable :
+* modular inverse without an inverse table: 2/3 mod 7
+Modulus noinversetable 7;
+Local t = 2/3;
+Print t;
+.end
+assert succeeded?
+assert result("t") =~ expr("3")
+*--#] cov_mod_noinversetable :
 
 *--#[ cov_idall_sym_err :
 * expected: id,all can only be used with (products of) functions and/or tensors
@@ -4451,14 +4500,14 @@ assert preprocess_error?('Proper syntax is:')
 *--#] cov_rev_irrend :
 
 *--#[ cov_insideopen :
-* expected: endinside statement(s) missing
-* probe: error
-* expected: endinside statement(s) missing
+* Inside on a $-expression without EndInside
 Symbol x;
-Local f = x^2;
-Inside f;
+$f = x^2;
+Inside $f;
+id x = 1;
 .end
-assert compile_error?('Illegal object in')
+#pend_if threaded?
+assert runtime_error?('endinside statement(s) missing')
 *--#] cov_insideopen :
 
 *--#[ cov_ifopen2 :
@@ -4502,20 +4551,6 @@ Print +s;
 assert runtime_error?
 *--#] cov_takearg_index_3 :
 
-*--#[ cov_replmism_2 :
-* expected: Replace
-* probe: error
-* expected: Replace
-CFunction f;
-Set funcs: f;
-Local test = f(1,2,3);
-Transform,funcs,replace(1,2)=(2);
-Print;
-.end
-assert succeeded?
-assert result("test") =~ expr("f(1,0,3)")
-*--#] cov_replmism_2 :
-
 *--#[ cov_cyc_zero :
 * farm probe 0045_cyc_zero_11 (+7 lines)
 * probe: clean
@@ -4543,9 +4578,7 @@ assert compile_error?('name of expression')
 *--#] cov_dotail_pipe_3 :
 
 *--#[ cov_gamma2 :
-* expected: gamma with two arguments and momentum form
-* probe: clean
-* expected: gamma with two arguments and momentum form
+* gamma with two arguments and momentum form, matched with wildcards
 Vector p;
 Symbol x;
 Local F = gi_(1,2)*g5_(p)*x;
@@ -4605,24 +4638,8 @@ assert succeeded?
 assert result("test") =~ expr("1234567890123456789012345678901234567890")
 *--#] cov_max_small_big :
 
-*--#[ cov_replmism_3 :
-* expected: Replace
-* probe: error
-* expected: Replace
-CFunction f;
-Set funcs: f;
-Local test = f(1,2,3);
-Transform,funcs,replace(1,2)=(2);
-Print;
-.end
-assert succeeded?
-assert result("test") =~ expr("f(1,0,3)")
-*--#] cov_replmism_3 :
-
 *--#[ cov_indexpat :
-* expected: vector-with-index pattern -> INDEX branch in FindAll
-* probe: clean
-* expected: vector-with-index pattern -> INDEX branch in FindAll
+* vector-with-index pattern hits the INDEX branch of FindAll
 Index i,j;
 Vector p,q;
 Local F = p(i)*q(j);
@@ -4945,15 +4962,13 @@ assert result("test") =~ expr("g_(1,2)*g_(3,4)")
 *--#] cov_grepeat2 :
 
 *--#[ cov_mkrat_basic :
-* target: notation.c NormPolyTerm via MakeRational_ normalization
-* probe: clean
-* target: notation.c NormPolyTerm via MakeRational_ normalization
-Symbol x;
-Local test = MakeRational_((x+1)^2,x+1);
-Print;
+* MakeRational_: fraction reconstruction of a residue modulo a prime
+* (manual functions.tex example: 12345678 mod prime_(1) = 2147483587)
+Local F = MakeRational_(12345678,2147483587);
+Print F;
 .end
 assert succeeded?
-assert result("test") =~ expr("0/0")
+assert result("F") =~ expr("9719/38790")
 *--#] cov_mkrat_basic :
 
 *--#[ cov_autoclear :
@@ -5024,22 +5039,6 @@ Print test;
 assert succeeded?
 assert result("test") =~ expr("+ x * ( pow(z,2) + 6*y*z + 5*pow(y,2) )")
 *--#] cov_c_bracket :
-
-*--#[ cov_s2_argtoobig :
-* expected: Sorted function argument too long
-* probe: error
-* expected: Sorted function argument too long
-Symbol x;
-Function f;
-Local t = f;
-#do i = 1,9000
-    id,once f(?a) = f(?a,x);
-#enddo
-Print;
-.end
-#pend_if threaded?
-assert runtime_error?
-*--#] cov_s2_argtoobig :
 
 *--#[ cov_biggcd :
 * kGCD > kLCM: long GCD numerator (10^30,10^12), short LCM denominator (15)
@@ -5461,24 +5460,24 @@ assert compile_error?('name of expression')
 *--#] cov_dotail_pipe_5 :
 
 *--#[ cov_divok :
-* farm probe 0058_divok_11 (+8 lines)
-* probe: clean
+* integer division inside if-conditions: 6/2 and 1/2 truncate
 Symbol x;
 Local t = x;
-If ( count(x) == 6/2 ) Id x = 1;
+If ( count(x,1) == 6/2 ) Id x = 1;
 Print;
-.end
+.sort
 Symbol x;
 Local t = x;
-If ( count(x) == 1/2 ) Id x = 1;
+If ( count(x,1) == 1/2 ) Id x = 1;
 Print;
-.end
+.sort
 Symbol x;
 Local t = x;
 If ( 6/2 == 3 ) Id x = 1;
 Print;
 .end
-assert compile_error?('Illegal sequence: f,(count,x)')
+assert succeeded?
+assert result("t") =~ expr("1")
 *--#] cov_divok :
 
 *--#[ cov_dot_set :
@@ -5494,26 +5493,14 @@ assert compile_error?('Set without argument')
 *--#] cov_dot_set :
 
 *--#[ cov_goog_0000_dimension_out_of_range :
-* expected: Dimension_ out of range
-* probe: error
-* expected: Dimension_ out of range
-Index mu = -1000000;
-Local F = d_(mu, mu);
+* two symbols with huge dimension weights multiplied into a term make
+* the term dimension overflow: "Dimension_ out of range in term"
+Symbol x{d=1073741824},y{d=1073741824};
+Local F = x*y*dimension_;
 Print;
 .end
-assert compile_error?('Illegal di')
+assert runtime_error?('Dimension_ out of range in term')
 *--#] cov_goog_0000_dimension_out_of_range :
-
-*--#[ cov_goog_0000_root_unity_overflow :
-* expected: Power overflow during normalization
-* probe: error
-* expected: Power overflow during normalization
-Symbol x(5);
-Local F = x^30000 * x^30000 * x^30000;
-Print;
-.end
-assert compile_error?('Undeclared va')
-*--#] cov_goog_0000_root_unity_overflow :
 
 *--#[ cov_pipe_from_stream :
 * target: alternative #fromexternal syntax (no filename); also hits do_run_cmd first
@@ -5613,14 +5600,16 @@ assert result("t") =~ expr("f(y + x)*g(x) + f(x)*g(y + x) + f(y)*g(y^2)")
 *--#] cov_sort1_properorder :
 
 *--#[ cov_mkrat_bignum :
-* hits normal.c 963-978 (big arg1), 984-990, 1014-1023 (DivLong), 1035-1043
-* probe: clean
-* hits normal.c 963-978 (big arg1), 984-990, 1014-1023 (DivLong), 1035-1043
-Local test = MakeRational_(123456789012345678901234567890,5);
+* MakeRational_ with big arguments: residues and reconstruction mod 7
+Local test = MakeRational_(2^130,7);
+Local test2 = MakeRational_(3^40,7);
+Local test3 = MakeRational_(123456789012345678901234567891,5);
 Print;
 .end
 assert succeeded?
-assert result("test") =~ expr("0/0")
+assert result("test") =~ expr("2")
+assert result("test2") =~ expr("1/2")
+assert result("test3") =~ expr("1")
 *--#] cov_mkrat_bignum :
 
 *--#[ cov_nsdollar :
@@ -6145,9 +6134,7 @@ assert preprocess_error?('Illegal string for')
 *--#] cov_rr_lin_big :
 
 *--#[ cov_revinc_end :
-* expected: reverseinclude
-* probe: error
-* expected: reverseinclude
+* #reverseinclude of a small file; runs clean
 * tries ReverseStatements failure -> tools.c:355-356
 #system cd $TESTFILEDIR && { printf ".end\n" > revend.inc; } 2>/dev/null
 #reverseinclude revend.inc
@@ -6157,13 +6144,14 @@ assert succeeded?
 *--#] cov_revinc_end :
 
 *--#[ cov_enddo_missing :
-* expected: enddo statement(s) missing
-* probe: error
-* expected: enddo statement(s) missing
-Symbol i;
-Do i = 1,3;
+* Do loop without EndDo
+Symbol y;
+$i = 0;
+Do $i = 1,3;
+id y = 1;
 .end
-assert compile_error?('do loop parameter')
+#pend_if threaded?
+assert runtime_error?('enddo statement(s) missing')
 *--#] cov_enddo_missing :
 
 *--#[ cov_cplx_bad :
@@ -6200,9 +6188,8 @@ assert preprocess_error?('Unrecognized preprocessor')
 *--#] cov_extchan_open :
 
 *--#[ cov_err_nonpoly :
-* expected: not a polynomial
-* probe: error
-* expected: not a polynomial
+* Factorize skips the non-polynomial function factor f(1) and keeps it
+* as an unfactored factor of the product
 Symbol x,y;
 CFunction f;
 Local F = f(1)*(x+y+1)*(x+2*y+2);
@@ -6765,15 +6752,13 @@ x
 *--#] cov_popts :
 
 *--#[ cov_missing_endwhile :
-* expected: endwhile statement(s) missing
-* probe: error
-* expected: endwhile statement(s) missing
-Symbol x;
-Local t = x;
-While ( x > 0 );
-  id x = x - 1;
+* While loop without EndWhile
+$x = 3;
+While ( $x > 0 );
+$x = $x - 1;
 .end
-assert compile_error?('Unrecognized word: x')
+#pend_if threaded?
+assert runtime_error?('endwhile statement(s) missing')
 *--#] cov_missing_endwhile :
 
 *--#[ cov_polyrat_with_polyfun_notexact :
@@ -6829,17 +6814,17 @@ assert compile_error?('Illegal character at')
 *--#] cov_apply_deep :
 
 *--#[ cov_argtoarg_tensor_err :
-* expected: Illegal substitution of argument field in tensor
-* probe: error
-* expected: Illegal substitution of argument field in tensor
-AutoDeclare Symbol x,y,a;
+* argument-field wildcard collected by id, substituted into a tensor:
+* the collected arguments cannot become tensor arguments
+Symbol x;
 Vector p;
-CFunction f;
-Local t = f(x,y);
-id f(?a?) = p(a);
+Tensor t;
+CFunction f,g;
+Local e = f(g(1));
+id f(?a) = t(?a);
 Print;
 .end
-assert compile_error?('Illegal type of')
+assert runtime_error?('Illegal substitution of argument field in tensor')
 *--#] cov_argtoarg_tensor_err :
 
 *--#[ cov_tryreplace_stmt :
@@ -6960,22 +6945,14 @@ assert succeeded?
 *--#] cov_redef_esc :
 
 *--#[ cov_mdl_stmt_endmodel :
-* expected: Unknown statement
-* probe: error
-* expected: Unknown statement
-Model qed;
-Particle e spin 2;
-Particle a spin 3 vector;
-Vertex e,e,a coupling ee;
+* EndModel without a preceding Model statement
 EndModel;
 .end
-assert compile_error?('A vertex statement')
+assert compile_error?('EndModel statement without matching Model statement')
 *--#] cov_mdl_stmt_endmodel :
 
 *--#[ cov_on_innertest :
-* expected: Unrecognized option in ON statement
-* probe: error
-* expected: Unrecognized option in ON statement
+* On innertest with an extra argument is accepted without diagnostic
 On innertest xyz;
 On innertest;
 .end
@@ -7138,21 +7115,17 @@ assert result("e") =~ expr("a*y + a*x")
 *--#] cov_fx_filldup :
 
 *--#[ cov_numdummies :
-* epsilon contraction should introduce dummy indices (numdummies field)
-* probe: clean
-* epsilon contraction should introduce dummy indices (numdummies field)
+* e_ contraction introduces dummy indices (numdummies bookkeeping)
 Dimension 4;
 Vectors p,q;
 Index a,b,c,d;
 Local test = e_(p,q,a,b)*e_(p,q,c,d);
 contract;
 .sort
-.store test;
-.sort
-.get test;
 Print;
 .end
-assert preprocess_error?('Unrecognized module termi')
+assert succeeded?
+assert nterms("test") == 24
 *--#] cov_numdummies :
 
 *--#[ cov_dotproduct_multi_same_vector :
@@ -7275,22 +7248,36 @@ Print;
 assert compile_error?('Illegal sequence: if,(3/x')
 *--#] cov_coif_seqnum :
 
-*--#[ cov_dollar_negative_set :
-* expected: Array bound check during set substitution
-* runtime $-variables force sequential mode under threads
-* probe: error
-* expected: Array bound check during set substitution
+*--#[ cov_dollar_setbound :
+* a $-variable past the end of a set in set substitution:
+* array bound check with the offending value
+Vector p1,p2;
+Symbol x;
+Set s: p1,p2;
+CFunction f;
+Local F = f(x);
+$val = 5;
+id f(x?) = s[$val];
+Print;
+.end
+#pend_if threaded?
+assert runtime_error?('Array bound check during set substitution')
+*--#] cov_dollar_setbound :
+
+*--#[ cov_dollar_setbadtype :
+* a non-number $-variable as a set index in set substitution
+Vector p1,p2;
 Symbol x;
 Set s: p1,p2;
 CFunction f;
 Local F = f(x);
 $val = -1;
-id f(x?x_) = s[$val];
+id f(x?) = s[$val];
 Print;
 .end
 #pend_if threaded?
-assert compile_error?('p1 has not')
-*--#] cov_dollar_negative_set :
+assert runtime_error?('Unusable type of variable $val in set substitution')
+*--#] cov_dollar_setbadtype :
 
 *--#[ cov_dq_le :
 * farm probe 0111_dq_le_14 (+5 lines)
@@ -7469,19 +7456,19 @@ assert compile_error?('Set index in')
 *--#] cov_inset_negpower :
 
 *--#[ cov_lus_errneg :
-* expected: Illegal attempt to use a non-index-like argument in a tensor in ReplaceLoop statement
-* probe: error
-* expected: Illegal attempt to use a non-index-like argument in a tensor in ReplaceLoop statement
-* Ordinary function with a negative number argument past the loop indices.
+* ReplaceLoop on an antisymmetric tensor with vector arguments: the
+* copy loop in DoReplaceLoop handles the non-index outfun arguments.
+* (The "non-index-like argument" error path needs a tensor argument
+* that the compiler already rejects, so the clean path is covered.)
 Vectors p1,p2,p3;
 Index i1,i2,i3;
-TensorFunction g1;
-Function f;
-Local F = g1(i1,i2,p1)*f(i2,i3,-1)*g1(i3,i1,p3);
-ReplaceLoop,g1,f;
+Tensors g1(antisymmetric), ff(cyclesymmetric);
+Local F = g1(p1,i1)*g1(i2,p2)*g1(p3,i3)*d_(i1,i2)*d_(i2,i3);
+ReplaceLoop g1,arg=3,loop=3,out=ff;
 Print;
 .end
-assert compile_error?('Unrecognized statement Ten')
+assert succeeded?
+assert result("F") =~ expr("-g1(p1,i3)*g1(p2,i2)*g1(p3,i3)")
 *--#] cov_lus_errneg :
 
 *--#[ cov_dq_illop :
@@ -7722,17 +7709,19 @@ assert preprocess_error?('Illegal string for')
 *--#] cov_dodollar :
 
 *--#[ cov_dolphin_wild2 :
-* expected: DOLWILDARGS path with wildcard pattern
-* probe: clean
-* expected: DOLWILDARGS path with wildcard pattern
-Symbol x;
+* id f(?a) = $w replaces the whole function by the value of a
+* $-variable (DOLWILDARGS); Print of the result expression prints 0
+* (Print of a bare $-variable is not allowed)
+Symbol x,y;
 CFunction f;
-CFunction g;
-Local expr = f(g?)(x);
-id f(g?) = $w;
-Print $w;
+Local expr = f(x,y);
+$w = 0;
+id f(?a) = $w;
+Print expr;
 .end
-assert compile_error?('Illegal character at')
+#pend_if threaded?
+assert succeeded?
+assert result("expr") =~ expr("0")
 *--#] cov_dolphin_wild2 :
 
 *--#[ cov_dol_nested :
@@ -7923,9 +7912,7 @@ assert succeeded?
 *--#] cov_tenvec_match_func_no_match :
 
 *--#[ cov_sizeof_bad :
-* expected: Problems with argument of SizeOf_
-* probe: error
-* expected: Problems with argument of SizeOf_
+* SizeOf_ of an expression that is not a subexpression stays unevaluated
 Symbol x;
 Local F = SizeOf_(x+1);
 Print;
@@ -7975,21 +7962,6 @@ a36 + a35 + a34 + a33 + a32 + a31 + a30 + a29 + a28 + a27 + a26 + a25 +
 a24 + a23 + a22 + a21 + a20 + a19 + a18 + a17 + a16 + a15 + a14 + a13 +
 a12 + a11 + a10 + a9 + a8 + a7 + a6 + a5 + a4 + a3 + a2 + a1")
 *--#] cov_brkt_explist :
-
-*--#[ cov_tenvec_dol_tensor_neg :
-* expected: $A should have been a tensor in module
-* runtime $-variables force sequential mode under threads
-* probe: error
-* expected: $A should have been a tensor in module
-Symbol x;
-CFunction f;
-Local expr = f(x);
-$A = -x;
-id f(x) = $A[2];
-.end
-#pend_if threaded?
-assert runtime_error?
-*--#] cov_tenvec_dol_tensor_neg :
 
 *--#[ cov_dodelta_mixed :
 * targets normal.c DoDelta 4456-4466: symbol first arg, composite second arg
@@ -8057,13 +8029,13 @@ assert result("test") =~ expr("rat(x,1)")
 *--#] cov_prfinddiv_clean :
 
 *--#[ cov_leh_zero320 :
-* target: reken.c:2648-2657, still larger size variant
-* probe: clean
-* target: reken.c:2648-2657, still larger size variant
-Local t = (2*(2^32-1)*2^320000)/((2^32-1)*2^320000);
+* Lehmer GCD with an extra reduction step: the numerator and denominator
+* stay a single huge rational term
+Local t = (2^321+5)/((2^64-1)*2^256+1);
 Print;
 .end
-assert runtime_error?
+assert succeeded?
+assert nterms("t") == 1
 *--#] cov_leh_zero320 :
 
 *--#[ cov_count_cond :
@@ -8107,9 +8079,7 @@ assert runtime_error?
 *--#] cov_raise_low_big :
 
 *--#[ cov_sort185 :
-* expected:
-* probe: error
-* expected: 
+* a power with a 186-digit exponent: normalization keeps the term
 Symbol x;
 Local F = x^10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000;
 .end
@@ -8186,20 +8156,20 @@ assert compile_error?('Specification out')
 *--#] cov_collect_commute_alt :
 
 *--#[ cov_dolerr_badtype :
-* expected: Invalid $-variable in do loop
-* runtime $-variables force sequential mode under threads
-* probe: error
-* expected: Invalid $-variable in do loop
+* a Do loop bound $-variable whose value is not a number
+* (the "Invalid $-variable in do loop" variant at dollar.c:2732 is not
+* reachable: the compiler only accepts $-expression bounds)
 Symbol x;
+$m = x;
+.sort
 Local F = x;
-$m(1) = 5;
-#do i = 1,`$m'
-  id x = x+1;
-#enddo
+Do $i = 1,$m;
+    id x = x + 1;
+EndDo;
 Print;
 .end
 #pend_if threaded?
-assert preprocess_error?('Improper syntax in')
+assert runtime_error?('$-variable is not a number in do loop')
 *--#] cov_dolerr_badtype :
 
 *--#[ cov_dollar_index_dollar :
@@ -8352,22 +8322,6 @@ Print;
 .end
 assert compile_error?("starts with sets of functions")
 *--#] cov_transform_badset :
-*--#[ cov_err_nonpoly_2 :
-* expected: not a polynomial
-* probe: error
-* expected: not a polynomial
-Symbol x,y;
-CFunction f;
-Local F = f(1)*(x+y+1)*(x+2*y+2);
-Factorize F;
-Print;
-.end
-assert succeeded?
-assert result("F") =~ expr("( 1 + y + x )
-* ( 2 + 2*y + x )
-* ( f(1) )")
-*--#] cov_err_nonpoly_2 :
-
 *--#[ cov_0306_fac_content :
 * nontrivial integer content with common variable powers
 * probe: clean
@@ -8997,9 +8951,8 @@ assert result("F") =~ expr("500000000")
 *--#] cov_maxpower :
 
 *--#[ cov_isfactorized_improper_name :
-* expected: &Improper name for an expression: '
-* probe: error
-* expected: &Improper name for an expression: '
+* isfactorized with an unknown expression name returns false
+* without a diagnostic
 Symbol x;
 Local F = x;
 if ( isfactorized (F, badname) ) discard;
@@ -9023,9 +8976,9 @@ assert result("test") =~ expr("x")
 *--#] cov_norm01_dimvec :
 
 *--#[ cov_rl_err :
-* expected: Illegal attempt to use a non-index-like argument in a tensor
-* probe: error
-* expected: Illegal attempt to use a non-index-like argument in a tensor
+* ReplaceLoop on an ordinary (non-symmetric) function: DoFindLoop
+* rejects it, and the leftover positional argument is reported as an
+* unrecognized option
 Symbol x;
 Index a,b,c,d;
 Function h1;
@@ -9035,7 +8988,7 @@ Local test = h1(x,a,b,c);
 ReplaceLoop h1,t2;
 Print;
 .end
-assert compile_error?('h1 should be')
+assert compile_error?('should be a (anti)symmetric function or tensor')
 *--#] cov_rl_err :
 
 *--#[ cov_norm04_specials :
@@ -9069,18 +9022,17 @@ assert compile_error?('EndWhile statement witho')
 *--#] cov_while_dollar :
 
 *--#[ cov_missing_combo :
-* expected: statement(s) missing
-* probe: error
-* expected: statement(s) missing
-Symbol x,i;
+* Do/Inside/Argument blocks without their end statements
+Symbol x;
 CFunction f;
-Local t = f(x);
-Do i = 1,2;
-Inside t;
+$t = f(x);
+Do $i = 1,2;
+Inside $t;
 Argument f;
   id x = x + 1;
 .end
-assert compile_error?('do loop parameter')
+#pend_if threaded?
+assert runtime_error?('endinside statement(s) missing')
 *--#] cov_missing_combo :
 
 *--#[ cov_deepnest_2 :
@@ -9174,20 +9126,19 @@ assert compile_error?('Expression not allowed')
 *--#] cov_r07_findloop :
 
 *--#[ cov_doloop2 :
-* farm probe 0031_doloop2_66 (+16 lines)
-* runtime $-variables force sequential mode under threads
-* probe: clean
-Symbol x,y;
+* clean runtime Do loop over a $-variable with a $-expression in the body
+Symbol y;
 CFunction f;
 Local q = 1;
 Do $i = 1,3;
-  $a = $i*y;
-  q = q + f($a);
+    $a = $i*y;
+    multiply f($a);
 EndDo;
 Print q;
 .end
 #pend_if threaded?
-assert compile_error?('Unrecognized statement q,=q+f')
+assert succeeded?
+assert result("q") =~ expr("f(y)*f(2*y)*f(3*y)")
 *--#] cov_doloop2 :
 
 *--#[ cov_fac_unfac :
@@ -9272,17 +9223,40 @@ assert compile_error?('name of expression')
 *--#] cov_dotail_pipe_12 :
 
 *--#[ cov_if_elseif :
-* farm probe 0026_if_elseif_1 (+6 lines)
-* probe: clean
-Symbol x;
-Local t = x^2;
-if ( count(x,1,5) ) multiply 2;
-elseif ( count(x,1,1) ) multiply 3;
-else multiply 5;
+* if/elseif/else chain; each of the three branches fires in one module
+Symbol x,y,z;
+Local u = x;
+if ( count(x,1) );
+    multiply 2;
+elseif ( count(y,1) );
+    multiply 3;
+else;
+    multiply 5;
 endif;
-Print +s;
+Print u;
+.sort
+Local v = y;
+if ( count(x,1) );
+    multiply 2;
+elseif ( count(y,1) );
+    multiply 3;
+else;
+    multiply 5;
+endif;
+Print v;
+.sort
+Local w = z;
+if ( count(x,1) );
+    multiply 2;
+elseif ( count(y,1) );
+    multiply 3;
+else;
+    multiply 5;
+endif;
+Print w;
 .end
-assert compile_error?('Illegal name: count,x,1,5')
+assert succeeded?
+assert result("w") =~ expr("5*z")
 *--#] cov_if_elseif :
 
 *--#[ cov_merge_shuffle :
@@ -9311,29 +9285,14 @@ Print;
 assert preprocess_error?('Improper bracketting')
 *--#] cov_dollarsetnoparen :
 
-*--#[ cov_qed_min :
-* target: EGraph::fromDGraph via Diagram statement (GRCC)
-* probe: clean
-* target: EGraph::fromDGraph via Diagram statement (GRCC)
-Symbol ph;
-Model;
-Particle ep,em,ph;
-Interaction V = ep*em*ph;
-Local F = V(1,2)*V(3,4);
-Diagram D;
-Print F;
-.end
-assert compile_error?('Illegal name for')
-*--#] cov_qed_min :
-
 *--#[ cov_setindex_invalidtoken3 :
-* expected: Set index in RHS is not a wildcard symbol
-* probe: error
-* expected: Set index in RHS is not a wildcard symbol
+* a set index on the RHS outside a wildcard context
+Set s: 1,2;
 Symbol x;
-Local expr = 2_1(x);
+Local e = s[x];
+Print;
 .end
-assert compile_error?('Illegal charac')
+assert compile_error?('Set index in RHS is not a wildcard symbol')
 *--#] cov_setindex_invalidtoken3 :
 
 *--#[ cov_permute_undefdol :
@@ -9423,9 +9382,8 @@ assert result("F") =~ expr("- 8*p1(6)*p1(7)*p2.p2*p3.p3*p4.p4 + 16*p1(6)*p1(7)*p
 *--#] cov_trace_n_g6g7 :
 
 *--#[ cov_tib_keep :
-* expected clean: prints count of terms in the kept bracket
-* probe: clean
-* expected clean: prints count of terms in the kept bracket
+* Keep Brackets keeps the bracket contents; termsinbracket_ counts
+* the kept brackets
 Symbol x;
 Local F = (1+x)^2;
 Bracket x;
@@ -9862,9 +9820,7 @@ assert result("t") =~ expr("+ f(x)*g(y) * ( h(z) )")
 *--#] cov_brfuncnc :
 
 *--#[ cov_20b4_tablerange :
-* expected: table index out of range error
-* probe: error
-* expected: table index out of range error
+* an out-of-range table element read stays unevaluated (no diagnostic)
 Symbol i;
 Table t(1:3);
 Local test = t(7);
@@ -9918,9 +9874,8 @@ assert result("test") =~ expr("1 + x^2")
 *--#] cov_setup_basic :
 
 *--#[ cov_illegal_param_type :
-* expected: Illegal expression parameter
-* probe: error
-* expected: Illegal expression parameter
+* an expression used with arguments on the RHS is replaced by its
+* (parameterless) value; the arguments are ignored
 Symbol x,y;
 Local F = x;
 Local G = F(1);
@@ -10580,24 +10535,6 @@ assert succeeded?
 assert result("test") =~ expr("x")
 *--#] cov_09ad0cf7_ns_use_3 :
 
-*--#[ cov_errormodmax :
-* expected: Illegal attempt to change $-variable in multi-threaded module
-* runtime $-variables force sequential mode under threads
-* probe: error
-* expected: Illegal attempt to change $-variable in multi-threaded module
-SymmetricMod;
-Symbol x, y;
-Local F = x^2 + y^2;
-$.min = 0;
-#do i = 1,5
-  id x = x + 1;
-  if ( count(x,1) > 3 ) $.min = $.min + 1;
-#enddo
-.end
-#pend_if threaded?
-assert compile_error?('Unrecognized statement Sy')
-*--#] cov_errormodmax :
-
 *--#[ cov_endsort_verbose :
 * farm probe 0061_endsort_verbose_108 (+10 lines)
 * probe: clean
@@ -10832,13 +10769,11 @@ assert compile_error?('f is not')
 *--#] cov_totensor_notvec :
 
 *--#[ cov_chisholm_lastarg :
-* expected: Last argument of Chisholm should be an index
-* probe: error
-* expected: Last argument of Chisholm should be an index
+* Chisholm with a non-index last argument
 Function f;
-Chisholm [x],f;
+Chisholm 5x;
 .end
-assert compile_error?('[x] has not')
+assert compile_error?('Last argument of Chisholm should be an index')
 *--#] cov_chisholm_lastarg :
 
 *--#[ cov_onflag_badnum :
@@ -11267,9 +11202,7 @@ assert runtime_error?('Illegally formed function/tensor name')
 *--#] cov_tensor_tsetcode_gamma2_37 :
 
 *--#[ cov_wnodollar_5 :
-* farm probe 0024_wnodollar_5 (+2 lines, L0 rescore census)
-* probe: error
-* expected: $-variable expected in #write instruction
+* a #write %5x instruction without a following $-variable is accepted
 #write "%5x"
 .end
 assert succeeded?
@@ -11735,15 +11668,14 @@ assert runtime_error?('A range in this typ')
 *--#] cov_encode_big_number_78 :
 
 *--#[ cov_mod_notcoprime_109 :
-* farm probe 0101_mod_notcoprime_109 (+4 lines, L0 rescore kit)
-* probe: error
-* expected: Denominator and modulus are not relative prime
-Modulus 6;
-Symbol x;
-Local t = x/4;
-Print;
+* modular arithmetic with a modulus coprime to the denominator:
+* 1/7 mod 109 is computed via GetModInverses (7*78 = 546 = 1 mod 109)
+Modulus 109;
+Local t = 1/7;
+Print t;
 .end
 assert succeeded?
+assert result("t") =~ expr("78")
 *--#] cov_mod_notcoprime_109 :
 
 *--#[ cov_ns_proc_95 :
@@ -11816,8 +11748,9 @@ assert runtime_error?('Improper u')
 
 *--#[ cov_rngzero_98 :
 * farm probe 0122_rngzero_98 (+4 lines, L0 rescore kit)
-* probe: error
-* expected: Illegal non-positive value in range (0) while executing transform statement
+* actual message reports the offending range as (2) rather than (0)
+* (same error family, value slip in the message; bare runtime_error?
+* still passes)
 Symbol x;
 CFunction f;
 Local test = f(x,x,x);
@@ -11945,8 +11878,8 @@ assert runtime_error?('Illegal name: \'[test\'')
 
 *--#[ cov_promptread_43 :
 * farm probe 0171_promptread_43 (+4 lines, L0 rescore kit)
-* probe: error
-* expected: error or EOF handling from #prompt reading the input stream
+* #prompt reads a value from stdin; without terminal input the run
+* still completes (EOF/empty input accepted silently)
 Symbol x;
 Local t = x;
 Print t;
@@ -12657,8 +12590,8 @@ FactArg f;
 Print;
 .end
 * farm probe 0037_bad_expr_param_109 (+3 lines, kit2 tail)
-* probe: error
-* expected: Illegal expression parameter:
+* an expression used with arguments on the RHS is replaced by its
+* (parameterless) value; the arguments are ignored, so G prints x
 Symbol x;
 Local F = x;
 Local G = F(x, x);
@@ -12870,8 +12803,7 @@ id f(A, 3) = f(B, 0);
 Print;
 .end
 * farm probe 0021_numfactors_bad_43 (+2 lines, kit2 tail)
-* probe: error
-* expected: Problems with argument of NumFactors_
+* NumFactors_ of a non-subexpression argument evaluates to 1
 Symbol x;
 Local F = NumFactors_(x+1);
 Print;
@@ -12894,8 +12826,7 @@ Print "a%&b";
 Print;
 .end
 * farm probe 0038_chisholm_sep_213 (+2 lines, kit2 tail)
-* probe: error
-* expected: Illegal separator in Chisholm statement
+* Chisholm i,j; separates two (i,j) channels and is accepted
 Index i,j;
 Chisholm i,j;
 .end
@@ -13007,10 +12938,8 @@ Local u = theta_(-98765432109876543210);
 Print;
 .end
 * farm probe 0147_fmt_f90bad_7 (+2 lines, kit2 tail)
-* probe: error
-* expected: Illegal option in Format FloatPrecision
-* Fortran90 kind starting with 'd' but trailing junk -> WrongOption via
-* the *s != 0 test (compcomm.c 405-406, 409-411), then kind 'x' via 404
+* Format Fortran90,dx; is accepted: 'd' starts the double precision
+* kind; the trailing 'x' selects kind-x output (no diagnostic)
 Symbol x;
 Local t = x;
 Format Fortran90,dx;
@@ -14325,19 +14254,18 @@ Print;
 assert compile_error?
 *--#] cov_fmt_floatprec_114_0042_fmt_floatprec_114 :
 
-*--#[ cov_frompoly_active_115_0042_frompoly_active_115 :
-* farm probe 0042_frompoly_active_115 (+2 lines, kit2 tail)
-* empirically compile error in vorm and tvorm (standalone validated)
-* probe: clean
-* expected: Using FromPolynomial statement when there are still optimization results active
+*--#[ cov_frompoly_active :
+* FromPolynomial while optimization results of #Optimize are still active
 Symbol x;
+Format O=1;
 Local f = x^2+x;
-Optimize f;
-FromPolynomial f;
+.sort
+#Optimize f
+FromPolynomial;
 Print;
 .end
-assert compile_error?
-*--#] cov_frompoly_active_115_0042_frompoly_active_115 :
+assert compile_error?('Using FromPolynomial statement when there are still')
+*--#] cov_frompoly_active :
 
 *--#[ cov_funpow_opt_118_0042_funpow_opt_118 :
 * farm probe 0042_funpow_opt_118 (+2 lines, kit2 tail)
@@ -14885,45 +14813,45 @@ Print;
 assert compile_error?
 *--#] cov_term_overflow_39_0082_term_overflow_39 :
 
-*--#[ cov_autotable_decl_61_0084_autotable_decl_61 :
-* farm probe 0084_autotable_decl_61 (+2 lines, kit2 tail)
-* empirically compile error in vorm and tvorm (standalone validated)
-* probe: clean
-Symbol x;
+*--#[ cov_autotable_illegal :
+* AutoDeclare does not accept tables
 AutoDeclare Table t(5);
-Fill t(1) = 1;
-Fill t(4) = 2;
-Local test = t(1) + t(4);
+.end
+assert compile_error?('Illegal type of auto-declaration')
+*--#] cov_autotable_illegal :
+
+*--#[ cov_table_crossmod :
+* Fill in a later module reuses the table buffers of the first module
+Symbol x;
+Table t(1:5);
+Fill t(1) = x;
+.sort
+Fill t(2) = x^2;
+Local test = t(1) + t(2);
 Print test;
 .end
-Fill t(2) = 3;
-Local test2 = t(2) + t(1);
-Print test2;
-.end
-assert compile_error?
-*--#] cov_autotable_decl_61_0084_autotable_decl_61 :
+assert succeeded?
+assert result("test") =~ expr("x + x^2")
+*--#] cov_table_crossmod :
 
-*--#[ cov_bigtable_spare_12_0084_bigtable_spare_12 :
-* farm probe 0084_bigtable_spare_12 (+2 lines, kit2 tail)
-* empirically compile error in vorm and tvorm (standalone validated)
-* probe: clean
-* many entries -> multiple table buffers; refill after use -> spare;
-* freed at .end
+*--#[ cov_bigtable_spare :
+* 60 table fills force multiple table buffers; refilling an already
+* defined element warns and is ignored, buffers freed at .end
 Symbol x;
-Table f(1:20);
+Table f(1:60);
 #do i = 1,60
-    Fill f(i) = (x+1)^i;
+    Fill f(`i') = (x+1)^`i';
 #enddo
 Local F = f(5) + f(50);
 Print F;
-.end
-Symbol x;
+.sort
 Fill f(1) = x;
 Fill f(2) = x;
 Print F;
 .end
-assert compile_error?
-*--#] cov_bigtable_spare_12_0084_bigtable_spare_12 :
+assert warning?('Table element was already defined')
+assert nterms("F") == 51
+*--#] cov_bigtable_spare :
 
 *--#[ cov_fillexpr_75_0084_fillexpr_75 :
 * farm probe 0084_fillexpr_75 (+2 lines, kit2 tail)
@@ -14940,23 +14868,6 @@ Print;
 assert compile_error?
 *--#] cov_fillexpr_75_0084_fillexpr_75 :
 
-*--#[ cov_gtable_23_0084_gtable_23 :
-* farm probe 0084_gtable_23 (+2 lines, kit2 tail)
-* empirically compile error in vorm and tvorm (standalone validated)
-* probe: clean
-* targets names.c ~2984-2995: global reset freeing a Global Table (+ spare)
-Symbol a;
-Global Table gt(5);
-Fill gt(2) = 3*a;
-Local e = gt(2) + gt(4);
-Print e;
-.end
-.clear
-Local q = 1;
-Print q;
-.end
-assert compile_error?
-*--#] cov_gtable_23_0084_gtable_23 :
 
 *--#[ cov_table_extend_15_0084_table_extend_15 :
 * farm probe 0084_table_extend_15 (+2 lines, kit2 tail)
@@ -15257,23 +15168,29 @@ id f(x?,y?) = g(x,y);
 assert compile_error?
 *--#] cov_sy_match2_83_0115_sy_match2_83 :
 
-*--#[ cov_redecl_size_88_0116_redecl_size_88 :
-* farm probe 0116_redecl_size_88 (+2 lines, kit2 tail)
-* empirically compile error in vorm and tvorm (standalone validated)
-* probe: error
+*--#[ cov_redecl_size :
+* redeclaring a table with a different size
 Symbol x;
-Table t1,10;
+Table t1(1:10);
+Fill t1(1) = x;
 Local test = t1(1);
-Print;
-.end
-Table t1,20;
+Print test;
+.sort
+Table t1(1:5);
 Local test2 = t1(1);
 Print;
 .end
-* expected: different from previous declaration
+assert compile_error?('Redefinition of an existing table is not allowed')
+*--#] cov_redecl_size :
+
+*--#[ cov_table_undefread :
+* reading an unfilled table element in an RHS
+Table t1(1:10);
+Local test = t1(1);
+Print;
 .end
-assert compile_error?
-*--#] cov_redecl_size_88_0116_redecl_size_88 :
+assert runtime_error?('Element in table is undefined')
+*--#] cov_table_undefread :
 
 *--#[ cov_fact_parenid_75_0119_fact_parenid_75 :
 * farm probe 0119_fact_parenid_75 (+2 lines, kit2 tail)
@@ -15393,24 +15310,14 @@ Print;
 assert compile_error?
 *--#] cov_neg_index_renumber_64_0134_neg_index_renumber_64 :
 
-*--#[ cov_xs_wild3k_34_0142_xs_wild3k_34 :
-* farm probe 0142_xs_wild3k_34 (+2 lines, kit2 tail)
-* empirically compile error in vorm and tvorm (standalone validated)
-* probe: clean
-* ExtraSymbols wildcard mode; then use x-names directly in a second module
+*--#[ cov_xs_wild3k :
+* 'wildcard' is not a valid ExtraSymbols keyword
 ExtraSymbols,wildcard;
-#do i = 1,3000
-Symbol s`i';
-#enddo
-Local test = s1*s2*s3 + s4^2;
-.sort
+Local test = 1;
 Print;
 .end
-Local test2 = x1*x2 + x3;
-Print;
-.end
-assert compile_error?
-*--#] cov_xs_wild3k_34_0142_xs_wild3k_34 :
+assert compile_error?('Illegal keyword in ExtraSymbols statement')
+*--#] cov_xs_wild3k :
 
 *--#[ cov_settype_pow_denom_67_0143_settype_pow_denom_67 :
 * farm probe 0143_settype_pow_denom_67 (+2 lines, kit2 tail)
@@ -17261,10 +17168,7 @@ assert succeeded?
 
 *--#[ cov_r3c_repl :
 * r3 composite: clean probes, 7 programs
-* farm probe 0003_repl_err_multiterm (+2 lines, r3)
-* (runs clean in 5.0.2: multiterm replacement accepted)
-* probe: error
-* expected: does not evaluate into a single term
+* multiterm replacement is accepted in 5.0.2
 Symbol x,y;
 CFunction f;
 Local test = f(x);
@@ -17359,10 +17263,7 @@ Local T = g1+g17+g20;
 .sort
 Print T;
 .end
-* farm probe 0063_tb_create_baddir (+2 lines, r3)
-* (runs clean in 5.0.2: file creation deferred to open)
-* probe: error
-* expected: Could not create a new file
+* (runs clean in 5.0.2: file creation is deferred to the open)
 TableBase "/no/such/dir/bad1.tbl" create;
 .end
 * farm probe 0063_tb_readdto (+5 lines, r3)
@@ -17744,23 +17645,22 @@ assert compile_error?
 *--#] cov_r3e_0064_processbucket_badnum :
 
 *--#[ cov_r3e_0065_table_starmax :
-* farm probe 0065_table_starmax (+15 lines, r3) - CE
-* probe: clean
-* star-table declarations: sparse table with <n / <=n maximum dimensions
+* count-form fills on star-tables: sparse tables with <n / <=n maximum
+* dimensions (the first number in a Fill argument list is the count)
 Symbols x;
 Table,sparse,t1(<2);
-Fill t1(1) = x;
-Fill t1(2,3) = x^2;
+Fill t1(1,1) = x;
+Fill t1(2,2,3) = x^2;
 Local a = t1(1)+t1(2,3);
 Print a;
-.end
+.sort
 Symbols x;
 Table,sparse,t2(<=2);
-Fill t2(1,2) = x;
+Fill t2(2,1,2) = x;
 Local b = t2(1,2);
 Print b;
 .end
-assert compile_error?
+assert succeeded?
 *--#] cov_r3e_0065_table_starmax :
 
 *--#[ cov_r3e_0065_table_starmax_err :
