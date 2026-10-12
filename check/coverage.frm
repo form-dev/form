@@ -825,6 +825,7 @@ Print F;
 .sort
 SetExitFlag;
 .end
+#pend_if mpi?
 assert succeeded?
 *--#] cov_stmt_setexit :
 *--#[ cov_stmt_exit :
@@ -1219,8 +1220,6 @@ On wtimestats;
 Off wtimestats;
 On sortreallocate;
 Off sortreallocate;
-On flint;
-Off flint;
 On humanstats;
 Off humanstats;
 On humanstatistics;
@@ -1254,6 +1253,15 @@ Off statistics;
 .end
 assert succeeded?
 *--#] cov_onoff :
+*--#[ cov_onflint :
+* On/Off flint on a FLINT-less build only prints a warning, so it needs the
+* tolerant assert (upstream polynomial.frm precedent); kept out of cov_onoff
+* so the rest of the option sweep runs unchanged without FLINT.
+On flint;
+Off flint;
+.end
+assert succeeded? || warning?("FORM was not built with FLINT support.")
+*--#] cov_onflint :
 *--#[ cov_onopt_unknown :
 * On with an unknown keyword
 On nosuchoption;
@@ -1305,7 +1313,7 @@ Print G;
 .end
 # Under threads the module with $-assignments is forced to sequential mode
 # (a warning is printed) and the dollar is captured once per thread.
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert nterms("G") == 1
 assert result("H") =~ expr("2")
@@ -1526,6 +1534,7 @@ Print <p9b.txt>, F9;
 Print <p9b.txt>, F9;
 Print +f;
 .end
+#pend_if mpi?
 assert succeeded?
 *--#] cov_printfiles :
 *--#[ cov_checkpoint_on :
@@ -1632,7 +1641,7 @@ Print "%$",$e;
 .end
 # The $-assignment module is forced to sequential mode under threads
 # (produces a warning).
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 *--#] cov_factdollar2 :
 *--#[ cov_replaceloop2 :
@@ -1859,7 +1868,7 @@ $w = f(y) + 1;
 id f(x?) = g($w,x);
 Print DrQ;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 *--#] cov_dollarrhs :
 *--#[ cov_errzoo_powerparen :
@@ -2129,7 +2138,7 @@ Print "%$",$dd;
 Local Inx2 = f($dd);
 Print Inx2;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("Inx2") =~ expr("f(2*f(3))")
 *--#] cov_inside :
@@ -2319,7 +2328,7 @@ assert result("F") == "16"
 * trace with dollar spin line + index dollar (DolToIndex), sizeof/termsin
 * preprocessor conditions on dollar variables
 * dollar loop bounds force sequential modules -> pending under threads
-#pend_if threaded?
+#pend_if threaded? || mpi?
 S a; Vector p1,p2;
 CFunction e;
 Local w0 = 1;
@@ -2360,6 +2369,7 @@ Global g`i' = x^`i' + `i';
 .store
 Save cov1a.dat;
 .end
+#pend_if mpi?
 Load cov1a.dat;
 Local T = g1+g5+g13;
 .sort
@@ -2382,7 +2392,7 @@ assert stdout =~ /Illegal option in Load statement/
 *--#[ cov_dolwild :
 * wildcard-argument list capture ?ww$x (DOLWILDARGS dollars) plus
 * termsin/sizeof preprocessor branches on wildargs and empty dollars
-#pend_if threaded?
+#pend_if threaded? || mpi?
 S a,b,c;
 CFunction g,h;
 Local E = g(a,b,c);
@@ -2489,6 +2499,7 @@ Global h = x;
 .store
 Save m2.dat,h+1;
 .end
+#pend_if mpi?
 assert runtime_error?
 assert stdout =~ /Illegal character/
 *--#] cov_mescomp2 :
@@ -2594,7 +2605,7 @@ assert result("F") == "4*h(1,2)"
 *--#] cov_cycsym :
 *--#[ cov_ifmatch :
 * ifmatch/ifnomatch shorthand with labels and the IdNew/IdOld statements
-#pend_if threaded?
+#pend_if threaded? || mpi?
 Symbols x,y;
 CFunction f,g;
 Local F = f(x)+g(x)+f(1)+g(y);
@@ -2935,7 +2946,7 @@ Print " z3=%$;", $zw;
 .end
 # Under threads the $-assignments force sequential mode and the
 # wildcard-bound dollars are captured per thread.
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("T1") =~ expr("1")
 assert result("z1") =~ expr("t1(2,j)")
@@ -2956,7 +2967,7 @@ $z = t1($d4,j);
 .end
 # Under threads the $-assignments force sequential mode and the
 # wildcard-bound dollars are captured per thread.
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert runtime_error?
 *--#] cov_tensdollar2 :
 *--#[ cov_tensdollar3 :
@@ -2972,7 +2983,7 @@ $z = t1($d5,j);
 .end
 # Under threads the $-assignments force sequential mode and the
 # wildcard-bound dollars are captured per thread.
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert runtime_error?
 *--#] cov_tensdollar3 :
 
@@ -3101,7 +3112,7 @@ Print P4, A;
 Print " r=%$;", $r;
 .end
 # Under threads the $ assignments force sequential mode.
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("P4") =~ expr("12345678")
 assert result("A") =~ expr("2147483586")
@@ -3183,6 +3194,7 @@ $e = 0;
 if ( $d > 0 ) $e = 1;
 Print " e=%$;", $e;
 .end
+#pend_if mpi?
 assert runtime_error?
 *--#] cov_ifdolindex :
 *--#[ cov_ifdolwildargs :
@@ -3200,6 +3212,7 @@ id f(?a$d) = h(?a);
 if ( $d == 2 ) $e = 1;
 Print " e=%$;", $e;
 .end
+#pend_if mpi?
 assert runtime_error?
 *--#] cov_ifdolwildargs :
 *--#[ cov_bracketindex :
@@ -3412,7 +3425,7 @@ assert result("test") =~
 
 *--#[ cov_dollarbase_err :
 * encode with a dollar base that has no acceptable number value
-#pend_if threaded?
+#pend_if threaded? || mpi?
 CFunction f;
 Local test = f(1,2,1);
 $b = 1;
@@ -3653,6 +3666,7 @@ Local e = x;
 #write "n=%-4d end\n" 7
 Print;
 .end
+#pend_if mpi?
 assert preprocess_error?('Illegal control sequence')
 *--#] cov_wch_plusnum :
 
@@ -3675,6 +3689,7 @@ Symbol x;
 Local e = x;
 Print;
 .end
+#pend_if mpi?
 assert preprocess_error?('has not been defined')
 *--#] cov_wch_undol :
 
@@ -3685,6 +3700,7 @@ Symbol x;
 Local e = x;
 Print;
 .end
+#pend_if mpi?
 assert preprocess_error?('$-variable expected')
 *--#] cov_wch_dolerr :
 
@@ -3695,6 +3711,7 @@ Symbol x;
 Local e = x;
 Print;
 .end
+#pend_if mpi?
 assert warning?('end instruction generated')
 *--#] cov_wch_noclose :
 
@@ -3706,6 +3723,7 @@ Symbol x;
 Local e = x;
 Print;
 .end
+#pend_if mpi?
 assert preprocess_error?('illegal characters after $-variable')
 *--#] cov_wch_illch :
 
@@ -4327,7 +4345,7 @@ $x = x1*x2*x3*x4*x5*x6*x7*x8*x9*x10*x11*x12;
 id $x = f(1,2,3,4,5,6,7,8,9);
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("test") =~ expr("f(1,2,3,4,5,6,7,8,9)")
 *--#] cov_dol_big :
@@ -4837,7 +4855,7 @@ Local G = $dd^-1;
 .sort
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("F") =~ expr("- 1 + x^2")
 assert result("G") =~ expr("1/( - 1 + x^2)")
@@ -5595,7 +5613,7 @@ Local t = f(x+y)*g(x) + f(x)*g(x+y) + f(y)*g(y^2);
 .sort
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("t") =~ expr("f(y + x)*g(x) + f(x)*g(y + x) + f(y)*g(y^2)")
 *--#] cov_sort1_properorder :
@@ -5625,7 +5643,7 @@ $dd = F + 1;
 Print F;
 #endnamespace
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("F") =~ expr("q")
 *--#] cov_nsdollar :
@@ -6281,7 +6299,7 @@ Local F = random_(1000000000000000000000000);
 .sort
 Print F;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("F") =~ expr("864792395326970427174710")
 *--#] cov_r02_rand_big :
@@ -6298,7 +6316,7 @@ $dd = F + 1;
 Print F;
 #endnamespace
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("F") =~ expr("q")
 *--#] cov_nsdollar_2 :
@@ -6315,7 +6333,7 @@ $b = 2;
 Sum i,$a,$b;
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert runtime_error?
 *--#] cov_sum_dollarloop :
 
@@ -6666,7 +6684,7 @@ $dd = F + 1;
 Print F;
 #endnamespace
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("F") =~ expr("q")
 *--#] cov_nsdollar_3 :
@@ -7160,7 +7178,7 @@ $dd = F + 1;
 Print F;
 #endnamespace
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("F") =~ expr("q")
 *--#] cov_nsdollar_4 :
@@ -7200,7 +7218,7 @@ L F = x^100;
 $d = F;
 #write "%010$", $d
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 *--#] cov_write_dollar_zero_pad :
 
@@ -7266,7 +7284,7 @@ $val = 5;
 id f(x?) = s[$val];
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert runtime_error?('Array bound check during set substitution')
 *--#] cov_dollar_setbound :
 
@@ -7281,7 +7299,7 @@ $val = -1;
 id f(x?) = s[$val];
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert runtime_error?('Unusable type of variable $val in set substitution')
 *--#] cov_dollar_setbadtype :
 
@@ -7639,7 +7657,7 @@ $b = e2;
 if ( $a == $b ) Print;
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert runtime_error?
 *--#] cov_if_eq_expr :
 
@@ -7725,7 +7743,7 @@ $w = 0;
 id f(?a) = $w;
 Print expr;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("expr") =~ expr("0")
 *--#] cov_dolphin_wild2 :
@@ -8131,7 +8149,7 @@ assert compile_error?('First argument in')
 Symbol x;
 Local F = x^1000000000000000;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert runtime_error?
 *--#] cov_sort10 :
 
@@ -8174,7 +8192,7 @@ Do $i = 1,$m;
 EndDo;
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert runtime_error?('$-variable is not a number in do loop')
 *--#] cov_dolerr_badtype :
 
@@ -8188,7 +8206,7 @@ $d = F;
 $i = 1;
 #write "%e\n", $d[$i];
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert preprocess_error?('expression name e')
 *--#] cov_dollar_index_dollar :
 
@@ -8386,7 +8404,7 @@ Local G = $dd^2;
 .sort
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("F") =~ expr("- 1 + x^2")
 assert result("G") =~ expr("1 - 2*x^2 + x^4")
@@ -8756,7 +8774,7 @@ $a = e;
 #endif
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("e") =~ expr("x")
 *--#] cov_pre_isfact_dollar :
@@ -8881,7 +8899,7 @@ $a = 7;
 #endif
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("e") =~ expr("x")
 *--#] cov_pre_isnum_dollar :
@@ -9142,7 +9160,7 @@ Do $i = 1,3;
 EndDo;
 Print q;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("q") =~ expr("f(y)*f(2*y)*f(3*y)")
 *--#] cov_doloop2 :
@@ -10104,7 +10122,7 @@ FactDollar,$x;
 If ( $x[0] > 0 ) id x = 1;
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert succeeded?
 assert result("e") =~ expr("1")
 *--#] cov_factdollar_comma :
@@ -10215,7 +10233,7 @@ FactDollar $x;
 If ( $x[1] == 3 ) id x = 1;
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert runtime_error?
 *--#] cov_factdollar_numfactor :
 
@@ -10430,6 +10448,7 @@ Local e = ff(x,y);
 id ff(?a$w) = $w;
 Print;
 .end
+#pend_if mpi?
 assert runtime_error?
 *--#] cov_wmulti_a :
 
@@ -10489,7 +10508,7 @@ $n = x;
 Transform f,addargs(1,$n);
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert runtime_error?
 *--#] cov_rngdollar :
 
@@ -10522,7 +10541,7 @@ $a = x+y;
 Transform f,permute($a);
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert runtime_error?
 *--#] cov_permute_dollar :
 
@@ -10618,7 +10637,7 @@ Local e = x^2;
 $a = e;
 #write "%$" $a[999999999]
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert preprocess_error?('$a has not been factorized')
 *--#] cov_wrfac_big :
 
@@ -11055,6 +11074,7 @@ assert result("test") =~ expr("y^3 + x^2*y")
 * unterminated string in a #write instruction at end of program
 #write "%s" "abc
 .end
+#pend_if mpi?
 assert warning?('end instruction generated')
 *--#] cov_wmissquote :
 
@@ -11766,7 +11786,7 @@ $n = 0;
 Transform f,addargs(1,$n);
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert runtime_error?
 *--#] cov_rngzero_98 :
 
@@ -13059,7 +13079,7 @@ assert compile_error?
 
 *--#[ cov_k2tail_dollar :
 * kit2-tail composite: clean $-variable probes (tvorm skips: sequential-mode warnings)
-#pend_if threaded?
+#pend_if threaded? || mpi?
 * farm probe 0163_dollar_huge_70 (+3 lines, kit2 tail)
 * probe: clean
 Symbol x;
@@ -15699,6 +15719,7 @@ assert compile_error?
 Table t(1:2);
 PrintTable t > /nosuchdir9/x.txt;
 .end
+#pend_if mpi?
 assert compile_error?
 *--#] cov_pbtbl_badfile_7_0195_pbtbl_badfile_7 :
 
@@ -15723,6 +15744,7 @@ Symbol x;
 Local e = x;
 PrintTable e;
 .end
+#pend_if mpi?
 assert compile_error?
 *--#] cov_pbtbl_nottable_8_0195_pbtbl_nottable_8 :
 
@@ -16539,6 +16561,7 @@ Local t = x;
 #write < "/dev/null/nope.txt" "hello"
 Print;
 .end
+#pend_if mpi?
 assert preprocess_error?
 *--#] cov_w_openfile2_110_0096_w_openfile2_110 :
 
@@ -16738,6 +16761,7 @@ Local test = 7;
 #enddo
 Print test;
 .end
+#pend_if mpi?
 assert preprocess_error?
 *--#] cov_inc_loop_51_0171_inc_loop_51 :
 
@@ -16913,7 +16937,7 @@ Local test = f(
 g(x));
 Print;
 .end
-#pend_if threaded?
+#pend_if threaded? || mpi?
 assert runtime_error?
 *--#] cov_ac_bigrep2_37_0154_ac_bigrep2_37 :
 
@@ -16932,6 +16956,7 @@ Print;
 Save probe_chain.dat, e1;
 Print;
 .end
+#pend_if mpi?
 assert runtime_error?
 *--#] cov_save_twice_36_0197_save_twice_36 :
 
@@ -16959,6 +16984,7 @@ Local e3 = 7 - x^4;
 Save smul.dat,e1,e2,e3;
 Print;
 .end
+#pend_if mpi?
 assert runtime_error?
 *--#] cov_multiexpr_7_0218_multiexpr_7 :
 
@@ -17401,7 +17427,7 @@ assert succeeded?
 
 *--#[ cov_r3c_dolclean :
 * r3 composite: clean probes, 8 programs, $-variables present
-#pend_if threaded?
+#pend_if threaded? || mpi?
 * farm probe 0012_dol_idrhs_2 (+6 lines, r3)
 * probe: clean
 Vector p,q;
@@ -17826,6 +17852,7 @@ assert preprocess_error?
 #system -e printf "included-file-content-073" > /tmp/probe073_inc.txt
 #write "prefix:%f:suffix","/tmp/probe073_inc.txt"
 .end
+#pend_if mpi?
 assert preprocess_error?
 *--#] cov_r3e_0073_write_fincl :
 
