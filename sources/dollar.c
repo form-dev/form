@@ -3811,6 +3811,7 @@ MakeDollarIntegerErr:
  *	Already the coefficients are taken modulus AN.cmod and AN.ncmod == 1
  */
 
+/* UNFINISHED_FEATURE_EXCL_START: sole caller is TakeDollarContent() above, which has no callers and is already excluded */
 WORD *MakeDollarMod(PHEAD WORD *buffer, WORD **bufout)
 {
 	GETBIDENTITY
@@ -3849,6 +3850,7 @@ WORD *MakeDollarMod(PHEAD WORD *buffer, WORD **bufout)
 	EndSort(BHEAD (WORD *)bufout,2);
 	return(factor);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /*
   	#] MakeDollarMod : 
   	#[ GetDolNum :

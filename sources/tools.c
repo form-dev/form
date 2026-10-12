@@ -3813,6 +3813,7 @@ int Crash(void)
  *	@param term: the term to be tested
  */
 
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead code: declared in declare.h but never called anywhere in sources/ (split around pre-existing INTERNAL_ERROR pairs) */
 int TestTerm(WORD *term)
 {
 	int errorcode = 0, coeffsize;
@@ -3820,6 +3821,7 @@ int TestTerm(WORD *term)
 	endterm = term + *term;
 	coeffsize = ABS(endterm[-1]);
 	if ( coeffsize >= *term ) {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 		MLOCK(ErrorMessageLock);
 		MesPrint("!>TestTerm: Internal inconsistency in term. Coefficient too big.");
@@ -3827,8 +3829,10 @@ int TestTerm(WORD *term)
 		errorcode = 1;
 		goto finish;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 	}
 	if ( ( coeffsize < 3 ) || ( ( coeffsize & 1 ) != 1 ) ) {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 		MLOCK(ErrorMessageLock);
 		MesPrint("!>TestTerm: Internal inconsistency in term. Wrong size coefficient.");
@@ -3836,6 +3840,7 @@ int TestTerm(WORD *term)
 		errorcode = 2;
 		goto finish;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 	}
 	t = term+1;
 	tstop = endterm - coeffsize;
@@ -3850,6 +3855,7 @@ int TestTerm(WORD *term)
 				break;
 			case SNUMBER:
 			case LNUMBER:
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 				MLOCK(ErrorMessageLock);
 				MesPrint("!>TestTerm: Internal inconsistency in term. L or S number");
@@ -3858,6 +3864,7 @@ int TestTerm(WORD *term)
 				goto finish;
 				break;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 			case EXPRESSION:
 			case SUBEXPRESSION:
 			case DOLLAREXPRESSION:
@@ -3873,6 +3880,7 @@ int TestTerm(WORD *term)
 			case MINVECTOR:
 			case SETEXP:
 			case ARGFIELD:
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 				MLOCK(ErrorMessageLock);
 				MesPrint("!>TestTerm: Internal inconsistency in term. Illegal subterm.");
@@ -3881,10 +3889,12 @@ int TestTerm(WORD *term)
 				goto finish;
 				break;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 			case ARGWILD:
 				break;
 			default:
 				if ( *t <= 0 ) {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 					MLOCK(ErrorMessageLock);
 					MesPrint("!>TestTerm: Internal inconsistency in term. Illegal subterm number.");
@@ -3892,11 +3902,13 @@ int TestTerm(WORD *term)
 					errorcode = 6;
 					goto finish;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 				}
 /*
 				This is a regular function.
 */
 				if ( *t-FUNCTION >= NumFunctions ) {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 					MLOCK(ErrorMessageLock);
 					MesPrint("!>TestTerm: Internal inconsistency in term. Illegal function number");
@@ -3904,10 +3916,12 @@ int TestTerm(WORD *term)
 					errorcode = 7;
 					goto finish;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 				}
 				funstop = t + t[1];
 				if ( funstop > tstop ) goto subtermsize;
 				if ( t[2] != 0 ) {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 					MLOCK(ErrorMessageLock);
 					MesPrint("!>TestTerm: Internal inconsistency in term. Dirty flag nonzero.");
@@ -3915,9 +3929,11 @@ int TestTerm(WORD *term)
 					errorcode = 8;
 					goto finish;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 				}
 				targ = t + FUNHEAD;
 				if ( targ > funstop ) {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 					MLOCK(ErrorMessageLock);
 					MesPrint("!>TestTerm: Internal inconsistency in term. Illegal function size.");
@@ -3925,6 +3941,7 @@ int TestTerm(WORD *term)
 					errorcode = 9;
 					goto finish;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 				}
 				if ( functions[*t-FUNCTION].spec >= TENSORFUNCTION ) {
 				}
@@ -3932,6 +3949,7 @@ int TestTerm(WORD *term)
 				  while ( targ < funstop ) {
 					if ( *targ < 0 ) {
 						if ( *targ <= -(FUNCTION+NumFunctions) ) {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 							MLOCK(ErrorMessageLock);
 							MesPrint("!>TestTerm: Internal inconsistency in term. Illegal function number in argument.");
@@ -3939,6 +3957,7 @@ int TestTerm(WORD *term)
 							errorcode = 10;
 							goto finish;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 						}
 						if ( *targ <= -FUNCTION ) { targ++; }
 						else {
@@ -3947,6 +3966,7 @@ int TestTerm(WORD *term)
 							&& ( *targ != -SNUMBER )
 							&& ( *targ != -ARGWILD )
 							&& ( *targ != -INDEX ) ) {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 								MLOCK(ErrorMessageLock);
 								MesPrint("!>TestTerm: Internal inconsistency in term. Illegal object in argument.");
@@ -3954,11 +3974,13 @@ int TestTerm(WORD *term)
 								errorcode = 11;
 								goto finish;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 							}
 							targ += 2;
 						}
 					}
 					else if ( ( *targ < ARGHEAD ) || ( targ+*targ > funstop ) ) {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 						MLOCK(ErrorMessageLock);
 						MesPrint("!>TestTerm: Internal inconsistency in term. Illegal size of argument.");
@@ -3966,8 +3988,10 @@ int TestTerm(WORD *term)
 						errorcode = 12;
 						goto finish;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 					}
 					else if ( targ[1] != 0 ) {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 						MLOCK(ErrorMessageLock);
 						MesPrint("!>TestTerm: Internal inconsistency in term. Dirty flag in argument.");
@@ -3975,12 +3999,14 @@ int TestTerm(WORD *term)
 						errorcode = 13;
 						goto finish;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 					}
 					else {
 						targstop = targ + *targ;
 						argterm = targ + ARGHEAD;
 						while ( argterm < targstop ) {
 							if ( ( *argterm < 4 ) || ( argterm + *argterm > targstop ) ) {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 								MLOCK(ErrorMessageLock);
 								MesPrint("!>TestTerm: Internal inconsistency in term. Illegal termsize in argument.");
@@ -3988,8 +4014,10 @@ int TestTerm(WORD *term)
 								errorcode = 14;
 								goto finish;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 							}
 							if ( TestTerm(argterm) != 0 ) {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 								MLOCK(ErrorMessageLock);
 								MesPrint("!>TestTerm: Internal inconsistency in term. Called from TestTerm.");
@@ -3997,6 +4025,7 @@ int TestTerm(WORD *term)
 								errorcode = 15;
 								goto finish;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 							}
 							argterm += *argterm;
 						}
@@ -4009,6 +4038,7 @@ int TestTerm(WORD *term)
 		tt = t + t[1];
 		if ( tt > tstop ) {
 subtermsize:
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 			MLOCK(ErrorMessageLock);
 			MesPrint("!>TestTerm: Internal inconsistency in term. Illegal subterm size.");
@@ -4016,6 +4046,7 @@ subtermsize:
 			errorcode = 100;
 			goto finish;
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START: TestTerm() is dead (zero callers; see justification above) */
 		}
 		t = tt;
 	}
@@ -4023,6 +4054,7 @@ subtermsize:
 finish:
 	return(errorcode);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
  		#] TestTerm : 

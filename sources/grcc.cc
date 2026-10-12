@@ -611,10 +611,12 @@ void Options::endProc(void)
         grcc_fprintf(GRCC_Stdout, "+++ Proc %d: ext=%d, loop=%d, ",
                proc->id, proc->nExtern, proc->loop);
         if (model != NULL) {
+/* UNFINISHED_FEATURE_EXCL_START: Options::model is only assigned by Options::begin(), which has no call sites (excluded above), so model == NULL here */
             grcc_fprintf(GRCC_Stdout, "order=");
             prIntArray(model->ncouple, proc->clist, ": ");
             model->prParticleArray(proc->ninitl, proc->initlPart, "-->");
             model->prParticleArray(proc->nfinal, proc->finalPart, "");
+/* UNFINISHED_FEATURE_EXCL_STOP */
         }
         grcc_fprintf(GRCC_Stdout, " (%8.2f sec)\n", proc->sec);
     
@@ -1719,20 +1721,25 @@ Particle::Particle(Model *modl, int pid, PInput *pinp)
     acode   = pinp->acode;
     if (Abs(mdl->defpart) == GRCC_DEFBYCODE) {
         neutral = (pcode == acode);
+/* UNFINISHED_FEATURE_EXCL_START: DEFBYNAME neutral-particle detection is never wired: the only model builder (diawrap.cc:81) hard-codes GRCC_DEFBYCODE */
     } else if (Abs(mdl->defpart) == GRCC_DEFBYNAME) {
         neutral = ((strcmp(name, aname)==0) ? True : False);
+/* UNFINISHED_FEATURE_EXCL_STOP */
     }
 
     // convert ptype string to its code.
     if (Abs(mdl->defpart) == GRCC_DEFBYCODE) {
         if (pinp->ptypec < GRCC_PT_Undef || pinp->ptypec > GRCC_PT_Size) {
+/* INTERNAL_ERROR_EXCL_START: failure report for an invalid ptype code, which diawrap.cc never produces (only GRCC_PT_* constants) */
             if (prlevel > 0) {
                 grcc_fprintf(GRCC_Stderr, "*** particle type is not defined: %d\n",
                         pinp->ptypec);
             }
             erEnd("particle type is not defined (illegal code)");
+/* INTERNAL_ERROR_EXCL_STOP */
         }
         ptype = pinp->ptypec;
+/* UNFINISHED_FEATURE_EXCL_START: DEFBYNAME particle typing is never wired: the only model builder (diawrap.cc:81) hard-codes GRCC_DEFBYCODE */
     } else if (Abs(mdl->defpart) == GRCC_DEFBYNAME) {
         if (pinp->ptypen == NULL) {
             erEnd("particle type is not defined (NULL)");
@@ -1750,10 +1757,13 @@ Particle::Particle(Model *modl, int pid, PInput *pinp)
                         pinp->ptypen);
             }
             erEnd("particle type is not defined (name)");
+/* UNFINISHED_FEATURE_EXCL_STOP */
         }
     }
     if (ptype == GRCC_PT_Undef && ptype != 0) {
+/* INTERNAL_ERROR_EXCL_START: guard is contradictory (GRCC_PT_Undef == 0), so erEnd(illegal ptype) cannot fire */
         erEnd("illegal ptype");
+/* INTERNAL_ERROR_EXCL_STOP */
     }
 
     extonly = pinp->extonly;
@@ -2168,13 +2178,16 @@ void Model::addParticle(PInput *pinp)
         pcd = findParticleCode(pinp->pcode);
         acd = findParticleCode(pinp->acode);
         if (pcd > 0 || acd > 0) {
+/* INTERNAL_ERROR_EXCL_START: duplicate particle-code failure report; codes come from unique FORM function numbers (plus pundef, code 0) */
             if (prlevel > 0) {
                 grcc_fprintf(GRCC_Stderr, "*** particle code [%d, %d] ", 
                         pinp->pcode, pinp->acode);
                 grcc_fprintf(GRCC_Stderr, "is already used.\n");
             }
             erEnd("particle code is already defined");
+/* INTERNAL_ERROR_EXCL_STOP */
         }
+/* UNFINISHED_FEATURE_EXCL_START: DEFBYNAME particle registration is never wired: the only model builder (diawrap.cc:81) hard-codes GRCC_DEFBYCODE */
     } else if (Abs(defpart) == GRCC_DEFBYNAME) {
         if (pinp->name == NULL || pinp->aname == NULL ||
             strlen(pinp->name) < 1 || strlen(pinp->aname) < 1) {
@@ -2189,6 +2202,7 @@ void Model::addParticle(PInput *pinp)
                 grcc_fprintf(GRCC_Stderr, "is already used.\n");
             }
             erEnd("particle name is already defined.");
+/* UNFINISHED_FEATURE_EXCL_STOP */
         }
     }
 
@@ -2242,7 +2256,9 @@ void Model::addInteraction(IInput *iinp)
     int plist[GRCC_MAXLEGS];
 
     if (!pdef) {
+/* INTERNAL_ERROR_EXCL_START: API-misuse failure report; diawrap.cc always calls addParticleEnd() before addInteraction() */
         erEnd("call 'addParticleEnd' before 'addInteraction'");
+/* INTERNAL_ERROR_EXCL_STOP */
     }
     if (nInteracts >= GRCC_MAXMINTERACT) {
         erEnd("too many interactions in the model (GRCC_MAXMINTERACT)");
@@ -2255,21 +2271,26 @@ void Model::addInteraction(IInput *iinp)
     // check identifier
     if (defpart == GRCC_DEFBYCODE) {
         if (iinp->icode < 0) {
+/* INTERNAL_ERROR_EXCL_START: negative-icode failure report; diawrap.cc sets icode = NODEFUNCTION+i > 0 */
             if (prlevel > 0) {
                 grcc_fprintf(GRCC_Stderr, "*** vertex code %d should be positive\n",
                         iinp->icode);
             }
             erEnd("vertex code should be positive");
+/* INTERNAL_ERROR_EXCL_STOP */
         } else {
             vid = findInteractionCode(iinp->icode);
             if (vid >= 0) {
+/* INTERNAL_ERROR_EXCL_START: duplicate-icode failure report; diawrap.cc gives each vertex a unique icode */
                 if (prlevel > 0) {
                     grcc_fprintf(GRCC_Stderr, "*** vertex code %d is already used\n",
                             iinp->icode);
                 }
                 erEnd("vertex code is already used");
+/* INTERNAL_ERROR_EXCL_STOP */
             }
         }
+/* UNFINISHED_FEATURE_EXCL_START: DEFBYNAME and illegal-defpart interaction registration is never wired: diawrap.cc:81 hard-codes GRCC_DEFBYCODE */
     } else if (defpart == GRCC_DEFBYNAME) {
         if (iinp->name == NULL || strlen(iinp->name) < 1) {
             erEnd("no name of vertex\n");
@@ -2291,6 +2312,7 @@ void Model::addInteraction(IInput *iinp)
         ;   
 #endif
     }
+/* UNFINISHED_FEATURE_EXCL_STOP */
     vid = nInteracts++;
 
     for (j = 0; j < nlegs; j++) {
@@ -2304,6 +2326,7 @@ void Model::addInteraction(IInput *iinp)
                 }
                 erEnd("particle is not defined (code)");
             }
+/* UNFINISHED_FEATURE_EXCL_START: DEFBYNAME leg lookup is never wired: the only model builder (diawrap.cc:81) hard-codes GRCC_DEFBYCODE */
         } else if (Abs(defpart) == GRCC_DEFBYNAME) {
             plist[j] = findParticleName(iinp->plistn[j]);
             if (plist[j] == 0) {
@@ -2314,6 +2337,7 @@ void Model::addInteraction(IInput *iinp)
                 }
                 erEnd("particle is not defined (name)");
             }
+/* UNFINISHED_FEATURE_EXCL_STOP */
         }
     }
 
@@ -2321,6 +2345,7 @@ void Model::addInteraction(IInput *iinp)
     for (j = 0; j < ncouple; j++) {
         c = iinp->cvallist[j];
         if (c < 0) {
+/* INTERNAL_ERROR_EXCL_START: failure report for negative coupling values; model.c stores only nonnegative coupling powers (negative powers are rejected at parse time) */
             if (prlevel > 0) {
                 grcc_fprintf(GRCC_Stderr, "*** illegal value of c-constants \n");
                 for (k = 0; k < ncouple; k++) {
@@ -2329,10 +2354,12 @@ void Model::addInteraction(IInput *iinp)
                 }
             }
             erEnd("illegal value of c-constants");
+/* INTERNAL_ERROR_EXCL_STOP */
         }
         csum += c;
     }
     if (csum < 0) {
+/* INTERNAL_ERROR_EXCL_START: failure report for negative total coupling; sum of nonnegative coupling powers cannot be negative */
         if (prlevel > 0) {
             grcc_fprintf(GRCC_Stderr, "*** illegal total coupling-constants %d\n",
                     csum);
@@ -2342,6 +2369,7 @@ void Model::addInteraction(IInput *iinp)
             }
         }
         erEnd("illegal value of c-constants");
+/* INTERNAL_ERROR_EXCL_STOP */
     }
 
     // assume : csum = nlegs - 2 + 2*loop
@@ -2507,6 +2535,7 @@ int Model::particleCode(int p)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: sole callers are the excluded endProc() model-dump branch (Options::model is never set) */
 void Model::prParticleArray(int n, int *a, const char *msg)
 {
     int j;
@@ -2520,6 +2549,7 @@ void Model::prParticleArray(int n, int *a, const char *msg)
     }
     grcc_fprintf(GRCC_Stdout, "]%s", msg);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 int Model::findMClass(const int cpl, const int dgr)
@@ -4756,6 +4786,7 @@ void MGraph::bisearchME(int nd, int pd, int ned,  int col,
     if (isExternal(nd)) {
         if (pd >= 0) {
             // not the root
+/* UNFINISHED_FEATURE_EXCL_START: unreachable: the traversal consumes external neighbours at grcc.cc:4786 without recursion, so bisearchME() never enters with an external node and pd >= 0 */
             *momset      = MASK(nd);
             mopi->next   = 1;
             mopi->nlegs  = 1;
@@ -4765,6 +4796,7 @@ void MGraph::bisearchME(int nd, int pd, int ned,  int col,
             *nart        = 1;
             mconn->addCEdge(nd, pd, *momset);
             return;
+/* UNFINISHED_FEATURE_EXCL_STOP */
         }
     }
 
@@ -6263,6 +6295,7 @@ EEdge::~EEdge(void)
 }
 
 //--------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: only caller is EGraph::copy(), which has no call sites (excluded above) */
 void EEdge::copy(EEdge *ee)
 {
     nodes[0] = ee->nodes[0];
@@ -6273,6 +6306,7 @@ void EEdge::copy(EEdge *ee)
     edtype   = ee->edtype;
     cut      = ee->cut;
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 //--------------------------------------------------------------
 void EEdge::setId(EGraph *egrph, const int eid)
@@ -6783,6 +6817,7 @@ void EGraph::fromMGraph(MGraph *mg)
             setExtern(j+ni, proc->finalPart[j], GRCC_AT_Final);
         }
         nExtern = ni + nf;
+/* UNFINISHED_FEATURE_EXCL_START: requires sproc != NULL with proc == NULL, impossible: proc == NULL iff sproc == NULL (grcc.cc:6691) and the only SProcess gets a live Process (grcc.cc:3718) */
     } else if (sproc != NULL) {
         pnc = sproc->pnclass;
         for (j = 0; j < sproc->pnclass->nclass; j++) {
@@ -6801,6 +6836,7 @@ void EGraph::fromMGraph(MGraph *mg)
                     
         }
         nExtern = ni + nf;
+/* UNFINISHED_FEATURE_EXCL_STOP */
     }
     totalc = 0;
     for (j = 0; j < nNodes; j++) {
@@ -7408,6 +7444,7 @@ Bool EGraph::isOptE(void)
         return True;
     }
 
+/* UNFINISHED_FEATURE_EXCL_START: the No2PtL1PI/NoAdj2PtV options are never set to nonzero (ctor default False; neither the qgraf mapping nor diawrap.cc writes them) */
     if (nExtern == 2 && nopicomp == 1) {
         minopi2p = 2;
     } else {
@@ -7460,7 +7497,9 @@ Bool EGraph::isOptE(void)
             }
         }
     }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
+/* INTERNAL_ERROR_EXCL_START: contradictory-invariant failure report: control only reaches here with No2PtL1PI == 0, already handled above */
     if (opt->values[GRCC_OPT_No2PtL1PI] > 0) {
         return True;
     } else if (opt->values[GRCC_OPT_No2PtL1PI] < 0) {
@@ -7468,6 +7507,7 @@ Bool EGraph::isOptE(void)
     } else {
         erEnd("isOptE: illegal control");
         return False;
+/* INTERNAL_ERROR_EXCL_STOP */
     }
 }
 
@@ -9519,6 +9559,7 @@ int Assign::selUnAssVertexSimp(int lastv)
 }
 
 //---------------------------------------------------------------
+/* UNFINISHED_FEATURE_EXCL_START: only caller is Assign::selectVertex(), excluded above as the non-SIMPSEL alternative */
 int Assign::selUnAssVertex(void)
 {
     //  Select a vertex for assignment to its leg.
@@ -9541,6 +9582,7 @@ int Assign::selUnAssVertex(void)
                     v0 = v;
                     nl = nodes[v]->cand->nilist;
                 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
             }
         }
     }
