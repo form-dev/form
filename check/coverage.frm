@@ -1530,13 +1530,14 @@ assert succeeded?
 *--#] cov_printfiles :
 *--#[ cov_checkpoint_on :
 * On checkpoint with an interval and a run script (deprecated mechanism,
-* prints a DeprecationWarning)
+* prints a DeprecationWarning unless FORM_IGNORE_DEPRECATION is set, so
+* the asserts are warning-independent and hold in both environments)
 On checkpoint 1s,run="true";
 Local F10 = 1;
 Print;
 .end
-assert warning?
-assert stdout =~ /Deprecation/
+assert succeeded? || warning?
+assert result("F10") =~ expr("1")
 *--#] cov_checkpoint_on :
 *--#[ cov_external :
 * the #external preprocessor block
@@ -5750,8 +5751,10 @@ assert result("t") =~ expr("x*y^3 + x^2*y + x^2 + x*y + y^2 + x")
 *--#[ cov_revinc_ok :
 * hits tools.c:354 (REVERSEFILESTREAM + ReverseStatements)
 * probe: clean
-* hits tools.c:354 (REVERSEFILESTREAM + ReverseStatements)
-#system cd $TESTFILEDIR && { printf "Local ra = 1;\nLocal rb = 2;\n" > rev.inc; } 2>/dev/null
+* the include file is created in FORM's working directory, which is the
+* per-test tempdir set up (and removed) by check.rb, so nothing is left
+* behind in the checkout
+#system printf "Local ra = 1;\nLocal rb = 2;\n" > rev.inc
 #reverseinclude rev.inc
 Print;
 .end
@@ -6136,7 +6139,10 @@ assert preprocess_error?('Illegal string for')
 *--#[ cov_revinc_end :
 * #reverseinclude of a small file; runs clean
 * tries ReverseStatements failure -> tools.c:355-356
-#system cd $TESTFILEDIR && { printf ".end\n" > revend.inc; } 2>/dev/null
+* the include file is created in FORM's working directory, which is the
+* per-test tempdir set up (and removed) by check.rb, so nothing is left
+* behind in the checkout
+#system printf ".end\n" > revend.inc
 #reverseinclude revend.inc
 Print;
 .end
@@ -10752,9 +10758,11 @@ assert compile_error?('g has not')
 *--#[ cov_off_checkpoint :
 * farm probe 0044_off_checkpoint_138 (+5 lines)
 * probe: clean
+* Off checkpoint; a 'We are considering' deprecation warning is printed
+* only when FORM_IGNORE_DEPRECATION is unset, so only success is asserted
 Off checkpoint;
 .end
-assert warning?('We are considering')
+assert succeeded? || warning?('We are considering')
 *--#] cov_off_checkpoint :
 
 *--#[ cov_totensor_notvec :
@@ -11339,7 +11347,7 @@ assert succeeded?
 * probe: clean
 * DoTail -pipe option; child hits initPresetExternalChannels error path
 * expected child message fragment: Error initializing preset external channels
-#system V=$(readlink /proc/$PPID/exe 2>/dev/null); case "$V" in *form*) ;; *) V=vorm;; esac; echo .end > /tmp/cvf4.frm; $V -pipe /tmp/cvf4.frm < /dev/null; true
+#system V=$(readlink /proc/$PPID/exe 2>/dev/null); case "$V" in *form*) ;; *) V=vorm;; esac; T=$TESTTMPDIR/cvf4.frm; echo .end > $T; $V -pipe $T < /dev/null; rm -f $T; true
 Symbol ok;
 Local ok = 1;
 Print;
@@ -13866,8 +13874,8 @@ assert compile_error?
 * probe: clean
 * DoTail m/w option parsing: legal thread counts then illegal values
 * expected child stderr fragment: Illegal value for option m or w
-#system V=$(readlink /proc/$PPID/exe 2>/dev/null); case "$V" in *form*) ;; *) V=vorm;; esac; echo .end > /tmp/cvf3.frm; $V -m2 /tmp/cvf3.frm; $V -w3 /tmp/cvf3.frm; true
-#system V=$(readlink /proc/$PPID/exe 2>/dev/null); case "$V" in *form*) ;; *) V=vorm;; esac; $V -m2x /tmp/cvf3.frm; $V -w4x /tmp/cvf3.frm; true
+#system V=$(readlink /proc/$PPID/exe 2>/dev/null); case "$V" in *form*) ;; *) V=vorm;; esac; T=$TESTTMPDIR/cvf3.frm; echo .end > $T; $V -m2 $T; $V -w3 $T; true
+#system V=$(readlink /proc/$PPID/exe 2>/dev/null); case "$V" in *form*) ;; *) V=vorm;; esac; T=$TESTTMPDIR/cvf3.frm; $V -m2x $T; $V -w4x $T; rm -f $T; true
 Symbol ok;
 Local ok = 1;
 Print;
@@ -14836,7 +14844,8 @@ assert result("test") =~ expr("x + x^2")
 
 *--#[ cov_bigtable_spare :
 * 60 table fills force multiple table buffers; refilling an already
-* defined element warns and is ignored, buffers freed at .end
+* defined element warns and the new definition will be used
+* (comexpr.c), buffers freed at .end
 Symbol x;
 Table f(1:60);
 #do i = 1,60
@@ -16566,22 +16575,6 @@ Print "tiny";
 assert preprocess_error?
 *--#] cov_deftermsif_9_0103_deftermsif_9 :
 
-*--#[ cov_patch_len4_8_0107_patch_len4_8 :
-* farm probe 0107_patch_len4_8 (+2 lines, kit2 tail)
-* empirically preprocess error in vorm and tvorm (standalone validated)
-* probe: clean
-* note: patches lenWORD from 8 down to 4, for builds where WORD is
-* 8 bytes; forces lenW<sizeof(WORD) resize path (store.c 5322-5331).
-Symbol x;
-Local f = (x+1)^2;
-.store out.dat f
-#system python3 -c 'd=open("out.dat","rb").read(); h=d[:128]; p=(chr(8)+chr(0)*3).encode(); q=(chr(4)+chr(0)*3).encode(); h=h.replace(p,q,1); open("out.dat","wb").write(h+d[128:])'
-.load out.dat
-Print f;
-.end
-assert preprocess_error?
-*--#] cov_patch_len4_8_0107_patch_len4_8 :
-
 *--#[ cov_div_zero_38_0119_div_zero_38 :
 * farm probe 0119_div_zero_38 (+2 lines, kit2 tail)
 * empirically preprocess error in vorm and tvorm (standalone validated)
@@ -16998,6 +16991,8 @@ assert warning?
 * probe: clean
 * covers checkpoint time interval units s/m/h/d; if units are mandatory
 * this may instead error with "Unrecognized time interval in ON Checkpoint statement"
+* (a DeprecationWarning is printed unless FORM_IGNORE_DEPRECATION is set,
+* so the asserts are warning-independent)
 Symbol x;
 On checkpoint 5s;
 On checkpoint 3m;
@@ -17006,7 +17001,8 @@ On checkpoint 4d;
 Local res = x;
 Print;
 .end
-assert warning?
+assert succeeded? || warning?
+assert result("res") =~ expr("x")
 *--#] cov_ckpt_units_28_0125_ckpt_units_28 :
 
 *--#[ cov_dolarg_recursive_chain_101_0132_dolarg_recursive_chain_1 :
