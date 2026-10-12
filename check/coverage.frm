@@ -17117,3 +17117,889 @@ Print;
 #pend_if threaded?
 assert warning?
 *--#] cov_dolarg_recursive_chain_101_0132_dolarg_recursive_chain_1 :
+*--#[ cov_r3c_encdec :
+* r3 composite: clean probes, 5 programs
+* farm probe 0000_enc_bigintarg (+5 lines, r3)
+* probe: clean
+* big integer subexpression arg: passes the numerical-arg checks, gets encoded
+CFunction f;
+Local test = f(1,2,123456789012345678901234567890);
+Transform f encode(1,last):base=10;
+Print;
+.end
+* farm probe 0000_enc_nofit (+13 lines, r3)
+* probe: clean
+* 10 args of 1 with maximal base: result needs more words than the old
+* argument area -> RunEncode "does not fit" relocation path
+CFunction f;
+Local test = f(1,1,1,1,1,1,1,1,1,1);
+Transform f encode(1,last):base=536870911;
+Print;
+.end
+* farm probe 0000_enc_subarg (+4 lines, r3)
+* probe: clean
+* symbolic subexpression arg in encode range
+CFunction f;
+Symbol x;
+Local test = f(1,2,x^2+1);
+Transform f encode(1,last):base=10;
+Print;
+.end
+* farm probe 0004_dec_pow2 (+10 lines, r3)
+* probe: clean
+* integer with zero low word, nonzero high word: "Not an integer" scan path
+CFunction f;
+Local test = f(8589934592,1,2);
+Transform f decode(1,last):base=10;
+Print test;
+.end
+* farm probe 0004_dec_subarg (+4 lines, r3)
+* probe: clean
+* non-numerical subterm first arg (x+1): "Not numerical" skip in RunDecode
+Symbol x;
+CFunction f;
+Local test = f(x+1,12345,678);
+Transform f decode(1,last):base=10;
+Print test;
+.end
+assert succeeded?
+*--#] cov_r3c_encdec :
+
+*--#[ cov_r3c_implmul :
+* r3 composite: clean probes, 4 programs
+* farm probe 0001_impl_rev_zeros (+11 lines, r3)
+* probe: clean
+* reverse-range implode: zero absorption working backward (RunImplode 1944-1957)
+CFunction f;
+Symbol a;
+Local test = f(0,0,1,0,a,0,0,0,-1);
+Transform f implode(9,1);
+Print;
+.end
+* farm probe 0002_mul_vecidx (+12 lines, r3)
+* probe: clean
+* vector and index arguments together in mulargs range
+Vector p;
+Index mu;
+CFunction f;
+Local test = f(p,mu,2);
+Transform f mulargs(1,last);
+Print;
+.end
+* farm probe 0005_pow_expr (+3 lines, r3)
+* probe: clean
+* expression name as exponent (TEXPRESSION branch)
+Symbol x,y;
+Local fexp = 1;
+Local test = y^fexp;
+Print test;
+.end
+* farm probe 0005_pow_set (+9 lines, r3)
+* probe: clean
+* set as exponent: x^{1,2} expands via Exp_ conversion
+Symbol x;
+Local test = x^{1,2};
+Print test;
+.end
+assert succeeded?
+*--#] cov_r3c_implmul :
+
+*--#[ cov_r3c_wildtop :
+* r3 composite: clean probes, 5 programs
+* farm probe 0006_setarr_sum (+12 lines, r3)
+* probe: clean
+* set element with summation parameter as index (simp4token backward scan
+* for enclosing sum_ matches the set index symbol)
+Symbols a,a1,a2,a3,n;
+Functions f,g1,g2;
+Set aa:a1,a2,a3;
+Set gg:g1,g2;
+Local test = f(a1)+f(a2);
+id f(a?aa) = sum_(n,1,2,gg[n]);
+Print test;
+.end
+* farm probe 0007_wild_setpair (+10 lines, r3)
+* probe: clean
+* a?set1?set2: element of set1 replaced by corresponding element of set2
+Symbols a,a1,a2,b1,b2;
+Functions f;
+Set aa:a1,a2;
+Set bb:b1,b2;
+Local test = f(a1)*f(a2);
+id f(a?aa?bb) = a*f(a);
+Print test;
+.end
+* farm probe 0065_wildnames_growth (+11 lines, r3)
+* probe: clean
+* many argument-list wildcards in one id: AddWildcardName buffer growth
+* (wildcard-name buffer starts at 100 bytes, doubles on overflow)
+Symbols x;
+CFunction f,g;
+id f(?a01,?a02,?a03,?a04,?a05,?a06,?a07,?a08,?a09,?a10,?a11,?a12,?a13,?a14,?a15,?a16,x?) = g(?a01);
+Print;
+.end
+* farm probe 0066_topol_dotprod (+50 lines, r3)
+* probe: clean
+* ToPolynomial DOALL: DOTPRODUCT, VECTOR and INDEX piece branches
+Vectors p,q;
+Indices i,j;
+Local test = p.q + p(i)*q(j) + i*j;
+ToPolynomial;
+Print;
+.end
+* farm probe 060_bplus_pow_h2 (+4 lines, r3)
+* probe: clean
+Symbols x,y,a,b;
+Local F = (a+b)*x^2*y + (a-b)*x*y^2 + x*y;
+B+ x,y;
+.sort
+Local D = F[x]^3 - F[x^2]*F[x] + F[1]*F[x^2];
+Print D;
+.end
+assert succeeded?
+*--#] cov_r3c_wildtop :
+
+*--#[ cov_r3c_repl :
+* r3 composite: clean probes, 7 programs
+* farm probe 0003_repl_err_multiterm (+2 lines, r3)
+* (runs clean in 5.0.2: multiterm replacement accepted)
+* probe: error
+* expected: does not evaluate into a single term
+Symbol x,y;
+CFunction f;
+Local test = f(x);
+Transform f replace(1,last)=(xarg_,(xarg_+1)*(xarg_+2));
+Print test;
+.end
+* farm probe 0003_repl_farg_nofit (+13 lines, r3)
+* probe: clean
+CFunction f,g;
+Local test = f(1,2);
+Transform f replace(1,last)=(farg_,5);
+Print test;
+.end
+* farm probe 0003_repl_iarg_sub (+5 lines, r3)
+* probe: clean
+Index mu,k;
+Vector p1;
+CFunction f;
+Local test = f(p1(mu),1);
+Transform f replace(1,last)=(iarg_,k);
+Print test;
+.end
+* farm probe 0003_repl_minvec (+17 lines, r3)
+* probe: clean
+Vector p,q;
+CFunction f;
+Local test = f(-p,1);
+Transform f replace(1,last)=(parg_,q);
+Print test;
+.end
+* farm probe 0003_repl_multi_gen (+43 lines, r3)
+* probe: clean
+Vector p,q;
+Index mu;
+Symbol y;
+CFunction f;
+Local test = f(y,p,mu,1,2);
+Transform f replace(1,last)=(y,1,p,q,mu,2);
+Print test;
+.end
+* farm probe 0003_repl_multi_tensor (+7 lines, r3)
+* probe: clean
+Vector p,q;
+Index mu1,mu2;
+Tensor t;
+Local test = t(mu1,3,p,2);
+Transform t replace(1,last)=(mu1,mu2,p,q);
+Print test;
+.end
+* farm probe 0003_repl_parg_tensor (+8 lines, r3)
+* probe: clean
+Vector p,q,r;
+Tensor t;
+Local test = t(p,q,3);
+Transform t replace(1,last)=(parg_,r);
+Print test;
+.end
+assert succeeded?
+*--#] cov_r3c_repl :
+
+*--#[ cov_r3c_storetb :
+* r3 composite: clean probes, 8 programs
+* farm probe 0033_tostorage_vars (+17 lines, r3)
+* probe: clean
+* .store of an expression using every variable class: ToStorage namelist
+* write branches (store.c 2242-2261)
+Auto S x;
+Auto V p;
+Auto I i;
+Auto C f;
+Set sv: x;
+Mod 7;
+Global e = f(x,p(i)) + x*p.p + f(i) + x^2;
+.sort
+Print e;
+.store
+.end
+* farm probe 0024_save_idxover (+15 lines, r3)
+* probe: clean
+* Save of >INFILEINDEX stored expressions: the file index overflows and a
+* new index block is chained into the save file (CoSave i<=0 branch,
+* store.c 462-480)
+Auto S x;
+#do i = 1,20
+Global g`i' = x^`i' + `i';
+#enddo
+.store
+Save p024a.dat, g1,g2,g3,g4,g5,g6,g7,g8,g9,g10,g11,g12,g13,g14,g15,g16,g17,g18,g19,g20;
+.end
+Load p024a.dat;
+Local T = g1+g17+g20;
+.sort
+Print T;
+.end
+* farm probe 0063_tb_create_baddir (+2 lines, r3)
+* (runs clean in 5.0.2: file creation deferred to open)
+* probe: error
+* expected: Could not create a new file
+TableBase "/no/such/dir/bad1.tbl" create;
+.end
+* farm probe 0063_tb_readdto (+5 lines, r3)
+* probe: clean
+* adding the same table twice: second AddTableName walks the search loop
+Symbol x;
+Table,sparse,f(1);
+Fill f(1) = x;
+TableBase "dd1.tbl" create;
+TableBase "dd1.tbl" addto f;
+TableBase "dd1.tbl" addto f;
+TableBase "dd1.tbl" addto f(1);
+.end
+* farm probe 0081_tb_on_off (+13 lines, r3)
+* probe: clean
+* TableBase on/off compress subkeys (CoTBon/CoTBoff)
+CTable,sparse f(1);
+#do i = 1,5
+    Fill f(`i') = `i';
+#enddo
+.sort
+TableBase "p0081on.tbl" create;
+TableBase "p0081on.tbl" addto f;
+TableBase "p0081on.tbl" on compress;
+.end
+TableBase "p0081on.tbl" open;
+TableBase "p0081on.tbl" off compress;
+TableBase "p0081on.tbl" audit;
+.end
+* farm probe 0079_spec_big (+3 lines, r3)
+* probe: clean
+* large spectator content: forces the PutInSpectator flush branch
+#: scratchsize 1
+Symbols x;
+CreateSpectator S1,"p0079c.spec";
+Local F = (x+1)^30*(x-2)^30;
+.sort
+ToSpectator S1;
+.sort
+CopySpectator G = S1;
+Print G;
+.end
+assert succeeded?
+*--#] cov_r3c_storetb :
+
+*--#[ cov_r3c_optfmt :
+* r3 composite: clean probes, 8 programs
+* farm probe 0037_opt_extrasym (+10 lines, r3)
+* probe: clean
+* scheme option with extra-symbol names (N1_ style): CoOptimizeOption
+* extrasym branch (compcomm.c 6952-6964)
+Symbols a,b,x;
+Local F = x*(a+b)*(a-b) + b^3;
+.sort
+Format O1,scheme=(Z1_,Z2_);
+.sort
+#optimize F
+#write "%O"
+#clearoptimize
+.end
+* farm probe 0037_opt_extrasymnum (+9 lines, r3)
+* probe: clean
+* scheme option with extrasym(n) numbered extra symbols:
+* CoOptimizeOption parenthesized extrasym branch (compcomm.c 6982-6996)
+Symbols a,b,x;
+ExtraSymbols array Z;
+Local F = x*(a+b)*(a-b) + b^3;
+.sort
+Format O1,scheme=(Z(1),Z(2));
+.sort
+#optimize F
+#write "%O"
+#clearoptimize
+.end
+* farm probe 0068_debugflag_twice (+27 lines, r3)
+* probe: clean
+* second debugflag=1 printing pass in a later module (print_expr branch)
+Symbols a,b,c;
+Local F = (a+b)*(c+a) + a^2;
+Format O1,debugflag=1;
+.sort
+#optimize F
+#write "%O"
+#clearoptimize
+Local G = (a+c)^3 + b*c^2;
+Format O2,debugflag=1,method=greedy;
+.sort
+#optimize G
+#write "%O"
+#clearoptimize
+.end
+* farm probe 0068_horner_many (+3 lines, r3)
+* probe: clean
+* many variables force deep build_Horner_tree recursion
+Symbols a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12;
+Local F = (a1+a2+a3+a4+a5+a6+a7+a8+a9+a10+a11+a12)^3;
+Format O1,method=greedy;
+.sort
+#optimize F
+#write "%O"
+#clearoptimize
+.end
+* farm probe 0073_setextattr_stderr (+11 lines, r3)
+* probe: clean
+* #setexternalattr with stderr attribute (DoSetExternalAttr stderr branch)
+#setexternalattr stderr=terminal
+#external cat
+#rmexternal
+#setexternalattr stderr=/tmp/probe073_stderr.txt,shell=noshell,kill=0
+#rmexternal
+.end
+* farm probe 0077_setup_dotchar (+5 lines, r3)
+* probe: clean
+* #: dotchar STRINGVALUE and #: insidefirst ONOFFVALUE
+#: dotchar ,
+#: insidefirst off
+Symbols x;
+Local F = x;
+Print;
+.end
+* farm probe 0077_setup_path_env (+24 lines, r3)
+* probe: clean
+* #: path with backtick environment substitution (ProcessOption 203-243)
+#: path `HOME'
+Symbols x;
+Local F = x;
+Print;
+.end
+* farm probe 0073_write_fortran90 (+4 lines, r3)
+* probe: clean
+* Fortran90 mode continuation ('&' continuation in writeToChannel)
+Symbols x;
+Format Fortran90;
+.sort
+#write "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
+.end
+assert succeeded?
+*--#] cov_r3c_optfmt :
+
+*--#[ cov_r3c_dolclean :
+* r3 composite: clean probes, 8 programs, $-variables present
+#pend_if threaded?
+* farm probe 0012_dol_idrhs_2 (+6 lines, r3)
+* probe: clean
+Vector p,q;
+Local F = p;
+$a = q;
+id p = $a;
+Print;
+.end
+* farm probe 0016_dol_bigint_11 (+4 lines, r3)
+* probe: clean
+Symbol s1;
+Local F = 1;
+$b = 123456789012345678901234567890;
+If ( $b > 0 ) Print F;
+Print;
+.end
+* farm probe 0016_frac_dollar_18 (+2 lines, r3)
+* probe: clean
+Local F = 1;
+.sort
+$n = 3/4;
+.sort
+#if ( '$n' < 1 )
+Multiply 4;
+#endif
+Print F;
+.end
+* farm probe 0015_print_idx_zero (+2 lines, r3)
+* probe: clean
+* $e[$j] with $j = 0 prints the number of factors
+Symbol x,y;
+Local F = (x+1)*(y+1) + (x-1)*(y-1);
+.sort
+$e = F;
+FactDollar $e;
+$j = 0;
+Print "%$",$e[$j];
+.end
+* farm probe 0022_doloop_negincr (+2 lines, r3)
+* probe: clean
+* runtime Do loop with negative dollar increment (TestDoLoop/TestEndDoLoop
+* step branches, dollar.c 2836-2845, 2937-2945)
+Symbol y;
+$a = 2;
+$s = -1;
+.sort
+Do $i = 5,$a,$s;
+  $q = y*$i;
+EndDo;
+Print " q=%$;", $q;
+.end
+* farm probe 0038_tovector (+4 lines, r3)
+* probe: clean
+* ToVector with a tensor given as name and the vector as $-variable, and
+* the reverse (CoToVector dollar branches, compcomm.c 2934-2956)
+Tensor t1;
+Vector v1;
+Index mu1,mu2;
+Local test = t1(mu1,mu2);
+.sort
+$tv = t1;
+$vv = v1;
+ToVector t1,$vv;
+.sort
+Print test;
+.end
+Tensor t2;
+Vector v2;
+Index mu3,mu4;
+Local test2 = t2(mu3,mu4);
+.sort
+$t2v = t2;
+$vv2 = v2;
+ToVector $t2v,v2;
+.sort
+Print test2;
+.end
+* farm probe 0037_opt_dollar (+14 lines, r3)
+* probe: clean
+* scheme option listing $-variables: DolToSymbol branch of
+* CoOptimizeOption (compcomm.c 6968-6979)
+Symbols a,b,x;
+Local F = x*(a+b)*(a-b) + b^3;
+$a = a;
+$b = b;
+.sort
+Format O1,scheme=($a,$b);
+.sort
+#optimize F
+#write "%O"
+#clearoptimize
+.end
+assert succeeded?
+*--#] cov_r3c_dolclean :
+
+*--#[ cov_r3e_0007_wild_setpair_err :
+* farm probe 0007_wild_setpair_err (+2 lines, r3) - CE
+* probe: error
+* expected: This type of set not allowed in this wildcard construction
+* built in set as source set of a?set1?set2 is rejected
+Symbols a,b1,b2;
+Functions f;
+Set bb:b1,b2;
+Local test = f(1)+f(2);
+id f(a?number_?bb) = a;
+Print test;
+.end
+assert compile_error?
+*--#] cov_r3e_0007_wild_setpair_err :
+
+*--#[ cov_r3e_0010_fmt_scheme_err :
+* farm probe 0010_fmt_scheme_err (+4 lines, r3) - CE
+* probe: error
+* expected: does not evaluate to a symbol
+* scheme=() element whose $-variable does not evaluate to a symbol
+CFunction f;
+Symbol x;
+$s = f(1);
+Format O1,scheme=($s);
+Local e = x^2;
+.sort
+.end
+assert compile_error?
+*--#] cov_r3e_0010_fmt_scheme_err :
+
+*--#[ cov_r3e_0018_set_range :
+* farm probe 0018_set_range (+2 lines, r3) - CE
+* probe: clean
+* $() set_ with a declared range set: CRANGE branch with CompCoef checks
+Set sr: 1:9;
+#if $( 5 == set_(sr) )
+Local Pk = 1;
+#endif
+Print Pk;
+.end
+assert compile_error?
+*--#] cov_r3e_0018_set_range :
+
+*--#[ cov_r3e_0020_canon_topo :
+* farm probe 0020_canon_topo (+12 lines, r3) - CE
+* probe: clean
+* Canonicalize topology statement: the canonicalized term is written into
+* the output dollar via PutTermInDollar (diagrams.c)
+Vector p1,p2,p3;
+Local T = node_(p1,p2)*node_(p2,-p1)*edge_(p1,p2);
+Canonicalize topology,node_,edge_,$out;
+Print $out;
+.end
+assert compile_error?
+*--#] cov_r3e_0020_canon_topo :
+
+*--#[ cov_r3e_0035_doloop_grow :
+* farm probe 0035_doloop_grow (+11 lines, r3) - CE
+* probe: clean
+* nested runtime Do loops deep enough to grow the doloop stack
+* (CoDo stack reallocation, compcomm.c 6337-6348; initial size 20)
+Symbol x;
+CFunction f;
+Local q = 1;
+#do i = 1,22
+Do $n`i' = 1,1;
+#enddo
+q = q + 1;
+#do i = 1,22
+EndDo;
+#enddo
+.sort
+Print q;
+.end
+assert compile_error?
+*--#] cov_r3e_0035_doloop_grow :
+
+*--#[ cov_r3e_0063_tb_addto_badargs :
+* farm probe 0063_tb_addto_badargs (+2 lines, r3) - CE
+* probe: error
+* expected: should be numbers
+Symbol x;
+Table,sparse,f(1);
+Fill f(1) = x;
+TableBase "ba1.tbl" create;
+TableBase "ba1.tbl" addto f(x);
+.end
+assert compile_error?
+*--#] cov_r3e_0063_tb_addto_badargs :
+
+*--#[ cov_r3e_0063_tb_addto_nonsparse :
+* farm probe 0063_tb_addto_nonsparse (+2 lines, r3) - CE
+* probe: error
+* expected: should be a sparse table
+Symbol x;
+Table f(1);
+TableBase "ns1.tbl" create;
+TableBase "ns1.tbl" addto f;
+.end
+assert compile_error?
+*--#] cov_r3e_0063_tb_addto_nonsparse :
+
+*--#[ cov_r3e_0063_tb_addto_undefelem :
+* farm probe 0063_tb_addto_undefelem (+3 lines, r3) - CE
+* probe: error
+* expected: has not been defined
+Symbol x;
+Table,sparse,f(1);
+Fill f(1) = x;
+TableBase "ud1.tbl" create;
+TableBase "ud1.tbl" addto f(7);
+.end
+assert compile_error?
+*--#] cov_r3e_0063_tb_addto_undefelem :
+
+*--#[ cov_r3e_0063_tb_create_twice :
+* farm probe 0063_tb_create_twice (+2 lines, r3) - CE
+* probe: error
+* expected: already an open TableBase
+TableBase "tt1.tbl" create;
+TableBase "tt1.tbl" create;
+.end
+assert compile_error?
+*--#] cov_r3e_0063_tb_create_twice :
+
+*--#[ cov_r3e_0063_tb_open_badoption :
+* farm probe 0063_tb_open_badoption (+2 lines, r3) - CE
+* probe: error
+* expected: Invalid option
+TableBase "bo1.tbl" open, banana;
+.end
+assert compile_error?
+*--#] cov_r3e_0063_tb_open_badoption :
+
+*--#[ cov_r3e_0064_processbucket_badnum :
+* farm probe 0064_processbucket_badnum (+2 lines, r3) - CE
+* probe: error
+* expected: Numerical value expected for ProcessBucketSize
+ModuleOption ProcessBucketSize abc;
+.end
+assert compile_error?
+*--#] cov_r3e_0064_processbucket_badnum :
+
+*--#[ cov_r3e_0065_table_starmax :
+* farm probe 0065_table_starmax (+15 lines, r3) - CE
+* probe: clean
+* star-table declarations: sparse table with <n / <=n maximum dimensions
+Symbols x;
+Table,sparse,t1(<2);
+Fill t1(1) = x;
+Fill t1(2,3) = x^2;
+Local a = t1(1)+t1(2,3);
+Print a;
+.end
+Symbols x;
+Table,sparse,t2(<=2);
+Fill t2(1,2) = x;
+Local b = t2(1,2);
+Print b;
+.end
+assert compile_error?
+*--#] cov_r3e_0065_table_starmax :
+
+*--#[ cov_r3e_0065_table_starmax_err :
+* farm probe 0065_table_starmax_err (+3 lines, r3) - CE
+* probe: error
+* expected: Maximum number of dimensions in *-table should be at least one
+Table,sparse,t(<0);
+.end
+assert compile_error?
+*--#] cov_r3e_0065_table_starmax_err :
+
+*--#[ cov_r3e_0065_vector_dim :
+* farm probe 0065_vector_dim (+8 lines, r3) - CE
+* probe: clean
+* vector declaration with dimension field {d=...} (CoVector {d= path)
+Vector v{d=4};
+Index i;
+Local test = v(i).v(i);
+Print;
+.end
+assert compile_error?
+*--#] cov_r3e_0065_vector_dim :
+
+*--#[ cov_r3e_0067_trace4_dollar_ok :
+* farm probe 0067_trace4_dollar_ok (+2 lines, r3) - CE
+* probe: clean
+* Trace4 on a $-expression holding a tensor (TenVecFind success path)
+Vectors p1,p2,p3,p4;
+Symbols x;
+#$T = g_(1,p1,p2,p3,p4);
+Trace4,1,$T;
+Print;
+.end
+assert compile_error?
+*--#] cov_r3e_0067_trace4_dollar_ok :
+
+*--#[ cov_r3e_0078_compress_gzip :
+* farm probe 0078_compress_gzip (+2 lines, r3) - CE
+* probe: clean
+* Compress gzip and Compress <space> variants
+Symbols x;
+Local F = (x+1)^50 + x^25;
+Compress gzip;
+Print;
+.sort
+Compress 200;
+Local G = (x+2)^40;
+Print;
+.end
+assert compile_error?
+*--#] cov_r3e_0078_compress_gzip :
+
+*--#[ cov_r3e_0081_tb_addto_badnum_err :
+* farm probe 0081_tb_addto_badnum_err (+35 lines, r3) - CE
+* probe: error
+* expected: Incorrect number of table arguments
+CTable,sparse f(1);
+Fill f(1) = 1;
+.sort
+TableBase "p0081m.tbl" create;
+TableBase "p0081m.tbl" addto f(1,2);
+.end
+assert compile_error?
+*--#] cov_r3e_0081_tb_addto_badnum_err :
+
+*--#[ cov_r3e_0081_tb_addto_undef_err :
+* farm probe 0081_tb_addto_undef_err (+2 lines, r3) - CE
+* probe: error
+* expected: has not been defined
+CTable,sparse f(1);
+Fill f(1) = 1;
+.sort
+TableBase "p0081u.tbl" create;
+TableBase "p0081u.tbl" addto zzz;
+.end
+assert compile_error?
+*--#] cov_r3e_0081_tb_addto_undef_err :
+
+*--#[ cov_r3e_0081_tb_on_badkey_err :
+* farm probe 0081_tb_on_badkey_err (+2 lines, r3) - CE
+* probe: error
+* expected: subkey
+* TableBase on with undefined subkey
+Symbols x;
+TableBase "p0081bad.tbl" create;
+TableBase "p0081bad.tbl" on nosuchkey;
+.end
+assert compile_error?
+*--#] cov_r3e_0081_tb_on_badkey_err :
+
+*--#[ cov_r3e_052_model_spin_err_h10 :
+* farm probe 052_model_spin_err_h10 (+2 lines, r3) - CE
+* probe: error
+* expected: Spin goes by dimension
+Model BADS;
+    Particle p1, +xyz;
+EndModel;
+.end
+assert compile_error?
+*--#] cov_r3e_052_model_spin_err_h10 :
+
+*--#[ cov_r3e_0016_pp_do_dol_8 :
+* farm probe 0016_pp_do_dol_8 (+2 lines, r3) - PE
+* probe: clean
+Symbol s1;
+Local F = 0;
+$n = 2;
+Print;
+.sort
+#do i = 1,$n
+F = F + 1;
+#enddo
+Print F;
+.end
+assert preprocess_error?
+*--#] cov_r3e_0016_pp_do_dol_8 :
+
+*--#[ cov_r3e_0064_modlocal_irregular :
+* farm probe 0064_modlocal_irregular (+2 lines, r3) - PE
+* probe: error
+* expected: Irregular end of Local option
+ModuleOption local,$a,x;
+.end
+assert preprocess_error?
+*--#] cov_r3e_0064_modlocal_irregular :
+
+*--#[ cov_r3e_0064_processbucket_clean :
+* farm probe 0064_processbucket_clean (+7 lines, r3) - PE
+* probe: clean
+* ModuleOption ProcessBucketSize sets the thread work-bucket size
+Symbols x;
+Local t = x;
+ModuleOption ProcessBucketSize 10;
+Print;
+.end
+assert preprocess_error?
+*--#] cov_r3e_0064_processbucket_clean :
+
+*--#[ cov_r3e_0064_sortsum_option :
+* farm probe 0064_sortsum_option (+3 lines, r3) - PE
+* probe: clean
+* .sort(sum $a): module statement option reaches DoModSum/DoModDollar;
+* local then sum on the same dollar triggers the conflicting-option warning
+Symbols x;
+$a = 0;
+ModuleOption local,$a;
+Local t = x;
+.sort(sum $a);
+Print;
+.end
+assert preprocess_error?
+*--#] cov_r3e_0064_sortsum_option :
+
+*--#[ cov_r3e_0073_setextattr_err :
+* farm probe 0073_setextattr_err (+3 lines, r3) - PE
+* probe: error
+* expected: unrecognized attribute
+#setexternalattr foo=bar;
+.end
+assert preprocess_error?
+*--#] cov_r3e_0073_setextattr_err :
+
+*--#[ cov_r3e_0073_write_fincl :
+* farm probe 0073_write_fincl (+15 lines, r3) - PE
+* probe: clean
+* %f file inclusion in #write (file created by #system)
+#system -e printf "included-file-content-073" > /tmp/probe073_inc.txt
+#write "prefix:%f:suffix","/tmp/probe073_inc.txt"
+.end
+assert preprocess_error?
+*--#] cov_r3e_0073_write_fincl :
+
+*--#[ cov_r3e_0077_setup_define :
+* farm probe 0077_setup_define (+3 lines, r3) - PE
+* probe: clean
+* #: define setup parameter (ProcessOption DEFINEVALUE case)
+#: define covnum 7
+#$v = `covnum';
+Symbols x;
+Local F = x + `covnum';
+Print F;
+.end
+assert preprocess_error?
+*--#] cov_r3e_0077_setup_define :
+
+*--#[ cov_r3e_0003_repl_symwild_sub :
+* farm probe 0003_repl_symwild_sub (+6 lines, r3) - RE
+* probe: clean
+Symbol x,y;
+CFunction f,g;
+Local test = f(g(x),1);
+Transform f replace(1,last)=(g(xarg_),g(xarg_+1));
+Print test;
+.end
+assert runtime_error?
+*--#] cov_r3e_0003_repl_symwild_sub :
+
+*--#[ cov_r3e_0009_chainin_dol_err :
+* farm probe 0009_chainin_dol_err (+18 lines, r3) - RE
+* probe: error
+* expected: does not evaluate to function
+* chainin with a $-variable that does not evaluate to a function
+Symbol a;
+Local e = a;
+$x = a;
+.sort
+chainin $x;
+Print e;
+.end
+assert runtime_error?
+*--#] cov_r3e_0009_chainin_dol_err :
+
+*--#[ cov_r3e_0016_funidx_dol :
+* farm probe 0016_funidx_dol (+4 lines, r3) - RE
+* probe: clean
+* funny dollar with a dollar index inside an id LHS pattern:
+* id f($a[$j]) resolves the index through GetDolNum
+* (low confidence: semantics of $a[$j] in a pattern are undocumented)
+Symbol x,y;
+CFunction f,g;
+Local e = f(x);
+$a = 2*x;
+FactDollar $a;
+$j = 1;
+id f($a[$j]) = g($a);
+Print e;
+.end
+assert runtime_error?
+*--#] cov_r3e_0016_funidx_dol :
+
+*--#[ cov_r3e_0077_setup_numenv :
+* farm probe 0077_setup_numenv (+2 lines, r3) - RE
+* probe: clean
+* #: numerical value parameter with backtick env substitution inside value
+#: indentspace 5
+#: maxwildcards `INDENTSPACE'
+Symbols x;
+Local F = x;
+Print;
+.end
+assert runtime_error?
+*--#] cov_r3e_0077_setup_numenv :
