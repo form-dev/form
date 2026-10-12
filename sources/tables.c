@@ -1537,7 +1537,7 @@ int CoTBon(UBYTE *s)
 			d->mode &= ~NOCOMPRESS;
 		}
 		else {
-			MesPrint("&subkey %s not defined in TableBase On statement");
+			MesPrint("&subkey %s not defined in TableBase On statement",s);
 			error = 1;
 		}
 		*ss = c; s = ss;
@@ -1568,7 +1568,7 @@ int CoTBoff(UBYTE *s)
 			d->mode |= NOCOMPRESS;
 		}
 		else {
-			MesPrint("&subkey %s not defined in TableBase Off statement");
+			MesPrint("&subkey %s not defined in TableBase Off statement",s);
 			error = 1;
 		}
 		*ss = c; s = ss;
