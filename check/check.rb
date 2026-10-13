@@ -799,6 +799,31 @@ module FormTest
     end
   end
 
+  # true if no unexpected Valgrind errors are found.
+  def valgrind_clean?
+    if FormTest.cfg.valgrind.nil?
+      return true
+    end
+
+    # NOTE: we ignore invalid reads in TerminateImpl(), which are intentional
+    # in debug builds.
+    @stderr !~ /Invalid read(?![^\r\n]*\R[^\r\n]*\bTerminateImpl\b)/ &&
+      !@stderr.include?("Invalid write") &&
+      !@stderr.include?("Jump to the invalid address") &&
+      !@stderr.include?("Use of uninitialised value") &&
+      !@stderr.include?("Conditional jump or move depends on uninitialised value") &&
+      !@stderr.include?("points to unaddressable byte") &&
+      !@stderr.include?("points to uninitialised byte") &&
+      !@stderr.include?("contains uninitialised byte") &&
+      !@stderr.include?("Source and destination overlap in") &&
+      !@stderr.include?("Invalid free") &&
+      !@stderr.include?("Mismatched free") &&
+      !@stderr.include?("has a fishy") &&
+      @stderr !~ /definitely lost: [1-9]/ &&
+      @stderr !~ /indirectly lost: [1-9]/ &&
+      @stderr !~ /possibly lost: [1-9]/
+  end
+
   # true if the FORM job completed without any warnings/errors and
   # the exit code was 0.
   def succeeded?
@@ -808,28 +833,10 @@ module FormTest
           return true
         end
 
-        @stdout += "!!! stderr is not empty"
         return false
       end
-      # Check for Valgrind errors.
-      ok = !@stderr.include?("Invalid read") &&
-           !@stderr.include?("Invalid write") &&
-           !@stderr.include?("Invalid free") &&
-           !@stderr.include?("Mismatched free") &&
-           !@stderr.include?("Use of uninitialised value") &&
-           !@stderr.include?("Conditional jump or move depends on uninitialised value") &&
-           !@stderr.include?("points to unaddressable byte") &&
-           !@stderr.include?("points to uninitialised byte") &&
-           !@stderr.include?("contains uninitialised byte") &&
-           !@stderr.include?("Source and destination overlap in memcpy") &&
-           !@stderr.include?("has a fishy") &&
-           @stderr !~ /definitely lost: [1-9]/ &&
-           @stderr !~ /indirectly lost: [1-9]/ &&
-           @stderr !~ /possibly lost: [1-9]/
-      if !ok
-        @stdout += "!!! Valgrind test failed"
-      end
-      return ok
+
+      return valgrind_clean?
     end
     false
   end

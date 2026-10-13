@@ -239,6 +239,8 @@ The following methods are available in Ruby test programs.
   `true` if the FORM job finished within the timeout, otherwise `false`.
 - `succeeded? → bool`  
   `true` if the FORM job finished without any problems, otherwise `false`.
+- `valgrind_clean? → bool`  
+  `true` if no unexpected Valgrind errors are found, otherwise `false`.
 - `warning? → bool`  
   `true` if the FORM job issued a warning, otherwise `false`.
 - `warning?(expected_message : string) → bool`  
