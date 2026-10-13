@@ -3526,11 +3526,14 @@ calculus should be switched off again.
 The options are
 \begin{description}
 \item[NoFunctions] Modulus calculus is not performed inside function 
-arguments.
+arguments, except for the active PolyFun (see \ref{substapolyfun}) and the
+coefficients of the active PolyRatFun in expand mode (see
+\ref{substapolyratfun}).
 \item[AlsoFunctions] Modulus calculus is also performed inside function 
 arguments.
 \item[CoefficientsOnly] Modulus calculus is neither performed inside function 
-arguments nor on powers of symbols.
+arguments nor on powers of symbols. The exceptions listed under NoFunctions
+also apply.
 \item[PlusMin] The values of numbers are reduced to the range 
 $(-value+1)/2$ to $(value-1)/2$.
 \item[Positive] The values of numbers are reduced to the range $0$ to 
@@ -4631,6 +4634,11 @@ remaining incidence of the function rat will then have only one argument,
 like the polyfun (see \ref{substapolyfun}). The advantage is that now the 
 addition of two coefficients is a simple and straightforward operation that 
 does not need the expensive polynomial GCD computations.
+
+\noindent When Modulus (see \ref{substamodulus}) is active, the coefficients
+of this expansion are reduced modulo the specified value. This also applies
+with the default NoFunctions option: the active PolyRatFun in expand mode
+is exempt from this restriction, so AlsoFunctions is not required. 
 
 \noindent Of course one can program such expansions externally and maybe 
 better suited for the problem at hand, but using this option of the 
