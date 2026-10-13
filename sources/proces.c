@@ -1687,30 +1687,15 @@ DoSpec:
 								AN.ncmod = oldncmod;
 								DONE(retvalue)
 							}
-							else {
-								// For a long time, Normalize was called in-place here. This was
-								// very dangerous, since Normalize can increase the size of the
-								// term, and overwrite term data at outer nesting levels. We
-								// can instead just rely on the Normalize call (which uses the
-								// WorkSpace) just before calling StoreTerm later.
-								WORD *tend = t + *t, *tt = t+1;
-								stilldirty = 0;
-								tend -= ABS(tend[-1]);
-								while ( tt < tend ) {
-									if ( *tt == SUBEXPRESSION || *tt == EXPRESSION ) {
-										stilldirty = 1; break;
-									}
-									tt += tt[1];
-								}
-							}
 							AN.subsubveto = 0;
 							AT.RecFlag--;
 							t += *t;
 						}
 						AT.NestPoin--;
 /*
-						Argument contains no subexpressions.
-						It should be normalized and sorted.
+						Normalize and sort the terms of the argument. Normalize may possibly
+						introduce new SUBEXPRESSIONs, for example due to dollar-var inserts.
+						Check after sorting if the argument is clean, or needs further work.
 						The main problem is the storage: we need to Normalize a copy of the
 						term data in the WorkSpace, since Normalize can increase the size
 						of the term, which would overwrite the data which follows!
@@ -1732,7 +1717,8 @@ DoSpec:
 							do { *m++ = *t++; } while ( t < r );
 							r = AT.WorkPointer;
 							AT.WorkPointer = r + *r;
-							if ( Normalize(BHEAD r) ) {
+							/* Allow positive return values: there may still be SUBEXPRESSIONs to process */
+							if ( Normalize(BHEAD r) < 0 ) {
 								if ( *t1 == AR.PolyFun && AR.PolyFunType == 2 ) {
 									AR.SortType = oldsorttype;
 									AR.CompareRoutine = (COMPAREDUMMY)oldcompareroutine;
@@ -1767,7 +1753,21 @@ DoSpec:
 							AR.CompareRoutine = (COMPAREDUMMY)oldcompareroutine;
 							t1[2] |= MUSTCLEANPRF;
 						}
-						while ( *m ) m += *m;
+						/* Check the normalized, sorted result for remaining processing */
+						stilldirty = 0;
+						while ( *m ) {
+							if ( !stilldirty ) {
+								WORD *tend = m + *m, *tt = m+1;
+								tend -= ABS(tend[-1]);
+								while ( tt < tend ) {
+									if ( *tt == SUBEXPRESSION || *tt == EXPRESSION ) {
+										stilldirty = 1; break;
+									}
+									tt += tt[1];
+								}
+							}
+							m += *m;
+						}
 						i = WORDDIF(m,AT.WorkPointer);
 						*AT.WorkPointer = i;
 						AT.WorkPointer[1] = stilldirty;
