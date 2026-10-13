@@ -254,10 +254,10 @@ And the user can of course also influence their settings as explained in
 the chapter on the setup \ref{setup}. This chapter gives also all default 
 values.
 
-There is one restriction on the sorting of function arguments and 
-\$-expressions: They are not allowed to go into the stage4 sorting. Any 
-such attempt will result in an error message and the suggestion to raise 
-the size of the buffers for this type of sorting.
+Sorting these `sub-buffers' may also run into a stage 4 sort when necessary.
+This usually implies that performance will be severely affected, hence the
+first time this happens during a program a warning will be printed, with the
+suggestion to increase the sizes of the sub-buffers.
 
 When \FORM\ is running in parallel mode (either \TFORM\ or \ParFORM) each worker 
 will need its own buffers. In \ParFORM\ in which the processors each control 
