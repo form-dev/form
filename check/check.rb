@@ -799,10 +799,19 @@ module FormTest
     end
   end
 
+  # true if the FORM job reported an internal error, which should never happen.
+  def internal_error?(expected_message = nil)
+    if expected_message.nil?
+      @stdout =~ / ~~> Internal error/
+    else
+      @cleaned_stdout =~ / ~~> Internal error.*#{Regexp.escape(expected_message)}/
+    end
+  end
+
   # true if the FORM job completed without any warnings/errors and
   # the exit code was 0.
   def succeeded?
-    if finished? && !warning? && !preprocess_error? && !compile_error? && !runtime_error? && return_value == 0
+    if finished? && !warning? && !preprocess_error? && !compile_error? && !runtime_error? && !internal_error? && return_value == 0
       if FormTest.cfg.valgrind.nil?
         if @stderr.empty?
           return true

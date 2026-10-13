@@ -245,8 +245,8 @@ The following methods are available in Ruby test programs.
   `true` if the FORM job issued the expected warning, otherwise `false`.
 
 The following methods are similar to `warning?`,
-but they check for preprocessor errors, compile-time errors,
-and run-time errors, respectively:
+but they check for preprocessor errors, compile-time errors, run-time errors,
+and internal errors (which should never happen), respectively:
 
 - `preprocess_error? → bool`  
   `preprocess_error?(expected_message : string) → bool`
@@ -254,6 +254,8 @@ and run-time errors, respectively:
   `compile_error?(expected_message : string) → bool`
 - `runtime_error? → bool`  
   `runtime_error?(expected_message : string) → bool`
+- `internal_error? → bool`  
+  `internal_error?(expected_message : string) → bool`
 
 #### Standard streams
 
