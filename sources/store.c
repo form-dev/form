@@ -3603,6 +3603,8 @@ void ExprStatus(EXPRESSIONS e)
  *  @param  p       pointer to data
  *  @param  length  length of data in bytes
  */
+/* UNFINISHED_FEATURE_EXCL_START */
+/* 32-bit/other-endian save-file translation; never exercised on 64-bit builds */
 static void FlipN(UBYTE *p, int length)
 {
 	UBYTE *q, buf;
@@ -4012,14 +4014,17 @@ static void ResizeCoeff32(UBYTE **bout, UBYTE *bend, UBYTE *top)
 		}
 
 		if ( out > (int32_t *)top ) {
+				/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 			MesPrint("!>Error in resizing coefficient!");
 /* INTERNAL_ERROR_EXCL_STOP */
+				/* UNFINISHED_FEATURE_EXCL_START */
 		}
 
 		*bout = (UBYTE *)out;
 	}
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
  		#] ResizeCoeff : 
@@ -4258,6 +4263,9 @@ LONG ReadSaveIndex(FILEINDEX *fileind)
 {
 	/* do we need some translation for the FILEINDEX? */
 	if ( AO.transFlag ) {
+		/* UNFINISHED_FEATURE_EXCL_START: save file header/index translation
+		   only happens when reading a save file made with a different
+		   word size or byte order; not testable in same-platform runs */
 		/* if a translated FILEINDEX can hold less entries than the original
 		   FILEINDEX, then we need to buffer the extra entries in this static
 		   variable (can happen going from 32bit to 64bit */
@@ -4281,9 +4289,11 @@ LONG ReadSaveIndex(FILEINDEX *fileind)
 
 		if ( ReadFile(AO.SaveData.Handle, (UBYTE *)fileind, sizeof(FILEINDEX))
 				!= sizeof(FILEINDEX) ) {
+			/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 			return ( MesPrint("!>Error(1) reading stored expression.") );
 /* INTERNAL_ERROR_EXCL_STOP */
+			/* UNFINISHED_FEATURE_EXCL_START */
 		}
 
 		/* do we need to flip the endianness? */
@@ -4401,6 +4411,7 @@ LONG ReadSaveIndex(FILEINDEX *fileind)
 			NCOPYB(p, q, n)
 		}
 		return ( 0 );
+		/* UNFINISHED_FEATURE_EXCL_STOP */
 	} else {
 		return ( ReadFile(AO.SaveData.Handle, (UBYTE *)fileind, sizeof(FILEINDEX))
 		         != sizeof(FILEINDEX) );
@@ -4447,6 +4458,7 @@ LONG ReadSaveVariables(UBYTE *buffer, UBYTE *top, LONG *size, LONG *outsize,\
 {
 	/* do we need some translation for the variables? */
 	if ( AO.transFlag ) {
+		/* UNFINISHED_FEATURE_EXCL_START */
 		/* counters for the number of already read symbols, indices, ... that
 		   need to remain valid between different calls to ReadSaveVariables().
 		   are initialized if stage == -1 */
@@ -4495,11 +4507,13 @@ LONG ReadSaveVariables(UBYTE *buffer, UBYTE *top, LONG *size, LONG *outsize,\
 			if ( *size > newsize ) *size = newsize;
 		}
 
+				/* UNFINISHED_FEATURE_EXCL_STOP */
 		if ( ( numread = ReadFile(AO.SaveData.Handle, in, *size) ) != *size ) {
 /* INTERNAL_ERROR_EXCL_START */
 			return ( MesPrint("!>Error(2) reading stored expression.") );
 /* INTERNAL_ERROR_EXCL_STOP */
 		}
+				/* UNFINISHED_FEATURE_EXCL_START */
 
 		*size = 0;
 		*outsize = 0;
@@ -4772,11 +4786,11 @@ RSVEnd:
 		ADDPOS(pos, *size);
 		SeekFile(AO.SaveData.Handle, &pos, SEEK_SET);
 		return ( 0 );
+	/* UNFINISHED_FEATURE_EXCL_STOP */
 	} else {
 		return ( ReadFile(AO.SaveData.Handle, buffer, *size) != *size );
 	}
 }
-
 /*
  		#] ReadSaveVariables : 
  		#[ ReadSaveTerm :
@@ -4810,6 +4824,8 @@ RSVEnd:
  *                     buffer. used in recursive calls
  *  @return            pointer to the next unprocessed data in the input buffer
  */
+/* UNFINISHED_FEATURE_EXCL_START */
+/* never called: call sites commented out in proces.c */
 UBYTE *
 ReadSaveTerm32(UBYTE *bin, UBYTE *binend, UBYTE **bout, UBYTE *boutend, UBYTE *top, int terminbuf)
 {
@@ -5113,10 +5129,12 @@ ReadSaveTerm32(UBYTE *bin, UBYTE *binend, UBYTE **bout, UBYTE *boutend, UBYTE *t
 								++out; ++r;
 								break;
 							} else {
+				/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 								MesPrint("!>short function code %d not implemented.", *out);
 								return ( (UBYTE *)in );
 /* INTERNAL_ERROR_EXCL_STOP */
+								/* UNFINISHED_FEATURE_EXCL_START */
 							}
 					}
 				}
@@ -5170,10 +5188,12 @@ ReadSaveTerm32(UBYTE *bin, UBYTE *binend, UBYTE **bout, UBYTE *boutend, UBYTE *t
 			}
 		}
 		else {
+			/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 			MesPrint("!>ID %d not recognized.", id);
 			return ( (UBYTE *)in );
 /* INTERNAL_ERROR_EXCL_STOP */
+			/* UNFINISHED_FEATURE_EXCL_START */
 		}
 
 		*newsubtermp = out - newsubtermp + 1;
@@ -5198,6 +5218,7 @@ ReadSaveTerm32(UBYTE *bin, UBYTE *binend, UBYTE **bout, UBYTE *boutend, UBYTE *t
 
 	return ( (UBYTE *)in );
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
  		#] ReadSaveTerm : 

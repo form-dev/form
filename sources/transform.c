@@ -129,6 +129,7 @@ int CoTransform(UBYTE *in)
 			else if ( type != CSET ) {
 				MesPrint("& %s: A transform statement starts with sets of functions",s);
 				if ( error == 0 ) error = 1;
+				return(error);   /* number is garbage here: bail before it is used */
 			}
 			*in++ = c;
 		}

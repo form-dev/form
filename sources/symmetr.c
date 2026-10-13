@@ -576,6 +576,7 @@ int MatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 	WORD *params, *lowlevel = 0;
 	int argcount = 0, funnycount = 0, tcount = fun[1] - FUNHEAD;
 	int type = 0, pnum, i, j, k, nwstore, iraise, itop, sumeat;
+	int maxname = 0;
 	CBUF *C = cbuf+AT.ebufnum;
 	int ntwa = 3*AN.NumTotWildArgs+1;
 	LONG oldcpointer = C->Pointer - C->Buffer;
@@ -614,7 +615,10 @@ int MatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 	p = pattern + FUNHEAD;
 	pstop = pattern + pattern[1];
 	while ( p < pstop ) {
-		if ( *p == FUNNYWILD ) { p += 2; funnycount++; }
+		if ( *p == FUNNYWILD ) {
+			if ( p[1] > maxname ) maxname = p[1];
+			p += 2; funnycount++;
+		}
 		else { p++; argcount++; }
 	}
 	if ( argcount > tcount ) goto NoSuccess;
@@ -645,6 +649,7 @@ int MatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 
 	/* Store the wildcard assignments */
 
+	ntwa = 2*funnycount + maxname + 1;
 	params = AT.WorkPointer;
 	thewildcards = t = params + tcount;
 	t += ntwa;
@@ -657,8 +662,8 @@ int MatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 		do {
 			*t++ = *m++; *t++ = *m++; *t++ = *m++; *t++ = *m++; *t++ = *r++;
 		} while ( --i > 0 );
-		*t++ = C->numrhs;
 	}
+	*t++ = C->numrhs;
 	if ( t >= AT.WorkTop ) {
 		MLOCK(ErrorMessageLock);
 		MesWork();
@@ -904,12 +909,13 @@ int MatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 		else multiplicity[renum[*p]]++;
 		p++;
 	}
+	iraise = j-1;	/* j = number of distinct names; sort loop clobbers j */
 /*
 	Strategy: First 'declared' has a tendency to be smaller
 */
-	for ( i = 1; i < AN.NumTotWildArgs; i++ ) {
+	for ( i = 1; i < maxname; i++ ) {
 		if ( renum[i] < 0 ) continue;
-		for ( j = i+1; j <= AN.NumTotWildArgs; j++ ) {
+		for ( j = i+1; j <= maxname; j++ ) {
 			if ( renum[j] < 0 ) continue;
 			if ( renum[i] < renum[j] ) continue;
 			k = multiplicity[renum[i]];
@@ -919,12 +925,12 @@ int MatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 		}
 	}
 	for ( i = 0; i < funnycount; i++ ) thewildcards[i] = 0;
-	iraise = funnycount-1;
 	for ( ;; ) {
 		for ( i = 0, j = sumeat; i < iraise; i++ )
 				j -= thewildcards[i]*multiplicity[i];
 		if ( j < 0 || j % multiplicity[iraise] != 0 ) {
 			if ( j > 0 ) {
+				if ( iraise == 0 ) break; /* Only one name: no valid split */
 				thewildcards[iraise-1]++;
 				continue;
 			}
@@ -1031,6 +1037,7 @@ int MatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 				*t = wc;
 			}
 		}
+		if ( iraise == 0 ) break; /* Only one name: nothing left to raise */
 		(thewildcards[iraise-1])++;
 	}
 /*
@@ -1073,6 +1080,7 @@ int FunMatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 	WORD newvalue, *lowlevel = 0;
 	int argcount = 0, funnycount = 0, tcount = 0;
 	int type = 0, pnum, i, j, k, nwstore, iraise, itop, sumeat;
+	int maxname = 0;
 	CBUF *C = cbuf+AT.ebufnum;
 	int ntwa = 3*AN.NumTotWildArgs+1;
 	LONG oldcpointer = C->Pointer - C->Buffer;
@@ -1111,7 +1119,10 @@ int FunMatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 	p = pattern + FUNHEAD;
 	pstop = pattern + pattern[1];
 	while ( p < pstop ) {
-		if ( *p == -ARGWILD ) { p += 2; funnycount++; }
+		if ( *p == -ARGWILD ) {
+			if ( p[1] > maxname ) maxname = p[1];
+			p += 2; funnycount++;
+		}
 		else { NEXTARG(p); argcount++; }
 	}
 	t = fun + FUNHEAD;
@@ -1145,6 +1156,7 @@ int FunMatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 
 	/* Store the wildcard assignments */
 
+	ntwa = 2*funnycount + maxname + 1;
 	WantAddPointers(tcount);
 	AT.pWorkPointer += tcount;
 	thewildcards = t = AT.WorkPointer;
@@ -1158,8 +1170,8 @@ int FunMatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 		do {
 			*t++ = *m++; *t++ = *m++; *t++ = *m++; *t++ = *m++; *t++ = *r++;
 		} while ( --i > 0 );
-		*t++ = C->numrhs;
 	}
+	*t++ = C->numrhs;
 	if ( t >= AT.WorkTop ) {
 		MLOCK(ErrorMessageLock);
 		MesWork();
@@ -1377,12 +1389,13 @@ int FunMatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 		else multiplicity[renum[*p]]++;
 		p++;
 	}
+	iraise = j-1;	/* j = number of distinct names; sort loop clobbers j */
 /*
 	Strategy: First 'declared' has a tendency to be smaller
 */
-	for ( i = 1; i < AN.NumTotWildArgs; i++ ) {
+	for ( i = 1; i < maxname; i++ ) {
 		if ( renum[i] < 0 ) continue;
-		for ( j = i+1; j <= AN.NumTotWildArgs; j++ ) {
+		for ( j = i+1; j <= maxname; j++ ) {
 			if ( renum[j] < 0 ) continue;
 			if ( renum[i] < renum[j] ) continue;
 			k = multiplicity[renum[i]];
@@ -1392,12 +1405,12 @@ int FunMatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 		}
 	}
 	for ( i = 0; i < funnycount; i++ ) thewildcards[i] = 0;
-	iraise = funnycount-1;
 	for ( ;; ) {
 		for ( i = 0, j = sumeat; i < iraise; i++ )
 				j -= thewildcards[i]*multiplicity[i];
 		if ( j < 0 || j % multiplicity[iraise] != 0 ) {
 			if ( j > 0 ) {
+				if ( iraise == 0 ) break; /* Only one name: no valid split */
 				thewildcards[iraise-1]++;
 				continue;
 			}
@@ -1490,6 +1503,7 @@ int FunMatchCy(PHEAD WORD *pattern, WORD *fun, WORD *inter, WORD par)
 				*a = t;
 			}
 		}
+		if ( iraise == 0 ) break; /* Only one name: nothing left to raise */
 		(thewildcards[iraise-1])++;
 	}
 /*
@@ -1631,8 +1645,8 @@ quicky:
 			assig += *r;
 			*t++ = *m++; *t++ = *m++; *t++ = *m++; *t++ = *m++; *t++ = *r++;
 		} while ( --i > 0 );
-		*t++ = C->numrhs;
 	}
+	*t++ = C->numrhs;
 	if ( t >= AT.WorkTop ) {
 		MLOCK(ErrorMessageLock);
 		MesWork();
