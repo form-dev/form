@@ -2949,7 +2949,7 @@ int DollarFactorize(PHEAD WORD numdollar)
 #endif
 	int i, j, jj, action = 0, sign = 1;
 	LONG insize, ii;
-	WORD startebuf = cbuf[AT.ebufnum].numrhs;
+	WORD startebuf = cbuf[AT.ebufnum].numrhs, extrasymbolbase = -1;
 	WORD nfactors, factorsincontent, extrafactor = 0;
 	WORD oldsorttype = AR.SortType;
 
@@ -3144,7 +3144,7 @@ int DollarFactorize(PHEAD WORD numdollar)
 		NewSort(BHEAD0);
 		NewSort(BHEAD0);
 		while ( *t ) {
-			if ( LocalConvertToPoly(BHEAD t,termextra,startebuf,0) < 0 ) {
+			if ( LocalConvertToPoly(BHEAD t,termextra,startebuf,0,&extrasymbolbase) < 0 ) {
 getout:
 				AR.SortType = oldsorttype;
 				M_free(buf1,"DollarFactorize-2");
@@ -3274,8 +3274,8 @@ getout:
 			NewSort(BHEAD0);
 			NewSort(BHEAD0);
 			while ( *term ) {
-				if ( ConvertFromPoly(BHEAD term,argextra,numxsymbol,CC->numrhs-startebuf+numxsymbol
-				,startebuf-numxsymbol,1) <= 0 ) {
+				if ( ConvertFromPoly(BHEAD term,argextra,extrasymbolbase,CC->numrhs-startebuf+extrasymbolbase
+				,startebuf-extrasymbolbase,1) <= 0 ) {
 					LowerSortLevel();
 getout2:			AR.SortType = oldsorttype;
 					M_free(d->factors,"factors in dollar");

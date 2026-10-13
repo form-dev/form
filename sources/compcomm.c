@@ -2223,11 +2223,6 @@ int CoSplitLastArg(UBYTE *s) { return(DoArgument(s,TYPESPLITLASTARG)); }
 */
 
 int CoFactArg(UBYTE *s) {
-	if ( ( AC.topolynomialflag & TOPOLYNOMIALFLAG ) != 0 ) {
-		MesPrint("&ToPolynomial statement and FactArg statement are not allowed in the same module");
-		return(1);
-	}
-	AC.topolynomialflag |= FACTARGFLAG;
 	return(DoArgument(s,TYPEFACTARG));
 }
 
@@ -5953,9 +5948,8 @@ int CoDropSymbols(UBYTE *s)
 
 	Converts the current term as much as possible to symbols.
 	Keeps a list of all objects converted to symbols in AM.sbufnum.
-	Note that this cannot be executed in parallel because we have only
-	a single compiler buffer for this. Hence we switch on the noparallel
-	module option.
+	There is only a single compiler buffer for this. In TFORM we protect access
+	to it with AM.sbuflock; in ParFORM the statement is executed on the master.
 
 	Option(s):
 		OnlyFunctions [,name1][,name2][,...,namem];
@@ -5965,10 +5959,6 @@ int CoToPolynomial(UBYTE *inp)
 {
 	int error = 0;
 	while ( *inp == ' ' || *inp == ',' || *inp == '\t' ) inp++;
-	if ( ( AC.topolynomialflag & ~TOPOLYNOMIALFLAG ) != 0 ) {
-		MesPrint("&ToPolynomial statement and FactArg statement are not allowed in the same module");
-		return(1);
-	}
 	if ( AO.OptimizeResult.code != NULL ) {
 		MesPrint("&Using ToPolynomial statement when there are still optimization results active.");
 		MesPrint("&Please use #ClearOptimize instruction first.");
@@ -6067,11 +6057,6 @@ int CoArgToExtraSymbol(UBYTE *s)
 	CBUF *C = cbuf + AC.cbufnum;
 	WORD *lhs;
 
-	/* TODO: resolve interference with rational arithmetic. (#138) */
-	if ( ( AC.topolynomialflag & ~TOPOLYNOMIALFLAG ) != 0 ) {
-		MesPrint("&ArgToExtraSymbol statement and FactArg statement are not allowed in the same module");
-		return(1);
-	}
 	if ( AO.OptimizeResult.code != NULL ) {
 		MesPrint("&Using ArgToExtraSymbol statement when there are still optimization results active.");
 		MesPrint("&Please use #ClearOptimize instruction first.");
