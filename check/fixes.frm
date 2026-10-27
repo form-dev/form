@@ -5245,6 +5245,83 @@ Print;
 assert succeeded?
 assert result("test") =~ expr("4+4*x")
 *--#] Issue882_6 :
+*--#[ Issue925_1 :
+* Insert an item into the list of coupling constants.
+S g2,g1;  * order-dependent segfault
+Auto V p,q;
+Model mod;
+  Particle phi1 +1;
+  Particle phi2 +1;
+  Vertex phi1 phi1 phi1 : g1;
+  Vertex phi2 phi2 phi2 : g2;
+EndModel;
+L F1 = diagrams_(mod,{phi1,phi1},{},{q1,q2},{p1,p2},1,`NoSnail_');
+L F2 = diagrams_(mod,{phi2,phi2},{},{q1,q2},{p1,p2},1,`NoSnail_');
+P +ss;
+.end
+assert succeeded?
+assert result("F1") =~ expr("
+       +
+         1/2
+         *topo_(1)
+         *node_(1,1,phi1(-q1))
+         *node_(2,1,phi1(-q2))
+         *node_(3,g1,phi1(q1),phi1(-p1),phi1(-p2))
+         *node_(4,g1,phi1(q2),phi1(p1),phi1(p2))
+")
+assert result("F2") =~ expr("
+       +
+         1/2
+         *topo_(1)
+         *node_(1,1,phi2(-q1))
+         *node_(2,1,phi2(-q2))
+         *node_(3,g2,phi2(q1),phi2(-p1),phi2(-p2))
+         *node_(4,g2,phi2(q2),phi2(p1),phi2(p2))
+")
+*--#] Issue925_1 : 
+*--#[ Issue925_2 :
+* Extend the list of coupling constants.
+#define N "15"  * N >= 12
+Auto V p,q;
+Model mod;
+  #do i=1,`N'
+    Particle phi`i' +1;
+  #enddo
+  #do i=1,`N'
+  Vertex phi`i' phi`i' phi`i' : g`i';
+  #enddo
+EndModel;
+L n = `N';
+L F1 = diagrams_(mod,{phi1,phi1},{},{q1,q2},{p1,p2},1,`NoSnail_');
+L F`N' = diagrams_(mod,{phi`N',phi`N'},{},{q1,q2},{p1,p2},1,`NoSnail_');
+P +ss;
+.end
+assert succeeded?
+assert result("F1") =~ expr("
+       +
+         1/2
+         *topo_(1)
+         *node_(1,1,phi1(-q1))
+         *node_(2,1,phi1(-q2))
+         *node_(3,g1,phi1(q1),phi1(-p1),phi1(-p2))
+         *node_(4,g1,phi1(q2),phi1(p1),phi1(p2))
+")
+n = result("n").to_i
+assert result("F#{n}") =~ expr("
+       +
+         1/2
+         *topo_(1)
+         *node_(1,1,phi#{n}(-q1))
+         *node_(2,1,phi#{n}(-q2))
+         *node_(3,g#{n},phi#{n}(q1),phi#{n}(-p1),phi#{n}(-p2))
+         *node_(4,g#{n},phi#{n}(q2),phi#{n}(p1),phi#{n}(p2))
+")
+*--#] Issue925_2 : 
+*--#[ Issue925_e1 :
+EndModel;
+.end
+assert compile_error?("EndModel statement without matching Model statement")
+*--#] Issue925_e1 : 
 *--#[ PullReq535 :
 * This test requires more than the specified 50K workspace.
 #:maxtermsize 200

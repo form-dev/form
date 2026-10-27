@@ -449,7 +449,7 @@ int CoEndModel(UBYTE *s)
 			for ( k = 0; k < m->ncouplings; k++ ) {
 				if ( sym == m->couplings[k] ) break;
 				if ( sym < m->couplings[k] ) {
-					for ( kk = m->ncouplings; kk > k; k-- )
+					for ( kk = m->ncouplings; kk > k; kk-- )
 						m->couplings[kk] = m->couplings[kk-1];
 					m->couplings[k] = sym;
 					m->ncouplings++;
