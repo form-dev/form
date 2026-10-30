@@ -5613,3 +5613,39 @@ Print;
 assert succeeded?
 assert result("test") =~ expr("0")
 *--#] PullReq860_3 :
+
+*--#[ Issue855 :
+L F = 1;
+#do i=1,16
+  #setflag `i',F
+#enddo
+ClearFlag 1,5,16;
+.sort
+#do i=1,16
+  #if flag(`i',F)
+    #message flag(`i',F) is set
+  #else
+    #message flag(`i',F) is clear
+  #endif
+#enddo
+.end
+assert succeeded?
+(1..16).each do |i|
+  expected = [1, 5, 16].include?(i) ? "clear" : "set"
+  assert stdout.include?("~~~flag(#{i},F) is #{expected}")
+end
+*--#] Issue855 :
+
+*--#[ Issue855_SetFlagRange :
+L F = 1;
+SetFlag 0;
+.end
+assert compile_error?("Flag number 0 outside the permitted range 1-")
+*--#] Issue855_SetFlagRange :
+
+*--#[ Issue855_ClearFlagRange :
+L F = 1;
+ClearFlag 999;
+.end
+assert compile_error?("Flag number 999 outside the permitted range 1-")
+*--#] Issue855_ClearFlagRange :
