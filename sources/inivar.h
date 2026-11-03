@@ -254,6 +254,7 @@ static struct fixedfun {
 	,{"eexp_"       ,0 ,0             ,0               ,0} /* EXPFUNCTION */
 	,{"hpl_"        ,0 ,0             ,0               ,0} /* HPLFUNCTION */
 	,{"mpl_"        ,0 ,0             ,0               ,0} /* MPLFUNCTION */
+	,{"padic_"      ,0 ,0             ,0               ,0} /* PADICFUN */
 };
 
 FIXEDSET fixedsets[] = {

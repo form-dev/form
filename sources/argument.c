@@ -172,12 +172,20 @@ RightNum:
 #ifdef WITHFLOAT
 						if ( *t != FLOATFUN || TestFloat(t) == 0 )
 #endif
+#ifdef WITHFLINT
+						if ( *t != PADICFUN || TestPadic(t) == 0 )
+#endif
 						{
 							m += 2;
 							m += *m;
 							goto HaveTodo;
 						}
 #ifdef WITHFLOAT
+						else {
+							m += 2;
+						}
+#endif
+#ifdef WITHFLINT
 						else {
 							m += 2;
 						}
