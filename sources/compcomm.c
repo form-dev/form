@@ -1522,15 +1522,21 @@ int SetExprCases(int par, int setunset, int val)
 
 int SetExpr(UBYTE *s, int setunset, int par)
 {
-	WORD *w, numexpr;
+	WORD *w, numexpr, status;
 	int error = 0, i;
 	UBYTE *name, c;
 	if ( *s == 0 ) {
 		for ( i = 0; i < NumExpressions; i++ ) {
+			/* UnHide without names must not reach enclosing hide levels. */
+			if ( par == UNHIDE && setunset == 1 && Expressions[i].hidelevel < AC.HideLevel ) {
+				continue;
+			}
 			w = &(Expressions[i].status);
+			status = *w;
 			*w = SetExprCases(par,setunset,*w);
 			if ( *w < 0 ) error = 1;
-			if ( ( par == HIDE || par == INTOHIDE ) && setunset == 1 )
+			/* Already hidden or marked expressions must keep their hide level. */
+			if ( ( par == HIDE || par == INTOHIDE ) && setunset == 1 && *w != status )
 				Expressions[i].hidelevel = AC.HideLevel;
 		}
 		return(0);
@@ -1546,12 +1552,14 @@ int SetExpr(UBYTE *s, int setunset, int par)
 		c = *s; *s = 0;
 		if ( GetName(AC.exprnames,name,&numexpr,NOAUTO) == CEXPRESSION ) {
 			w = &(Expressions[numexpr].status);
+			status = *w;
 			*w = SetExprCases(par,setunset,*w);
 			if ( *w < 0 ) error = 1;
-			if ( ( par == HIDE || par == INTOHIDE ) && setunset == 1 )
+			/* Already hidden or marked expressions must keep their hide level. */
+			if ( ( par == HIDE || par == INTOHIDE ) && setunset == 1 && *w != status )
 				Expressions[numexpr].hidelevel = AC.HideLevel;
 		}
-		else if ( GetName(AC.varnames,name,&numexpr,NOAUTO) != NAMENOTFOUND ) {
+		else {
 			MesPrint("&%s is not an expression",name);
 			error = 1;
 		}

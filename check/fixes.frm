@@ -4979,6 +4979,67 @@ Global F1 = E{`i' % 10}*E2*E3*E4;
 .end
 assert succeeded?
 *--#] Issue808 :
+*--#[ Issue828_1 :
+Local F = 1;
+Global G = 2;
+.sort
+PushHide;
+* Repeated Hide statements must preserve the pending PushHide level.
+Hide;
+Hide F,G;
+.sort
+UnHide;
+Multiply 2;
+.sort
+PopHide;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("1")
+assert result("G") =~ expr("2")
+*--#] Issue828_1 :
+*--#[ Issue828_2 :
+Local F = 1;
+Global G = 2;
+.sort
+PushHide;
+.sort
+PopHide;
+NUnHide;
+.sort
+* The saved hide levels are now higher than the current hide level.
+UnHide;
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("1")
+assert result("G") =~ expr("2")
+*--#] Issue828_2 :
+*--#[ Issue828_3 :
+Local F1 = 1;
+.sort
+PushHide;
+Local F2 = 2;
+.sort
+Hide;
+.sort
+* Explicit names allow UnHide to reach an enclosing hide level.
+UnHide F1;
+Print;
+.end
+assert succeeded?
+assert_equal ["F1"], stdout.scan(/^[ \t]+(F[12])\s*=/).flatten
+assert result("F1") =~ expr("1")
+*--#] Issue828_3 :
+*--#[ Issue828_4 :
+Local F = 1;
+.sort
+
+Hide G;
+.end
+assert compile_error?("G is not an expression")
+assert return_value != 0
+*--#] Issue828_4 :
 *--#[ Issue833_1 : 
 #-
 #: TermsInSmall 1024
