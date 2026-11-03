@@ -7198,12 +7198,33 @@ Bool EGraph::optQGrafM(Options *opt)
                     extk = 1;
                 }
                 if ( momj == momk) {
+                    // We have a pair of lines with equal momenta. Determine if they have a
+                    // common two-point vertex. We want to keep this type of "insertion" when
+                    // in GRCC_QGRAF_OPT_NOSIGMA mode.
+                    int commonNode = -1;
+                    bool common2PtVtx = False;
+                    if      (econn->cedges[j].nodes[0] == econn->cedges[k].nodes[0])
+                        commonNode = econn->cedges[j].nodes[0];
+                    else if (econn->cedges[j].nodes[0] == econn->cedges[k].nodes[1])
+                        commonNode = econn->cedges[j].nodes[0];
+                    else if (econn->cedges[j].nodes[1] == econn->cedges[k].nodes[0])
+                        commonNode = econn->cedges[j].nodes[1];
+                    else if (econn->cedges[j].nodes[1] == econn->cedges[k].nodes[1])
+                        commonNode = econn->cedges[j].nodes[1];
+                    if (commonNode != -1) {
+                        if (nodes[commonNode]->deg == 2) {
+                            common2PtVtx = True;
+                        }
+                    }
+
                     if (nExtern == 2) {
-                        if (extj + extk != 2) {
+                        if (extj + extk != 2 && common2PtVtx == False) {
                             ok = False;
                         }
                     } else {
-                        ok = False;
+                        if (common2PtVtx == False) {
+                            ok = False;
+                        }
                     }
                 }
             }
