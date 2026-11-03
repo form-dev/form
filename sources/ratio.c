@@ -2317,7 +2317,8 @@ int GCDterms(PHEAD WORD *term1, WORD *term2, WORD *termout)
  		#] GCDterms : 
  		#[ ReadPolyRatFun :
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
+/* never called: call sites commented out in proces.c */
 int ReadPolyRatFun(PHEAD WORD *term)
 {
 	WORD *oldworkpointer = AT.WorkPointer;
@@ -2431,12 +2432,15 @@ int ReadPolyRatFun(PHEAD WORD *term)
 	AR.SortType = oldsorttype;
 	return(0);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
  		#] ReadPolyRatFun : 
  		#[ FromPolyRatFun :
 */
 
+/* UNFINISHED_FEATURE_EXCL_START */
+/* only called from ReadPolyRatFun which has no live callers (proces.c:5343) */
 int FromPolyRatFun(PHEAD WORD *fun, WORD **numout, WORD **denout)
 {
 	WORD *nextfun, *tt, *num, *den;
@@ -2463,6 +2467,7 @@ int FromPolyRatFun(PHEAD WORD *fun, WORD **numout, WORD **denout)
 	if ( fun != nextfun ) { return(1); }
 	AT.WorkPointer = tt;
 	return(0);
+/* UNFINISHED_FEATURE_EXCL_STOP */
 Improper:
 /* INTERNAL_ERROR_EXCL_START */
 	MLOCK(ErrorMessageLock);
@@ -2490,6 +2495,8 @@ Improper:
  *	                      (should be in a TermMalloc space?)
  */
 
+/* UNFINISHED_FEATURE_EXCL_START */
+/* live call sites commented out (ratio.c:1181); only dead ReadPolyRatFun calls it */
 WORD *TakeSymbolContent(PHEAD WORD *in, WORD *term)
 {
 	GETBIDENTITY
@@ -2690,6 +2697,7 @@ CalledFrom:
 	Terminate(-1);
 	return(0);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
  		#] TakeSymbolContent : 
@@ -2700,6 +2708,8 @@ CalledFrom:
 		into a proper fraction. Output overwrites input.
 */
 
+/* UNFINISHED_FEATURE_EXCL_START */
+/* only called from ReadPolyRatFun which has no live callers (proces.c:5343) */
 void GCDclean(PHEAD WORD *num, WORD *den)
 {
 	WORD *out1 = TermMalloc("GCDclean");
@@ -2825,6 +2835,7 @@ WORD *PolyDiv(PHEAD WORD *a,WORD *b,char *text)
 	return(x);
 */
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
  		#] PolyDiv : 
@@ -3017,6 +3028,8 @@ CalledFrom:
 	Multiplies two polynomials and puts the results in TermMalloc space.
 */
 
+/* UNFINISHED_FEATURE_EXCL_START */
+/* only called from ReadPolyRatFun which has no live callers (proces.c:5343) */
 WORD *MULfunc(PHEAD WORD *p1, WORD *p2)
 {
 	WORD *prod,size1,size2,size3,*t,*tfill,*ps1,*ps2,sign1,sign2, error, *p3;
@@ -3041,6 +3054,7 @@ WORD *MULfunc(PHEAD WORD *p1, WORD *p2)
 			else               sign2 = 1;
 			size2 = (size2-1)/2;
 			if ( MulLong(num1,size1,num2,size2,num3,&size3) ) {
+/* UNFINISHED_FEATURE_EXCL_STOP */
 /* INTERNAL_ERROR_EXCL_START */
 				error = 1;
 CalledFrom:
@@ -3050,6 +3064,7 @@ CalledFrom:
 				MUNLOCK(ErrorMessageLock);
 				Terminate(-1);
 /* INTERNAL_ERROR_EXCL_STOP */
+/* UNFINISHED_FEATURE_EXCL_START */
 			}
 			tfill = prod+1;
 			t = p1+1; while ( t < (WORD *)num1 ) *tfill++ = *t++;
@@ -3072,6 +3087,7 @@ CalledFrom:
 	AR.SortType = oldsorttype;
 	return(prod);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
   	#] MULfunc : 

@@ -575,6 +575,11 @@ int n=0;
 	return n;
 }/*parseline*/
 
+/* UNFINISHED_FEATURE_EXCL_START */
+    /* preset-channel (cooperating-parent PID protocol) helpers: str2i,
+       l2s, writeSome and readSome are called only from the preset-channel
+       parser, which requires an outer wrapper process launching FORM —
+       unreachable from .frm programs and the test suite */
 /*Reads positive decimal number (not bigger than maxnum)
   from the string and returns it;
   the pointer *b is set to the next non-converted character:*/
@@ -707,6 +712,7 @@ static FORM_INLINE ssize_t readSome(int fd, char *buf, size_t count, int timeout
 	}while(nrep);
 	return (res);
 }/*readSome*/
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
   	#] Local functions : 

@@ -548,6 +548,7 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 						case DOLZERO:
 							ncoef2 = coef2[0] = 0; coef2[1] = 1;
 							break;
+/* UNFINISHED_FEATURE_EXCL_START */
 						case DOLSUBTERM:
 							if ( d->where[0] != INDEX || d->where[1] != 3
 							|| d->where[2] < 0 || d->where[2] >= AM.OffsetIndex ) {
@@ -567,13 +568,18 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 							}
 							d->index = d->where[2];
 							/* fall through */
+/* UNFINISHED_FEATURE_EXCL_STOP */
 						case DOLINDEX:
 							if ( d->index == 0 ) {
+/* UNFINISHED_FEATURE_EXCL_START */
 								ncoef2 = coef2[0] = 0; coef2[1] = 1;
 							}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 							else if ( d->index > 0 && d->index < AM.OffsetIndex ) {
+/* UNFINISHED_FEATURE_EXCL_START */
 								ncoef2 = 1; coef2[0] = d->index; coef2[1] = 1;
 							}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 							else if ( AC.UnsureDollarMode == 0 ) {
 #ifdef WITHPTHREADS
 								if ( dtype > 0 && ! DollarLocalCopy(dtype) ) {
@@ -585,13 +591,16 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 								MUNLOCK(ErrorMessageLock);
 								Terminate(-1);
 							}
+/* UNFINISHED_FEATURE_EXCL_START */
 							ncoef2 = coef2[0] = 0; coef2[1] = 1;
 							break;
+/* UNFINISHED_FEATURE_EXCL_STOP */
 						case DOLWILDARGS:
 							if ( d->where[0] <= -FUNCTION ||
 							( d->where[0] < 0 && d->where[2] != 0 )
 							|| ( d->where[0] > 0 && d->where[d->where[0]] != 0 )
 							) {
+/* UNFINISHED_FEATURE_EXCL_START */
 								if ( AC.UnsureDollarMode == 0 ) {
 #ifdef WITHPTHREADS
 									if ( dtype > 0 && ! DollarLocalCopy(dtype) ) {
@@ -605,10 +614,12 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 								}
 								ncoef2 = coef2[0] = 0; coef2[1] = 1;
 								break;
+/* UNFINISHED_FEATURE_EXCL_STOP */
 							}
 							/* fall through */
 						case DOLARGUMENT:
 							if ( d->where[0] == -SNUMBER ) {
+/* UNFINISHED_FEATURE_EXCL_START */
 								if ( d->where[1] == 0 ) {
 									ncoef2 = coef2[0] = 0;
 								}
@@ -622,7 +633,9 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 								}
 								coef2[1] = 1;
 							}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 							else if ( d->where[0] == -INDEX
+/* UNFINISHED_FEATURE_EXCL_START */
 							&& d->where[1] >= 0 && d->where[1] < AM.OffsetIndex ) {
 								if ( d->where[1] == 0 ) {
 									ncoef2 = coef2[0] = 0; coef2[1] = 1;
@@ -632,7 +645,9 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 									coef2[1] = 1;
 								}
 							}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 							else if ( d->where[0] > 0
+/* UNFINISHED_FEATURE_EXCL_START */
 							&& d->where[ARGHEAD] == (d->where[0]-ARGHEAD)
 							&& ABS(d->where[d->where[0]-1]) ==
 										(d->where[0] - ARGHEAD-1) ) {
@@ -642,6 +657,7 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 								i--; cc = coef2; r = d->where + ARGHEAD+1;
 								while ( --i >= 0 ) *cc++ = (UWORD)(*r++);
 							}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 							else {
 								if ( AC.UnsureDollarMode == 0 ) {
 #ifdef WITHPTHREADS
@@ -654,7 +670,9 @@ int DoIfStatement(PHEAD WORD *ifcode, WORD *term)
 									MUNLOCK(ErrorMessageLock);
 									Terminate(-1);
 								}
+/* UNFINISHED_FEATURE_EXCL_START */
 								ncoef2 = 0; coef2[0] = 0; coef2[1] = 1;
+/* UNFINISHED_FEATURE_EXCL_STOP */
 							}
 							break;
    						case DOLNUMBER:

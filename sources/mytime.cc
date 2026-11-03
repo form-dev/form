@@ -54,6 +54,7 @@
 bool starttime_set = false;
 timeval starttime;
 
+/* DEBUG_EXCL_START: debug timing helpers; all call sites are under #ifdef DEBUG/#ifdef DEBUGALL which the build never defines */
 double thetime () {
 	if (!starttime_set) {
 		gettimeofday(&starttime,NULL);
@@ -70,6 +71,7 @@ std::string thetime_str() {
 	char res[10];
 	snprintf (res,10,"%.4lf", thetime());
 	return res;
+/* DEBUG_EXCL_STOP */
 }
 
 #endif  // UNIX

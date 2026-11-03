@@ -4744,7 +4744,8 @@ void LowerSortLevel(void)
 		Keeps only the most divergent term in AR.PolyFunVar
 		We assume that the terms are already in that notation.
 */
-
+/* UNFINISHED_FEATURE_EXCL_START */
+/* only called from the unimplemented AR.PolyFunExp==1 branch */
 WORD *PolyRatFunSpecial(PHEAD WORD *t1, WORD *t2)
 {
 	WORD *oldworkpointer = AT.WorkPointer, *t, *r;
@@ -4839,6 +4840,7 @@ Illegal:
 	Terminate(-1);
 	return(0);
 }
+/* UNFINISHED_FEATURE_EXCL_STOP */
 
 /*
  		#] PolyRatFunSpecial : 

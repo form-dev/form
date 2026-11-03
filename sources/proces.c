@@ -2404,6 +2404,7 @@ int InFunction(PHEAD WORD *term, WORD *termout)
 							}
 							w[1] = w[1] - 2 + (m-to);
 							break;
+/* UNFINISHED_FEATURE_EXCL_START */
 						case DOLSUBTERM:
 							to = m; r = d->where;
 							i = r[1];
@@ -2417,7 +2418,9 @@ int InFunction(PHEAD WORD *term, WORD *termout)
 								else m = to+2;
 							}
 							w[1] = w[1] - 2 + (m-to);
+/* UNFINISHED_FEATURE_EXCL_STOP */
 							break;
+/* UNFINISHED_FEATURE_EXCL_START */
 						case DOLARGUMENT:
 							to = m; r = d->where;
 							if ( *r > 0 ) {
@@ -2429,6 +2432,7 @@ int InFunction(PHEAD WORD *term, WORD *termout)
 							else { *m++ = *r++; *m++ = *r++; }
 							w[1] = w[1] - 2 + (m-to);
 							break;
+/* UNFINISHED_FEATURE_EXCL_STOP */
 						case DOLWILDARGS:
 							to = m; r = d->where;
 							if ( *r > 0 ) { /* Tensor arguments */
@@ -2593,6 +2597,7 @@ wrongtype:;
 								return(-1);
 							}
 							break;
+/* UNFINISHED_FEATURE_EXCL_START */
 						case DOLARGUMENT:
 							if ( d->where[0] == -INDEX ) {
 								*m++ = d->where[1]; break;
@@ -2611,6 +2616,7 @@ wrongtype:;
 									*m++ = d->where[1]; break;
 								}
 							}
+/* UNFINISHED_FEATURE_EXCL_STOP */
 							goto wrongtype;
 						case DOLWILDARGS:
 							if ( d->where[0] > 0 ) {
@@ -2640,12 +2646,14 @@ wrongtype:;
 								}
 							}
 							break;
+/* UNFINISHED_FEATURE_EXCL_START */
 						case DOLSUBTERM:
 							r = d->where;
 							if ( *r == INDEX && r[1] == 3 ) {
 								*m++ = r[2];
 							}
 							else goto wrongtype;
+/* UNFINISHED_FEATURE_EXCL_STOP */
 							break;
 						case DOLUNDEFINED:
 #ifdef WITHPTHREADS
