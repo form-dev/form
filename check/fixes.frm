@@ -5613,3 +5613,54 @@ Print;
 assert succeeded?
 assert result("test") =~ expr("0")
 *--#] PullReq860_3 :
+*--#[ PolyRatFunExpandDenominators :
+#-
+CFunction rat;
+Symbol ep,a,b;
+PolyRatFun rat(expand,ep,5);
+
+* Relative depth starts at the lowest power, including for simple denominators.
+Local F1 = rat(1+<ep^1>+...+<ep^10>,ep);
+Local F2 = rat(1+<ep^1>+...+<ep^10>,ep-ep^2);
+Local F3 = rat(a^3,ep);
+Local F4 = rat(a^3*ep,ep-ep^3);
+Local F5 = rat(a^3,16);
+Local F6 = rat(a,-16);
+Local F7 = rat(a^3+a^2*ep+a*b*ep^3+b^2*ep^6,16);
+Local F8 = rat(a^3*ep^-2+a*b+b^2*ep^3+a^2*ep^4,16);
+Local F9 = rat(a^3*ep^3+a*b*ep^4+b^2*ep^9,ep);
+Local F10 = rat(a^3*ep^2+a*b*ep^4+b^2*ep^9,16);
+Print;
+.end
+#-
+CFunction rat;
+Symbol a,b,ep;
+PolyRatFun rat(expand,ep,0);
+
+* Missing ep has power zero; other symbols are coefficients in either order.
+Local Z1 = rat(1+ep+ep^2,ep);
+Local Z2 = rat(a^3+ep+b^2*ep^2,ep);
+Local Z3 = rat(a^3*ep^3+a*b*ep^4,ep);
+Local Z4 = rat(a^3*ep^-2+a*b+ep,16);
+Local Z5 = rat(a^3+b^2,16);
+Local Z6 = rat(a^3*ep^2+a*b*ep^4,16);
+Print;
+.end
+assert succeeded?
+assert result("F1") =~ expr("rat(1 + ep^-1 + ep + ep^2 + ep^3 + ep^4)")
+assert result("F2") =~ expr("rat(2 + ep^-1 + 3*ep + 4*ep^2 + 5*ep^3 + 6*ep^4)")
+assert result("F3") =~ expr("rat(ep^-1*a^3)")
+assert result("F4") =~ expr("rat(a^3 + ep^2*a^3 + ep^4*a^3)")
+assert result("F5") =~ expr("rat(1/16*a^3)")
+assert result("F6") =~ expr("rat(-1/16*a)")
+assert result("F7") =~ expr("rat(1/16*a^3 + 1/16*ep*a^2 + 1/16*ep^3*a*b)")
+assert result("F8") =~ expr("rat(1/16*ep^-2*a^3 + 1/16*a*b + 1/16*ep^3*b^2)")
+assert result("F9") =~ expr("rat(ep^2*a^3 + ep^3*a*b)")
+assert result("F10") =~ expr("rat(1/16*ep^2*a^3 + 1/16*ep^4*a*b)")
+assert result("Z1") =~ expr("rat(ep^-1)")
+assert result("Z2") =~ expr("rat(a^3*ep^-1)")
+assert result("Z3") =~ expr("rat(a^3*ep^2)")
+assert result("Z4") =~ expr("rat(1/16*a^3*ep^-2)")
+assert result("Z5") =~ expr("rat(1/16*b^2 + 1/16*a^3)")
+assert result("Z6") =~ expr("rat(1/16*a^3*ep^2)")
+*--#] PolyRatFunExpandDenominators :

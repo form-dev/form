@@ -5011,7 +5011,7 @@ int PrepPoly(PHEAD WORD *term,WORD par)
 	But because this is an undocumented feature for very special
 	purposes, we don't do anything about it. (30-aug-2011)
 */
-	if ( AR.PolyFunType == 2 && AR.PolyFunExp != 2 ) {
+	if ( AR.PolyFunType == 2 && AR.PolyFunExp != 2 && AR.PolyFunExp != 3 ) {
 		WORD oldtype = AR.SortType;
 		AR.SortType = SORTHIGHFIRST;
 		if ( poly_ratfun_normalize(BHEAD term) != 0 ) Terminate(-1);
@@ -5035,7 +5035,8 @@ int PrepPoly(PHEAD WORD *term,WORD par)
 	i = ABS(m[-1]);
 	if ( par > 0 ) {
 		if ( count == 0 ) return(0);
-		else if ( AR.PolyFunType == 1 || (AR.PolyFunType == 2 && AR.PolyFunExp == 2) )
+		else if ( AR.PolyFunType == 1 || (AR.PolyFunType == 2
+		&& (AR.PolyFunExp == 2 || AR.PolyFunExp == 3)) )
 			goto DoOne;
 		else if ( AR.PolyFunType == 2 )
 			goto DoTwo;
@@ -5049,7 +5050,8 @@ int PrepPoly(PHEAD WORD *term,WORD par)
 		poly = t = tstop;
 		if ( i == 3 && m[-2] == 1 && (m[-3]&MAXPOSITIVE) == m[-3] ) {
 			*m++ = AR.PolyFun;
-			if ( AR.PolyFunType == 1 || (AR.PolyFunType == 2 && AR.PolyFunExp == 2) ) {
+			if ( AR.PolyFunType == 1 || (AR.PolyFunType == 2
+			&& (AR.PolyFunExp == 2 || AR.PolyFunExp == 3)) ) {
 				*m++ = FUNHEAD+2;
 				FILLFUN(m)
 				*m++ = -SNUMBER;
@@ -5069,7 +5071,8 @@ int PrepPoly(PHEAD WORD *term,WORD par)
 		else {
 			WORD *vm;
 			r = tstop;
-			if ( AR.PolyFunType == 1 || (AR.PolyFunType == 2 && AR.PolyFunExp == 2) ) {
+			if ( AR.PolyFunType == 1 || (AR.PolyFunType == 2
+			&& (AR.PolyFunExp == 2 || AR.PolyFunExp == 3)) ) {
 				*m++ = AR.PolyFun;
 				*m++ = FUNHEAD+ARGHEAD+i+1;
 				FILLFUN(m)
@@ -5123,7 +5126,8 @@ int PrepPoly(PHEAD WORD *term,WORD par)
  		#] Create a PolyFun : 
 */
 	}
-	else if ( AR.PolyFunType == 1 || (AR.PolyFunType == 2 && AR.PolyFunExp == 2) ) {
+	else if ( AR.PolyFunType == 1 || (AR.PolyFunType == 2
+	&& (AR.PolyFunExp == 2 || AR.PolyFunExp == 3)) ) {
 		DoOne:;
 /*
  		#[ One argument :
@@ -5472,8 +5476,8 @@ NoLegal:
 		return(0);
 	}
 ReStart:
-	if ( AR.PolyFunType == 2 && ( ( AR.PolyFunExp != 2 )
-	 || ( AR.PolyFunExp == 2 && AN.PolyNormFlag > 1 ) ) ) {
+	if ( AR.PolyFunType == 2 && ( ( AR.PolyFunExp != 2 && AR.PolyFunExp != 3 )
+	 || AN.PolyNormFlag > 1 ) ) {
 		WORD count1 = 0, count2 = 0, count3;
 		WORD oldtype = AR.SortType;
 		t = term + 1; t1 = term + *term; t1 -= ABS(t1[-1]);
@@ -5671,6 +5675,7 @@ retry:
 */
 	w = AT.WorkPointer;
 	NewSort(BHEAD0);
+	if ( AR.PolyFunType == 2 && AR.PolyFunExp == 3 ) AT.TrimPower = 1;
 	if ( AR.PolyFunType == 2 && AR.PolyFunExp == 2 ) {
 		AT.TrimPower = 1;
 /*
@@ -5825,6 +5830,7 @@ PolyCall:;
 	MLOCK(ErrorMessageLock);
 PolyCall2:;
 	AR.PolyFunPow = OldPolyFunPow;
+	if ( AR.PolyFunExp == 3 ) AT.TrimPower = 0;
 	MesCall("PolyFunMul");
 	MUNLOCK(ErrorMessageLock);
 	SETERROR(-1)

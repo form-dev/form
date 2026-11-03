@@ -5515,7 +5515,7 @@ int CoPolyRatFun(UBYTE *s)
 			symbols[AC.lPolyFunVar].maxpower =  MAXPOWER;
 		}
 		else if ( StrICmp(s,(UBYTE *)"expand") == 0 ) {
-			WORD x = 0, etype = 2;
+			WORD x = 0, etype = 2, sign = 1;
 			if ( c != ',' ) {
 				MesPrint("&Illegal option field in PolyRatFun statement.");
 				return(1);
@@ -5532,6 +5532,10 @@ int CoPolyRatFun(UBYTE *s)
 			}
 			*t = c;
 			while ( *t == ',' || *t == ' ' || *t == '\t' ) t++;
+			if ( *t == '-' ) {
+				sign = -1;
+				t++;
+			}
 			if ( *t > '9' || *t < '0' ) {
 				MesPrint("&Illegal option field in PolyRatFun statement.");
 				return(1);
@@ -5560,9 +5564,14 @@ int CoPolyRatFun(UBYTE *s)
 					return(1);
 				}
 			}
+			// Relative expansion depth cannot have a negative power. 
+			if ( etype == 2 && sign == -1 ) {
+				MesPrint("&Illegal option field in PolyRatFun statement.");
+				return(1);
+			}
 			AR.PolyFunExp = AC.lPolyFunExp = etype;
 			AR.PolyFunVar = AC.lPolyFunVar;
-			AR.PolyFunPow = AC.lPolyFunPow = x;
+			AR.PolyFunPow = AC.lPolyFunPow = sign*x;
 			symbols[AC.lPolyFunVar].minpower = -MAXPOWER;
 			symbols[AC.lPolyFunVar].maxpower =  MAXPOWER;
 		}

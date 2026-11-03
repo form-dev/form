@@ -4547,6 +4547,7 @@ the `polyfun'. \vspace{10mm}
 Type & Declaration statement\\
 Syntax & polyratfun {\tt<}name of function{\tt>}; \\
        & polyratfun {\tt<}name of function{\tt>},{\tt<}name of function{\tt>}; \\
+       & polyratfun {\tt<}name of function{\tt>}({\tt<}options{\tt>}); \\
        & polyratfun;
 \\ See also & polyfun (\ref{substapolyfun}),
 			  moduleoption (\ref{substamoduleoption})
@@ -4618,19 +4619,44 @@ it the coefficient one. The result is that terms will never cancel and at
 the end of the calculation one can see how many poles in x were maximally 
 present, and hence how far one has to expand in x. Because the contents of 
 the polyratfun are extremely simple, the expensive rational arithmetic is 
-completely absent and things should go rather fast.
+completely absent and things should go rather fast. 
+The keyword \texttt{finddivergence} is a synonym for
+\texttt{divergence}, so the following declaration has the same effect:
+\begin{verbatim}
+    PolyRatFun rat(finddivergence,x);
+\end{verbatim}
 
 \noindent In the second option one can specify how far one should expand:
 \begin{verbatim}
     PolyRatFun rat(expand,x,power);
+    PolyRatFun rat(expand,x,power,relative);
 \end{verbatim}
-In this case the denominator can only be a polynomial in the variable x. It 
-will be expanded and multiplied by the numerator and eventually all terms 
-with powers of x that are greater than 'power' will be discarded. The 
-remaining incidence of the function rat will then have only one argument, 
-like the polyfun (see \ref{substapolyfun}). The advantage is that now the 
-addition of two coefficients is a simple and straightforward operation that 
-does not need the expensive polynomial GCD computations.
+These declarations are equivalent: \texttt{relative} is the default. The
+denominator can only be a polynomial in x. Its inverse will be expanded and
+multiplied by the numerator. The expansion depth \texttt{power} is a relative,
+nonnegative depth, meaning that if the rational function starts at $x^p$, terms
+through $x^{p+\mathrm{power}}$ are retained and higher powers are discarded.
+For example, with a leading power of $x^{-2}$, a depth of 4 retains terms 
+through $x^2$.
+
+\noindent To specify an absolute maximum exponent, use
+\begin{verbatim}
+    PolyRatFun rat(expand,x,power,fixed);
+\end{verbatim}
+In this case all powers of x greater than \texttt{power} are discarded,
+independently of the leading power. The exponent \texttt{power} may also be
+negative. For example, with
+\begin{verbatim}
+    PolyRatFun rat(expand,x,-3,fixed);
+\end{verbatim}
+the function \texttt{rat(1,x\^{}5-x\^{}6)} becomes 
+\texttt{rat(x\^{}-5+x\^{}-4+x\^{}-3)}.
+
+\noindent In either expansion mode, the remaining incidence of the function
+rat has only one argument, like the polyfun (see \ref{substapolyfun}). The
+advantage is that now the addition of two coefficients is a simple and
+straightforward operation that does not need the expensive polynomial GCD
+computations.
 
 \noindent Of course one can program such expansions externally and maybe 
 better suited for the problem at hand, but using this option of the 
