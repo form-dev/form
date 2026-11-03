@@ -1184,7 +1184,6 @@ static void print_R()
 	MesPrint("%d", AR.DeferFlag);
 	MesPrint("%d", AR.TePos);
 	MesPrint("%d", AR.sLevel);
-	MesPrint("%d", AR.Stage4Name);
 	MesPrint("%d", AR.GetOneFile);
 	MesPrint("%d", AR.PolyFun);
 	MesPrint("%d", AR.PolyFunInv);
@@ -2333,7 +2332,6 @@ int DoRecovery(int *moduletype)
 	R_SET(AR.DeferFlag, WORD);
 	R_SET(AR.TePos, WORD);
 	R_SET(AR.sLevel, WORD);
-	R_SET(AR.Stage4Name, WORD);
 	R_SET(AR.GetOneFile, WORD);
 	R_SET(AR.PolyFun, WORD);
 	R_SET(AR.PolyFunInv, WORD);
@@ -2957,7 +2955,6 @@ static int DoSnapshot(int moduletype)
 	S_WRITE_B(&AR.DeferFlag, sizeof(WORD));
 	S_WRITE_B(&AR.TePos, sizeof(WORD));
 	S_WRITE_B(&AR.sLevel, sizeof(WORD));
-	S_WRITE_B(&AR.Stage4Name, sizeof(WORD));
 	S_WRITE_B(&AR.GetOneFile, sizeof(WORD));
 	S_WRITE_B(&AR.PolyFun, sizeof(WORD));
 	S_WRITE_B(&AR.PolyFunInv, sizeof(WORD));
