@@ -526,6 +526,8 @@ balance:;
 	Returns -1 if the element is not in the tree.
 	The advantage of this routine over InsTree is that this routine
 	can be run in parallel.
+	Note that this function is not actually thread-safe, due to the update
+	of "usage".
 */
 
 int FindTree(int bufnum, WORD *subexpr)

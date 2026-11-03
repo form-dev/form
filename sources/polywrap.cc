@@ -1194,6 +1194,7 @@ int poly_factorize_expression(EXPRESSIONS expr) {
 	
 	WORD *term = AT.WorkPointer;
 	WORD startebuf = cbuf[AT.ebufnum].numrhs;
+	WORD extrasymbolbase = -1;
 	FILEHANDLE *file;
 	POSITION pos;
 
@@ -1275,7 +1276,7 @@ int poly_factorize_expression(EXPRESSIONS expr) {
 			Terminate(-1);
 		}
 		buffer.check_memory(bufpos);		
-		if (LocalConvertToPoly(BHEAD term, buffer.terms + bufpos, startebuf,0) < 0) {
+		if (LocalConvertToPoly(BHEAD term, buffer.terms + bufpos,startebuf,0,&extrasymbolbase) < 0) {
 /* INTERNAL_ERROR_EXCL_START */
 			MesPrint("!>ERROR: in LocalConvertToPoly [factorize_expression]");
 			Terminate(-1);
@@ -1413,8 +1414,8 @@ int poly_factorize_expression(EXPRESSIONS expr) {
 					
 					for (WORD *t=buffer.terms; *t!=0; t+=*t) {
 						// substitute extra symbols
-						if (ConvertFromPoly(BHEAD t, term, numxsymbol, CC->numrhs-startebuf+numxsymbol,
-																startebuf-numxsymbol, 1) <= 0 ) {
+						if (ConvertFromPoly(BHEAD t, term, extrasymbolbase, CC->numrhs-startebuf+extrasymbolbase,
+												startebuf-extrasymbolbase, 1) <= 0 ) {
 /* INTERNAL_ERROR_EXCL_START */
 							MesPrint("!>ERROR: in ConvertFromPoly [factorize_expression]");
 							Terminate(-1);
@@ -1430,7 +1431,9 @@ int poly_factorize_expression(EXPRESSIONS expr) {
 
 					// sort and store in buffer
 					WORD *buffer;
-					if (EndSort(BHEAD (WORD *)((void *)(&buffer)),2) < 0) return -1;
+					if (EndSort(BHEAD (WORD *)((void *)(&buffer)),2) < 0) {
+						return -1;
+					}
 					
 					LONG bufsize=0;
 					for (WORD *t=buffer; *t!=0; t+=*t)

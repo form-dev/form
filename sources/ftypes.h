@@ -1043,7 +1043,6 @@ typedef int (*TFUN1)(UBYTE *,int);
 #define NOLYNDON 2
 
 #define TOPOLYNOMIALFLAG 1
-#define FACTARGFLAG 2
 
 #define OLDFACTARG 1
 #define NEWFACTARG 0

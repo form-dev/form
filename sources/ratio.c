@@ -1150,7 +1150,7 @@ WORD *GCDfunction3(PHEAD WORD *in1, WORD *in2)
 	WORD oldsorttype = AR.SortType, *ow = AT.WorkPointer;;
 	WORD *t, *tt, *gcdout, *term1, *term2, *confree1, *confree2, *gcdout1, *proper1, *proper2;
 	int i, actionflag1, actionflag2;
-	WORD startebuf = cbuf[AT.ebufnum].numrhs;
+	WORD startebuf = cbuf[AT.ebufnum].numrhs, extrasymbolbase = -1;
 	WORD tryterm1, tryterm2;
 	if ( in2[*in2] == 0 ) { t = in1; in1 = in2; in2 = t; }
 	if ( in1[*in1] == 0 ) {	/* First input with only one term */
@@ -1187,7 +1187,7 @@ WORD *GCDfunction3(PHEAD WORD *in1, WORD *in2)
 	Now we have to replace all non-symbols and symbols to a negative power
 	by extra symbols.
 */
-	if ( ( proper1 = PutExtraSymbols(BHEAD confree1,startebuf,&actionflag1) ) == 0 ) goto CalledFrom;
+	if ( ( proper1 = PutExtraSymbols(BHEAD confree1,startebuf,&actionflag1,&extrasymbolbase) ) == 0 ) goto CalledFrom;
 	if ( confree1 != in1 ) {
 		if ( tryterm1 ) { TermFree(confree1,"TakeContent"); }
 		else { M_free(confree1,"TakeContent"); }
@@ -1195,7 +1195,7 @@ WORD *GCDfunction3(PHEAD WORD *in1, WORD *in2)
 /*
 	TermFree(confree1,"TakeSymbolContent");
 */
-	if ( ( proper2 = PutExtraSymbols(BHEAD confree2,startebuf,&actionflag2) ) == 0 ) goto CalledFrom;
+	if ( ( proper2 = PutExtraSymbols(BHEAD confree2,startebuf,&actionflag2,&extrasymbolbase) ) == 0 ) goto CalledFrom;
 	if ( confree2 != in2 ) {
 		if ( tryterm2 ) { TermFree(confree2,"TakeContent"); }
 		else { M_free(confree2,"TakeContent"); }
@@ -1212,7 +1212,7 @@ WORD *GCDfunction3(PHEAD WORD *in1, WORD *in2)
 
 	AR.SortType = oldsorttype;
 	if ( actionflag1 || actionflag2 ) {
-		if ( ( gcdout = TakeExtraSymbols(BHEAD gcdout1,startebuf) ) == 0 ) goto CalledFrom;
+		if ( ( gcdout = TakeExtraSymbols(BHEAD gcdout1,startebuf,extrasymbolbase) ) == 0 ) goto CalledFrom;
 		M_free(gcdout1,"gcdout");
 	}
 	else {
@@ -1246,14 +1246,14 @@ CalledFrom:
  		#[ PutExtraSymbols :
 */
 
-WORD *PutExtraSymbols(PHEAD WORD *in,WORD startebuf,int *actionflag)
+WORD *PutExtraSymbols(PHEAD WORD *in,WORD startebuf,int *actionflag,WORD *extrasymbolbase)
 {
 	WORD *termout = AT.WorkPointer;
 	int action;
 	*actionflag = 0;
 	NewSort(BHEAD0);
 	while ( *in ) {
-		if ( ( action = LocalConvertToPoly(BHEAD in,termout,startebuf,0) ) < 0 ) {
+		if ( ( action = LocalConvertToPoly(BHEAD in,termout,startebuf,0,extrasymbolbase) ) < 0 ) {
 			LowerSortLevel();
 			goto CalledFrom;
 		}
@@ -1275,7 +1275,7 @@ CalledFrom:
  		#[ TakeExtraSymbols :
 */
 
-WORD *TakeExtraSymbols(PHEAD WORD *in,WORD startebuf)
+WORD *TakeExtraSymbols(PHEAD WORD *in,WORD startebuf,WORD extrasymbolbase)
 {
 	CBUF *C = cbuf+AC.cbufnum;
 	CBUF *CC = cbuf+AT.ebufnum;
@@ -1284,7 +1284,7 @@ WORD *TakeExtraSymbols(PHEAD WORD *in,WORD startebuf)
 	termout = AT.WorkPointer;
 	NewSort(BHEAD0);
 	while ( *in ) {
-		if ( ConvertFromPoly(BHEAD in,termout,numxsymbol,CC->numrhs-startebuf+numxsymbol,startebuf-numxsymbol,1) <= 0 ) {
+		if ( ConvertFromPoly(BHEAD in,termout,extrasymbolbase,CC->numrhs-startebuf+extrasymbolbase,startebuf-extrasymbolbase,1) <= 0 ) {
 			LowerSortLevel();
 			goto CalledFrom;
 		}
@@ -2851,7 +2851,7 @@ int DIVfunction(PHEAD WORD *term,WORD level,int par)
 	WORD *tstop, *tend, *r3, *rr, *rstop, tlength, rlength, newlength;
 	WORD *proper1, *proper2, *proper3 = 0, numdol = -1;
 	int numargs = 0, type1, type2, actionflag1, actionflag2;
-	WORD startebuf = cbuf[AT.ebufnum].numrhs;
+	WORD startebuf = cbuf[AT.ebufnum].numrhs, extrasymbolbase = -1;
 	int division = ( par <= 2 );  /* false for mul_ */
 	if ( par < 0 || par > 3 ) {
 /* INTERNAL_ERROR_EXCL_START */
@@ -2939,8 +2939,8 @@ divzero:;
 		M_free(arg1,"DIVfunction");
 		return(0);
 	}
-	if ( ( proper1 = PutExtraSymbols(BHEAD arg1,startebuf,&actionflag1) ) == 0 ) goto CalledFrom;
-	if ( ( proper2 = PutExtraSymbols(BHEAD arg2,startebuf,&actionflag2) ) == 0 ) goto CalledFrom;
+	if ( ( proper1 = PutExtraSymbols(BHEAD arg1,startebuf,&actionflag1,&extrasymbolbase) ) == 0 ) goto CalledFrom;
+	if ( ( proper2 = PutExtraSymbols(BHEAD arg2,startebuf,&actionflag2,&extrasymbolbase) ) == 0 ) goto CalledFrom;
 /*
 	if ( type2 == 0 ) M_free(arg2,"DIVfunction");
 	else {
@@ -2965,7 +2965,7 @@ divzero:;
 	else if ( par == 3 ) proper3 = poly_mul(BHEAD proper1, proper2);
 	if ( proper3 == 0 ) goto CalledFrom;
 	if ( actionflag1 || actionflag2 ) {
-		if ( ( arg3 = TakeExtraSymbols(BHEAD proper3,startebuf) ) == 0 ) goto CalledFrom;
+		if ( ( arg3 = TakeExtraSymbols(BHEAD proper3,startebuf,extrasymbolbase) ) == 0 ) goto CalledFrom;
 		M_free(proper3,"DIVfunction");
 	}
 	else {
