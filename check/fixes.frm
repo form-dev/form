@@ -5613,3 +5613,129 @@ Print;
 assert succeeded?
 assert result("test") =~ expr("0")
 *--#] PullReq860_3 :
+*--#[ PolyRatFunExpandModulus :
+* Reduce expansion coefficients before sorting, including uncombined terms.
+Modulus 13;
+CFunction rat;
+Symbol ep;
+PolyRatFun rat(expand,ep,3);
+Local F = rat(1,1+ep/2);
+Local G = rat(1+ep,2+ep);
+Local H = rat(1+ep,2);
+Local N = rat(1,2);
+Local S = rat(ep,2);
+Local D = rat(1,2*ep);
+Local L = rat(ep^2,2*ep+ep^2);
+Local P2 = 6*rat(7);
+* Continue beyond the quadratic coefficient that vanishes modulo 13.
+Local R = rat(1,1+4*ep+3*ep^2);
+Print +s;
+.end
+Modulus PlusMin,13;
+CFunction rat;
+Symbol ep;
+PolyRatFun rat(expand,ep,3);
+Local F = rat(1,1+ep/2);
+Local G = rat(1+ep,2+ep);
+Local H = rat(1+ep,2);
+Local N = rat(1,2);
+Local S = rat(ep,2);
+Local D = rat(1,2*ep);
+Local L = rat(ep^2,2*ep+ep^2);
+Local P2 = 6*rat(7);
+Local R = rat(1,1+4*ep+3*ep^2);
+Print +s;
+.end
+assert succeeded?
+modes = ["Modulus 13", "PlusMin 13"]
+[
+  ["F", "+ rat(1 + 6*ep + 10*ep^2 + 8*ep^3)", "+ rat(1 + 6*ep - 3*ep^2 - 5*ep^3)"],
+  ["G", "+ rat(7 + 10*ep + 8*ep^2 + 9*ep^3)", "+ rat(-6 - 3*ep - 5*ep^2 - 4*ep^3)"],
+  ["H", "+ rat(7 + 7*ep)", "+ rat(-6 - 6*ep)"],
+  ["N", "+ rat(7)", "+ rat(-6)"],
+  ["S", "+ rat(7*ep)", "+ rat(-6*ep)"],
+  ["D", "+ rat(7*ep^-1)", "+ rat(-6*ep^-1)"],
+  ["L", "+ rat(7*ep + 3*ep^2 + 5*ep^3 + 4*ep^4)", "+ rat(-6*ep + 3*ep^2 + 5*ep^3 + 4*ep^4)"],
+  ["P2", "+ rat(3)", "+ rat(3)"],
+  ["R", "+ rat(1 + 9*ep + 12*ep^3)", "+ rat(1 - 4*ep - ep^3)"]
+].each do |name, *values|
+  values.each_with_index do |value, index|
+    assert result(name, index) =~ expr(value), "#{modes[index]}: #{name}"
+  end
+end
+*--#] PolyRatFunExpandModulus :
+*--#[ PolyFunModulusCoefficient :
+* Compact numeric arguments need the same reduction as general arguments.
+Modulus 13;
+CFunction pf;
+PolyFun pf;
+Local F = 6*pf(7);
+Local G = 1/2*pf(7);
+Local H = -6*pf(7);
+Print +s;
+.end
+Modulus PlusMin,13;
+CFunction pf;
+PolyFun pf;
+Local F = 6*pf(7);
+Local G = 1/2*pf(7);
+Local H = -6*pf(7);
+Print +s;
+.end
+* A nonzero product can vanish when the modulus is composite.
+Modulus 15;
+CFunction pf;
+PolyFun pf;
+Local F = 3*pf(5);
+Print;
+.end
+assert succeeded?
+modes = ["Modulus 13", "PlusMin 13"]
+[
+  ["F", "+ pf(3)", "+ pf(3)"],
+  ["G", "+ pf(10)", "+ pf(-3)"],
+  ["H", "+ pf(10)", "+ pf(-3)"]
+].each do |name, *values|
+  values.each_with_index do |value, index|
+    assert result(name, index) =~ expr(value), "#{modes[index]}: #{name}"
+  end
+end
+assert result("F", 2) =~ expr("0"), "Modulus 15: F"
+*--#] PolyFunModulusCoefficient :
+*--#[ DollarFactorizeModulusContent :
+* Content extraction must reduce coefficients before sorting.
+Modulus AlsoDollars,13;
+Symbol x;
+Local F = 1;
+$p = 2*x+4*x^2;
+FactDollar $p;
+Print " N = %$;",$p[0];
+Print " F1 = %$;",$p[1];
+Print " F2 = %$;",$p[2];
+Print " F3 = %$;",$p[3];
+ModuleOption noparallel;
+.end
+Modulus PlusMin,AlsoDollars,13;
+Symbol x;
+Local F = 1;
+$p = 2*x+4*x^2;
+FactDollar $p;
+Print " N = %$;",$p[0];
+Print " F1 = %$;",$p[1];
+Print " F2 = %$;",$p[2];
+Print " F3 = %$;",$p[3];
+ModuleOption noparallel;
+.end
+assert succeeded?
+modes = ["Modulus 13", "PlusMin 13"]
+[
+  ["N", "3", "3"],
+  ["F1", "x", "x"],
+  ["F2", "x + 7", "x - 6"],
+  ["F3", "4", "4"]
+].each do |name, *values|
+  values.each_with_index do |value, index|
+    assert result(name, index) =~ expr(value), "#{modes[index]}: #{name}"
+  end
+end
+*--#] DollarFactorizeModulusContent :

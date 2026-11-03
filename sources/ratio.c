@@ -1340,6 +1340,16 @@ WORD *MultiplyWithTerm(PHEAD WORD *in, WORD *term, WORD par)
 		*termout = tt - termout;
 		// in or term can contain non-symbols: we call this in TakeContent
 		Normalize(BHEAD termout);
+		/* Modulo reduction before sorting */
+		if ( AN.ncmod != 0 ) {
+			if ( *termout != 0 && Modulus(termout) ) {
+				LowerSortLevel();
+				AR.CompareRoutine = (COMPAREDUMMY)oldcompareroutine;
+				AR.SortType = oldsorttype;
+				goto CalledFrom;
+			}
+			if ( *termout == 0 ) { in += *in; continue; }
+		}
 		StoreTerm(BHEAD termout);
 		in += *in;
 	}
@@ -3221,6 +3231,10 @@ NormArg:;
 			rr = r + *r;
 			i = *r; rrr = outarg; NCOPY(rrr,r,i);
 			Normalize(BHEAD outarg);
+			if ( AN.ncmod != 0 && *outarg != 0 && Modulus(outarg) ) {
+				LowerSortLevel(); AT.TrimPower = 0;
+				error = 3; goto onerror;
+			}
 			if ( *outarg > 0 ) StoreTerm(BHEAD outarg);
 		}
 		r = fun+FUNHEAD+ARGHEAD;
@@ -3301,6 +3315,10 @@ NormArg:;
 					}
 				}
 				else { error = 2; goto onerror; }  /* should not happen! */
+				if ( AN.ncmod != 0 && *rr != 0 ) {
+					if ( Modulus(rr) ) { error = 3; goto onerror; }
+					r = rr + *rr; *r = 0;
+				}
 			}
 			else {	/* Multi-term numerator. */
 				m = arg1+ARGHEAD;
@@ -3332,6 +3350,12 @@ NormArg:;
 					m++; while ( m < mm ) *r++ = *m++;
 					*rrr = r-rrr;
 					Normalize(BHEAD rrr);
+					if ( AN.ncmod != 0 ) {
+						if ( *rrr != 0 && Modulus(rrr) ) {
+							LowerSortLevel(); error = 3; goto onerror;
+						}
+						if ( *rrr == 0 ) continue;
+					}
 					StoreTerm(BHEAD rrr);
 				}
 				EndSort(BHEAD rr,1);
@@ -3413,6 +3437,12 @@ NormArg:;
 					if ( r < AT.WorkTop && r >= AT.WorkSpace )
 								AT.WorkPointer = r;
 					Normalize(BHEAD rrr);
+					if ( AN.ncmod != 0 ) {
+						if ( *rrr != 0 && Modulus(rrr) ) {
+							LowerSortLevel(); error = 3; goto onerror;
+						}
+						if ( *rrr == 0 ) continue;
+					}
 					if ( ABS(rrr[*rrr-1]) == *rrr-1 ) {
 						if ( AR.PolyFunPow >= 0 ) {
 							StoreTerm(BHEAD rrr);
@@ -3424,6 +3454,11 @@ NormArg:;
 					}
 				}
 				EndSort(BHEAD rr,1);
+			}
+			/* Fast numerators bypass sorting, but still need reduction. */
+			if ( *arg1 < 0 && AN.ncmod != 0 && *rr != 0 ) {
+				if ( Modulus(rr) ) { error = 3; goto onerror; }
+				rr[*rr] = 0;
 			}
 			r = rr; while ( *r ) r += *r;
 			i = r-rr;
@@ -3590,6 +3625,9 @@ NormArg:;
 				*thecopy = rr - thecopy;
 				AT.WorkPointer = rr;
 				Normalize(BHEAD thecopy);
+				if ( AN.ncmod != 0 && *thecopy != 0 && Modulus(thecopy) ) {
+					LowerSortLevel(); error = 3; goto onerror;
+				}
 				if ( *thecopy > 0 ) StoreTerm(BHEAD thecopy);
 				AT.WorkPointer = thecopy;
 			}
@@ -3725,8 +3763,11 @@ int InvPoly(PHEAD WORD *inpoly, WORD maxpow, WORD sym)
 			}
 		}
 /*
-		Copy c to the proper location
+		Reduce before reusing c, and represent modular zeroes by null pointers.
+		Copy c to the proper location.
 */
+		if ( AN.ncmod != 0 && lenc != 0 &&
+			TakeModulus((UWORD *)c,&lenc,AC.cmod,AN.ncmod,UNPACK) ) goto calcerror;
 		if ( lenc == 0 ) AT.pWorkSpace[outpointers+j] = 0;
 		else {
 			AT.pWorkSpace[outpointers+j] = w;

@@ -5172,6 +5172,8 @@ int PrepPoly(PHEAD WORD *term,WORD par)
 				if ( m >= AT.WorkSpace && m < AT.WorkTop )
 					AT.WorkPointer = m;
 				if ( Normalize(BHEAD v) ) Terminate(-1);
+				/* Modulo reduction of the argument */
+				if ( AN.ncmod != 0 && Modulus(v) ) Terminate(-1);
 				AT.WorkPointer = oldworkpointer;
 				m = w;
 				if ( *v == 4 && v[2] == 1 && (v[1]&MAXPOSITIVE) == v[1] ) {
