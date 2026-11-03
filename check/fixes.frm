@@ -5245,6 +5245,53 @@ Print;
 assert succeeded?
 assert result("test") =~ expr("4+4*x")
 *--#] Issue882_6 :
+*--#[ Issue916_1 :
+Vector l1;
+CFunction den;
+
+#$k = -l1;
+
+Local expr = 1;
+Local match = den(l1,1);
+Identify den(-$k,1) = 1;
+
+Print;
+.end
+assert succeeded?
+assert result("expr") =~ expr("1")
+assert result("match") =~ expr("1")
+*--#] Issue916_1 :
+*--#[ Issue916_2 :
+Symbol x,y,z;
+CFunction den,g;
+
+#$s = -x-y;
+
+Local rhs1 = den(-$s);
+Local rhs2 = den(g(-$s),z);
+Local cancel = den(-$s-x-y);
+Local match1 = den(x+y+z);
+Local match2 = den(g(x+y+z),z);
+Local match3 = den(x^2+x*y+y);
+Local match4 = den(x+y+z+g(x+y));
+.sort
+
+Identify den(-$s+z) = 1;
+Identify den(g(-$s+z),z) = 2;
+Identify den(-$s*x+y) = 3;
+Identify den(-$s+z+g(-$s)) = 4;
+
+Print;
+.end
+assert succeeded?
+assert result("rhs1") =~ expr("den(y+x)")
+assert result("rhs2") =~ expr("den(g(y+x),z)")
+assert result("cancel") =~ expr("den(0)")
+assert result("match1") =~ expr("1")
+assert result("match2") =~ expr("2")
+assert result("match3") =~ expr("3")
+assert result("match4") =~ expr("4")
+*--#] Issue916_2 :
 *--#[ PullReq535 :
 * This test requires more than the specified 50K workspace.
 #:maxtermsize 200
