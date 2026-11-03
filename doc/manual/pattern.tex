@@ -73,6 +73,40 @@ and r are vectors, and a and x are symbols, and f is a function. It would
 not match \verb:f(x): and neither would it match \verb:f(q*r):, nor 
 \verb:f(a*q+x):.
 
+For products of vector wildcards, \FORM\ does not in general try all
+possible matchings of the factors.  A match may therefore fail even when
+another assignment of the same factors to the wildcards would succeed.
+For example
+\begin{verbatim}
+    Vectors l1,l2;
+    Indices mu1,mu2,mu3;
+
+    Local F =
+        l1(mu1)*l2(mu2)*l2(mu3)
+      + l1(mu1)*l1(mu2)*l2(mu3);
+
+    id l1?(mu1?)*l1?(mu2?)*l2?(mu3?) = 0;
+    Print;
+    .end
+\end{verbatim}
+leaves the first term unchanged.  The second term is removed.  For the
+first term, a different assignment of the same vector factors to the
+wildcards would produce a match, but the matcher does not try that
+assignment.
+
+This is a limitation of the matcher's search, not of the commutativity
+of the vector product.  \FORM\ stores the factors of a term in a
+canonical order, which is not necessarily the order in which they were
+written.  The matcher has backtracking support for function factors
+that is not available in the same way for vector factors.  Replacing
+the vectors by commuting functions or tensors can make this example
+match, but that changes the algebraic semantics and is not a general
+workaround.
+
+For a fixed small pattern, separate \verb:id: statements can be used to
+cover the arrangements that are needed.  This does not make the matcher
+try all permutations.
+
 Wildcard\index{wildcard!symbol} symbols are the most flexible objects. They 
 can match symbols, numbers and expressions that do not contain loose 
 indices or vectors without indices. These last objects are called 
