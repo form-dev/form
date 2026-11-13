@@ -1184,16 +1184,30 @@ typedef struct sOrT {
 #ifdef WITHPTHREADS
 
 /**
+ *  Block-private data, aligned to a multiple of SORTBLOCK_CACHELINESIZE.
+ *  IniSortBlocks will use an aligned pointer for the array of SORTBLOCKDATA
+ *  such that block data never shares cache lines.
+ */
+typedef struct SoRtBlOcKdAtA {
+    pthread_mutex_t MasterBlockLock;
+    WORD    *MasterStart;
+    WORD    *MasterFill;
+    WORD    *MasterStop;
+    LONG    BlockTerms;
+    UBYTE   Padding[SORTBLOCK_CACHELINESIZE -
+        (sizeof(pthread_mutex_t) + 3*sizeof(WORD *) + sizeof(LONG)) %
+        SORTBLOCK_CACHELINESIZE];
+} SORTBLOCKDATA;
+STATIC_ASSERT(sizeof(SORTBLOCKDATA) % SORTBLOCK_CACHELINESIZE == 0);
+STATIC_ASSERT(SORTBLOCK_CACHELINESIZE % form_alignof(SORTBLOCKDATA) == 0);
+
+/**
  *  The SORTBLOCK's are used by TFORM when the master has to merge the sorted
  *  results of each of the workers.
  */
-
 typedef struct SoRtBlOcK {
-    pthread_mutex_t *MasterBlockLock;
-    WORD    **MasterStart;
-    WORD    **MasterFill;
-    WORD    **MasterStop;
-    LONG    *BlockTerms;
+    SORTBLOCKDATA *Data;
+    void    *DataAllocation;  /* Original Malloc1 pointer, for M_free. */
     int     MasterNumBlocks;
     int     MasterBlock;
     int     FillBlock;
