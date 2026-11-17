@@ -2058,7 +2058,7 @@ caughttable:
 					ClearWild(BHEAD0);
 					AN.RepFunNum = 0;
 					AN.RepFunList = AN.EndNest;
-				    AT.WorkPointer = (WORD *)(((UBYTE *)(AN.EndNest)) + AM.MaxTer/2);
+				    AT.WorkPointer = AN.EndNest + AM.MaxTer/(2*sizeof(WORD));
 					if ( AT.WorkPointer >= AT.WorkTop ) {
 						MLOCK(ErrorMessageLock);
 						MesWork();
