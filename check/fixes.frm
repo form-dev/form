@@ -4835,6 +4835,75 @@ assert result("testCF1") =~ expr("putfirst_(f,2,mu1)*putfirst_(e,2,mu1)*putfirst
 assert result("testCF2") =~ expr("d(mu2,mu1)*e(mu2,mu1)*f(mu2,mu1)")
 assert result("testCF3") =~ expr("d(mu2,mu1,mu3)*e(mu2,mu1,mu3)*f(mu2,mu1,mu3)")
 *--#] Issue750 :
+*--#[ Issue757_1 :
+#-
+* Skipped pre-processor instructions should skip an entire quoted string, which
+* may contain linebreaks:
+#if 0
+  #system echo "
+# 1
+\"`undefined757'\"
+#endif
+"
+#else
+  #message else branch
+#endif
+
+#ifdef `undefined757'
+  #system echo "\
+# 1
+# 2
+# 3
+# 4
+# 5"
+#endif
+#message after if
+.end
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+~~~else branch
+~~~after if
+EOF
+*--#] Issue757_1 :
+*--#[ Issue757_2 :
+#-
+#switch 2
+  #case 1
+    #system echo "
+#case 2
+# 1
+\"`undefined757'\"
+"
+  #case 2
+    #message selected case
+    #break
+  #default
+    #system echo "
+# 2
+"
+#endswitch
+#message after switch
+.end
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+~~~selected case
+~~~after switch
+EOF
+*--#] Issue757_2 :
+*--#[ Issue757_3 :
+#-
+* Comments containing unmatched " still end at the linebreak.
+* Here, we check that the fold can be found following such a comment:
+#include issue757.inc # selected
+#message after include
+.end
+#prepare write "issue757.inc", "* unmatched quote: \"\n*--#[ selected :\n#message included fold\n*--#] selected :\n"
+assert succeeded?
+assert stdout =~ exact_pattern(<<'EOF')
+~~~included fold
+~~~after include
+EOF
+*--#] Issue757_3 :
 *--#[ Issue760 : 
 ModuleOption foo1;
 ModuleOption parallel,foo2;

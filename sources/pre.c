@@ -1256,10 +1256,10 @@ retry:;
  		#[ LoadInstruction :
 
 		0:  preprocessor instruction that may involve matching of brackets
-		1:  runs straight to end-of-line
+		1:  runs straight to end-of-line, but allowing newlines inside ""
 		2:	runs to ;
 		3:	only gets one word without `' interpretation.
-		5:	with pushbackchar, but inside commentary. -> 1
+		5:	with pushbackchar, inside commentary: runs to end-of-line
 
 To be added:
 	In define, redefine, call and listed do we may have delayed substitution
@@ -1294,7 +1294,7 @@ int LoadInstruction(int mode)
 		}
 
 		if ( mode == 2 && c == ';' ) break;
-		if ( ( mode == 1 || mode == 5 ) && c == LINEFEED ) break;
+		if ( mode == 5 && c == LINEFEED ) break;
 		if ( mode == 3 && FG.cTable[c] != 0 ) {
 			if ( c == '$' ) {
 				pushbackchar = '$';
@@ -2425,7 +2425,7 @@ continue_fold:
 			}
 			if ( c == AP.ComChar ) {
 				str1offset = AC.CurrentStream-AC.Streams;
-				LoadInstruction(1);
+				LoadInstruction(5);
 				if ( AC.CurrentStream != str1offset+AC.Streams ) {
 					c = ENDOFSTREAM;
 				}
