@@ -1044,7 +1044,7 @@ WorkSpaceError:
 
 /*
  		#] EndSort : 
- 		#[ PutIn :					LONG PutIn(handle,position,buffer,take,npat)
+ 		#[ PutIn :					LONG PutIn(handle,position,buffer,take,size,npat)
 */
 /**
  *	Reads a new patch from position in file handle.
@@ -1056,19 +1056,22 @@ WorkSpaceError:
  *	@param position The position from which to read
  *	@param buffer   The buffer into which to read
  *	@param take     The unused tail should be moved before the buffer
+ *	@param size     The size of the input patch cache in bytes
  *	@param npat		The number of the patch. Is needed if the information
  *	                was compressed with gzip, because each patch has its
  *	                own independent gzip encoding.
  */
 
-LONG PutIn(FILEHANDLE *file, POSITION *position, WORD *buffer, WORD **take, int npat)
+LONG PutIn(FILEHANDLE *file, POSITION *position, WORD *buffer, WORD **take, LONG size, int npat)
 {
 	LONG i, RetCode;
 	WORD *from, *to;
 #ifndef WITHZLIB
-	DUMMYUSE(npat);
+	GETIDENTITY
+	POSITION remaining;
+	LONG readsize = size;
 #endif
-	from = buffer + ( file->POsize * sizeof(UBYTE) )/sizeof(WORD);
+	from = buffer + size/sizeof(WORD);
 	i = from - *take;
 	if ( i*((LONG)(sizeof(WORD))) > AM.MaxTer ) {
 /* INTERNAL_ERROR_EXCL_START */
@@ -1083,28 +1086,33 @@ LONG PutIn(FILEHANDLE *file, POSITION *position, WORD *buffer, WORD **take, int 
 	*take = to;
 #ifdef WITHZLIB
 	if ( ( RetCode = FillInputGZIP(file,position,(UBYTE *)buffer
-									,file->POsize,npat) ) < 0 ) {
+									,size,npat) ) < 0 ) {
 /* INTERNAL_ERROR_EXCL_START */
 		MLOCK(ErrorMessageLock);
 		MesPrint("!>PutIn: We have RetCode = %x while reading %x bytes",
-			RetCode,file->POsize);
+			RetCode,size);
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
 /* INTERNAL_ERROR_EXCL_STOP */
 	}
 #else
+	if ( ISGEPOS(*position,AT.SS->fPatchesStop[npat]) ) return(0);
+	if ( !ISGEPOSINC(AT.SS->fPatchesStop[npat],*position,readsize) ) {
+		DIFPOS(remaining,AT.SS->fPatchesStop[npat],*position);
+		readsize = (LONG)BASEPOSITION(remaining);
+	}
 #ifdef ALLLOCK
 	LOCK(file->pthreadslock);
 #endif
 	SeekFile(file->handle,position,SEEK_SET);
-	if ( ( RetCode = ReadFile(file->handle,(UBYTE *)buffer,file->POsize) ) < 0 ) {
+	if ( ( RetCode = ReadFile(file->handle,(UBYTE *)buffer,readsize) ) < 0 ) {
 #ifdef ALLLOCK
 		UNLOCK(file->pthreadslock);
 #endif
 /* INTERNAL_ERROR_EXCL_START */
 		MLOCK(ErrorMessageLock);
 		MesPrint("!>PutIn: We have RetCode = %x while reading %x bytes",
-			RetCode,file->POsize);
+			RetCode,readsize);
 		MUNLOCK(ErrorMessageLock);
 		Terminate(-1);
 /* INTERNAL_ERROR_EXCL_STOP */
@@ -3524,14 +3532,14 @@ int MergePatches(WORD par)
 	WORD *p, lpat, mpat, level, l1, l2, r1, r2, r3, c;
 	WORD *m2, *m3, r31, r33, ki, *rr;
 	UWORD *coef;
-	POSITION position;
+	POSITION position, position2;
 	FILEHANDLE *fin, *fout;
+	LONG cachesize = 0;
 	int fhandle;
 /*
 	UBYTE *s;
 */
 #ifdef WITHZLIB
-	POSITION position2;
 	int oldgzipCompress = AR.gzipCompress;
 	if ( par == 2 ) {
 		AR.gzipCompress = 0;
@@ -3609,14 +3617,6 @@ ConMer:
 		m1 = S->fpincompressed;
 		S->fpincompressed = S->fpcompressed;
 		S->fpcompressed = m1;
-		for ( i = 0; i < S->inNum; i++ ) {
-			S->fPatchesStop[i] = S->iPatches[i+1];
-#ifdef GZIPDEBUG
-			MLOCK(ErrorMessageLock);
-			MesPrint("%w fPatchesStop[%d] = %10p",i,&(S->fPatchesStop[i]));
-			MUNLOCK(ErrorMessageLock);
-#endif
-		}
 #endif
 		S->stage4 = 0;
 		goto FileMake;
@@ -3635,14 +3635,6 @@ ConMer:
 			m1 = S->fpincompressed;
 			S->fpincompressed = S->fpcompressed;
 			S->fpcompressed = m1;
-			for ( i = 0; i < S->inNum; i++ ) {
-				S->fPatchesStop[i] = S->fPatches[i+1];
-#ifdef GZIPDEBUG
-				MLOCK(ErrorMessageLock);
-				MesPrint("%w fPatchesStop[%d] = %10p",i,&(S->fPatchesStop[i]));
-				MUNLOCK(ErrorMessageLock);
-#endif
-			}
 #endif
 		}
 		fout = AR.outfile;
@@ -3656,24 +3648,37 @@ ConMer:
 	}
 	else {	/* Load the patches */
 		S->lPatch = (S->inNum);
+		for ( i = 0; i < S->lPatch; i++ ) {
+			S->fPatchesStop[i] = S->iPatches[i+1];
+#ifdef GZIPDEBUG
+			MLOCK(ErrorMessageLock);
+			MesPrint("%w fPatchesStop[%d] = %10p",i,&(S->fPatchesStop[i]));
+			MUNLOCK(ErrorMessageLock);
+#endif
+		}
 #ifdef WITHMPI
-		if ( S->lPatch > 1 || ( (PF.exprtodo <0) && (fout == AR.outfile || fout == AR.hidefile ) ) ) {
+		if ( S->lPatch > 0 && ( S->lPatch > 1 || ( (PF.exprtodo <0) && (fout == AR.outfile || fout == AR.hidefile ) ) ) ) {
 #else
 		if ( S->lPatch > 1 ) {
 #endif
 #ifdef WITHZLIB
 			SetupAllInputGZIP(S);
 #endif
+			// We use the combined large+small buffer for caching the patches.
+			// Divide it by the current number of patches, rather than by MaxFPatches,
+			// and make sure that we retain the usual per-cache headroom.
+			cachesize = ((S->LargeSize+S->SmallEsize)/S->lPatch-COMPINC)
+				*sizeof(WORD)-2*AM.MaxTer;
 			p = S->lBuffer;
 			for ( i = 0; i < S->lPatch; i++ ) {
 				p = (WORD *)(((UBYTE *)p)+2*AM.MaxTer+COMPINC*sizeof(WORD));
 				S->Patches[i] = p;
-				p = (WORD *)(((UBYTE *)p) + fin->POsize);
+				p = (WORD *)(((UBYTE *)p) + cachesize);
 				S->pStop[i] = m2 = p;
 #ifdef WITHZLIB
-				PutIn(fin,&(S->iPatches[i]),S->Patches[i],&m2,i);
+				PutIn(fin,&(S->iPatches[i]),S->Patches[i],&m2,cachesize,i);
 #else
-				ADDPOS(S->iPatches[i],PutIn(fin,&(S->iPatches[i]),S->Patches[i],&m2,i));
+				ADDPOS(S->iPatches[i],PutIn(fin,&(S->iPatches[i]),S->Patches[i],&m2,cachesize,i));
 #endif
 			}
 		}
@@ -3820,9 +3825,20 @@ ConMer:
 			ADDPOS(S->SizeInFile[par],1);
 #else
 /* old code */
+			POSITION remaining;
+			LONG readsize;
+			position2 = S->iPatches[0];
 			SeekFile(fin->handle,&(S->iPatches[0]),SEEK_SET); /* needed for stage4 */
-			while ( ( length = ReadFile(fin->handle,
-					(UBYTE *)(S->sBuffer),S->SmallEsize*sizeof(WORD)) ) > 0 ) {
+			length = 0;
+			while ( !ISGEPOS(position2,S->fPatchesStop[0]) ) {
+				readsize = S->SmallEsize*sizeof(WORD);
+				if ( !ISGEPOSINC(S->fPatchesStop[0],position2,readsize) ) {
+					DIFPOS(remaining,S->fPatchesStop[0],position2);
+					readsize = (LONG)BASEPOSITION(remaining);
+				}
+				length = ReadFile(fin->handle,(UBYTE *)(S->sBuffer),readsize);
+				if ( length <= 0 ) break;
+				ADDPOS(position2,length);
 				if ( WriteFile(fout->handle,(UBYTE *)(S->sBuffer),length) != length )
 					goto PatwCall;
 				ADDPOS(position,length);
@@ -4040,10 +4056,10 @@ cancelled:
 						if ( !par && (poin[ul] + im + COMPINC) >= S->pStop[ki]
 						&& im > 0 ) {
 #ifdef WITHZLIB
-							PutIn(fin,&(S->iPatches[ki]),S->Patches[ki],&(poin[ul]),ki);
+							PutIn(fin,&(S->iPatches[ki]),S->Patches[ki],&(poin[ul]),cachesize,ki);
 #else
 							ADDPOS(S->iPatches[ki],PutIn(fin,&(S->iPatches[ki]),
-							S->Patches[ki],&(poin[ul]),ki));
+							S->Patches[ki],&(poin[ul]),cachesize,ki));
 #endif
 							poin2[ul] = poin[ul] + im;
 						}
@@ -4109,10 +4125,10 @@ NextTerm:
 					if ( !par && ( (poin[k] + im + COMPINC) >= S->pStop[ki] )
 					&& im > 0 ) {
 #ifdef WITHZLIB
-						PutIn(fin,&(S->iPatches[ki]),S->Patches[ki],&(poin[k]),ki);
+						PutIn(fin,&(S->iPatches[ki]),S->Patches[ki],&(poin[k]),cachesize,ki);
 #else
 						ADDPOS(S->iPatches[ki],PutIn(fin,&(S->iPatches[ki]),
-						S->Patches[ki],&(poin[k]),ki));
+						S->Patches[ki],&(poin[k]),cachesize,ki));
 #endif
 						poin2[k] = poin[k] + im;
 					}
@@ -4201,16 +4217,6 @@ EndOfAll:
 /* INTERNAL_ERROR_EXCL_STOP */
 			}
 			*rr = 0;
-#ifdef WITHZLIB
-			for ( i = 0; i < S->inNum; i++ ) {
-				S->fPatchesStop[i] = S->iPatches[i+1];
-#ifdef GZIPDEBUG
-				MLOCK(ErrorMessageLock);
-				MesPrint("%w fPatchesStop[%d] = %10p",i,&(S->fPatchesStop[i]));
-				MUNLOCK(ErrorMessageLock);
-#endif
-			}
-#endif
 			goto ConMer;
 		}
 		else {

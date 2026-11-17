@@ -748,8 +748,7 @@ ALLPRIVATES *InitializeOneThread(int identity)
 						 ,AM.S0->SmallEsize*sizeof(WORD)/numberofworkers
 						 ,AM.S0->TermsInSmall
 						 ,AM.S0->MaxPatches
-/*						 ,AM.S0->MaxPatches/numberofworkers  */
-						 ,AM.S0->MaxFpatches/numberofworkers
+						 ,MaX(AM.S0->MaxFpatches/numberofworkers, MINFPATCHES)
 						 ,AM.S0->file.POsize
 						 ,0);
 	}

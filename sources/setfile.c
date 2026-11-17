@@ -585,17 +585,8 @@ int AllocSetups(void)
 	AM.S0 = 0;
 	AM.S0 = AllocSort(LargeSize,SmallSize,SmallEsize,TermsInSmall
 					,MaxPatches,MaxFpatches,IOsize,0);
-	/* AM.S0->file.ziosize was already set to a (larger) value by AllocSort, here it is re-set. */
-#ifdef WITHZLIB
-	AM.S0->file.ziosize = IOsize;
-	AM.S0->FoStage4.ziosize = IOsize;
 #ifndef WITHPTHREADS
 	AT.S0 = AM.S0;
-#endif
-#else
-#ifndef WITHPTHREADS
-	AT.S0 = AM.S0;
-#endif
 #endif
 	sp = GetSetupPar((UBYTE *)"subsmallsize");
 	AM.SSmallSize = sp->value;
@@ -872,11 +863,9 @@ SORTING *AllocSort(LONG inLargeSize, LONG inSmallSize, LONG inSmallEsize, LONG i
 	LONG TermsInSmall = inTermsInSmall;
 	int MaxPatches = inMaxPatches;
 	int MaxFpatches = inMaxFpatches;
-	LONG IOsize = inIOsize;
 
 	LONG longer,terms2insmall,sortsize,longerp;
-	LONG IObuffersize = IOsize;
-	LONG IOtry;
+	LONG IObuffersize = inIOsize;
 	SORTING *sort;
 	int fname2Size = 0, j = 0;
 	char *s;
@@ -885,7 +874,7 @@ SORTING *AllocSort(LONG inLargeSize, LONG inSmallSize, LONG inSmallEsize, LONG i
 		while ( *s ) { s++; fname2Size++; }
 		fname2Size += 16;
 	}
-	if ( MaxFpatches < 4 ) MaxFpatches = 4;
+	if ( MaxFpatches < MINFPATCHES ) MaxFpatches = MINFPATCHES;
 	longer = MaxPatches > MaxFpatches ? MaxPatches : MaxFpatches;
 	longerp = longer;
 	while ( (1 << j) < longerp ) j++;
@@ -902,26 +891,22 @@ SORTING *AllocSort(LONG inLargeSize, LONG inSmallSize, LONG inSmallEsize, LONG i
 	if ( LargeSize < 0 ) LargeSize = 0;
 	sortsize = sizeof(SORTING);
 	sortsize = (sortsize+15)&(-16L);
+	if ( IObuffersize < AM.MaxTer ) IObuffersize = AM.MaxTer;
 	IObuffersize = (IObuffersize+sizeof(WORD)-1)/sizeof(WORD);
 /*
-	The next statement fixes a bug. In the rare case that we have a
-	problem here, we expand the size of the large buffer or the 
-	small extension
+	File patches are cached in the combined large+small buffer when reading.
+	Each cache needs to fit needs to fit a maximally sized term, plus headroom
+	of two maximally sized terms and COMPINC. COMPINC guarantees that the
+	two-WORD header of the following compressed term fits in the cache. These
+	cache spaces are independent of the file's own IO buffer (PObuffer) which
+	is controlled by "SortIOSize".
 */
-	if ( (ULONG)( LargeSize+SmallEsize ) < MaxFpatches*((IObuffersize
-		+COMPINC)*sizeof(WORD)+2*AM.MaxTer) ) {
+	if ( (ULONG)( LargeSize+SmallEsize ) < MaxFpatches*(3*AM.MaxTer+COMPINC*sizeof(WORD)) ) {
 		if ( LargeSize == 0 ) 
-			SmallEsize = MaxFpatches*((IObuffersize+COMPINC)*sizeof(WORD)+2*AM.MaxTer);
+			SmallEsize = MaxFpatches*(3*AM.MaxTer+COMPINC*sizeof(WORD));
 		else
-			LargeSize  = MaxFpatches*((IObuffersize+COMPINC)*sizeof(WORD)+2*AM.MaxTer)
+			LargeSize  = MaxFpatches*(3*AM.MaxTer+COMPINC*sizeof(WORD))
 				- SmallEsize;
-	}
-
-	IOtry = ((LargeSize+SmallEsize)/MaxFpatches-2*AM.MaxTer)/sizeof(WORD)-COMPINC;
-
-	/* Here both IObuffersize and IOtry are in units of sizeof(WORD). */
-	if ( IObuffersize < IOtry ) {
-		IObuffersize = IOtry;
 	}
 
 #if DEBUGGING
@@ -934,8 +919,6 @@ SORTING *AllocSort(LONG inLargeSize, LONG inSmallSize, LONG inSmallEsize, LONG i
 	if ( TermsInSmall != inTermsInSmall ) { MesPrint("Warning: %sTermsInSmall adjusted: %l -> %l", prefix, inTermsInSmall, TermsInSmall); }
 	if ( MaxPatches != inMaxPatches ) { MesPrint("Warning: MaxPatches adjusted: %d -> %d", inMaxPatches, MaxPatches); }
 	if ( MaxFpatches != inMaxFpatches ) {MesPrint("Warning: MaxFPatches adjusted: %d -> %d", inMaxFpatches, MaxFpatches); }
-	/* This one is always changed if the LargeSize has not been... */
-	/* if ( IObuffersize != inIOsize/(LONG)sizeof(WORD) ) { MesPrint("Warning: IOsize adjusted: %l -> %l", inIOsize/sizeof(WORD), IObuffersize); } */
 #endif
 
 	/* Allocate separate buffers for most struct members, for better testing and debugging with valgrind. */

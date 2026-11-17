@@ -688,7 +688,7 @@ extern void   PrintFeatureList(void);
 extern void   PrintRunningTime(void);
 extern LONG   GetRunningTime(void);
 extern int    PutBracket(PHEAD WORD *);
-extern LONG   PutIn(FILEHANDLE *,POSITION *,WORD *,WORD **,int);
+extern LONG   PutIn(FILEHANDLE *,POSITION *,WORD *,WORD **,LONG,int);
 extern int    PutInStore(INDEXENTRY *,WORD);
 extern WORD   PutOut(PHEAD WORD *,POSITION *,FILEHANDLE *,WORD);
 extern UWORD  Quotient(UWORD *,WORD *,WORD);
