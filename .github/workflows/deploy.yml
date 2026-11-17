@@ -332,7 +332,7 @@ jobs:
       # a versioning tag.
       - name: Publish distributions
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v3.0.3
+        uses: softprops/action-gh-release@v3.0.4
         with:
           files: |
             dist/*.tar.gz
