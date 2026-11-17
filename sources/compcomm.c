@@ -7428,7 +7428,7 @@ int CoSetUserFlag(UBYTE *s)
 		int x = 0;
 		while ( *s && ( FG.cTable[*s] == 1 ) ) x = 10*x+(*s++ - '0');
 		if ( x < 1 || x > BITSINWORD ) {
-			MesPrint("&Flag number %d outside the permitted range 1-%d.",BITSINWORD);
+			MesPrint("&Flag number %d outside the permitted range 1-%d.",x,BITSINWORD);
 			error = 1;
 		}
 		else {
@@ -7456,11 +7456,11 @@ int CoClearUserFlag(UBYTE *s)
 		int x = 0;
 		while ( *s && ( FG.cTable[*s] == 1 ) ) x = 10*x+(*s++ - '0');
 		if ( x < 1 || x > BITSINWORD ) {
-			MesPrint("&Flag number %d outside the permitted range 1-%d.",BITSINWORD);
+			MesPrint("&Flag number %d outside the permitted range 1-%d.",x,BITSINWORD);
 			error = 1;
 		}
 		else {
-			Add3Com(TYPECLEARUSERFLAG,x);
+			Add3Com(TYPECLEARUSERFLAG,x-1);
 		}
 		while ( *s && ( *s == ',' || *s == ' ' || *s == '\t' ) ) s++;
 	}
