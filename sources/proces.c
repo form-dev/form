@@ -1808,25 +1808,10 @@ DoSpec:
 							n++;
 						}
 						AN.EndNest += j;
-/*						(AT.NestPoin->argsize)[1] = 0;  */
-						if ( funnum == DENOMINATOR || funnum == EXPONENT ) {
-							if ( Normalize(BHEAD term) ) {
-/*
-								In this case something has been substituted
-								Either a $ or a replace_?????
-								Originally we had here:
-
-								goto EndTest;
-
-								It seems better to restart.
-*/
-								AN.ncmod = oldncmod;
-								goto ReStart;
-							}
-/*
-							And size changes here?????
-*/
-						}
+						// Previously, we called Normalize (in-place) here if DENOMINATOR
+						// or EXPONENT functions are present. This is dangerous, we must
+						// leave this to the caller which calls Normalize on a copy of
+						// the term data, and updates enclosing sizes.
 						AN.ncmod = oldncmod;
 						goto ReStart;
 					}
