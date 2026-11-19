@@ -4015,7 +4015,13 @@ CommonEnd:
 */
 			}
 		} while ( ( i = TestMatch(BHEAD term,&level) ) == 0 );
-		if ( AT.WorkPointer < term + *term ) AT.WorkPointer = term + *term;
+		// Reset the WorkPointer unconditionally, to avoid consuming a large amount of
+		// WorkSpace unnecessarily. This implies that at this point, there is no live data
+		// beyond term + *term. If a bug ever bisects to this commit, we have to document
+		// very carefully what the data lifetimes are. For example, we can probably not
+		// reset this following the call to TestSub below: it sets AT.TMaddr and AN.Frozen
+		// which point into the workspace.
+		AT.WorkPointer = term + *term;
 		if ( i > 0 ) replac = TestSub(BHEAD term,level);
 		else replac = i;
 		if ( replac >= 0 || AT.TMout[1] != SYMMETRIZE ) {

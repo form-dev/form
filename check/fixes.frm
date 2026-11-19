@@ -5165,6 +5165,17 @@ assert result("test4") =~ expr("16384*f(4)^4")
 assert result("htest4") =~ expr("16*g(4)^8")
 assert result("ihtest4") =~ expr("4096*h(4)^12")
 *--#] Issue856 : 
+*--#[ Issue873 :
+#-
+#define POWER "1000"
+Symbol x,n;
+Local test = 5*fac_(`POWER') - 5*x^`POWER';
+Repeat Identify x^n?pos_ = n*x^(n-1);
+Print +s;
+.end
+assert succeeded?
+assert result("test") =~ expr("0")
+*--#] Issue873 :
 *--#[ Issue882_1 :
 Off statistics;
 Symbol x;
