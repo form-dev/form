@@ -2507,6 +2507,11 @@ Syntax & hide; \\
 expressions for being put in hidden\index{hide} storage. In the second variety it marks 
 only the specified active\index{active expressions} expressions as such. \vspace{4mm}
 
+\noindent Hide has no further effect on expressions that are already
+hidden or marked for hiding. Examples of combining hide with pushhide,
+pophide and unhide are given in \ref{substapushhide}.
+\vspace{4mm}
+
 \noindent If an expression is marked for being hidden, it will be copied to 
 the `hide\index{hide file} file'\index{file!hide}, a storage which is 
 either in memory or on file depending on the combined size of all 
@@ -4655,7 +4660,7 @@ Syntax & pophide;
 \end{tabular} \vspace{4mm}
 
 \noindent Undoes\index{pophide} the action of the most recent 
-pushhide\index{pushhide} statement (see \ref{substapushhide}). If there is 
+pushhide\index{pushhide} statement (see \ref{substapushhide}). If there is
 no matching pushhide statement an error will result:
 % THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
 % WELL! (Sta_PushPopHide_2)
@@ -4672,6 +4677,10 @@ no matching pushhide statement an error will result:
 pushpophide-2.frm Line 9 --> PopHide statement without corresponding PushHide s
 tatement
 \end{verbatim}
+\vspace{4mm}
+\noindent It also brings back expressions hidden with \texttt{hide} since
+that pushhide. Expressions that were already hidden before that pushhide
+stay hidden. See also \ref{substapushhide} for an example.
 \vspace{10mm}
 
 %--#] pophide : 
@@ -4995,6 +5004,54 @@ by the most recent pushhide statement. For example:
    F3 =
       8;
 \end{verbatim}
+
+\noindent Hide and unhide can also be used between pushhide and pophide.
+The following rules apply: suppose pushhide has hidden F1, and hide then hides F2. There
+are two ways to bring expressions back:
+\begin{itemize}
+\item \verb|UnHide;| makes F2 active again and leaves F1 hidden.
+\item \verb|PopHide;| makes both F1 and F2 active again.
+\end{itemize}
+Expressions that were already hidden before the pushhide stay hidden in
+both cases. To bring back a particular expression, even one hidden by
+pushhide, name it explicitly: \verb|UnHide F1;|. Here is a nested example.
+The comments show which expressions each print statement prints:
+% THIS EXAMPLE IS PART OF THE TESTSUITE. CHANGES HERE SHOULD BE APPLIED THERE AS
+% WELL! (Sta_PushPopHide_3)
+\begin{verbatim}
+    Local F1 = 1;
+    .sort
+    PushHide;
+    Local F2 = 2;
+    .sort
+    Hide;
+    Local F3 = 3;
+    .sort
+    PushHide;
+    Local F4 = 4;
+    .sort
+    Hide;
+    .sort
+    PopHide;
+    * F3 and F4 are active; F1 and F2 remain hidden.
+    Print;
+    .sort
+    UnHide;
+    * F2, F3 and F4 are active; F1 remains hidden.
+    Print;
+    .sort
+    PopHide;
+    * All four expressions are active.
+    Print;
+    .end
+\end{verbatim}
+\noindent For package management, the user can set expressions aside with
+pushhide while a package does its work, then bring them back with pophide.
+An argument-free \verb|UnHide;| inside the package does not undo the user's
+pushhide or unhide expressions that were already hidden before it.
+Existing packages can therefore continue using hide and unhide for their
+own expressions without changing those statements. For new packages, it is
+recommended to use the pushhide/pophide mechanism though.
 \vspace{10mm}
 
 %--#] pushhide : 
@@ -7194,13 +7251,22 @@ Syntax & unhide; \\
               pophide (\ref{substapophide})
 \end{tabular} \vspace{4mm}
 
-\noindent In its\index{unhide} first variety this statement causes all 
-expressions in the hide\index{hide} file\index{file!hide} to become 
-active\index{active} expressions again. In its second variety only the 
-specified expressions are taken from the hide system and become active 
-again. An expression that is made active again can be manipulated again in 
-the module in which the unhide statement occurs. For more information one 
-should look at the hide statement in \ref{substahide}. \vspace{4mm}
+\noindent Without an expression list, unhide\index{unhide} normally makes
+all expressions in the hide\index{hide} file\index{file!hide}
+active\index{active} again. Between a pushhide and its pophide, however,
+it leaves the expressions hidden by pushhide alone, as well as any
+expressions that were already hidden before the pushhide. It brings back
+expressions hidden with hide in the meantime. See the examples in
+\ref{substapushhide}. \vspace{4mm}
+
+\noindent With an expression list, unhide makes the specified expressions
+active again. This also works for expressions hidden by pushhide; for
+example, \verb|UnHide F1;| brings back F1 even if pushhide hid it.
+\vspace{4mm}
+
+\noindent An expression made active by unhide can be manipulated in the
+same module. For more information, see hide in \ref{substahide}.
+\vspace{4mm}
 
 \noindent Note that if only a number of expressions are taken from the hide 
 system, the hide file may be left with `holes', i.e.\ space between the 

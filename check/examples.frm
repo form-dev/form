@@ -1084,6 +1084,40 @@ PopHide;
 .end
 assert compile_error?("PopHide statement without corresponding PushHide statement")
 *--#] Sta_PushPopHide_2 :
+*--#[ Sta_PushPopHide_3 :
+Local F1 = 1;
+.sort
+PushHide;
+Local F2 = 2;
+.sort
+Hide;
+Local F3 = 3;
+.sort
+PushHide;
+Local F4 = 4;
+.sort
+Hide;
+.sort
+PopHide;
+* F3 and F4 are active; F1 and F2 remain hidden.
+Print;
+.sort
+UnHide;
+* F2, F3 and F4 are active; F1 remains hidden.
+Print;
+.sort
+PopHide;
+* All four expressions are active.
+Print;
+.end
+assert succeeded?
+assert_equal ["F3", "F4", "F2", "F3", "F4", "F1", "F2", "F3", "F4"],
+  stdout.scan(/^[ \t]+(F[1-4])\s*=/).flatten
+assert result("F1") =~ expr("1")
+assert result("F2") =~ expr("2")
+assert result("F3") =~ expr("3")
+assert result("F4") =~ expr("4")
+*--#] Sta_PushPopHide_3 :
 *--#[ Sta_Print_1 :
     Symbols a,b,c;
     Local F = 3*a+2*b;
