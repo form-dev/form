@@ -5245,6 +5245,27 @@ Print;
 assert succeeded?
 assert result("test") =~ expr("4+4*x")
 *--#] Issue882_6 :
+*--#[ Issue923 :
+#-
+Off Statistics;
+
+#define N "16000"
+Symbol y1,...,y3,x1,...,x`N';
+
+* Very sparse input for the optimiser:
+Local test = x1+...+x`N';
+Multiply y1+...+y3;
+
+Format O1;
+.sort
+#optimize test
+#write "OPERATIONS `optimvalue_'"
+.end
+#pend_if mpi? || wordsize == 2
+#require unix?
+assert succeeded?
+assert stdout =~ exact_pattern("OPERATIONS 16004")
+*--#] Issue923 :
 *--#[ Issue925_1 :
 * Insert an item into the list of coupling constants.
 S g2,g1;  * order-dependent segfault
