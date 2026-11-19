@@ -1803,6 +1803,9 @@ int AddCoef(PHEAD WORD **ps1, WORD **ps2)
 #ifdef WITHFLOAT
 	if ( AT.SortFloatMode ) return(AddWithFloat(BHEAD ps1,ps2));
 #endif
+#ifdef WITHFLINT
+	if ( AT.SortPadicMode ) return(AddWithPadic(BHEAD ps1,ps2));
+#endif
 	OutCoef = AN.SoScratC;
 	s1 = *ps1; s2 = *ps2;
 	GETCOEF(s1,l1);
@@ -2420,6 +2423,9 @@ WORD Compare1(PHEAD WORD *term1, WORD *term2, WORD level)
 #ifdef WITHFLOAT
 	AT.SortFloatMode = 0;
 #endif
+#ifdef WITHFLINT
+	AT.SortPadicMode = 0;
+#endif
 	prevorder = 0;
 	GETSTOP(term1,s1);
 	stopper1 = s1;
@@ -2427,6 +2433,16 @@ WORD Compare1(PHEAD WORD *term1, WORD *term2, WORD level)
 	t1 = term1 + 1;
 	t2 = term2 + 1;
 	while ( t1 < stopper1 && t2 < stopper2 ) {
+#ifdef WITHFLINT
+		if ( level == 0 && AC.activePadic ) {
+			WORD padic1 = *t1 == PADICFUN && t1+t1[1] == stopper1 && TestPadic(t1);
+			WORD padic2 = *t2 == PADICFUN && t2+t2[1] == stopper2 && TestPadic(t2);
+			/* A terminal p-adic coefficient ends the monomial, just like a rational. */
+			if ( padic1 && padic2 ) { AT.SortPadicMode = 3; return(0); }
+			if ( padic1 ) return(PREV(AR.SortType == SORTLOWFIRST ? 1 : -1));
+			if ( padic2 ) return(PREV(AR.SortType == SORTLOWFIRST ? -1 : 1));
+		}
+#endif
 		if ( *t1 != *t2 ) {
 			if ( *t1 == HAAKJE ) return(PREV(-1));
 			if ( *t2 == HAAKJE ) return(PREV(1));
@@ -2458,6 +2474,18 @@ WORD Compare1(PHEAD WORD *term1, WORD *term2, WORD level)
 		}
 		if ( c1 <= (FUNCTION-1)
 		|| ( c1 >= FUNCTION && functions[c1-FUNCTION].spec > 0 ) ) {
+#ifdef WITHFLINT
+			if ( c1 == PADICLIMBS ) {
+				/* Limbs span the full unsigned WORD range; never subtract them. */
+				while ( s1 < t1 && s2 < t2 ) {
+					if ( *s1 != *s2 ) return(PREV(*s1 < *s2 ? 1 : -1));
+					s1++; s2++;
+				}
+				if ( s1 < t1 ) return(PREV(-1));
+				if ( s2 < t2 ) return(PREV(1));
+			}
+			else
+#endif
 			if ( c1 == SYMBOL ) {
 				if ( *s1 == FACTORSYMBOL && *s2 == FACTORSYMBOL
 				 && s1[-1] == 4 && s2[-1] == 4
@@ -2818,6 +2846,16 @@ NoPoly:
 	else if ( level == 0 && t2 < stopper2 && *t2 == FLOATFUN && t2+t2[1] == stopper2
 			&& TestFloat(t2) && AT.aux_ != 0 ) {
 		AT.SortFloatMode = 2; return(0);
+	}
+#endif
+#ifdef WITHFLINT
+	if ( level == 0 && t1 < stopper1 && *t1 == PADICFUN && t1+t1[1] == stopper1
+			&& TestPadic(t1) && AC.activePadic ) {
+		AT.SortPadicMode = 1; return(0);
+	}
+	else if ( level == 0 && t2 < stopper2 && *t2 == PADICFUN && t2+t2[1] == stopper2
+			&& TestPadic(t2) && AC.activePadic ) {
+		AT.SortPadicMode = 2; return(0);
 	}
 #endif
 	{
@@ -3989,6 +4027,16 @@ OneTerm:
 						term1 = poin[S->tree[i]];
 						term2 = poin[k];
 						if ( MergeWithFloat(BHEAD &term1,&term2) == 0 )
+							goto cancelled;
+						poin[S->tree[i]] = term1;
+					}
+#endif
+#ifdef WITHFLINT
+					else if ( AT.SortPadicMode ) {
+						WORD *term1, *term2;
+						term1 = poin[S->tree[i]];
+						term2 = poin[k];
+						if ( MergeWithPadic(BHEAD &term1,&term2) == 0 )
 							goto cancelled;
 						poin[S->tree[i]] = term1;
 					}

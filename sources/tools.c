@@ -3837,6 +3837,11 @@ int TestTerm(WORD *term)
 	tstop = endterm - coeffsize;
 	while ( t < tstop ) {
 		switch ( *t ) {
+#ifdef WITHFLINT
+			case PADICLIMBS:
+				if ( t != term+1 || !TestPadicLimbTerm(term) ) goto subtermsize;
+				break;
+#endif
 			case SYMBOL:
 			case DOTPRODUCT:
 			case INDEX:

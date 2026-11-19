@@ -141,6 +141,9 @@ void FunLevel(PHEAD WORD *term)
 		switch ( *t ) {
 			case SYMBOL:
 			case DOTPRODUCT:
+#ifdef WITHFLINT
+			case PADICLIMBS:
+#endif
 				break;
 			case VECTOR:
 				t += 3;
