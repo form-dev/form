@@ -2180,7 +2180,7 @@ int ApplyExec(WORD *term, int maxtogo, WORD level)
 		ClearWild(BHEAD0);
 		AN.RepFunNum = 0;
 		AN.RepFunList = AN.EndNest;
-	    AT.WorkPointer = (WORD *)(((UBYTE *)(AN.EndNest)) + AM.MaxTer/2);
+	    AT.WorkPointer = AN.EndNest + AM.MaxTer/(2*sizeof(WORD));
 /*
 		The RepFunList is after the term but not very relevant.
 		We need because MatchFunction uses it
