@@ -205,6 +205,7 @@ int Processor(void)
 #endif
 		AS.CollectOverFlag = 0;
 		AR.expchanged = 0;
+		AT.SubSortStage4Warning = 0;
 		if ( i == last ) LastExpression = 1;
 		else             LastExpression = 0;
 		if ( e->inmem ) {

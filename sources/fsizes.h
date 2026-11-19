@@ -129,6 +129,7 @@
 #endif
 
 #define MAXPATCHES 256
+#define MINFPATCHES 4
 #define MAXFPATCHES 256
 #define SORTIOSIZE 200000L
 
