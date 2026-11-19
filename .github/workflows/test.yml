@@ -221,7 +221,10 @@ jobs:
   # Tests with a 32-bit container.
   check-i386:
     name: 32-bit container check for ${{ matrix.bin }}${{ matrix.nthreads && format(' -w{0}', matrix.nthreads) || '' }}
-    runs-on: ubuntu-latest
+    # Keep using Ubuntu 24.04 until the Ubuntu 26.04 runner image
+    # includes the fix for 32-bit container networking.
+    # See: https://github.com/actions/runner-images/issues/14790
+    runs-on: ubuntu-24.04
     container:
       image: i386/debian:12.15
     strategy:
