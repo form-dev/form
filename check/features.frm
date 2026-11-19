@@ -3340,3 +3340,156 @@ Warning: ignoring out-of-place setup command:
 EOF
 assert result("test") =~ expr("10")
 *--#] warnings_2 :
+*--#[ PolyRatFunExpandFixed :
+#-
+CFunction rat;
+Symbol ep,a;
+PolyRatFun rat(expand,ep,4,fixed);
+
+Local F1 = rat(1,ep^2-ep^4);
+Local F2 = rat(ep^2,1-ep);
+Local F3 = rat(1+ep^4+ep^5);
+Local F4 = rat(a^3+a^2*ep^4+a*ep^5,16);
+Local F5 = rat(1+a^3*ep^5+ep^6,ep);
+Local F6 = rat(1,1-ep)^2;
+Local F7 = rat(0,1-ep);
+Local F8 = rat(ep^5,1-ep);
+Local F9 = rat(1,1-ep);
+Local F10 = 2;
+Local F11 = 2/5;
+Local F12 = 12345678901234567890;
+Print F1,...,F8;
+.sort
+
+* Multiply expanded functions and pull scalar coefficients into rat.
+Drop F1,...,F8;
+Multiply 2/3*rat(1,1-ep);
+Print;
+.sort
+
+Multiply rat(1,1-ep);
+Print F9;
+.end
+#-
+CFunction rat;
+Symbol ep;
+PolyRatFun rat(expand,ep,4,fixed);
+
+Local L = rat(ep^2+ep^3+ep^4);
+.sort
+
+Multiply rat(ep^-1+1+ep);
+Print;
+.end
+#-
+CFunction rat;
+Symbol ep;
+PolyRatFun rat(expand,ep,0,fixed);
+
+Local Z1 = rat(ep);
+Local Z2 = rat(ep,2);
+Local Z3 = rat(ep^2,ep);
+Local Z4 = rat(1,ep-ep^2);
+Print;
+.end
+#-
+CFunction rat;
+Symbol ep,a;
+PolyRatFun rat(expand,ep,-3,fixed);
+
+Local N1 = rat(1,ep^5-ep^6);
+Local N2 = rat(a^3*ep^-5+2*a*ep^-3+ep^-2+a^2+ep,16);
+Local N3 = rat(ep^-4+a*ep^-2+a^2+ep,ep);
+Local N4 = rat(ep^-5+2*ep^-3+ep^-2+1);
+Local N5 = rat(1,ep^5-ep^6)^2;
+Local N6 = rat(1,ep^2);
+Local N7 = rat(1,ep^3);
+Local N8 = rat(1,16)*rat(1,16)+rat(ep,ep)*rat(ep,ep);
+Local N9 = rat(1,ep)+rat(a,ep)+rat(ep,ep)+rat(1,16)
+           +rat(a,16)+rat(ep,16)+rat(1)+rat(a)+rat(ep);
+.sort
+
+* These products use the already truncated N1, unlike N5 above.
+Local N10 = N1*N1;
+Local N11 = 4294967297/4294967299*N1*N1;
+Print;
+.end
+#-
+CFunction rat;
+Symbol ep,a;
+PolyRatFun rat(expand,ep,-1,fixed);
+
+Local S1 = rat(1,ep);
+Local S2 = rat(a,ep);
+Print;
+.end
+assert succeeded?
+assert result("F1") =~ expr("rat(1 + ep^-2 + ep^2 + ep^4)")
+assert result("F2") =~ expr("rat(ep^2 + ep^3 + ep^4)")
+assert result("F3") =~ expr("rat(1 + ep^4)")
+assert result("F4") =~ expr("rat(1/16*a^3 + 1/16*ep^4*a^2)")
+assert result("F5") =~ expr("rat(ep^-1 + ep^4*a^3)")
+assert result("F6") =~ expr("rat(1 + 2*ep + 3*ep^2 + 4*ep^3 + 5*ep^4)")
+assert result("F7") =~ expr("0")
+assert result("F8") =~ expr("0")
+assert result("F9", 0) =~ expr("rat(2/3 + 4/3*ep + 2*ep^2 + 8/3*ep^3 + 10/3*ep^4)")
+assert result("F9", 1) =~ expr("rat(2/3 + 2*ep + 4*ep^2 + 20/3*ep^3 + 10*ep^4)")
+assert result("F10") =~ expr("rat(4/3 + 4/3*ep + 4/3*ep^2 + 4/3*ep^3 + 4/3*ep^4)")
+assert result("F11") =~ expr("rat(4/15 + 4/15*ep + 4/15*ep^2 + 4/15*ep^3 + 4/15*ep^4)")
+assert result("F12") =~ expr("
+    rat(8230452600823045260 + 8230452600823045260*ep
+        + 8230452600823045260*ep^2 + 8230452600823045260*ep^3
+        + 8230452600823045260*ep^4)
+")
+assert result("L") =~ expr("rat(ep + 2*ep^2 + 3*ep^3 + 2*ep^4)")
+assert result("Z1") =~ expr("0")
+assert result("Z2") =~ expr("0")
+assert result("Z3") =~ expr("0")
+assert result("Z4") =~ expr("rat(1 + ep^-1)")
+assert result("N1") =~ expr("rat(ep^-5 + ep^-4 + ep^-3)")
+assert result("N2") =~ expr("rat(1/16*ep^-5*a^3 + 1/8*ep^-3*a)")
+assert result("N3") =~ expr("rat(ep^-5 + ep^-3*a)")
+assert result("N4") =~ expr("rat(ep^-5 + 2*ep^-3)")
+assert result("N5") =~ expr("rat(ep^-10 + 2*ep^-9 + 3*ep^-8 + 4*ep^-7 + 5*ep^-6 + 6*ep^-5 + 7*ep^-4 + 8*ep^-3)")
+assert result("N6") =~ expr("0")
+assert result("N7") =~ expr("rat(ep^-3)")
+assert result("N8") =~ expr("0")
+assert result("N9") =~ expr("0")
+assert result("N10") =~ expr("rat(ep^-10 + 2*ep^-9 + 3*ep^-8 + 2*ep^-7 + ep^-6)")
+assert result("N11") =~ expr("
+    rat(4294967297/4294967299*ep^-10 + 8589934594/4294967299*ep^-9
+        + 12884901891/4294967299*ep^-8 + 8589934594/4294967299*ep^-7
+        + 4294967297/4294967299*ep^-6)
+")
+assert result("S1") =~ expr("rat(ep^-1)")
+assert result("S2") =~ expr("rat(ep^-1*a)")
+*--#] PolyRatFunExpandFixed :
+*--#[ PolyRatFunExpandNegativeRelative :
+#-
+CFunction rat;
+Symbol ep;
+PolyRatFun rat(expand,ep,-3,relative);
+.end
+assert compile_error?("Illegal option field in PolyRatFun statement.")
+*--#] PolyRatFunExpandNegativeRelative :
+*--#[ PolyRatFunOptions :
+#-
+CFunction rat;
+Symbol ep;
+PolyRatFun rat(expand,ep,4,relative);
+
+Local F = rat(1,ep^2-ep^3);
+Print;
+.end
+#-
+CFunction rat;
+Symbol ep;
+PolyRatFun rat(finddivergence,ep);
+
+Local G = rat(13+ep,ep^2-ep^3);
+Print;
+.end
+assert succeeded?
+assert result("F") =~ expr("rat(1 + ep^-2 + ep^-1 + ep + ep^2)")
+assert result("G") =~ expr("rat(1,ep^2)")
+*--#] PolyRatFunOptions :
