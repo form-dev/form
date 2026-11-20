@@ -1467,7 +1467,7 @@ bucketstolen:;
 			#[ FINISHEXPRESSION :
 */
 			case CLAIMOUTPUT:
-				LOCK(AT.SB.MasterBlockLock[1]);
+				LOCK(AT.SB.Data[1].MasterBlockLock);
 				break;
 			case FINISHEXPRESSION:
 /*
@@ -1477,7 +1477,7 @@ bucketstolen:;
 				Once we have claimed it we can let the master know that
 				everything is all right.
 */
-				LOCK(AT.SB.MasterBlockLock[1]);
+				LOCK(AT.SB.Data[1].MasterBlockLock);
 				ThreadClaimedBlock(identity);
 /*
 				Entry for when we work with sortbots
@@ -1493,9 +1493,9 @@ bucketstolen:;
 				  }
 				}
 				AT.SB.FillBlock = 1;
-				AT.SB.MasterFill[1] = AT.SB.MasterStart[1];
+				AT.SB.Data[1].MasterFill = AT.SB.Data[1].MasterStart;
 				errorcode = EndSort(BHEAD AT.S0->sBuffer,0);
-				UNLOCK(AT.SB.MasterBlockLock[AT.SB.FillBlock]);
+				UNLOCK(AT.SB.Data[AT.SB.FillBlock].MasterBlockLock);
 				UpdateMaxSize();
 				if ( errorcode ) {
 					MLOCK(ErrorMessageLock);
@@ -1980,15 +1980,15 @@ void *RunSortBot(void *dummy)
 				}
 				AT.SS->PolyWise = 0;
 				AN.ncmod = AC.ncmod;
-				LOCK(AT.SB.MasterBlockLock[1]);
+				LOCK(AT.SB.Data[1].MasterBlockLock);
 				BB = AB[AT.SortBotIn1];
-				LOCK(BB->T.SB.MasterBlockLock[BB->T.SB.MasterNumBlocks]);
+				LOCK(BB->T.SB.Data[BB->T.SB.MasterNumBlocks].MasterBlockLock);
 				if ( AT.SortBotIn2 >= 0 ) {
 					BB = AB[AT.SortBotIn2];
-					LOCK(BB->T.SB.MasterBlockLock[BB->T.SB.MasterNumBlocks]);
+					LOCK(BB->T.SB.Data[BB->T.SB.MasterNumBlocks].MasterBlockLock);
 				}
 				AT.SB.FillBlock = 1;
-				AT.SB.MasterFill[1] = AT.SB.MasterStart[1];
+				AT.SB.Data[1].MasterFill = AT.SB.Data[1].MasterStart;
 				SETBASEPOSITION(AN.theposition,0);
 				// Reset the sortbot comparison count
 				AT.SS->verbComparisons = 0;
@@ -3570,18 +3570,25 @@ int PutToMaster(PHEAD WORD *term)
 		if ( j == 0 ) { j = 1; } /* Just in case there is a spurious end */
 	}
 	i = AT.SB.FillBlock;          /* The block we are working at */
-	fill = AT.SB.MasterFill[i];     /* Where we are filling */
-	top = AT.SB.MasterStop[i];      /* End of the block */
+	fill = AT.SB.Data[i].MasterFill;     /* Where we are filling */
+	top = AT.SB.Data[i].MasterStop;      /* End of the block */
 
 	// If there is space in the block, and we have already written MINWRITENUMBEROFTERMS,
 	// determine if the reading thread is waiting for us by trying to lock the previous
 	// block. If we manage to lock it, then we still have time to continue filling this
 	// block. If we can't lock it, the reading thread is waiting for us and we should
 	// move to the next block ASAP.
-	if ( j < top - fill && AT.SB.BlockTerms[i] > MINWRITENUMBEROFTERMS ) {
+	// For the transfer between the final sort bot and the master, we inflate
+	// MINWRITENUMBEROFTERMS a bit: for non-trivial merges the master consumes terms much
+	// faster than we produce them, meaning this "urgent check" triggers too frequently.
+	// "16" is determined to be reasonable, experimentally, but is in principle problem
+	// and system dependent.
+	const int finalsortbot = AT.identity > numberofworkers && AT.identity == AB[0]->T.SortBotIn1;
+	const LONG minwritenumterms = finalsortbot ? MINWRITENUMBEROFTERMS*16 : MINWRITENUMBEROFTERMS;
+	if ( j < top - fill && AT.SB.Data[i].BlockTerms >= minwritenumterms ) {
 		const int prev = ( i == 1 ? AT.SB.MasterNumBlocks : i-1 );
-		if ( ! pthread_mutex_trylock(&(AT.SB.MasterBlockLock[prev])) ) {
-			UNLOCK(AT.SB.MasterBlockLock[prev]);
+		if ( ! pthread_mutex_trylock(&(AT.SB.Data[prev].MasterBlockLock)) ) {
+			UNLOCK(AT.SB.Data[prev].MasterBlockLock);
 		}
 		else {
 			urgent = 1;
@@ -3595,13 +3602,13 @@ int PutToMaster(PHEAD WORD *term)
 		if ( nexti > AT.SB.MasterNumBlocks ) {
 			nexti = 1;
 		}
-		LOCK(AT.SB.MasterBlockLock[nexti]);
-		UNLOCK(AT.SB.MasterBlockLock[i]);
-		AT.SB.MasterFill[i] = AT.SB.MasterStart[i];
+		LOCK(AT.SB.Data[nexti].MasterBlockLock);
+		UNLOCK(AT.SB.Data[i].MasterBlockLock);
+		AT.SB.Data[i].MasterFill = AT.SB.Data[i].MasterStart;
 		AT.SB.FillBlock = i = nexti;
-		fill = AT.SB.MasterStart[i];
-		top = AT.SB.MasterStop[i];
-		if ( AT.SB.BlockTerms[i] != 0 ) {
+		fill = AT.SB.Data[i].MasterStart;
+		top = AT.SB.Data[i].MasterStop;
+		if ( AT.SB.Data[i].BlockTerms != 0 ) {
 			// In this case, there has been an accounting error in a previous use
 			// of this block. Blocks that have been read from and unlocked, should
 			// have BlockTerms == 0.
@@ -3615,8 +3622,8 @@ int PutToMaster(PHEAD WORD *term)
 	}
 
 	NCOPY(fill, t, j);
-	AT.SB.BlockTerms[i]++;
-	AT.SB.MasterFill[i] = fill;
+	AT.SB.Data[i].BlockTerms++;
+	AT.SB.Data[i].MasterFill = fill;
 	return(ret);
 }
 
@@ -3709,10 +3716,10 @@ int SortBotMasterMerge(void)
 	AR.CompressPointer[0] = 0;
 	numberclaimed = 0;
 	BB = AB[AT.SortBotIn1];
-	LOCK(BB->T.SB.MasterBlockLock[BB->T.SB.MasterNumBlocks]);
+	LOCK(BB->T.SB.Data[BB->T.SB.MasterNumBlocks].MasterBlockLock);
 	if ( AT.SortBotIn2 >= 0 ) {
 		BB = AB[AT.SortBotIn2];
-		LOCK(BB->T.SB.MasterBlockLock[BB->T.SB.MasterNumBlocks]);
+		LOCK(BB->T.SB.Data[BB->T.SB.MasterNumBlocks].MasterBlockLock);
 	}
 
 	MasterWaitAllSortBots();
@@ -3860,15 +3867,15 @@ int SortBotMerge(PHEAD0)
 	This means that we can start once these locks have been cleared
 	which means that there will be input.
 */
-	LOCK(Bin1->T.SB.MasterBlockLock[blin1]);
+	LOCK(Bin1->T.SB.Data[blin1].MasterBlockLock);
 	if ( AT.SortBotIn2 >= 0 ) {
-		LOCK(Bin2->T.SB.MasterBlockLock[blin2]);
+		LOCK(Bin2->T.SB.Data[blin2].MasterBlockLock);
 	}
-	term1 = Bin1->T.SB.MasterStart[blin1];
+	term1 = Bin1->T.SB.Data[blin1].MasterStart;
 	WORD zeroterm = 0;
 	term2 = &zeroterm;
 	if ( AT.SortBotIn2 >= 0 ) {
-		term2 = Bin2->T.SB.MasterStart[blin2];
+		term2 = Bin2->T.SB.Data[blin2].MasterStart;
 	}
 	AT.SB.FillBlock = 1;
 /*
@@ -3879,7 +3886,7 @@ int SortBotMerge(PHEAD0)
 /*
 			#[ One is smallest :
 */
-			Bin1->T.SB.BlockTerms[blin1]--;
+			Bin1->T.SB.Data[blin1].BlockTerms--;
 			if ( SortBotOut(BHEAD term1) < 0 ) {
 /* INTERNAL_ERROR_EXCL_START */
 				MLOCK(ErrorMessageLock);
@@ -3890,12 +3897,12 @@ int SortBotMerge(PHEAD0)
 /* INTERNAL_ERROR_EXCL_STOP */
 			}
 			term1 += *term1;
-			if ( Bin1->T.SB.BlockTerms[blin1] == 0 ) {
+			if ( Bin1->T.SB.Data[blin1].BlockTerms == 0 ) {
 				if ( blin1 == 1 ) {
-					UNLOCK(Bin1->T.SB.MasterBlockLock[Bin1->T.SB.MasterNumBlocks]);
+					UNLOCK(Bin1->T.SB.Data[Bin1->T.SB.MasterNumBlocks].MasterBlockLock);
 				}
 				else {
-					UNLOCK(Bin1->T.SB.MasterBlockLock[blin1-1]);
+					UNLOCK(Bin1->T.SB.Data[blin1-1].MasterBlockLock);
 				}
 				if ( blin1 == Bin1->T.SB.MasterNumBlocks ) {
 					blin1 = 1;
@@ -3903,9 +3910,9 @@ int SortBotMerge(PHEAD0)
 				else {
 					blin1++;
 				}
-				LOCK(Bin1->T.SB.MasterBlockLock[blin1]);
+				LOCK(Bin1->T.SB.Data[blin1].MasterBlockLock);
 				Bin1->T.SB.MasterBlock = blin1;
-				term1 = Bin1->T.SB.MasterStart[blin1];
+				term1 = Bin1->T.SB.Data[blin1].MasterStart;
 			}
 /*
 			#] One is smallest : 
@@ -3915,7 +3922,7 @@ int SortBotMerge(PHEAD0)
 /*
 			#[ Two is smallest :
 */
-			Bin2->T.SB.BlockTerms[blin2]--;
+			Bin2->T.SB.Data[blin2].BlockTerms--;
 			if ( SortBotOut(BHEAD term2) < 0 ) {
 /* INTERNAL_ERROR_EXCL_START */
 				MLOCK(ErrorMessageLock);
@@ -3927,12 +3934,12 @@ int SortBotMerge(PHEAD0)
 			}
 next2:
 			term2 += *term2;
-			if ( Bin2->T.SB.BlockTerms[blin2] == 0 ) {
+			if ( Bin2->T.SB.Data[blin2].BlockTerms == 0 ) {
 				if ( blin2 == 1 ) {
-					UNLOCK(Bin2->T.SB.MasterBlockLock[Bin2->T.SB.MasterNumBlocks]);
+					UNLOCK(Bin2->T.SB.Data[Bin2->T.SB.MasterNumBlocks].MasterBlockLock);
 				}
 				else {
-					UNLOCK(Bin2->T.SB.MasterBlockLock[blin2-1]);
+					UNLOCK(Bin2->T.SB.Data[blin2-1].MasterBlockLock);
 				}
 				if ( blin2 == Bin2->T.SB.MasterNumBlocks ) {
 					blin2 = 1;
@@ -3940,9 +3947,9 @@ next2:
 				else {
 					blin2++;
 				}
-				LOCK(Bin2->T.SB.MasterBlockLock[blin2]);
+				LOCK(Bin2->T.SB.Data[blin2].MasterBlockLock);
 				Bin2->T.SB.MasterBlock = blin2;
-				term2 = Bin2->T.SB.MasterStart[blin2];
+				term2 = Bin2->T.SB.Data[blin2].MasterStart;
 			}
 /*
 			#] Two is smallest : 
@@ -3952,8 +3959,8 @@ next2:
 /*
 			#[ Equal :
 */
-			Bin1->T.SB.BlockTerms[blin1]--;
-			Bin2->T.SB.BlockTerms[blin2]--;
+			Bin1->T.SB.Data[blin1].BlockTerms--;
+			Bin2->T.SB.Data[blin2].BlockTerms--;
 			l1 = *( m1 = term1 );
 			l2 = *( m2 = term2 );
 			if ( S->PolyWise ) {  /* Here we work with PolyFun */
@@ -4184,13 +4191,13 @@ PutOutwp:
 			}
 cancelled:;		/* Now we need two new terms */
 			term1 += *term1;
-			if ( Bin1->T.SB.BlockTerms[blin1] == 0 ) {
+			if ( Bin1->T.SB.Data[blin1].BlockTerms == 0 ) {
 
 				if ( blin1 == 1 ) {
-					UNLOCK(Bin1->T.SB.MasterBlockLock[Bin1->T.SB.MasterNumBlocks]);
+					UNLOCK(Bin1->T.SB.Data[Bin1->T.SB.MasterNumBlocks].MasterBlockLock);
 				}
 				else {
-					UNLOCK(Bin1->T.SB.MasterBlockLock[blin1-1]);
+					UNLOCK(Bin1->T.SB.Data[blin1-1].MasterBlockLock);
 				}
 				if ( blin1 == Bin1->T.SB.MasterNumBlocks ) {
 					blin1 = 1;
@@ -4198,9 +4205,9 @@ cancelled:;		/* Now we need two new terms */
 				else {
 					blin1++;
 				}
-				LOCK(Bin1->T.SB.MasterBlockLock[blin1]);
+				LOCK(Bin1->T.SB.Data[blin1].MasterBlockLock);
 				Bin1->T.SB.MasterBlock = blin1;
-				term1 = Bin1->T.SB.MasterStart[blin1];
+				term1 = Bin1->T.SB.Data[blin1].MasterStart;
 			}
 			goto next2;
 /*
@@ -4216,7 +4223,7 @@ cancelled:;		/* Now we need two new terms */
 			#[ Tail in one :
 */
 		while ( *term1 ) {
-			Bin1->T.SB.BlockTerms[blin1]--;
+			Bin1->T.SB.Data[blin1].BlockTerms--;
 			if ( SortBotOut(BHEAD term1) < 0 ) {
 /* INTERNAL_ERROR_EXCL_START */
 				MLOCK(ErrorMessageLock);
@@ -4226,13 +4233,13 @@ cancelled:;		/* Now we need two new terms */
 				goto ReturnError;
 /* INTERNAL_ERROR_EXCL_STOP */
 			}
-			if ( Bin1->T.SB.BlockTerms[blin1] == 0 ) {
+			if ( Bin1->T.SB.Data[blin1].BlockTerms == 0 ) {
 
 				if ( blin1 == 1 ) {
-					UNLOCK(Bin1->T.SB.MasterBlockLock[Bin1->T.SB.MasterNumBlocks]);
+					UNLOCK(Bin1->T.SB.Data[Bin1->T.SB.MasterNumBlocks].MasterBlockLock);
 				}
 				else {
-					UNLOCK(Bin1->T.SB.MasterBlockLock[blin1-1]);
+					UNLOCK(Bin1->T.SB.Data[blin1-1].MasterBlockLock);
 				}
 				if ( blin1 == Bin1->T.SB.MasterNumBlocks ) {
 					blin1 = 1;
@@ -4240,9 +4247,9 @@ cancelled:;		/* Now we need two new terms */
 				else {
 					blin1++;
 				}
-				LOCK(Bin1->T.SB.MasterBlockLock[blin1]);
+				LOCK(Bin1->T.SB.Data[blin1].MasterBlockLock);
 				Bin1->T.SB.MasterBlock = blin1;
-				term1 = Bin1->T.SB.MasterStart[blin1];
+				term1 = Bin1->T.SB.Data[blin1].MasterStart;
 			}
 			else {
 				term1 += *term1;
@@ -4257,7 +4264,7 @@ cancelled:;		/* Now we need two new terms */
 			#[ Tail in two :
 */
 		while ( *term2 ) {
-			Bin2->T.SB.BlockTerms[blin2]--;
+			Bin2->T.SB.Data[blin2].BlockTerms--;
 			if ( SortBotOut(BHEAD term2) < 0 ) {
 /* INTERNAL_ERROR_EXCL_START */
 				MLOCK(ErrorMessageLock);
@@ -4267,13 +4274,13 @@ cancelled:;		/* Now we need two new terms */
 				goto ReturnError;
 /* INTERNAL_ERROR_EXCL_STOP */
 			}
-			if ( Bin2->T.SB.BlockTerms[blin2] == 0 ) {
+			if ( Bin2->T.SB.Data[blin2].BlockTerms == 0 ) {
 
 				if ( blin2 == 1 ) {
-					UNLOCK(Bin2->T.SB.MasterBlockLock[Bin2->T.SB.MasterNumBlocks]);
+					UNLOCK(Bin2->T.SB.Data[Bin2->T.SB.MasterNumBlocks].MasterBlockLock);
 				}
 				else {
-					UNLOCK(Bin2->T.SB.MasterBlockLock[blin2-1]);
+					UNLOCK(Bin2->T.SB.Data[blin2-1].MasterBlockLock);
 				}
 				if ( blin2 == Bin2->T.SB.MasterNumBlocks ) {
 					blin2 = 1;
@@ -4281,9 +4288,9 @@ cancelled:;		/* Now we need two new terms */
 				else {
 					blin2++;
 				}
-				LOCK(Bin2->T.SB.MasterBlockLock[blin2]);
+				LOCK(Bin2->T.SB.Data[blin2].MasterBlockLock);
 				Bin2->T.SB.MasterBlock = blin2;
-				term2 = Bin2->T.SB.MasterStart[blin2];
+				term2 = Bin2->T.SB.Data[blin2].MasterStart;
 			}
 			else {
 				term2 += *term2;
@@ -4297,9 +4304,9 @@ cancelled:;		/* Now we need two new terms */
 	// Both streams have hit the end-of-stream marker "0". We still need to
 	// decrement the BlockTerms counters a final time, the marker is included
 	// in the count.
-	Bin1->T.SB.BlockTerms[blin1]--;
+	Bin1->T.SB.Data[blin1].BlockTerms--;
 	if ( AT.SortBotIn2 >= 0 ) {
-		Bin2->T.SB.BlockTerms[blin2]--;
+		Bin2->T.SB.Data[blin2].BlockTerms--;
 	}
 
 	SortBotOut(BHEAD 0);
@@ -4307,24 +4314,24 @@ ReturnError:;
 /*
 	Release all locks.
 */
-	UNLOCK(Bin1->T.SB.MasterBlockLock[blin1]);
+	UNLOCK(Bin1->T.SB.Data[blin1].MasterBlockLock);
 	if ( blin1 > 1 ) {
-		UNLOCK(Bin1->T.SB.MasterBlockLock[blin1-1]);
+		UNLOCK(Bin1->T.SB.Data[blin1-1].MasterBlockLock);
 	}
 	else {
-		UNLOCK(Bin1->T.SB.MasterBlockLock[Bin1->T.SB.MasterNumBlocks]);
+		UNLOCK(Bin1->T.SB.Data[Bin1->T.SB.MasterNumBlocks].MasterBlockLock);
 	}
 	if ( AT.SortBotIn2 >= 0 ) {
-		UNLOCK(Bin2->T.SB.MasterBlockLock[blin2]);
+		UNLOCK(Bin2->T.SB.Data[blin2].MasterBlockLock);
 		if ( blin2 > 1 ) {
-			UNLOCK(Bin2->T.SB.MasterBlockLock[blin2-1]);
+			UNLOCK(Bin2->T.SB.Data[blin2-1].MasterBlockLock);
 		}
 		else {
-			UNLOCK(Bin2->T.SB.MasterBlockLock[Bin2->T.SB.MasterNumBlocks]);
+			UNLOCK(Bin2->T.SB.Data[Bin2->T.SB.MasterNumBlocks].MasterBlockLock);
 		}
 	}
 	if ( AT.identity > 0 ) {
-		UNLOCK(AT.SB.MasterBlockLock[AT.SB.FillBlock]);
+		UNLOCK(AT.SB.Data[AT.SB.FillBlock].MasterBlockLock);
 	}
 /*
 	And that was all folks
@@ -4351,6 +4358,7 @@ int IniSortBlocks(int numworkers)
 	ALLPRIVATES *B;
 	SORTING *S;
 	LONG totalsize, workersize, blocksize, numberofterms;
+	size_t offset;
 	int maxter, id, j;
 	int numberofblocks = NUMBEROFBLOCKSINSORT, numparts;
 	WORD *w;
@@ -4390,26 +4398,30 @@ int IniSortBlocks(int numworkers)
 	if ( w == 0 ) w = S->sBuffer;
 	for ( id = 1; id <= numparts; id++ ) {
 		B = AB[id];
-		AT.SB.MasterBlockLock = (pthread_mutex_t *)Malloc1(
-			sizeof(pthread_mutex_t)*(numberofblocks+1),"MasterBlockLock");
-		AT.SB.MasterStart = (WORD **)Malloc1(sizeof(WORD *)*(numberofblocks+1)*3,"MasterBlock");
-		AT.SB.MasterFill = AT.SB.MasterStart + (numberofblocks+1);
-		AT.SB.MasterStop = AT.SB.MasterFill  + (numberofblocks+1);
+		// Align the Data array at SORTBLOCK_CACHELINESIZE, but we must keep
+		// the original pointer returned by Malloc1 for M_free (Actually we
+		// never actually free this allocation. But just in case...).
+		AT.SB.DataAllocation = Malloc1(sizeof(SORTBLOCKDATA)*(numberofblocks+1)
+			+ SORTBLOCK_CACHELINESIZE-1,"SortBlockData");
+		offset = (uintptr_t)AT.SB.DataAllocation % SORTBLOCK_CACHELINESIZE;
+		if ( offset != 0 ) {
+			offset = SORTBLOCK_CACHELINESIZE - offset;
+		}
+		AT.SB.Data = (SORTBLOCKDATA *)((UBYTE *)AT.SB.DataAllocation + offset);
 		AT.SB.MasterNumBlocks = numberofblocks;
-		AT.SB.BlockTerms = (LONG*)Malloc1(sizeof(LONG)*(numberofblocks+1),"BlockTerms");
 		AT.SB.MasterBlock = 0;
 		AT.SB.FillBlock = 0;
-		AT.SB.MasterFill[0] = AT.SB.MasterStart[0] = w;
-		AT.SB.BlockTerms[0] = 0;
+		AT.SB.Data[0].MasterFill = AT.SB.Data[0].MasterStart = w;
+		AT.SB.Data[0].BlockTerms = 0;
 		w += maxter;
-		AT.SB.MasterStop[0] = w;
-		AT.SB.MasterBlockLock[0] = dummylock;
+		AT.SB.Data[0].MasterStop = w;
+		AT.SB.Data[0].MasterBlockLock = dummylock;
 		for ( j = 1; j <= numberofblocks; j++ ) {
-			AT.SB.MasterFill[j] = AT.SB.MasterStart[j] = w;
-			AT.SB.BlockTerms[j] = 0;
+			AT.SB.Data[j].MasterFill = AT.SB.Data[j].MasterStart = w;
+			AT.SB.Data[j].BlockTerms = 0;
 			w += blocksize;
-			AT.SB.MasterStop[j] = w;
-			AT.SB.MasterBlockLock[j] = dummylock;
+			AT.SB.Data[j].MasterStop = w;
+			AT.SB.Data[j].MasterBlockLock = dummylock;
 		}
 	}
 	if ( w > S->sTop2 ) {
@@ -4472,13 +4484,13 @@ int UpdateSortBlocks(int numworkers)
 	if ( w == 0 ) w = S->sBuffer;
 	for ( id = 1; id <= numparts; id++ ) {
 		B = AB[id];
-		AT.SB.MasterFill[0] = AT.SB.MasterStart[0] = w;
+		AT.SB.Data[0].MasterFill = AT.SB.Data[0].MasterStart = w;
 		w += maxter;
-		AT.SB.MasterStop[0] = w;
+		AT.SB.Data[0].MasterStop = w;
 		for ( j = 1; j <= numberofblocks; j++ ) {
-			AT.SB.MasterFill[j] = AT.SB.MasterStart[j] = w;
+			AT.SB.Data[j].MasterFill = AT.SB.Data[j].MasterStart = w;
 			w += blocksize;
-			AT.SB.MasterStop[j] = w;
+			AT.SB.Data[j].MasterStop = w;
 		}
 	}
 	if ( w > S->sTop2 ) {

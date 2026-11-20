@@ -994,6 +994,8 @@ typedef int (*TFUN1)(UBYTE *,int);
 // The minimum number of terms which will be written in a block,
 // before potentially yielding the block to a waiting reading thread.
 #define MINWRITENUMBEROFTERMS 1
+// Alignment for padding of block data
+#define SORTBLOCK_CACHELINESIZE 64
 
 // The minimum number of terms which should fit in a bucket
 #define BUCKETMINTERMS 1
