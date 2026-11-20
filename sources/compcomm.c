@@ -4446,6 +4446,7 @@ DoneWithNumber:
 					if ( level < 0 ) { error = -1; goto endofif; }
 					error = 1;
 				}
+				if ( error ) goto endofif;   /* never copy lhs of a failed pattern */
 /*
 				If we pop numlhs we are in good shape
 */
