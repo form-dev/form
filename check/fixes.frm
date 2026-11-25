@@ -4732,6 +4732,58 @@ assert result("F2") =~ expr("-5/3*f(w^5,z)")
 assert result("F3") =~ expr("0")
 assert result("F4") =~ expr("0")
 *--#] Issue741_4 :
+*--#[ Issue741_5 :
+Symbol a,b,c;
+CFunction f,g;
+
+Local test1 = f(1/(a+b));
+Local test2 = f(g(1/(a+b)),a+b)*g(a+b);
+Local test3 = f(1/(a+b)+a+b,a+b);
+Local test4 = f(1/(a+b),1/(a+b));
+Local test5 = f(1/(1/(a+b)+a+b));
+Local test6 = f(1/(a*b),a+b);
+Local test7 = f(1/(a+c),a+b);
+Local test8 = 1/(a+b);
+Multiply replace_(a,1,b,2);
+Print;
+.end
+assert succeeded?
+assert result("test1") =~ expr("f(1/3)")
+assert result("test2") =~ expr("f(g(1/3),3)*g(3)")
+assert result("test3") =~ expr("f(10/3,3)")
+assert result("test4") =~ expr("f(1/3,1/3)")
+assert result("test5") =~ expr("f(3/10)")
+assert result("test6") =~ expr("f(1/2,3)")
+assert result("test7") =~ expr("f(1/(1+c),3)")
+assert result("test8") =~ expr("1/3")
+*--#] Issue741_5 :
+*--#[ Issue741_6 :
+Symbol a,b,c;
+CFunction f,g;
+
+Local test1 = f(exp_(a+b,2));
+Local test2 = f(exp_(a+b,-2));
+Local test3 = f(exp_(a+b,-b));
+Local test4 = f(g(exp_(a+b,-b)),a+b)*g(a+b);
+Local test5 = f(exp_(a+b,1/2));
+Local test6 = f(exp_(a+b,b-a-1));
+Local test7 = f(exp_(a+b-2,c));
+Local test8 = f(exp_(a-b+1,2));
+Local test9 = f(exp_(exp_(a+b,-b),-b));
+Multiply replace_(a,1,b,2);
+Print;
+.end
+assert succeeded?
+assert result("test1") =~ expr("f(9)")
+assert result("test2") =~ expr("f(1/9)")
+assert result("test3") =~ expr("f(1/9)")
+assert result("test4") =~ expr("f(g(1/9),3)*g(3)")
+assert result("test5") =~ expr("f((3)^(1/2))")
+assert result("test6") =~ expr("f(1)")
+assert result("test7") =~ expr("f(1)")
+assert result("test8") =~ expr("f(0)")
+assert result("test9") =~ expr("f(81)")
+*--#] Issue741_6 :
 *--#[ Issue747_1 :
 #-
 Off Statistics;
@@ -5245,6 +5297,53 @@ Print;
 assert succeeded?
 assert result("test") =~ expr("4+4*x")
 *--#] Issue882_6 :
+*--#[ Issue916_1 :
+Vector l1;
+CFunction den;
+
+#$k = -l1;
+
+Local expr = 1;
+Local match = den(l1,1);
+Identify den(-$k,1) = 1;
+
+Print;
+.end
+assert succeeded?
+assert result("expr") =~ expr("1")
+assert result("match") =~ expr("1")
+*--#] Issue916_1 :
+*--#[ Issue916_2 :
+Symbol x,y,z;
+CFunction den,g;
+
+#$s = -x-y;
+
+Local rhs1 = den(-$s);
+Local rhs2 = den(g(-$s),z);
+Local cancel = den(-$s-x-y);
+Local match1 = den(x+y+z);
+Local match2 = den(g(x+y+z),z);
+Local match3 = den(x^2+x*y+y);
+Local match4 = den(x+y+z+g(x+y));
+.sort
+
+Identify den(-$s+z) = 1;
+Identify den(g(-$s+z),z) = 2;
+Identify den(-$s*x+y) = 3;
+Identify den(-$s+z+g(-$s)) = 4;
+
+Print;
+.end
+assert succeeded?
+assert result("rhs1") =~ expr("den(y+x)")
+assert result("rhs2") =~ expr("den(g(y+x),z)")
+assert result("cancel") =~ expr("den(0)")
+assert result("match1") =~ expr("1")
+assert result("match2") =~ expr("2")
+assert result("match3") =~ expr("3")
+assert result("match4") =~ expr("4")
+*--#] Issue916_2 :
 *--#[ Issue925_1 :
 * Insert an item into the list of coupling constants.
 S g2,g1;  * order-dependent segfault
