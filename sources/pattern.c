@@ -324,7 +324,7 @@ int TestMatch(PHEAD WORD *term, WORD *level)
 	}
 	AN.RepFunNum = 0;
 	/* rep = */ AN.RepFunList = AT.WorkPointer;
-    AT.WorkPointer = (WORD *)(((UBYTE *)(AT.WorkPointer)) + AM.MaxTer/2);
+    AT.WorkPointer += AM.MaxTer/(2*sizeof(WORD));
 	if ( AT.WorkPointer >= AT.WorkTop ) {
 		MLOCK(ErrorMessageLock);
 		MesWork();
@@ -362,7 +362,7 @@ int TestMatch(PHEAD WORD *term, WORD *level)
 /*						if ( rep < ww ) {*/
 							AN.RepFunNum = 0;
 							/* rep = */ AN.RepFunList = ww;
-						    AT.WorkPointer = (WORD *)(((UBYTE *)(AT.WorkPointer)) + AM.MaxTer/2);
+						    AT.WorkPointer += AM.MaxTer/(2*sizeof(WORD));
 							if ( AT.WorkPointer >= AT.WorkTop ) {
 								MLOCK(ErrorMessageLock);
 								MesWork();
@@ -395,7 +395,7 @@ int TestMatch(PHEAD WORD *term, WORD *level)
 /*						if ( rep < ww ) { */
 							AN.RepFunNum = 0;
 							/* rep = */ AN.RepFunList = ww;
-						    AT.WorkPointer = (WORD *)(((UBYTE *)(AT.WorkPointer)) + AM.MaxTer/2);
+						    AT.WorkPointer += AM.MaxTer/(2*sizeof(WORD));
 							if ( AT.WorkPointer >= AT.WorkTop ) {
 								MLOCK(ErrorMessageLock);
 								MesWork();
@@ -428,7 +428,7 @@ int TestMatch(PHEAD WORD *term, WORD *level)
 /*						if ( rep < ww ) { */
 							AN.RepFunNum = 0;
 							/* rep = */ AN.RepFunList = ww;
-						    AT.WorkPointer = (WORD *)(((UBYTE *)(AT.WorkPointer)) + AM.MaxTer/2);
+						    AT.WorkPointer += AM.MaxTer/(2*sizeof(WORD));
 							if ( AT.WorkPointer >= AT.WorkTop ) {
 								MLOCK(ErrorMessageLock);
 								MesWork();
