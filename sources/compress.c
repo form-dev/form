@@ -712,16 +712,23 @@ LONG FillInputGZIP(FILEHANDLE *f, POSITION *position, UBYTE *buffer, LONG buffer
 /* INTERNAL_ERROR_EXCL_STOP */
 	}
 	else {
+		// The caches may be larger than the remaining patch data. Limit the read size:
+		if ( ISGEPOS(*position,S->fPatchesStop[numstream]) ) return(0);
+		toread = buffersize;
+		if ( !ISGEPOSINC(S->fPatchesStop[numstream],*position,toread) ) {
+			DIFPOS(pos,S->fPatchesStop[numstream],*position);
+			toread = (LONG)BASEPOSITION(pos);
+		}
 #ifdef GZIPDEBUG
 		MLOCK(ErrorMessageLock);
-		MesPrint("%w++Reading %l bytes at position %10p",buffersize,position);
+		MesPrint("%w++Reading %l bytes at position %10p",toread,position);
 		MUNLOCK(ErrorMessageLock);
 #endif
 #ifdef ALLLOCK
 		LOCK(f->pthreadslock);
 #endif
 		SeekFile(f->handle,position,SEEK_SET);
-		readsize = ReadFile(f->handle,buffer,buffersize);
+		readsize = ReadFile(f->handle,buffer,toread);
 		SeekFile(f->handle,position,SEEK_CUR);
 #ifdef ALLLOCK
 		UNLOCK(f->pthreadslock);
@@ -730,7 +737,7 @@ LONG FillInputGZIP(FILEHANDLE *f, POSITION *position, UBYTE *buffer, LONG buffer
 /* INTERNAL_ERROR_EXCL_START */
 			MLOCK(ErrorMessageLock);
 			MesPrint("!>%wFillInputGZIP: Read error during uncompressed sort.");
-			MesPrint("%w++Reading %l bytes at position %10p",buffersize,position);
+			MesPrint("%w++Reading %l bytes at position %10p",toread,position);
 			MUNLOCK(ErrorMessageLock);
 /* INTERNAL_ERROR_EXCL_STOP */
 		}

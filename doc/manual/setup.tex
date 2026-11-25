@@ -370,12 +370,12 @@ done with up to {\sl FilePatches\index{filepatches}} at a time. Because
 file operations are notoriously slow the combination of the small buffer, 
 the small extension and the large buffer is used for caching\index{cache} 
 purposes. Hence this space can be split in `FilePatches' caches. The 
-limitation is that each cache should be capable to contain at least two 
-terms of maximal size. This means that the sum of SmallExtension and 
-LargeSize must be at least FilePatches times 2*MaxTermSize*(bytes in short 
-integer). It is possible to set the size of these caches directly with the 
-variable {\sl SortIOsize\index{sortiosize}}. If the variable is too large, 
-the variable FilePatches may be adjusted by \FORM\@. If there are more than 
+limitation is that each cache should be capable of containing at least 
+three terms of maximal size. This means that the sum of SmallExtension
+and LargeSize must be at least FilePatches times 3*MaxTermSize*(bytes in 
+short integer). FilePatches may be adjusted by \FORM\ to accomodate this,
+and LargeSize if FilePatches is already minimal.
+If there are more than
 FilePatches patches in the sort file, a second sort file is needed for the 
 output of each `superpatch'\index{superpatch}. When the first sort file has 
 been treated, the second sort file can be treated in exactly the same way 
@@ -409,14 +409,9 @@ small).}
 \rightvitem{13cm}{The size of the large buffer.}
 
 \leftvitem{3cm}{SortIOsize\index{setup!sortiosize}\index{sortiosize}}
-\rightvitem{13cm}{The size of the buffer that is used to write to the 
-intermediate sorting file and to read from it. It should be noted that if 
-this buffer is not very large, the sorting of large files may become rather 
-slow, depending on the operating system. Hence we recommend a potential 
-fourth stage in the sorting over having this number too small to fit more 
-filepatches in the combined small and large buffer. Setting the small and 
-large buffers to a decent size may avoid all problems by a: making more 
-space for the caching, b: creating fewer file patches to start with.}
+\rightvitem{13cm}{The size of the output buffer for the intermediate sorting
+file, and of the buffers used for compressed file I/O. \FORM\ will ensure
+that this is at least MaxTermSize.}
 
 There is a second set of the above setup parameters for sorts of 
 subexpressions\index{subexpressions} as in function arguments or in the 
