@@ -52,6 +52,22 @@ void flint_final_cleanup_master(void) {
 }
 /*
 	#] flint_final_cleanup_master :
+	#[ flint_fmpz_get_form :
+*/
+WORD flint_fmpz_get_form(void *z, WORD *a)
+{
+	return flint::fmpz_get_form((fmpz *)z, a);
+}
+/*
+	#] flint_fmpz_get_form :
+	#[ flint_fmpz_set_form :
+*/
+void flint_fmpz_set_form(void *z, UWORD *a, WORD na)
+{
+	flint::fmpz_set_form((fmpz *)z, a, na);
+}
+/*
+	#] flint_fmpz_set_form :
 	#[ flint_div :
 */
 WORD* flint_div(PHEAD WORD *a, WORD *b, const WORD must_fit_term) {

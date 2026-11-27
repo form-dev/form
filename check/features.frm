@@ -2382,6 +2382,1677 @@ Evaluate euler_;
 #pend_if wordsize == 2
 assert runtime_error?("Divergent Euler sum in CalculateEuler")
 *--#] mzv_error_5 :
+*--#[ padic_literal_units :
+#StartPadic 7,20
+Off Statistics;
+Format PadicPrint off;
+Symbols x;
+CFunctions f;
+Local SYMBOLIC = padic_(7,0,20,x);
+Local BARE = padic_(7,0,20,f);
+Local FUNCTION = padic_(7,0,20,f(1));
+Local FRACTION = padic_(7,0,20,3/2);
+Local SHORT = padic_(7,0,20,13);
+Local LARGE = padic_(7,0,30,18446744073709551629);
+Print;
+.end
+#require flint?
+assert succeeded?
+assert result("SYMBOLIC") =~ expr("padic_(7,0,20,x)")
+assert result("BARE") =~ expr("padic_(7,0,20,f)")
+assert result("FUNCTION") =~ expr("padic_(7,0,20,f(1))")
+assert result("FRACTION") =~ expr("padic_(7,0,20,3/2)")
+assert result("SHORT") =~ expr("padic_(7,0,20,13)")
+assert result("LARGE") =~ expr("padic_(7,0,30,18446744073709551629)")
+*--#] padic_literal_units :
+*--#[ padic_literal_normalization :
+* Signed units, prime factors and the precision cutoff.
+#StartPadic 7,20
+Format PadicPrint off;
+Local SMALLNEGATIVE = padic_(7,0,3,-1);
+Local SMALLFACTOR = padic_(7,0,3,14);
+Local SMALLZERO = padic_(7,3,3,1);
+Local SMALLLARGE = padic_(7,0,12,4294967295);
+Print;
+.end
+
+* Reduction boundaries for a prime close to a power of two.
+#StartPadic 2147483563,14
+Format 255;
+Format PadicPrint off;
+Local BOUNDBELOW = padic_(2147483563,0,14,2147483563^14-1);
+Local BOUNDEQUAL = padic_(2147483563,0,14,2147483563^14);
+Local BOUNDABOVE = padic_(2147483563,0,14,2147483563^14+1);
+Local BOUNDFACTOR = padic_(2147483563,0,14,2147483563*(2^300+1));
+Local BOUNDTAIL = padic_(2147483563,-4,14,2147483563^18-1);
+Local BOUNDLOWER = padic_(2147483563,0,14,(2^31-14*85)*2^403-1);
+Local BOUNDLOWEREQUAL = padic_(2147483563,0,14,(2^31-14*85)*2^403);
+Print;
+.sort
+Print;
+.end
+
+* Binary units use the same normalization rules.
+#StartPadic 2,100
+Format 255;
+Format PadicPrint off;
+Local BINARYODD = padic_(2,0,100,2^99+1);
+Local BINARYEVEN = padic_(2,0,100,2*(2^90+1));
+Local BINARYZERO = padic_(2,0,100,2^100);
+Print;
+.sort
+Print;
+.end
+
+* Literal precision must not change subsequent rational conversion.
+#StartPadic 7,20
+Format 255;
+Format PadicPrint off;
+Local STATELITERAL = padic_(7,0,3,-1);
+.sort
+Local STATERATIONAL = -1;
+ToPadic;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("SMALLNEGATIVE") =~ expr("padic_(7,0,3,342)")
+assert result("SMALLFACTOR") =~ expr("padic_(7,1,3,2)")
+assert result("SMALLZERO") =~ expr("0")
+assert result("SMALLLARGE") =~ expr("padic_(7,0,12,4294967295)")
+
+2.times do |pass|
+  assert result("BOUNDBELOW", pass).gsub(/\\\s*/, "") =~ expr("padic_(2147483563,0,14,#{2147483563**14-1})")
+  assert result("BOUNDEQUAL", pass) =~ expr("0")
+  assert result("BOUNDABOVE", pass) =~ expr("padic_(2147483563,0,14,1)")
+  assert result("BOUNDFACTOR", pass).gsub(/\\\s*/, "") =~ expr("padic_(2147483563,1,14,#{2**300+1})")
+  assert result("BOUNDTAIL", pass).gsub(/\\\s*/, "") =~ expr("padic_(2147483563,-4,14,#{2147483563**18-1})")
+  assert result("BOUNDLOWER", pass).gsub(/\\\s*/, "") =~ expr("padic_(2147483563,0,14,#{(2**31-14*85)*2**403-1})")
+  assert result("BOUNDLOWEREQUAL", pass).gsub(/\\\s*/, "") =~ expr("padic_(2147483563,0,14,#{(2**31-14*85)*2**403})")
+end
+
+2.times do |pass|
+  assert result("BINARYODD", pass) =~ expr("padic_(2,0,100,#{2**99+1})")
+  assert result("BINARYEVEN", pass) =~ expr("padic_(2,1,100,#{2**90+1})")
+  assert result("BINARYZERO", pass) =~ expr("0")
+end
+
+assert result("STATELITERAL") =~ expr("padic_(7,0,3,342)")
+assert result("STATERATIONAL") =~ expr("padic_(7,0,20,#{7**20-1})")
+*--#] padic_literal_normalization :
+*--#[ padic_context_lifecycle :
+* Activate and renormalize existing literals.
+Symbols v;
+CFunctions f;
+Format 255;
+Format PadicPrint off;
+Local ACTNEGATIVE = padic_(7,0,12,-4294967295);
+Local ACTFACTOR = padic_(7,0,12,7*4294967295);
+Local ACTBOUND = padic_(7,0,12,7^12+1);
+Local ACTZERO = padic_(7,12,12,18446744073709551617);
+Local ACTSMALL = padic_(7,0,3,14);
+Local ACTWIDE = padic_(7,-3,30,7^33-1);
+.sort
+#StartPadic 7,20
+Format PadicPrint off;
+Print;
+.sort
+#EndPadic
+FromPadic,f;
+id f(7,v?,12,?a) = padic_(7,v,2,?a);
+.sort
+#StartPadic 7,20
+Format PadicPrint off;
+Print;
+.end
+
+* Replace an active context, including its multiword prime.
+#StartPadic 170141183460469231731687303715884105727,2
+Format 255;
+Format PadicPrint off;
+Local RESTARTF = 31;
+ToPadic;
+Print RESTARTF;
+.sort
+Drop RESTARTF;
+.sort
+#StartPadic 7,10
+Format PadicPrint off;
+Local RESTARTG = 31;
+ToPadic;
+Print RESTARTG;
+.sort
+Drop RESTARTG;
+.sort
+#StartPadic 170141183460469231731687303715884105727,2
+Format PadicPrint off;
+Local RESTARTH = 32;
+ToPadic;
+Print RESTARTH;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("ACTNEGATIVE", 0) =~ expr("padic_(7,0,12,9546319906)")
+assert result("ACTFACTOR", 0) =~ expr("padic_(7,1,12,340313809)")
+assert result("ACTBOUND", 0) =~ expr("padic_(7,0,12,1)")
+assert result("ACTZERO", 0) =~ expr("0")
+assert result("ACTSMALL", 0) =~ expr("padic_(7,1,3,2)")
+assert result("ACTWIDE", 0) =~ expr("padic_(7,-3,30,#{7**33-1})")
+assert result("ACTNEGATIVE", 1) =~ expr("padic_(7,0,2,11)")
+assert result("ACTFACTOR", 1) =~ expr("padic_(7,1,2,3)")
+assert result("ACTBOUND", 1) =~ expr("padic_(7,0,2,1)")
+
+assert result("RESTARTF") =~ expr("padic_(170141183460469231731687303715884105727,0,2,31)")
+assert result("RESTARTG") =~ expr("padic_(7,0,10,31)")
+assert result("RESTARTH") =~ expr("padic_(170141183460469231731687303715884105727,0,2,32)")
+*--#] padic_context_lifecycle :
+*--#[ padic_coefficient_placement :
+#-
+Off Statistics;
+#StartPadic 7,10
+Symbol a,x1,...,x4;
+Function A1,A2;
+CFunction f1,f2;
+Vector p1,p2,q;
+Local F = 31*x1*x2*f2*f1*q*p1.p2*A1*A2*cos_(3*pi_)*mzv_(2,1)*mzv_*cos_*mzv_(2)*cos_(pi_);
+ToPadic;
+.sort
+
+* Active p-adic coefficients follow all monomial objects.
+Format PadicPrint off;
+Print;
+.sort
+
+#EndPadic
+* Inactive p-adic objects return to ordinary function ordering.
+Local G = F;
+Print G;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("A1*A2*cos_*cos_(pi_)*cos_(3*pi_)*mzv_*mzv_(2)*mzv_(2,1)*f1*f2*q*p1.p2*x1
+      *x2*padic_(7,0,10,31)")
+assert result("G") =~ expr("A1*A2*cos_*cos_(pi_)*cos_(3*pi_)*mzv_*mzv_(2)*mzv_(2,1)*padic_(7,0,10,31)*
+      f1*f2*q*p1.p2*x1*x2")
+*--#] padic_coefficient_placement :
+*--#[ padic_printing :
+* Series printing of signed powers and arithmetic results.
+#StartPadic 7,10
+Local SERIESF = 101/7;
+Local SERIESG = 7/13;
+ToPadic;
+.sort
+
+Local SERIESMUL = (10+SERIESF)*SERIESG;
+Local SERIESDIV = (10+SERIESF)/SERIESG;
+Print;
+.end
+
+* Malformed factors retain ordinary printing, including Print +s.
+#StartPadic 7,10
+Off Statistics;
+Symbols x;
+CFunctions f;
+Local ORDINARYF = padic_(0,10);
+Local ORDINARYNEGATIVE = -padic_(0,10);
+Local ORDINARYSUM = 1+padic_(0,10);
+Local ORDINARYPRODUCT = x*padic_(0,10);
+Local ORDINARYCOEFFICIENT = 2*padic_(0,10);
+Local ORDINARYNESTED = f(padic_(0,10));
+Local ORDINARYTYPES = padic_(0,10,x);
+Local ORDINARYFRACTION = padic_(0,10,1/2);
+Local ORDINARYEXTRA = padic_(0,10,1,2);
+Local ORDINARYBARE = padic_;
+Local ORDINARYMULTIPLE = padic_(0,10)*padic_(0,10,x);
+Local ORDINARYMIXED = padic_(0,10)*padic_(7,0,10,31);
+Print;
+.sort
+Print +s ORDINARYF,ORDINARYNEGATIVE,ORDINARYSUM,ORDINARYPRODUCT;
+.end
+
+* Malformed prime, valuation, precision and unit arguments remain ordinary functions.
+#StartPadic 7,10
+Symbols x;
+Local ARGSYMBOLIC = padic_(x,0,10,1);
+Local ARGFRACTION = padic_(7/2,0,10,1);
+Local ARGZERO = padic_(0,0,10,1);
+Local ARGONE = padic_(1,0,10,1);
+Local ARGNEGATIVE = padic_(-7,0,10,1);
+Local ARGLONGNEGATIVE = padic_(-170141183460469231731687303715884105727,0,10,1);
+Local ARGVALUATION = padic_(7,x,10,1);
+Local ARGPRECISION = padic_(7,0,x,1);
+Local ARGUNIT = padic_(7,0,10,x);
+Local ARGEXTRA = padic_(7,0,10,1,2);
+Local ARGLEGACY = padic_(0,10,31);
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("SERIESF") =~ expr("(3*7^-1 + 2*7^1)")
+assert result("SERIESG") =~ expr("(6*7^1 + 4*7^2 + 2*7^3 + 5*7^4 + 3*7^5 + 1*7^7 + 2*7^8 + 4*7^9)")
+assert result("SERIESMUL") =~ expr("(4 + 4*7^1 + 5*7^2 + 3*7^3 + 1*7^5 + 2*7^6 + 4*7^7 + 1*7^8)")
+assert result("SERIESDIV") =~ expr("(4*7^-2 + 2*7^-1 + 3 + 6*7^1)")
+
+assert result("ORDINARYF", 0) =~ expr("padic_(0,10)")
+assert result("ORDINARYNEGATIVE", 0) =~ expr("-padic_(0,10)")
+assert result("ORDINARYSUM", 0) =~ expr("1+padic_(0,10)")
+assert result("ORDINARYPRODUCT", 0) =~ expr("padic_(0,10)*x")
+assert result("ORDINARYCOEFFICIENT") =~ expr("2*padic_(0,10)")
+assert result("ORDINARYNESTED") =~ expr("f(padic_(0,10))")
+assert result("ORDINARYTYPES") =~ expr("padic_(0,10,x)")
+assert result("ORDINARYFRACTION") =~ expr("padic_(0,10,1/2)")
+assert result("ORDINARYEXTRA") =~ expr("padic_(0,10,1,2)")
+assert result("ORDINARYBARE") =~ expr("padic_")
+assert result("ORDINARYMULTIPLE") =~ expr("padic_(0,10)*padic_(0,10,x)")
+assert result("ORDINARYMIXED") =~ expr("(3+4*7^1)*padic_(0,10)")
+assert result("ORDINARYF", 1) =~ expr("+padic_(0,10)")
+assert result("ORDINARYNEGATIVE", 1) =~ expr("-padic_(0,10)")
+assert result("ORDINARYSUM", 1) =~ expr("+1+padic_(0,10)")
+assert result("ORDINARYPRODUCT", 1) =~ expr("+padic_(0,10)*x")
+
+assert result("ARGSYMBOLIC") =~ expr("padic_(x,0,10,1)")
+assert result("ARGFRACTION") =~ expr("padic_(7/2,0,10,1)")
+assert result("ARGZERO") =~ expr("padic_(0,0,10,1)")
+assert result("ARGONE") =~ expr("padic_(1,0,10,1)")
+assert result("ARGNEGATIVE") =~ expr("padic_(-7,0,10,1)")
+assert result("ARGLONGNEGATIVE") =~ expr("padic_(-170141183460469231731687303715884105727,0,10,1)")
+assert result("ARGVALUATION") =~ expr("padic_(7,x,10,1)")
+assert result("ARGPRECISION") =~ expr("padic_(7,0,x,1)")
+assert result("ARGUNIT") =~ expr("padic_(7,0,10,x)")
+assert result("ARGEXTRA") =~ expr("padic_(7,0,10,1,2)")
+assert result("ARGLEGACY") =~ expr("padic_(0,10,31)")
+*--#] padic_printing :
+*--#[ padic_to_rational :
+* Reconstruct coefficients with positive and negative valuations.
+Symbol x,j;
+#StartPadic 7,5
+Local SERIESF = 101/13*sum_(j,-5,5,x^j*7^j);
+ToPadic;
+.sort
+
+PadicToRat;
+Print;
+.end
+
+* Reconstruct with negative absolute precision.
+#StartPadic 7,-1
+Format PadicPrint off;
+Local NEGF = 1/49;
+ToPadic;
+Print;
+.sort
+PadicToRat;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("SERIESF") =~ expr("101/13 + 101/218491*x^-5 + 101/31213*x^-4 + 101/4459*x^-3 + 101/637*x^-2
+       + 101/91*x^-1 - 42/23*x - 833/8*x^2 + 1372*x^3 + 2401/2*x^4")
+
+assert result("NEGF", 0) =~ expr("padic_(7,-2,-1,1)")
+assert result("NEGF", 1) =~ expr("1/49")
+*--#] padic_to_rational :
+*--#[ padic_laurent_reconstruction :
+#-
+#$prime = 175519;
+#define EP "`$prime'"
+
+Off Statistics;
+Symbol eps,x1,x2,p,v,N;
+CFunction padic,rat,coeff;
+Table ep();
+Fill ep = `EP';
+
+#StartPadic `$prime',5
+Local F = rat(70944*ep^5 - 20088*ep^4 - 5580*ep^3 + 1489*ep^2 + 126
+      *ep - 31,32000*ep^5 - 3280*ep^3 + 80*ep);
+id rat(x1?,x2?) = x1/x2;
+ToPadic;
+.sort
+
+#do i=0,5
+    FromPadic, padic;
+    id padic(?x1) = padic(?x1)+padic_(?x1);
+    Transform decode(14,4):base=`$prime';
+    id padic(p?,v?,N?,x1?,?x2) = coeff(v,x1)-makerational_(x1,$prime)*`EP'^v;
+    .sort
+#enddo
+id coeff(v?,x1?) = makerational_(x1,$prime)*eps^v;
+.sort
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("63/40 - 31/80*eps^-1 + 109/40*eps - 207/40*eps^2 + 125/8*eps^3 + 357/8*eps^4")
+*--#] padic_laurent_reconstruction :
+*--#[ padic_from_padic :
+* Expand ordinary and compact units at the current execution level.
+Format 255;
+Format PadicPrint off;
+CFunctions f,g;
+* The low limb of this ordinary integer equals the PADICLIMBS type number.
+Local UNITORDINARY = padic_(7,0,100,2^32+13);
+Local UNITNEGATIVE = padic_(7,0,100,-(2^32+13));
+Local UNITSHORT = padic_(7,0,100,-2147483648);
+Local UNITZERO = padic_(7,0,100,0);
+Local UNITNONINTEGER = padic_(7,0,100,1/2);
+FromPadic,f;
+Print;
+.sort
+#StartPadic 7,100
+Local UNITCOMPACT = 2^64+13;
+ToPadic;
+.sort
+#EndPadic
+Local UNITARGUMENT = g(UNITCOMPACT);
+FromPadic,f;
+Print UNITCOMPACT,UNITARGUMENT;
+.end
+
+* Conversion is independent of the active prime and context.
+CFunctions f;
+#StartPadic 7,10
+Local INERTF = 31;
+ToPadic;
+.sort
+#EndPadic
+Local INERTOTHER = padic_(11,0,10,1);
+Local INERTLEGACY = padic_(0,10,31);
+FromPadic, f;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("UNITORDINARY", 0) =~ expr("f(7,0,100,4294967309)")
+assert result("UNITNEGATIVE", 0) =~ expr("f(7,0,100,-4294967309)")
+assert result("UNITSHORT", 0) =~ expr("f(7,0,100,-2147483648)")
+assert result("UNITZERO", 0) =~ expr("f(7,0,100,0)")
+assert result("UNITNONINTEGER", 0) =~ expr("padic_(7,0,100,1/2)")
+assert result("UNITCOMPACT") =~ expr("f(7,0,100,18446744073709551629)")
+assert result("UNITARGUMENT") =~ expr("g(padic_(7,0,100,18446744073709551629))")
+
+assert result("INERTF") =~ expr("f(7,0,10,31)")
+assert result("INERTOTHER") =~ expr("f(11,0,10,1)")
+assert result("INERTLEGACY") =~ expr("padic_(0,10,31)")
+*--#] padic_from_padic :
+*--#[ padic_integer_conversion :
+* Odd and even word counts around the integer-import boundary.
+#: MaxTermSize 8000
+#StartPadic 2147483647,540
+Format 255;
+Format PadicPrint off;
+* Odd and even word counts below, at and above 128 FLINT limbs.
+Local TRANSFERODDLOW = 2^8064+17;
+Local TRANSFEREVENLOW = 2^8096+17;
+Local TRANSFERODDLIMIT = 2^8128+17;
+Local TRANSFEREVENLIMIT = 2^8160+17;
+Local TRANSFERODDHIGH = 2^8192+17;
+Local TRANSFEREVENHIGH = 2^8224+17;
+Local TRANSFERLARGE = 2^16384+17;
+Local TRANSFERNEGODD = padic_(2147483647,0,540,-(2^8128+17));
+Local TRANSFERNEGEVEN = padic_(2147483647,0,540,-(2^8160+17));
+Local TRANSFERNEGHIGH = padic_(2147483647,0,540,-(2^8192+17));
+ToPadic;
+.sort
+Multiply 3;
+.sort
+Local TRANSFERCOMBINED = TRANSFERODDLIMIT+TRANSFEREVENLIMIT;
+Print;
+.end
+
+* Large units survive arithmetic, cancellation and shrinking.
+#StartPadic 7,100
+Format 255;
+Format PadicPrint off;
+CFunctions f;
+Symbols x;
+Local UNITF = 2^255+4294967295;
+ToPadic;
+.sort
+Local UNITSUM = UNITF+1;
+Local UNITPRODUCT = UNITF*padic_(7,0,100,2);
+Local UNITQUOTIENT = UNITPRODUCT/padic_(7,0,100,2);
+Local UNITZERO = UNITQUOTIENT-UNITF;
+Local UNITSHRINK = UNITF-2^255;
+.sort
+FromPadic,f;
+id f(7,0,100,x?) = x;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+prime = 2147483647
+precision = 540
+expected = {
+  "TRANSFERODDLOW" => 3*(2**8064+17),
+  "TRANSFEREVENLOW" => 3*(2**8096+17),
+  "TRANSFERODDLIMIT" => 3*(2**8128+17),
+  "TRANSFEREVENLIMIT" => 3*(2**8160+17),
+  "TRANSFERODDHIGH" => 3*(2**8192+17),
+  "TRANSFEREVENHIGH" => 3*(2**8224+17),
+  "TRANSFERLARGE" => 3*(2**16384+17),
+  "TRANSFERNEGODD" => prime**precision-3*(2**8128+17),
+  "TRANSFERNEGEVEN" => prime**precision-3*(2**8160+17),
+  "TRANSFERNEGHIGH" => prime**precision-3*(2**8192+17),
+  "TRANSFERCOMBINED" => 3*(2**8128+2**8160+34)
+}
+expected.each do |name, unit|
+  # Join continuation lines in the long decimal integers.
+  assert result(name).delete("\\") =~ expr("padic_(#{prime},0,#{precision},#{unit})")
+end
+
+large = 2**255+4294967295
+assert result("UNITF") =~ expr(large.to_s)
+assert result("UNITSUM") =~ expr((large+1).to_s)
+assert result("UNITPRODUCT") =~ expr((2*large).to_s)
+assert result("UNITQUOTIENT") =~ expr(large.to_s)
+assert result("UNITZERO") =~ expr("0")
+assert result("UNITSHRINK") =~ expr("4294967295")
+*--#] padic_integer_conversion :
+*--#[ padic_rational_conversion :
+* Import large numerators, denominators and unequal padded lengths.
+#StartPadic 7,100
+Format 255;
+Format PadicPrint off;
+* Numerator and denominator imports, including unequal padded lengths.
+Local MULTINUM = (2^130+17)/3;
+Local MULTIDEN = 3/(2^130+17);
+Local MULTIBOTH = (2^132+17)/(2^130+3);
+Local MULTINEGATIVE = -(2^132+17)/(2^130+3);
+ToPadic;
+.sort
+Local MULTIPRODUCT = MULTIBOTH*(2^130+3);
+Local MULTIMIXED = MULTIBOTH+(2^132+17)/(2^130+3);
+Print;
+.end
+
+* Denominators below and above the signed WORD boundary.
+#StartPadic 2305843009213693951,1
+Format PadicPrint off;
+Local WORDSMALL = 1/2147483647;
+Local WORDLARGE = 1/2147483648;
+Local WORDNEGATIVE = -1/2147483647;
+Local WORDNUMERATOR = 2305843009213693950/2147483647;
+ToPadic;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+modulus = 7**100
+expected = {
+  "MULTINUM" => [2**130+17, 3],
+  "MULTIDEN" => [3, 2**130+17],
+  "MULTIBOTH" => [2**132+17, 2**130+3],
+  "MULTINEGATIVE" => [-(2**132+17), 2**130+3],
+  "MULTIPRODUCT" => [2**132+17, 1],
+  "MULTIMIXED" => [2*(2**132+17), 2**130+3]
+}
+expected.each do |name, fraction|
+  # Compute the denominator inverse independently with Euclid's algorithm.
+  a, b = modulus, fraction[1]
+  x, y = 0, 1
+  until b == 0
+    quotient = a/b
+    a, b = b, a-quotient*b
+    x, y = y, x-quotient*y
+  end
+  assert_equal 1, a
+  unit = fraction[0]*x % modulus
+  assert result(name) =~ expr("padic_(7,0,100,#{unit})")
+end
+
+assert result("WORDSMALL") =~ expr("padic_(2305843009213693951,0,1,2147483649)")
+assert result("WORDLARGE") =~ expr("padic_(2305843009213693951,0,1,1073741824)")
+assert result("WORDNEGATIVE") =~ expr("padic_(2305843009213693951,0,1,2305843007066210302)")
+assert result("WORDNUMERATOR") =~ expr("padic_(2305843009213693951,0,1,2305843007066210302)")
+*--#] padic_rational_conversion :
+*--#[ padic_large_primes :
+* Conversion, arithmetic and reconstruction with a multiword prime.
+#StartPadic 170141183460469231731687303715884105727,2
+Format 255;
+Format PadicPrint off;
+Local MULTIF = 2^80;
+ToPadic;
+Print;
+.sort
+Local MULTISUM = MULTIF+1;
+Local MULTIPRODUCT = MULTIF*MULTIF;
+Local MULTIQUOTIENT = MULTIPRODUCT/MULTIF;
+Local MULTIZERO = MULTIF-MULTIF;
+Print MULTISUM,MULTIPRODUCT,MULTIQUOTIENT,MULTIZERO;
+.sort
+Skip;
+NSkip MULTIF;
+PadicToRat;
+Print MULTIF;
+.end
+
+* A prime immediately above the signed WORD range.
+#StartPadic 2147483659,2
+Format PadicPrint off;
+Local WORDF = 31;
+ToPadic;
+Print;
+.sort
+Local WORDG = WORDF+1;
+Print WORDG;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("MULTIF", 0) =~ expr("padic_(170141183460469231731687303715884105727,0,2,1208925819614629174706176)")
+assert result("MULTISUM") =~ expr("padic_(170141183460469231731687303715884105727,0,2,1208925819614629174706177)")
+assert result("MULTIPRODUCT") =~ expr("padic_(170141183460469231731687303715884105727,0,2,1461501637330902918203684832716283019655932542976)")
+assert result("MULTIQUOTIENT") =~ expr("padic_(170141183460469231731687303715884105727,0,2,1208925819614629174706176)")
+assert result("MULTIZERO") =~ expr("0")
+assert result("MULTIF", 1) =~ expr("1208925819614629174706176")
+
+assert result("WORDF") =~ expr("padic_(2147483659,0,2,31)")
+assert result("WORDG") =~ expr("padic_(2147483659,0,2,32)")
+*--#] padic_large_primes :
+*--#[ padic_rational_scaling :
+#StartPadic 7,3
+Format PadicPrint off;
+* Rational scaling is exact; the input's stored precision remains a bound.
+Local FRACTIONUNIT = padic_(7,0,3,3);
+Local FRACTIONPOS = padic_(7,1,3,3);
+Local FRACTIONNEG = padic_(7,-2,3,3);
+Local FRACTIONLOW = padic_(7,1,2,3);
+Local FRACTIONHIGH = padic_(7,1,12,3);
+Local FRACTIONZERO = padic_(7,0,3,0);
+Local FRACTIONABOVE = padic_(7,4,12,3);
+* Divide the represented unit exactly, including beyond the cached powers.
+Local DEEPEDGE = padic_(7,-3,3,117648);
+Local DEEPOUTSIDE = padic_(7,-4,3,823542);
+Local DEEPLOW = padic_(7,-3,1,2400);
+Local DEEPEXACT = padic_(7,-3,3,2);
+* Negation preserves stored precision and complements modulo p^(N-v).
+Local NEGATEUNIT = padic_(7,0,3,3);
+Local NEGATEPOS = padic_(7,1,3,3);
+Local NEGATENEG = padic_(7,-2,3,3);
+Local NEGATEEDGE = padic_(7,-3,3,117648);
+Local NEGATELOW = padic_(7,-3,1,2400);
+Local NEGATEHIGH = padic_(7,-2,4,100000);
+Local NEGATEOUTSIDE = padic_(7,-4,3,823542);
+Local NEGATESIGNED = padic_(7,-2,3,-3);
+Local NEGATEDIVISIBLE = padic_(7,-2,3,21);
+* Cap wide inputs and shift negative valuations.
+Local CAPHIGH = padic_(7,0,4,2000);
+Local CAPHIGHNEG = padic_(7,-1,4,10000);
+Local CAPUNIT = padic_(7,-2,3,3);
+.sort
+Local FRACTIONU = FRACTIONUNIT/2;
+Local FRACTIONUM = -FRACTIONUNIT/2;
+Local FRACTIONP = FRACTIONPOS/2;
+Local FRACTIONN = FRACTIONNEG/2;
+Local FRACTIONNM = -FRACTIONNEG/2;
+Local FRACTIONL = FRACTIONLOW/2;
+Local FRACTIONH = FRACTIONHIGH/2;
+Local FRACTIONZ = FRACTIONZERO/2;
+Local FRACTIONA = FRACTIONABOVE/2;
+Local FRACTIONNUM = 7*FRACTIONUNIT/2;
+Local FRACTIONDEN = FRACTIONUNIT/7;
+Local FRACTIONOUTSIDE = FRACTIONUNIT/8;
+Local DEEPE = DEEPEDGE/2;
+Local DEEPM = -DEEPEDGE/2;
+Local DEEPO = DEEPOUTSIDE/2;
+Local DEEPL = DEEPLOW/2;
+Local DEEPX = DEEPEXACT/2;
+Local NEGATEU = -NEGATEUNIT;
+Local NEGATEP = -NEGATEPOS;
+Local NEGATEN = -NEGATENEG;
+Local NEGATEE = -NEGATEEDGE;
+Local NEGATEL = -NEGATELOW;
+Local NEGATEH = -NEGATEHIGH;
+Local NEGATEO = -NEGATEOUTSIDE;
+Local NEGATES = -NEGATESIGNED;
+Local NEGATED = -NEGATEDIVISIBLE;
+Local CAPH = CAPHIGH/2;
+Local CAPN = CAPHIGHNEG/2;
+Local CAPZ = 343*CAPUNIT;
+Print;
+.end
+
+* Signed exact integers shift valuations and precision.
+#StartPadic 7,2
+Format PadicPrint off;
+* Signed integer scaling uses the full unit modulus and retains input bounds.
+Local INTEGERUNIT = padic_(7,-1,2,1);
+Local INTEGERPOS = padic_(7,1,2,1);
+Local INTEGEREDGE = padic_(7,-2,2,48);
+Local INTEGERLOW = padic_(7,-1,1,1);
+Local INTEGERHIGH = padic_(7,-1,3,342);
+Local INTEGEROUTSIDE = padic_(7,-3,2,1);
+.sort
+Local INTEGERP = 2*INTEGERUNIT;
+Local INTEGERN = -2*INTEGERUNIT;
+Local INTEGERF = -8*INTEGERUNIT;
+Local INTEGERV = -2*INTEGERPOS;
+Local INTEGERE = -2*INTEGEREDGE;
+Local INTEGERL = -2*INTEGERLOW;
+Local INTEGERH = -2*INTEGERHIGH;
+Local INTEGERO = -2*INTEGEROUTSIDE;
+Local INTEGERD = 7*INTEGERUNIT;
+Local INTEGERI = INTEGERLOW;
+Local INTEGERZ = 0*INTEGERUNIT;
+Print INTEGERP,INTEGERN,INTEGERF,INTEGERV,INTEGERE,INTEGERL,INTEGERH,INTEGERO,INTEGERD,INTEGERI,INTEGERZ;
+.end
+
+* Exact rational factors retain guard digits and shift absolute precision.
+#StartPadic 101,12
+Format 255;
+Format PadicPrint off;
+* Exact rational multipliers must provide guard digits for negative valuations.
+Local NEGATE = -padic_(101,-2,12,1);
+Local SMALL = -1/2*padic_(101,-2,12,1);
+* The required arithmetic modulus lies beyond the context's cached powers.
+Local DEEP = -1/2*padic_(101,-13,12,1);
+* Numerator and denominator exceed the small-rational shortcut's bounds.
+Local GENERAL = -102/103*padic_(101,-2,12,1);
+Local WIDE = -1/2*padic_(101,-2,20,101^21+7);
+Local POSITIVE = -2/3*padic_(101,1,20,101^18+1);
+Local SHORT = -1/2*padic_(101,1,3,1);
+Local NUMPOWER = -101/103*padic_(101,-2,3,1);
+Local LOWER = padic_(101,1,3,1)/101;
+Local HIGHER = 101*padic_(101,-1,3,1);
+Local NEGATIVE = padic_(101,0,3,1)/101^5;
+* Test product valuations below, at, and above the active precision.
+Local BELOWPRECISION = 101*padic_(101,10,20,1);
+Local ATPRECISION = 101^2*padic_(101,10,20,1);
+Local ABOVEPRECISION = 101^3/2*padic_(101,10,20,1);
+Local NEGATIVEZERO = 101^20*padic_(101,-2,12,1);
+Print;
+.end
+#require flint?
+assert succeeded?
+expected = {
+  "FRACTIONU" => "padic_(7,0,3,173)",
+  "FRACTIONUM" => "padic_(7,0,3,170)",
+  "FRACTIONP" => "padic_(7,1,3,26)",
+  "FRACTIONN" => "padic_(7,-2,3,8405)",
+  "FRACTIONNM" => "padic_(7,-2,3,8402)",
+  "FRACTIONL" => "padic_(7,1,2,5)",
+  "FRACTIONH" => "padic_(7,1,3,26)",
+  "FRACTIONZ" => "0",
+  "FRACTIONA" => "0",
+  "FRACTIONNUM" => "padic_(7,1,3,26)",
+  "FRACTIONDEN" => "padic_(7,-1,2,3)",
+  "FRACTIONOUTSIDE" => "padic_(7,0,3,129)",
+}
+expected.each do |name, value|
+  assert result(name) =~ expr(value)
+end
+
+assert result("DEEPE") =~ expr("padic_(7,-3,3,58824)")
+assert result("DEEPM") =~ expr("padic_(7,-3,3,58825)")
+assert result("DEEPO") =~ expr("padic_(7,-4,3,411771)")
+assert result("DEEPL") =~ expr("padic_(7,-3,1,1200)")
+assert result("DEEPX") =~ expr("padic_(7,-3,3,1)")
+
+expected = {
+  "NEGATEU" => "padic_(7,0,3,340)",
+  "NEGATEP" => "padic_(7,1,3,46)",
+  "NEGATEN" => "padic_(7,-2,3,16804)",
+  "NEGATEE" => "padic_(7,-3,3,1)",
+  "NEGATEL" => "padic_(7,-3,1,1)",
+  "NEGATEH" => "padic_(7,-2,3,842)",
+  "NEGATEO" => "padic_(7,-4,3,1)",
+  "NEGATES" => "padic_(7,-2,3,3)",
+  "NEGATED" => "padic_(7,-1,3,2398)"
+}
+expected.each do |name, value|
+  assert result(name) =~ expr(value)
+end
+
+expected = {
+  "INTEGERP" => "padic_(7,-1,2,2)",
+  "INTEGERN" => "padic_(7,-1,2,341)",
+  "INTEGERF" => "padic_(7,-1,2,335)",
+  "INTEGERV" => "padic_(7,1,2,5)",
+  "INTEGERE" => "padic_(7,-2,2,2305)",
+  "INTEGERL" => "padic_(7,-1,1,47)",
+  "INTEGERH" => "padic_(7,-1,2,2)",
+  "INTEGERO" => "padic_(7,-3,2,16805)",
+  "INTEGERD" => "padic_(7,0,2,1)",
+  "INTEGERI" => "padic_(7,-1,1,1)",
+  "INTEGERZ" => "0"
+}
+expected.each do |name, value|
+  assert result(name) =~ expr(value)
+end
+
+expected = {
+  "CAPH" => "padic_(7,0,3,314)",
+  "CAPN" => "padic_(7,-1,3,198)",
+  "CAPZ" => "padic_(7,1,3,3)",
+}
+expected.each do |name, value|
+  assert result(name) =~ expr(value)
+end
+
+expected = {
+  "NEGATE" => [-2, 12, -1, 1],
+  "SMALL" => [-2, 12, -1, 2],
+  "DEEP" => [-13, 12, -1, 2],
+  "GENERAL" => [-2, 12, -102, 103],
+  "WIDE" => [-2, 12, -7, 2],
+  "POSITIVE" => [1, 12, -2, 3],
+  "SHORT" => [1, 3, -1, 2],
+  "NUMPOWER" => [-1, 4, -1, 103],
+  "LOWER" => [0, 2, 1, 1],
+  "HIGHER" => [0, 4, 1, 1],
+  "NEGATIVE" => [-5, -2, 1, 1],
+  "BELOWPRECISION" => [11, 12, 1, 1],
+}
+expected.each do |name, value|
+  valuation, precision, numerator, denominator = value
+  modulus = 101**(precision-valuation)
+  # Compute the exact multiplier's residue independently with Euclid.
+  a, b = modulus, denominator
+  x, y = 0, 1
+  until b == 0
+    quotient = a/b
+    a, b = b, a-quotient*b
+    x, y = y, x-quotient*y
+  end
+  assert_equal 1, a
+  unit = numerator*x % modulus
+  assert result(name).gsub(/\\\s*/, "") =~ expr("padic_(101,#{valuation},#{precision},#{unit})")
+end
+assert result("ATPRECISION") =~ expr("0")
+assert result("ABOVEPRECISION") =~ expr("0")
+assert result("NEGATIVEZERO") =~ expr("0")
+*--#] padic_rational_scaling :
+*--#[ padic_addition :
+#StartPadic 7,3
+Format PadicPrint off;
+* Unequal valuations do not restore digits absent from the lower-precision input.
+Local ALIGNA = padic_(7,-2,3,1)+padic_(7,-1,3,2);
+Local ALIGNB = padic_(7,-1,3,2)+padic_(7,-2,3,1);
+Local ALIGNC = padic_(7,0,3,342)+padic_(7,1,3,48);
+Local ALIGNE = padic_(7,-2,3,16806)+padic_(7,-1,3,2400);
+Local ALIGNSHIFT = padic_(7,-2,3,1)+padic_(7,1,3,1);
+Local ALIGNMISS = padic_(7,-2,3,1)+padic_(7,2,3,1);
+Local ALIGNOUTSIDE = padic_(7,-4,3,1)+padic_(7,-3,3,1);
+Local ALIGNLOW = padic_(7,-2,1,1)+padic_(7,-1,3,2);
+Local ALIGNHIGH = padic_(7,-2,4,100000)+padic_(7,-1,3,2);
+Local ALIGNZ = padic_(7,0,3,0)+padic_(7,-1,3,2);
+Local ALIGNCANCEL = padic_(7,-1,3,1)+padic_(7,-1,3,2400);
+Local ALIGNRAISE = padic_(7,-1,3,1)+padic_(7,-1,3,6);
+* All sign combinations and mixed exact rational coefficients.
+Local SIGNPOSITIVE = padic_(7,0,3,5)+padic_(7,0,3,3);
+Local SIGNLEFT = -padic_(7,0,3,5)+padic_(7,0,3,3);
+Local SIGNRIGHT = padic_(7,0,3,5)-padic_(7,0,3,3);
+Local SIGNBOTH = -padic_(7,0,3,5)-padic_(7,0,3,3);
+Local SIGNCANCEL = padic_(7,0,3,5)-padic_(7,0,3,5);
+Local SIGNMIXED = -padic_(7,0,3,5)+1/2;
+Local SIGNREVERSE = 1/2-padic_(7,0,3,5);
+Local SIGNNEGATIVE = -1/2-padic_(7,0,3,5);
+* Carry, wrap, cancellation and unequal stored precision.
+Local REDUCECANCEL = padic_(7,-1,3,1200)+padic_(7,-1,3,1201);
+Local REDUCEWRAP = padic_(7,-1,3,1200)+padic_(7,-1,3,1202);
+Local REDUCEDIVISIBLE = padic_(7,-1,3,12)+padic_(7,-1,3,37);
+Local REDUCEMIXED = padic_(7,-1,2,10)+padic_(7,-1,3,10);
+Print;
+.end
+
+* Addition uses the smaller input precision, including N <= 0.
+#StartPadic 101,12
+Format PadicPrint off;
+Local PRECADDUNIT = padic_(101,0,3,1)+padic_(101,0,5,2);
+Local PRECADDVAL = padic_(101,-2,3,1)+padic_(101,1,5,2);
+Local PRECADDRAT = padic_(101,0,3,1)+1;
+Local PRECREVERSE = 1+padic_(101,0,3,1);
+* Absolute precision may legitimately become zero or negative.
+Local PRECADDZERO = padic_(101,-3,0,1)+padic_(101,-2,1,2);
+Local PRECADDNEG = padic_(101,-3,-1,1)+padic_(101,-2,0,2);
+Print;
+.end
+
+* Cancellation of a converted negative-valuation coefficient.
+Off Statistics;
+#StartPadic 101,12
+Local SELFA = 1/101^2;
+ToPadic;
+.sort
+Local SELFD = SELFA-SELFA;
+Print SELFD;
+.sort
+#$n = termsin_(SELFD);
+#if (`$n' != 0)
+  #terminate 1
+#endif
+.end
+#require flint?
+assert succeeded?
+expected = {
+  "ALIGNA" => "padic_(7,-2,3,15)",
+  "ALIGNB" => "padic_(7,-2,3,15)",
+  "ALIGNC" => "padic_(7,0,3,335)",
+  "ALIGNE" => "padic_(7,-2,3,16799)",
+  "ALIGNSHIFT" => "padic_(7,-2,3,344)",
+  "ALIGNMISS" => "padic_(7,-2,3,2402)",
+  "ALIGNOUTSIDE" => "padic_(7,-4,3,8)",
+  "ALIGNLOW" => "padic_(7,-2,1,15)",
+  "ALIGNHIGH" => "padic_(7,-2,3,15979)",
+  "ALIGNZ" => "padic_(7,-1,3,2)",
+  "ALIGNCANCEL" => "0",
+  "ALIGNRAISE" => "padic_(7,0,3,1)"
+}
+expected.each do |name, value|
+  assert result(name) =~ expr(value)
+end
+
+expected = {
+  "SIGNPOSITIVE" => "padic_(7,0,3,8)",
+  "SIGNLEFT" => "padic_(7,0,3,341)",
+  "SIGNRIGHT" => "padic_(7,0,3,2)",
+  "SIGNBOTH" => "padic_(7,0,3,335)",
+  "SIGNCANCEL" => "0",
+  "SIGNMIXED" => "padic_(7,0,3,167)",
+  "SIGNREVERSE" => "padic_(7,0,3,167)",
+  "SIGNNEGATIVE" => "padic_(7,0,3,166)",
+}
+expected.each do |name, value|
+  assert result(name) =~ expr(value)
+end
+
+expected = {
+  "REDUCECANCEL" => "0",
+  "REDUCEWRAP" => "padic_(7,-1,3,1)",
+  "REDUCEDIVISIBLE" => "padic_(7,1,3,1)",
+  "REDUCEMIXED" => "padic_(7,-1,2,20)"
+}
+expected.each do |name, value|
+  assert result(name) =~ expr(value)
+end
+
+expected = {
+  "PRECADDUNIT" => [0, 3, 3],
+  "PRECADDVAL" => [-2, 3, 2060603],
+  "PRECADDRAT" => [0, 3, 2],
+  "PRECREVERSE" => [0, 3, 2],
+  "PRECADDZERO" => [-3, 0, 203],
+  "PRECADDNEG" => [-3, -1, 203],
+}
+expected.each do |name, value|
+  assert result(name) =~ expr("padic_(101,#{value.join(",")})")
+end
+
+assert result("SELFD") =~ expr("0")
+*--#] padic_addition :
+*--#[ padic_multiplication :
+* Product precision is bounded by each input error shifted by the other valuation.
+#StartPadic 101,12
+Format PadicPrint off;
+Local MULNEG = padic_(101,-2,12,1)*padic_(101,0,12,2);
+Local MULLOW = padic_(101,2,5,1)*padic_(101,-1,4,2);
+* Absolute precision may legitimately become zero or negative.
+Local MULZERO = padic_(101,-2,2,1)*padic_(101,-1,2,2);
+Local MULNEGATIVE = padic_(101,-3,1,1)*padic_(101,-2,3,2);
+Print;
+.end
+#require flint?
+assert succeeded?
+expected = {
+  "MULNEG" => [-2, 10, 2],
+  "MULLOW" => [1, 4, 2],
+  "MULZERO" => [-3, 0, 2],
+  "MULNEGATIVE" => [-5, -1, 2],
+}
+expected.each do |name, value|
+  assert result(name) =~ expr("padic_(101,#{value.join(",")})")
+end
+*--#] padic_multiplication :
+*--#[ padic_division :
+* Inversion and division retain both independent precision bounds, including N <= 0.
+#StartPadic 101,12
+Format PadicPrint off;
+Local INV = 1/padic_(101,2,5,1);
+Local INVNEG = 1/padic_(101,-2,5,1);
+Local DIV = padic_(101,2,5,1)/padic_(101,1,4,1);
+Local INVUNIT = 1/padic_(101,2,7,3);
+Local INVNEGUNIT = 1/padic_(101,-2,5,13);
+* Exercise each independent division precision bound with nontrivial units.
+Local DIVNUM = padic_(101,-1,5,17)/padic_(101,2,10,13);
+Local DIVDEN = padic_(101,-1,10,17)/padic_(101,2,7,13);
+* Absolute precision may legitimately become zero or negative.
+Local INVZERO = 1/padic_(101,2,4,1);
+Local INVNEGATIVE = 1/padic_(101,3,4,1);
+Local DIVZERO = padic_(101,0,2,1)/padic_(101,2,4,1);
+Local DIVNEGATIVE = padic_(101,0,1,1)/padic_(101,3,5,1);
+Print;
+.end
+#require flint?
+assert succeeded?
+expected = {
+  "INV" => [-2, 1, 1],
+  "INVNEG" => [2, 9, 1],
+  "DIV" => [1, 4, 1],
+  "INVZERO" => [-2, 0, 1],
+  "INVNEGATIVE" => [-3, -2, 1],
+  "DIVZERO" => [-2, 0, 1],
+  "DIVNEGATIVE" => [-3, -2, 1]
+}
+expected.each do |name, value|
+  assert result(name) =~ expr("padic_(101,#{value.join(",")})")
+end
+quotients = {
+  "INVUNIT" => [-2, 3, 1, 3],
+  "INVNEGUNIT" => [2, 9, 1, 13],
+  "DIVNUM" => [-3, 3, 17, 13],
+  "DIVDEN" => [-3, 2, 17, 13]
+}
+quotients.each do |name, value|
+  valuation, precision, numerator, denominator = value
+  modulus = 101**(precision-valuation)
+  a, b = modulus, denominator
+  x, y = 0, 1
+  until b == 0
+    quotient = a/b
+    a, b = b, a-quotient*b
+    x, y = y, x-quotient*y
+  end
+  assert_equal 1, a
+  unit = numerator*x % modulus
+  assert result(name) =~ expr("padic_(101,#{valuation},#{precision},#{unit})")
+end
+*--#] padic_division :
+*--#[ padic_nonpositive_precision :
+#StartPadic 101,0
+Format PadicPrint off;
+Local SMALL = -1/2*padic_(101,-3,2,3);
+Local GENERAL = -102/103*padic_(101,-3,2,3);
+Local CONVERT = -1/(2*101^3);
+ToPadic;
+Print;
+.end
+#StartPadic 101,-2
+Format PadicPrint off;
+Local SMALL = -1/2*padic_(101,-5,-1,3);
+Local GENERAL = -102/103*padic_(101,-5,-1,3);
+Local CONVERT = -1/(2*101^5);
+ToPadic;
+Print;
+.end
+#require flint?
+assert succeeded?
+# Contexts with N <= 0 cannot use the positive-precision shortcut.
+[[-3, 0], [-5, -2]].each_with_index do |bounds, pass|
+  valuation, precision = bounds
+  modulus = 101**(precision-valuation)
+  { "SMALL" => [-3, 2], "GENERAL" => [-306, 103], "CONVERT" => [-1, 2] }.each do |name, fraction|
+    a, b = modulus, fraction[1]
+    x, y = 0, 1
+    until b == 0
+      quotient = a/b
+      a, b = b, a-quotient*b
+      x, y = y, x-quotient*y
+    end
+    assert_equal 1, a
+    unit = fraction[0]*x % modulus
+    assert result(name, pass) =~ expr("padic_(101,#{valuation},#{precision},#{unit})")
+  end
+end
+*--#] padic_nonpositive_precision :
+*--#[ padic_precision_isolation :
+#StartPadic 101,12
+Format 255;
+Format PadicPrint off;
+* Each module starts with only its new expression, reusing arithmetic scratch.
+Local LOWADD = padic_(101,0,3,1)+padic_(101,0,5,2);
+Print;
+.sort
+Drop LOWADD;
+Local AFTERADD = -1/2*padic_(101,-2,12,3);
+Print;
+.sort
+Drop AFTERADD;
+Local LOWMUL = padic_(101,2,5,3)*padic_(101,-1,4,2);
+Print;
+.sort
+Drop LOWMUL;
+Local AFTERMUL = padic_(101,0,12,3)+padic_(101,0,12,4);
+Print;
+.sort
+Drop AFTERMUL;
+Local LOWDIV = padic_(101,-1,5,17)/padic_(101,2,10,13);
+Print;
+.sort
+Drop LOWDIV;
+Local AFTERDIV = padic_(101,0,12,5)*padic_(101,0,12,6);
+Print;
+.sort
+Drop AFTERDIV;
+Local LOWINV = 1/padic_(101,2,5,3);
+Print;
+.sort
+Drop LOWINV;
+Local AFTERINV = padic_(101,-1,12,5)/padic_(101,0,12,3);
+Print;
+.sort
+Drop AFTERINV;
+Local LOWRAT = padic_(101,0,3,1)/101^5;
+Print;
+.sort
+Drop LOWRAT;
+Local AFTERRAT = 1/padic_(101,0,12,3);
+Print;
+.sort
+Drop AFTERRAT;
+Local LOWCONVERT = padic_(101,0,3,1)/101^5;
+.sort
+Drop LOWCONVERT;
+Local RESET = -1;
+ToPadic;
+Print RESET;
+.end
+#require flint?
+assert succeeded?
+expected = {
+  "LOWADD" => [0, 3, 3, 1],
+  "AFTERADD" => [-2, 12, -3, 2],
+  "LOWMUL" => [1, 4, 6, 1],
+  "AFTERMUL" => [0, 12, 7, 1],
+  "LOWDIV" => [-3, 3, 17, 13],
+  "AFTERDIV" => [0, 12, 30, 1],
+  "LOWINV" => [-2, 1, 1, 3],
+  "AFTERINV" => [-1, 11, 5, 3],
+  "LOWRAT" => [-5, -2, 1, 1],
+  "AFTERRAT" => [0, 12, 1, 3],
+  "RESET" => [0, 12, -1, 1]
+}
+expected.each do |name, value|
+  valuation, precision, numerator, denominator = value
+  modulus = 101**(precision-valuation)
+  a, b = modulus, denominator
+  x, y = 0, 1
+  until b == 0
+    quotient = a/b
+    a, b = b, a-quotient*b
+    x, y = y, x-quotient*y
+  end
+  assert_equal 1, a
+  unit = numerator*x % modulus
+  assert result(name) =~ expr("padic_(101,#{valuation},#{precision},#{unit})")
+end
+*--#] padic_precision_isolation :
+*--#[ padic_sort_in_memory :
+* Keep the default sort buffers so this identity exercises larger in-memory merges.
+#-
+Off Statistics;
+#StartPadic 7,10
+Symbols x1,...,x4;
+Local F = (x1+padic_(7,0,10,1)*x2+x3+padic_(7,0,10,1)*x4)^5;
+id x1 = 1-x2-x3-x4;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("1")
+*--#] padic_sort_in_memory :
+*--#[ padic_sort_coefficients :
+* Malformed functions remain monomial factors, not coefficients.
+#StartPadic 7,100
+Off Statistics;
+Format 255;
+Format PadicPrint off;
+Symbols x;
+Local FACTORBOTH = padic_(0,10)*(padic_(7,0,100,1)+padic_(7,0,100,2));
+Local FACTORRIGHT = padic_(0,10)*(1+padic_(7,0,100,2));
+Local FACTORLEFT = padic_(0,10)*(padic_(7,0,100,2)+1);
+Local FACTORSYMBOLIC = padic_(7,0,10,x)*(padic_(7,0,100,1)+padic_(7,0,100,2));
+Local FACTORBARE = padic_*(padic_(7,0,100,1)+padic_(7,0,100,2));
+Local FACTORLARGE = padic_(0,10)*(padic_(7,0,100,2^130+13)+padic_(7,0,100,2^130+17));
+Print;
+.end
+
+* Mixed coefficients have consistent ordering in both directions.
+#StartPadic 7,5
+Off Statistics;
+On LowFirst;
+Symbols a;
+Local ORDERF = 1/2*a+1;
+ToPadic;
+.sort
+Local ORDERFORWARD = ORDERF-1/2*a-1;
+Local ORDERREVERSE = -1-1/2*a+ORDERF;
+Local ORDERNEGATED = 1+1/2*a-ORDERF;
+Print ORDERFORWARD,ORDERREVERSE,ORDERNEGATED;
+.end
+
+* Functions, dot products, powers and symbols share the same ordering.
+#StartPadic 7,100
+Off Statistics;
+On LowFirst;
+Symbols a,b;
+Vectors p,q;
+CFunctions f;
+Local OBJECTF = (2^130+13)*a+1;
+Local OBJECTFUN = 1/2*f(a)+1;
+Local OBJECTDOT = 1/3*p.q+1;
+Local OBJECTPOWER = 1/5/a+1;
+Local OBJECTMONOMIAL = 1/2*a*b+1;
+ToPadic;
+.sort
+Local OBJECTLARGE = OBJECTF-(2^130+13)*a-1;
+Local OBJECTFUNCTION = OBJECTFUN-1/2*f(a)-1;
+Local OBJECTDOTPRODUCT = OBJECTDOT-1/3*p.q-1;
+Local OBJECTNEGPOWER = OBJECTPOWER-1/5/a-1;
+Local OBJECTPRODUCT = OBJECTMONOMIAL-1/2*a*b-1;
+Print OBJECTLARGE,OBJECTFUNCTION,OBJECTDOTPRODUCT,OBJECTNEGPOWER,OBJECTPRODUCT;
+.sort
+On HighFirst;
+Local OBJECTHIGH = OBJECTF-(2^130+13)*a-1;
+Print OBJECTHIGH;
+.end
+#require flint?
+assert succeeded?
+assert result("FACTORBOTH") =~ expr("padic_(0,10)*padic_(7,0,100,3)")
+assert result("FACTORRIGHT") =~ expr("padic_(0,10)*padic_(7,0,100,3)")
+assert result("FACTORLEFT") =~ expr("padic_(0,10)*padic_(7,0,100,3)")
+assert result("FACTORSYMBOLIC") =~ expr("padic_(7,0,10,x)*padic_(7,0,100,3)")
+assert result("FACTORBARE") =~ expr("padic_*padic_(7,0,100,3)")
+assert result("FACTORLARGE") =~ expr("padic_(0,10)*padic_(7,0,100,#{2**131+30})")
+
+assert result("ORDERFORWARD") =~ expr("0")
+assert result("ORDERREVERSE") =~ expr("0")
+assert result("ORDERNEGATED") =~ expr("0")
+
+assert result("OBJECTLARGE") =~ expr("0")
+assert result("OBJECTFUNCTION") =~ expr("0")
+assert result("OBJECTDOTPRODUCT") =~ expr("0")
+assert result("OBJECTNEGPOWER") =~ expr("0")
+assert result("OBJECTPRODUCT") =~ expr("0")
+assert result("OBJECTHIGH") =~ expr("0")
+*--#] padic_sort_coefficients :
+*--#[ padic_sort_patch_merge :
+* Force small patches so these cases exercise merging as well as in-memory sorting.
+* Malformed factors with small and multiword units.
+#: termsinsmall 16
+On fewerstats 1;
+#StartPadic 7,100
+Format 255;
+Format PadicPrint off;
+Symbols x1,...,x16;
+Local FACTORF = padic_(0,10)*(x1+...+x16)^4*padic_(7,0,100,3);
+Local FACTORMIX = padic_(0,10)*(x1+x2)^8*(1+padic_(7,0,100,2));
+Local FACTORLARGE = padic_(0,10)*(x1+...+x16)^4*padic_(7,0,100,2^130+13);
+#do i=1,16
+    id x`i' = 1;
+#enddo
+Print;
+.end
+
+* Mixed rational and p-adic monomials merge in LowFirst order.
+#: termsinsmall 16
+#StartPadic 7,100
+Off Statistics;
+On LowFirst;
+Symbols a,b1,...,b8;
+Local ORDERF = (1/2*a+1)*(1+b1+...+b8)^3;
+ToPadic;
+.sort
+Local ORDERZERO = ORDERF-(1/2*a+1)*(1+b1+...+b8)^3;
+Print ORDERZERO;
+.end
+
+#require flint?
+assert succeeded?
+assert result("FACTORF") =~ expr("padic_(0,10)*padic_(7,0,100,196608)")
+assert result("FACTORMIX") =~ expr("padic_(0,10)*padic_(7,0,100,768)")
+assert result("FACTORLARGE") =~ expr("padic_(0,10)*padic_(7,0,100,#{16**4*(2**130+13)})")
+
+assert result("ORDERZERO") =~ expr("0")
+
+*--#] padic_sort_patch_merge :
+*--#[ padic_sort_patch_signed_coefficients :
+* Signed coefficients and exact rationals cancel across patches.
+* ParFORM's master merge currently adds rational carriers instead of p-adic values.
+#: termsinsmall 16
+#StartPadic 7,3
+Format PadicPrint off;
+Symbols x,b1,...,b8;
+Local SIGNF = (padic_(7,0,3,5)*x+padic_(7,0,3,3))*(1+b1+...+b8)^3;
+.sort
+Local SIGNMIXED = SIGNF-(5*x+3)*(1+b1+...+b8)^3;
+Local SIGNCANCEL = SIGNF+(-padic_(7,0,3,5)*x-padic_(7,0,3,3))*(1+b1+...+b8)^3;
+Local SIGNNEGATIVE = -SIGNF;
+id x = 1;
+#do i=1,8
+  id b`i' = 1;
+#enddo
+Print;
+.end
+#require flint?
+#pend_if mpi?
+assert succeeded?
+assert result("SIGNF") =~ expr("padic_(7,0,3,1)")
+assert result("SIGNMIXED") =~ expr("0")
+assert result("SIGNCANCEL") =~ expr("0")
+assert result("SIGNNEGATIVE") =~ expr("padic_(7,0,3,342)")
+*--#] padic_sort_patch_signed_coefficients :
+*--#[ padic_sort_patch_precision :
+* Patch sums retain the smaller stored precision.
+* ParFORM's master merge currently adds rational carriers instead of p-adic values.
+#: termsinsmall 16
+#StartPadic 101,12
+Format PadicPrint off;
+Symbols x,b1,...,b8;
+Local PRECBOTH = (padic_(101,0,3,1)*x+padic_(101,0,5,2))*(1+b1+...+b8)^3;
+Local PRECMIXED = (padic_(101,0,3,1)*x+1)*(1+b1+...+b8)^3;
+Local PRECREVERSE = (1+padic_(101,0,3,1)*x)*(1+b1+...+b8)^3;
+.sort
+id x = 1;
+#do i=1,8
+  id b`i' = 1;
+#enddo
+Print;
+.end
+#require flint?
+#pend_if mpi?
+assert succeeded?
+assert result("PRECBOTH") =~ expr("padic_(101,0,3,2187)")
+assert result("PRECMIXED") =~ expr("padic_(101,0,3,1458)")
+assert result("PRECREVERSE") =~ expr("padic_(101,0,3,1458)")
+*--#] padic_sort_patch_precision :
+*--#[ padic_sort_patch_growth :
+#: termsinsmall 16
+On fewerstats 1;
+#StartPadic 7,10
+Format PadicPrint off;
+Symbol x1,...,x16;
+
+Local F = (x1+padic_(7,0,10,1)*x2+x3+padic_(7,0,10,1)*x4)^5;
+id x1 = 1-x2-x3-x4;
+.sort
+
+Local CORNER = x1+...+x15+padic_(7,0,10,1)*x16+2^80*x16;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("F") =~ expr("1")
+assert result("CORNER") =~ expr("x16*padic_(7,0,10,188220513) + x15 + x14 + x13 + x12 + x11 + x10 + x9 + x8
+       + x7 + x6 + x5 + x4 + x3 + x2 + x1")
+*--#] padic_sort_patch_growth :
+*--#[ padic_inactive_algebra :
+* Storage-size coverage lives in padic_storage_size; this fold checks ordinary algebra.
+* Existing coefficients and new literals remain inert after EndPadic.
+CFunctions f;
+#StartPadic 7,12
+Format PadicPrint off;
+Global STOREDCOMPACT = padic_(7,0,12,4294967295);
+.sort
+#EndPadic
+Global STOREDPOSITIVE = padic_(7,0,12,4294967295);
+Global STOREDNEGATIVE = padic_(7,0,12,-4294967295);
+Global STOREDNESTED = f(padic_(7,0,12,18446744073709551617));
+Global STOREDSMALL = padic_(7,0,12,-2147483648);
+Print;
+.end
+
+* Inactive units follow ordinary function multiplication and ordering.
+CFunctions f,g;
+Global ORDEROLD = padic_(7,0,12,4294967295);
+.sort
+Local ORDERF = f(1)*padic_(7,-2,12,-18446744073709551617)
+    *ORDEROLD*padic_(7,3,12,4294967297)*g(2);
+Local ORDERG = g(2)*padic_(7,3,12,4294967297)
+    *padic_(7,0,12,4294967295)*f(1)*padic_(7,-2,12,-18446744073709551617);
+Local ORDERZERO = ORDERF-ORDERG;
+Local ORDERINVALID = padic_(7,0,12,3/2)+padic_(7,0,12,4294967295,1);
+.sort
+.sort
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+assert result("STOREDCOMPACT") =~ expr("padic_(7,0,12,4294967295)")
+assert result("STOREDPOSITIVE") =~ expr("padic_(7,0,12,4294967295)")
+assert result("STOREDNEGATIVE") =~ expr("padic_(7,0,12,-4294967295)")
+assert result("STOREDNESTED") =~ expr("f(padic_(7,0,12,18446744073709551617))")
+assert result("STOREDSMALL") =~ expr("padic_(7,0,12,-2147483648)")
+
+assert result("ORDERZERO") =~ expr("0")
+assert result("ORDERF") =~ expr(result("ORDERG"))
+assert result("ORDERF") =~ expr("padic_(7,-2,12,-18446744073709551617)
+    *padic_(7,0,12,4294967295)*padic_(7,3,12,4294967297)*f(1)*g(2)")
+assert result("ORDERINVALID") =~ expr("padic_(7,0,12,3/2)+padic_(7,0,12,4294967295,1)")
+*--#] padic_inactive_algebra :
+*--#[ padic_dummy_indices :
+Indices i,j;
+CFunctions f,g;
+#StartPadic 7,100
+Global UNIT = padic_(7,0,100,340282366920938463463374607431768211455);
+.sort
+#EndPadic
+Local F = UNIT*(f(i)*g(i)-f(j)*g(j));
+Sum i,j;
+Print;
+.end
+#require flint?
+assert succeeded?
+assert result("F") =~ expr("0")
+*--#] padic_dummy_indices :
+*--#[ padic_save_load :
+Symbols x;
+CFunctions f;
+#StartPadic 7,100
+Global UNIT = padic_(7,0,100,340282366920938463463374607431768211455);
+.sort
+#EndPadic
+Global F = x*UNIT
+    + f(padic_(7,-2,100,-18446744073709551617));
+.store
+Save compact.sav,F;
+.end
+Symbols y,x;
+CFunctions g,f;
+Load compact.sav;
+Local G = F;
+id x = 2;
+Print;
+.end
+#require flint?
+assert succeeded?
+assert result("G") =~ expr("2*padic_(7,0,100,340282366920938463463374607431768211455)
+    + f(padic_(7,-2,100,-18446744073709551617))")
+*--#] padic_save_load :
+*--#[ padic_save_load_portability :
+* Convert compact units across WORD sizes and endianness.
+* Construct Save files with no user variables. Two units exercise width
+* conversion followed by an enclosing tail, and a separate endian conversion.
+Format 255;
+Load compact16le.sav;
+Local WIDTHPOSITIVE = F;
+Print;
+.end
+Format 255;
+Load compact32be.sav;
+Local WIDTHNEGATIVE = F;
+Print;
+.end
+
+* Loading ordinary units must not expand their representation.
+* Eleven ordinary units fit in 169 WORDs; inactive normalization must not
+* grow them into compact wrappers requiring 213 WORDs.
+#: maxtermsize 200
+Load compact-growth.sav;
+Local GROWG = F;
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+# Save/load conversion writes uninitialized metadata and index padding.
+# Remove this condition once the standalone save/load fix is merged.
+#pend_if valgrind?
+#prepare [["16le", "<", 1, 2], ["32be", ">", -1, 4]].each do |suffix, endian, sign, width|
+#prepare word = "#{width == 2 ? 's' : 'l'}#{endian}"; position = 1024+4*width
+#prepare header = ([255]*8+[width,8,8,width == 2 ? 8 : 4]).pack("C*")
+#prepare header += (endian == "<" ? [4,3,2,1] : [1,2,3,4]).pack("C*").ljust(16, "\0")
+#prepare header += [48,40,40,72].pack("C*")
+#prepare header += [10000].pack(word).ljust(16, "\0")+[6100].pack(word).ljust(16, "\0")
+#prepare header += [2].pack("C"); header = header.ljust(512, "\0")
+#prepare units = width == 2 ? [[-1]*8, [1,0,0,0,1]] : [[-1]*4, [1,0,1]]
+#prepare functions = units.each_with_index.map do |limbs, i|
+#prepare count = limbs.length; unit = [count+9,0,count+7,13,count+3,sign*(i == 0 ? count : -count)]+limbs+[1,1,3]
+#prepare [127,9+unit.length,0,-16,7,-16,0,-16,100]+unit
+#prepare end
+#prepare body = functions.flatten; term = [body.length+4]+body+[1,1,3]
+#prepare data = ([9,6,5,0,1,0,1,1,3]+term+[0]).pack("#{word}*")
+#prepare entry = [position,data.bytesize,1024,0].pack("q#{endian}*")+([0]*5).pack("#{word}*")
+#prepare entry += "F".ljust(17, "\0"); entry = entry.ljust(width == 2 ? 64 : 72, "\0")
+#prepare index = ([0,1].pack("q#{endian}*")+entry).ljust(512, "\0")
+#prepare write "compact#{suffix}.sav", header+index+"\0"*(4*width)+data
+#prepare end
+#prepare endian = [1].pack("l").bytes.first == 1 ? "<" : ">"; word = "s#{endian}"
+#prepare header = ([255]*8+[2,8,8,8]).pack("C*")
+#prepare header += (endian == "<" ? [4,3,2,1] : [1,2,3,4]).pack("C*").ljust(16, "\0")
+#prepare header += [48,40,40,72].pack("C*")
+#prepare header += [10000].pack(word).ljust(16, "\0")+[6100].pack(word).ljust(16, "\0")
+#prepare header += [2].pack("C"); header = header.ljust(512, "\0")
+#prepare body = (0..10).flat_map { |v| [127,17,0,-16,7,-16,v,-16,12,8,0,6,-1,-1,1,0,5] }
+#prepare term = [body.length+4]+body+[1,1,3]
+#prepare data = ([9,6,5,0,1,0,1,1,3]+term+[0]).pack("#{word}*")
+#prepare entry = [1032,data.bytesize,1024,0].pack("q#{endian}*")+([0]*5).pack("#{word}*")
+#prepare entry += "F".ljust(17, "\0"); entry = entry.ljust(64, "\0")
+#prepare index = ([0,1].pack("q#{endian}*")+entry).ljust(512, "\0")
+#prepare write "compact-growth.sav", header+index+"\0"*8+data
+assert succeeded?
+assert result("WIDTHPOSITIVE") =~ expr("padic_(7,0,100,-18446744073709551617)*padic_(7,0,100,340282366920938463463374607431768211455)")
+assert result("WIDTHNEGATIVE") =~ expr("padic_(7,0,100,18446744073709551617)*padic_(7,0,100,-340282366920938463463374607431768211455)")
+
+expected = (0..10).map { |v| "padic_(7,#{v},12,4294967295)" }.join("*")
+assert result("GROWG") =~ expr(expected)
+*--#] padic_save_load_portability :
+*--#[ padic_checkpoint_inactive :
+#system -e test -f compact-start.tmp
+#define first "`SYSTEMERROR_'"
+#if `first'
+    #write <compact-start.tmp> ""
+    #close <compact-start.tmp>
+    #terminate 0
+#endif
+Symbols x;
+CFunctions f;
+#StartPadic 7,100
+Global UNIT = padic_(7,0,100,340282366920938463463374607431768211455);
+.sort
+#EndPadic
+On checkpoint;
+Local F = x*UNIT
+    + f(padic_(7,-2,100,-18446744073709551617));
+#system sleep 1
+.sort
+#system -e test -f compact-resume.tmp
+#define stop "`SYSTEMERROR_'"
+#write <compact-resume.tmp> ""
+#close <compact-resume.tmp>
+#if `stop'
+    #terminate
+#endif
+#remove <compact-resume.tmp>
+id x = 2;
+Print;
+.end
+#system -e `FORM' 1.frm
+#system `FORM' -R 1.frm
+.end
+#require flint?
+#require unix?
+#pend_if mpi? || valgrind?
+assert return_value == 0
+assert result("F") =~ expr("2*padic_(7,0,100,340282366920938463463374607431768211455)
+    + f(padic_(7,-2,100,-18446744073709551617))")
+*--#] padic_checkpoint_inactive :
+*--#[ padic_storage_size :
+#StartPadic 7,2000
+Format PadicPrint off;
+CFunctions f;
+Global F = padic_(7,0,2000,2^4096-1);
+Global COMPACT = padic_(7,0,12,4294967295);
+Print;
+.sort
+#EndPadic
+Global ORDINARY = padic_(7,0,2000,2^4096-1);
+Global POSITIVE = padic_(7,0,12,4294967295);
+Global NEGATIVE = padic_(7,0,12,-4294967295);
+Global NESTED = f(padic_(7,0,12,18446744073709551617));
+Global SMALL = padic_(7,0,12,-2147483648);
+Print;
+.store
+Save integer.sav,POSITIVE,NEGATIVE,NESTED,SMALL;
+Save compact.sav,COMPACT;
+.end
+#require flint?
+assert succeeded?
+large = expr("padic_(7,0,2000,#{2**4096-1})")
+2.times do |pass|
+  assert result("F", pass).gsub(/\\\s*/, "") =~ large
+end
+assert result("ORDINARY").gsub(/\\\s*/, "") =~ large
+# Statistics include the n+22 WORD bare term and a terminating zero WORD.
+limbs = (4096+8*wordsize-1)/(8*wordsize)
+2.times do |pass|
+  assert bytesize("F", pass) == (limbs+23)*wordsize
+end
+assert bytesize("ORDINARY") == (2*limbs+18)*wordsize
+# Check the private Save encoding only on its original WORD size.
+# Inactive values, including nested and short units, keep ordinary arguments.
+if wordsize == 4
+  integer = File.binread(File.join(workdir, "integer.sav"))
+  assert integer.include?([4,-1,1,3].pack("l*"))
+  assert integer.include?([4,-1,1,-3].pack("l*"))
+  assert integer.include?([8,1,0,1,1,0,0,7].pack("l*"))
+  assert !integer.include?([13,4,1,-1,1,1,3].pack("l*"))
+  assert !integer.include?([13,4,-1,-1,1,1,3].pack("l*"))
+  assert !integer.include?([13,6,3,1,0,1,1,1,3].pack("l*"))
+  assert integer.include?([-16,-2147483648].pack("l*"))
+  compact = File.binread(File.join(workdir, "compact.sav"))
+  assert compact.include?([13,4,1,-1,1,1,3].pack("l*"))
+end
+*--#] padic_storage_size :
+*--#[ padic_normalization_size_limit :
+* A normalized term exactly at MaxTermSize fits.
+* The packed coefficient and f's arguments occupy exactly 200 WORDs.
+#: maxtermsize 200
+#StartPadic 7,1080
+CFunctions f;
+Format 255;
+Format PadicPrint off;
+Local FITF = f(<1>,...,<40>)*padic_(7,0,1080,-1);
+Print;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert succeeded?
+output = result("FITF").gsub(/\\\s*/, "")
+assert output =~ expr("f(#{(1..40).to_a.join(",")})*padic_(7,0,1080,#{7**1080-1})")
+*--#] padic_normalization_size_limit :
+*--#[ padic_normalization_size_error :
+* One more argument exceeds MaxTermSize.
+#: maxtermsize 200
+#StartPadic 7,1080
+CFunctions f;
+Local OVERF = f(<1>,...,<41>)*padic_(7,0,1080,-1);
+.end
+#require flint?
+#pend_if wordsize == 2
+assert runtime_error?("Term too complex during normalization")
+assert stdout.scan("Term too complex during normalization").size == 1
+*--#] padic_normalization_size_error :
+*--#[ padic_scaling_size_error :
+#: maxtermsize 200
+#StartPadic 7,1080
+CFunctions f;
+Local F = -2*f(<1>,...,<41>)*padic_(7,0,1080,1);
+.end
+#require flint?
+#pend_if wordsize == 2
+assert runtime_error?("Term too complex during normalization")
+assert stdout.scan("Term too complex during normalization").size == 1
+*--#] padic_scaling_size_error :
+*--#[ padic_normalization_scratch_error :
+#: maxtermsize 200
+#StartPadic 7,2200
+Local F = padic_(7,0,2200,-1);
+.end
+#require flint?
+#pend_if wordsize == 2
+assert runtime_error?("Term too complex during normalization")
+assert stdout.scan("Term too complex during normalization").size == 1
+*--#] padic_normalization_scratch_error :
+*--#[ padic_from_padic_size_error :
+#: maxtermsize 200
+#StartPadic 7,1090
+CFunctions f;
+Local F = -1;
+ToPadic;
+.sort
+FromPadic,f;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert runtime_error?("Term too complex during normalization")
+assert stdout !~ /Term too complex after FromPadic\./
+*--#] padic_from_padic_size_error :
+*--#[ padic_prime_mismatch :
+#StartPadic 7,10
+Format PadicPrint off;
+Local F = padic_(11,0,10,1);
+.end
+#require flint?
+#pend_if wordsize == 2
+assert runtime_error?("Prime in padic_ does not match the active p-adic prime.")
+assert return_value != 0
+*--#] padic_prime_mismatch :
+*--#[ padic_prime_mismatch_zero :
+#StartPadic 7,10
+Local F = padic_(11,0,10,0);
+.end
+#require flint?
+#pend_if wordsize == 2
+assert runtime_error?("Prime in padic_ does not match the active p-adic prime.")
+assert return_value != 0
+*--#] padic_prime_mismatch_zero :
+*--#[ padic_prime_mismatch_large :
+#StartPadic 170141183460469231731687303715884105727,2
+Format PadicPrint off;
+Local F = padic_(618970019642690137449562111,0,2,1);
+.end
+#require flint?
+#pend_if wordsize == 2
+assert runtime_error?("Prime in padic_ does not match the active p-adic prime.")
+assert return_value != 0
+*--#] padic_prime_mismatch_large :
+*--#[ padic_prime_switch_mismatch :
+#StartPadic 7,10
+Format PadicPrint off;
+Local F = 31;
+ToPadic;
+.sort
+#EndPadic
+#StartPadic 11,10
+Format PadicPrint off;
+Local G = F;
+.end
+#require flint?
+#pend_if wordsize == 2
+assert runtime_error?("Prime in padic_ does not match the active p-adic prime.")
+assert return_value != 0
+*--#] padic_prime_switch_mismatch :
+*--#[ padic_inert_without_flint :
+Global F = padic_(7,0,1000,2^4096-1);
+Print;
+.store
+Save inert.sav,F;
+.end
+Load inert.sav;
+Local G = F;
+Print;
+.end
+#require !flint?
+assert succeeded?
+large = expr("padic_(7,0,1000,#{2**4096-1})")
+assert result("F").gsub(/\\\s*/, "") =~ large
+assert result("G").gsub(/\\\s*/, "") =~ large
+# Without FLINT the literal keeps the ordinary padded integer argument.
+limbs = (4096+8*wordsize-1)/(8*wordsize)
+assert bytesize("F") == (2*limbs+18)*wordsize
+*--#] padic_inert_without_flint :
 *--#[ humanstats :
 #-
 On humanstats;

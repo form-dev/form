@@ -125,6 +125,12 @@ int CoTransform(UBYTE *in)
 					if ( error == 0 ) error = 1;
 				}
 #endif
+#ifdef WITHFLINT
+				if ( (number+FUNCTION) == PADICFUN ) {
+					MesPrint("&Illegal use of a transform statement and padic_");
+					if ( error == 0 ) error = 1;
+				}
+#endif
 				number += MAXVARIABLES + FUNCTION; }
 			else if ( type != CSET ) {
 				MesPrint("& %s: A transform statement starts with sets of functions",s);
@@ -154,6 +160,19 @@ int CoTransform(UBYTE *in)
 				if ( *r1++ == FLOATFUN ) {
 					MesPrint("&Illegal use of a transform statement and float_");
 					if ( error == 0 ) error = 1;
+				}
+			}
+#endif
+#ifdef WITHFLINT
+			{
+				WORD *r1, *r2;
+				r1 = SetElements + Sets[number].first;
+				r2 = SetElements + Sets[number].last;
+				while ( r1 < r2 ) {
+					if ( *r1++ == PADICFUN ) {
+						MesPrint("&Illegal use of a transform statement and padic_");
+						if ( error == 0 ) error = 1;
+					}
 				}
 			}
 #endif
@@ -765,6 +784,9 @@ int RunTransform(PHEAD WORD *term, WORD *params)
 hit:;
 #ifdef WITHFLOAT
 			if ( *t == FLOATFUN ) goto next;
+#endif
+#ifdef WITHFLINT
+			if ( *t == PADICFUN ) goto next;
 #endif
 			while ( in < t ) *out++ = *in++;
 			tt = t + t[1]; fun = out;

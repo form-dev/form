@@ -1412,6 +1412,17 @@ void WriteArgument(WORD *t)
 	lowestlevel = 0;
 	if ( *t > 0 ) {
 		oldoutsidefun = AC.outsidefun; AC.outsidefun = 0;
+#ifdef WITHFLINT
+		if ( t[ARGHEAD] == *t-ARGHEAD && TestPadicLimbTerm(t+ARGHEAD) ) {
+			LONG size = ARGHEAD+2*(LONG)ABS(t[ARGHEAD+PADICLIMBHEAD])+2;
+			WORD *expanded;
+			expanded = Malloc1((size_t)size*sizeof(WORD),"PrintPadicUnit");
+			ExpandPadicArgument(expanded,t);
+			WriteExpression(expanded+ARGHEAD,size-ARGHEAD);
+			M_free(expanded,"PrintPadicUnit");
+		}
+		else
+#endif
 		WriteExpression(t+ARGHEAD,(LONG)(*t-ARGHEAD));
 		AC.outsidefun = oldoutsidefun;
 		goto CleanUp;
@@ -1939,6 +1950,11 @@ int WriteInnerTerm(WORD *term, WORD first)
 	WORD *t, *s, *s1, *s2, n, i, pow;
 #ifdef WITHFLOAT
 	int FloatChars = 0;
+#endif
+#ifdef WITHFLINT
+	WORD *PrintedPadic = 0;
+#endif
+#ifdef WITHFLOAT
 	GETIDENTITY
 #endif
 	t = term;
@@ -2017,6 +2033,28 @@ int WriteInnerTerm(WORD *term, WORD first)
 		if ( ss >= t ) first = 1;
 	}
 #endif
+#ifdef WITHFLINT
+/*
+	Check whether there is a proper padic_ function and no raw mode.
+	If so, print as p-adic series.
+	Raw mode is indicated as AO.PadicPrint == 0.
+*/
+	else if ( AO.PadicPrint && AC.activePadic ) {
+		WORD *ss = s;
+		first = 1;
+		while ( ss < t ) {
+			if ( *ss == PADICFUN ) {
+				if ( PrintPadic(ss) != 0 ) {
+					TokenToLine(AO.padicspace);
+					PrintedPadic = ss;
+					first = 0;
+					break;
+				}
+			}
+			ss += ss[1];
+		}
+	}
+#endif
 	else first = 1;
 	while ( s < t ) {
 		if ( lowestlevel && ( (AO.PrintType & (PRINTONEFUNCTION | PRINTALL)) == PRINTONEFUNCTION ) ) {
@@ -2066,6 +2104,11 @@ int WriteInnerTerm(WORD *term, WORD first)
 		if ( *s == FLOATFUN && AO.FloatPrec >= 0 && AT.aux_ != 0 ) {
 		}
 		else 
+#endif
+#ifdef WITHFLINT
+		if ( s == PrintedPadic ) {
+		}
+		else
 #endif
 		{
 			if ( *s >= FUNCTION && AC.funpowers > 0
