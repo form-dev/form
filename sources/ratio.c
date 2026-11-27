@@ -3221,7 +3221,17 @@ NormArg:;
 			rr = r + *r;
 			i = *r; rrr = outarg; NCOPY(rrr,r,i);
 			Normalize(BHEAD outarg);
-			if ( *outarg > 0 ) StoreTerm(BHEAD outarg);
+			if ( *outarg > 0 ) {
+				if ( AR.PolyFunExp == 3 && AR.PolyFunPow < 0 ) {
+					if ( ABS(outarg[*outarg-1]) == *outarg-1
+					|| outarg[1] != SYMBOL ) continue;
+					for ( i = 3; i < outarg[2]; i += 2 ) {
+						if ( outarg[i] == AR.PolyFunVar ) break;
+					}
+					if ( i >= outarg[2] ) continue;
+				}
+				StoreTerm(BHEAD outarg);
+			}
 		}
 		r = fun+FUNHEAD+ARGHEAD;
 		EndSort(BHEAD r,1);
@@ -3257,7 +3267,15 @@ NormArg:;
 		}
 	} else { error = 5; goto onerror; }
 	if ( arg2 == NULL ) {
-		if ( *arg1 < 0 ) { fun[2] = CLEANFLAG; goto done; }
+		if ( *arg1 < 0 ) {
+			if ( AR.PolyFunExp == 3 && ( ( AR.PolyFunPow < 0 && (fun[2]&MUSTCLEANPRF) != 0
+			&& ( *arg1 == -SNUMBER || *arg1 == -SYMBOL ) )
+			|| ( AR.PolyFunPow == 0 && *arg1 == -SYMBOL
+			&& arg1[1] == AR.PolyFunVar ) ) ) {
+				*arg1 = -SNUMBER; arg1[1] = 0;
+			}
+			fun[2] = CLEANFLAG; goto done;
+		}
 		if ( fun[2] == CLEANFLAG ) goto done;
 		goto NormArg;   /* Note: should not come here */
 	}
@@ -3265,6 +3283,19 @@ NormArg:;
 	Produce the output argument in outarg
 */
 	if ( outarg == NULL ) outarg = TermMalloc("ExpandRat")+ARGHEAD;
+	if ( AR.PolyFunExp == 3 && AR.PolyFunPow < 0 && AN.PolyNormFlag != 0
+	&& (fun[2]&MUSTCLEANPRF) == 0
+	&& ( *arg1 == -SNUMBER || ( *arg1 > 0 && *arg1 == ARGHEAD+arg1[ARGHEAD]
+	&& arg1[ARGHEAD] == ABS(arg1[*arg1-1])+1 ) )
+	&& ( *arg2 == -SNUMBER || ( *arg2 > 0 && *arg2 == ARGHEAD+arg2[ARGHEAD]
+	&& arg2[ARGHEAD] == ABS(arg2[*arg2-1])+1 ) ) ) {
+/*
+		With other polyratfun factors, rational normalization inserts a clean
+		numeric factor containing the term's coefficient. Keep it until it is
+		multiplied into the series.
+*/
+		AR.PolyFunPow = 0;
+	}
 
 	if ( *arg2 <= 0 ) {
 /*
@@ -3301,6 +3332,8 @@ NormArg:;
 					}
 				}
 				else { error = 2; goto onerror; }  /* should not happen! */
+				if ( AR.PolyFunExp == 3 && AR.PolyFunPow <
+				( *arg1 == -SYMBOL && arg1[1] == AR.PolyFunVar ? 0 : -1 ) ) *rr = 0;
 			}
 			else {	/* Multi-term numerator. */
 				m = arg1+ARGHEAD;
@@ -3316,8 +3349,12 @@ NormArg:;
 							if ( minpow2 > 0 ) minpow2 = 0;
 						}
 						else {
-							if ( rrm[1] == SYMBOL && rrm[2] == 4 && rrm[3] == AR.PolyFunVar ) {
-								if ( rrm[4] < minpow2 ) minpow2 = rrm[4];
+							if ( rrm[1] == SYMBOL ) {
+								for ( i = 3; i < rrm[2]; i += 2 ) {
+									if ( rrm[i] == AR.PolyFunVar ) break;
+								}
+								eppow = i < rrm[2] ? rrm[i+1] : 0;
+								if ( eppow < minpow2 ) minpow2 = eppow;
 							}
 							else { error = 5; goto onerror; }
 						}
@@ -3325,6 +3362,7 @@ NormArg:;
 					}
 					AR.PolyFunPow += minpow2-1;
 				}
+				AT.TrimPower = 1;
 				while ( m < arg2 ) {
 					r = outarg;
 					rrr = r++; mm = m + *m;
@@ -3332,8 +3370,19 @@ NormArg:;
 					m++; while ( m < mm ) *r++ = *m++;
 					*rrr = r-rrr;
 					Normalize(BHEAD rrr);
+					if ( *rrr == 0 ) continue;
+					if ( AR.PolyFunPow < 0 ) {
+						// Terms independent of AR.PolyFunVar were not discarded by Normalize
+						// We remove these now. 
+						if ( ABS(rrr[*rrr-1]) == *rrr-1 ) continue;
+						for ( i = 3; i < rrr[2]; i += 2 ) {
+							if ( rrr[i] == AR.PolyFunVar ) break;
+						}
+						if ( i >= rrr[2] ) continue;
+					}
 					StoreTerm(BHEAD rrr);
 				}
+				AT.TrimPower = 0;
 				EndSort(BHEAD rr,1);
 				r = rr; while ( *r ) r += *r;
 			}
@@ -3358,7 +3407,9 @@ NormArg:;
 			rr = r = outarg;
 			if ( arg2[1] == 0 ) { error = 1; goto onerror; }
 			if ( *arg1  == -SNUMBER ) { /* Things may not be normalized */
-				if ( arg1[1] == 0 ) { *r++ = 0; }
+				if ( arg1[1] == 0 || ( AR.PolyFunExp == 3 && AR.PolyFunPow < 0 ) ) {
+					*r++ = 0;
+				}
 				else {
 					co1[0] = ABS(arg1[1]); co1[1] = 1;
 					co2[0] = 1; co2[1] = ABS(arg2[1]);
@@ -3377,6 +3428,8 @@ NormArg:;
 				if ( arg2[1] < 0 ) *r++ = -3;
 				else *r++ = 3;
 				*r = 0;
+				if ( AR.PolyFunExp == 3 && ( AR.PolyFunPow < 0
+				|| ( AR.PolyFunPow == 0 && arg1[1] == AR.PolyFunVar ) ) ) *rr = 0;
 			}
 			else if ( *arg1 < 0 ) { error = 2; goto onerror; }
 			else {	/* Multi-term numerator. */
@@ -3393,8 +3446,12 @@ NormArg:;
 							if ( minpow2 > 0 ) minpow2 = 0;
 						}
 						else {
-							if ( rrm[1] == SYMBOL && rrm[2] == 4 && rrm[3] == AR.PolyFunVar ) {
-								if ( rrm[4] < minpow2 ) minpow2 = rrm[4];
+							if ( rrm[1] == SYMBOL ) {
+								for ( i = 3; i < rrm[2]; i += 2 ) {
+									if ( rrm[i] == AR.PolyFunVar ) break;
+								}
+								eppow = i < rrm[2] ? rrm[i+1] : 0;
+								if ( eppow < minpow2 ) minpow2 = eppow;
 							}
 							else { error = 5; goto onerror; }
 						}
@@ -3402,6 +3459,7 @@ NormArg:;
 					}
 					AR.PolyFunPow += minpow2;
 				}
+				AT.TrimPower = 1;
 				while ( m < arg2 ) {
 					r = rr;
 					rrr = r++; mm = m + *m;
@@ -3413,16 +3471,20 @@ NormArg:;
 					if ( r < AT.WorkTop && r >= AT.WorkSpace )
 								AT.WorkPointer = r;
 					Normalize(BHEAD rrr);
+					if ( *rrr == 0 ) continue;
 					if ( ABS(rrr[*rrr-1]) == *rrr-1 ) {
-						if ( AR.PolyFunPow >= 0 ) {
-							StoreTerm(BHEAD rrr);
+						if ( AR.PolyFunPow < 0 ) continue;
+					}
+					else if ( rrr[1] != SYMBOL ) continue;
+					else if ( AR.PolyFunPow < 0 ) {
+						for ( i = 3; i < rrr[2]; i += 2 ) {
+							if ( rrr[i] == AR.PolyFunVar ) break;
 						}
+						if ( i >= rrr[2] ) continue;
 					}
-					else if ( rrr[1] == SYMBOL && rrr[2] == 4 &&
-					rrr[3] == AR.PolyFunVar && rrr[4] <= AR.PolyFunPow ) {
-						StoreTerm(BHEAD rrr);
-					}
+					StoreTerm(BHEAD rrr);
 				}
+				AT.TrimPower = 0;
 				EndSort(BHEAD rr,1);
 			}
 			r = rr; while ( *r ) r += *r;
@@ -3541,7 +3603,13 @@ NormArg:;
 		Hence there is no need to free memory afterwards.
 */
 		if ( AR.PolyFunExp == 3 ) {
+			if ( minpow > AR.PolyFunPow ) {
+				fun[1] = FUNHEAD+2; fun[2] = CLEANFLAG;
+				fun[FUNHEAD] = -SNUMBER; fun[FUNHEAD+1] = 0;
+				goto done;
+			}
 			ipoly = InvPoly(BHEAD denominator,AR.PolyFunPow-minpow,AR.PolyFunVar);
+			minpow = 0; /* The multiplication cutoff is absolute. */
 		}
 		else {
 			ipoly = InvPoly(BHEAD denominator,AR.PolyFunPow,AR.PolyFunVar);
