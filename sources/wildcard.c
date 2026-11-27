@@ -1421,9 +1421,11 @@ int ResolveSet(PHEAD WORD *from, WORD *to, WORD *subs)
 					num = d->index; goto GotOne;
 				}
 			}
+/* UNFINISHED_FEATURE_EXCL_START */
 			else if ( d->type == DOLARGUMENT ) {
 				if ( d->where[0] == -SNUMBER && d->where[1] > 0 ) {
 					num = d->where[1]; goto GotOne;
+/* UNFINISHED_FEATURE_EXCL_STOP */
 				}
 			}
 			else if ( d->type == DOLWILDARGS ) {

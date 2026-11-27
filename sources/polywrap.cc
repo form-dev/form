@@ -641,7 +641,7 @@ WORD *poly_ratfun_add (PHEAD WORD *t1, WORD *t2) {
 	}
 #endif
 
-	if ( AR.PolyFunExp == 1 ) return PolyRatFunSpecial(BHEAD t1, t2);
+	if ( AR.PolyFunExp == 1 ) return PolyRatFunSpecial(BHEAD t1, t2); /* UNFINISHED_FEATURE_EXCL_LINE */
 
 #ifdef DEBUG
 	cout << "*** [" << thetime() << "]  CALL : poly_ratfun_add" << endl;
